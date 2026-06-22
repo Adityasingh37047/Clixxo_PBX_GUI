@@ -233,7 +233,7 @@ export const SIDEBAR_SECTIONS = [
       {
         id: "recordSettings",
         title: "Record Settings",
-        icon: RecordVoiceOverIcon, 
+        icon: RecordVoiceOverIcon,
         items: [
           {
             id: "recordSettingsPage",
@@ -254,7 +254,7 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
-     
+
       {
         id: "FeatureCode",
         title: "Feature Codes",
@@ -650,6 +650,11 @@ export const SIDEBAR_SECTIONS = [
             id: "sysIpRoutingTable",
             title: "IP Route Table",
             path: "/system-tools/ip-routing-table",
+          },
+          {
+            id: "sysSipAccessControl",
+            title: "SIP Access Control",
+            path: "/system-tools/sip-access-control",
           },
           {
             id: "sysAccessControl",

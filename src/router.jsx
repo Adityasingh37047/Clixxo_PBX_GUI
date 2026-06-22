@@ -68,6 +68,7 @@ import Network from "./modules/System/System Settings/Network";
 import Authorization from "./modules/Maitenance/System Tools/Authorization";
 import Management from "./modules/System/System Settings/Management";
 import IPRoutingTable from "./modules/System/System Settings/IPRoutingTable";
+import SipAccessControl from "./modules/System/System Settings/SipAccessControl";
 import AccessControl from "./modules/System/System Settings/AccessControl";
 import IDSSettings from "./modules/Maitenance/System Tools/IDSSettings";
 import DDOSSettings from "./modules/Maitenance/System Tools/DDOSSettings";
@@ -466,6 +467,10 @@ export const router = createBrowserRouter([
       {
         path: "/system-tools/ip-routing-table",
         element: <IPRoutingTable />,
+      },
+      {
+        path: "/system-tools/sip-access-control",
+        element: <SipAccessControl />,
       },
       {
         path: "/system-tools/access-control",

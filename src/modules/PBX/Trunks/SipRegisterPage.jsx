@@ -194,6 +194,13 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
+const trunkFormCheckboxLabelSx = {
+  margin: 0,
+  marginLeft: 0,
+  marginRight: 0,
+  alignItems: "center",
+};
+
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
 const OUTLINED_FOCUS = "#1976d2";
@@ -420,6 +427,72 @@ const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
     </span>
   </div>
 );
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const parseCodecList = (value) =>
+  (value || "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+
+const validateAllowCodecs = (allowCodecs) => {
+  if (!allowCodecs || allowCodecs.trim() === "") {
+    return "Allow Codecs is required";
+  }
+  return null;
+};
 
 const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
 
@@ -1090,6 +1163,8 @@ const SipRegisterPage = () => {
   const [dnisRows, setDnisRows] = useState([
     { dnisNumber: "", dnisName: "", replaceCid: "No" },
   ]);
+  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
+  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
   const [ethPortOptions, setEthPortOptions] = useState(
     SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
   );
@@ -1132,6 +1207,121 @@ const SipRegisterPage = () => {
       window.visualViewport?.removeEventListener("resize", measureContainer);
     };
   }, [trunks.length, allowHorizontalScroll]);
+
+  const selectedCodecList = useMemo(
+    () => parseCodecList(form.allow_codecs),
+    [form.allow_codecs],
+  );
+
+  const availableCodecList = useMemo(
+    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    [selectedCodecList],
+  );
+
+  const getCodecLabel = (value) =>
+    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const updateCodecList = (newList) => {
+    const newCodecsString = newList.join(",");
+
+    if (validationErrors.allow_codecs) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.allow_codecs;
+        return newErrors;
+      });
+    }
+
+    const codecError = validateAllowCodecs(newCodecsString);
+    if (codecError) {
+      setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
+    }
+
+    setForm((prev) => ({ ...prev, allow_codecs: newCodecsString }));
+  };
+
+  const addSelectedCodecs = () => {
+    if (!codecAvailableSelected.length) return;
+    updateCodecList([
+      ...selectedCodecList,
+      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
+    ]);
+    setCodecAvailableSelected([]);
+  };
+
+  const addAllCodecs = () => {
+    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    setCodecAvailableSelected([]);
+  };
+
+  const removeSelectedCodecs = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
+    );
+    setCodecChosenSelected([]);
+  };
+
+  const removeAllCodecs = () => {
+    updateCodecList([]);
+    setCodecChosenSelected([]);
+  };
+
+  const moveCodecToBottom = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...rest, ...moving];
+      })(),
+    );
+  };
+
+  const moveCodecUp = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        codecChosenSelected.forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx > 0) {
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecDown = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        [...codecChosenSelected].reverse().forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx >= 0 && idx < next.length - 1) {
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecToTop = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...moving, ...rest];
+      })(),
+    );
+  };
 
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
     "None",
@@ -1573,7 +1763,7 @@ const SipRegisterPage = () => {
         : [{ matchMode: "", strip: "", prepend: "" }];
 
       const result = {
-        index: index.toString(),
+        index: (index + 1).toString(),
 
         // Table fields (legacy list rendering)
         trunk_id: trunkId,
@@ -1798,11 +1988,18 @@ const SipRegisterPage = () => {
     setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
     setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
     setValidationErrors({});
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
     if (row && idx !== null) {
       const uiReg =
         row.ui_register ??
         (String(row.expire_in_sec ?? "") === "0" ? "No" : "Yes");
-      setForm({ ...SIP_REGISTER_INITIAL_FORM, ...row, ui_register: uiReg });
+      setForm({
+        ...SIP_REGISTER_INITIAL_FORM,
+        ...row,
+        ui_register: uiReg,
+        allow_codecs: row.allow_codecs || "ulaw,alaw",
+      });
       setEditIndex(idx);
       setDodRows(Array.isArray(row.dodRows) ? row.dodRows : []);
       setAdaptRows(
@@ -1840,6 +2037,8 @@ const SipRegisterPage = () => {
     setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
     setShowPassword(false); // Reset password visibility when closing modal
     setValidationErrors({}); // Clear validation errors when closing modal
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
   };
   const handleChange = (key, value) => {
     setForm((prev) => {
@@ -1929,52 +2128,6 @@ const SipRegisterPage = () => {
     }
   };
 
-  const handleCodecChange = (codec, checked) => {
-    setForm((prev) => {
-      const currentCodecs = prev.allow_codecs
-        ? prev.allow_codecs.split(",").map((c) => c.trim())
-        : [];
-      let newCodecs;
-
-      if (checked) {
-        // Add codec if not already present
-        if (!currentCodecs.includes(codec)) {
-          newCodecs = [...currentCodecs, codec];
-        } else {
-          newCodecs = currentCodecs;
-        }
-      } else {
-        // Remove codec
-        newCodecs = currentCodecs.filter((c) => c !== codec);
-      }
-
-      const newCodecsString = newCodecs.join(",");
-
-      // Clear validation error for allow_codecs when user changes codecs
-      if (validationErrors.allow_codecs) {
-        setValidationErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.allow_codecs;
-          return newErrors;
-        });
-      }
-
-      // Real-time validation
-      const codecError = validateAllowCodecs(newCodecsString);
-      if (codecError) {
-        setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
-      }
-
-      return { ...prev, allow_codecs: newCodecsString };
-    });
-  };
-
-  const isCodecSelected = (codec) => {
-    if (!form.allow_codecs) return false;
-    const currentCodecs = form.allow_codecs.split(",").map((c) => c.trim());
-    return currentCodecs.includes(codec);
-  };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -2004,13 +2157,6 @@ const SipRegisterPage = () => {
   const validateContext = (context) => {
     if (!context || context.trim() === "") {
       return "Context is required";
-    }
-    return null;
-  };
-
-  const validateAllowCodecs = (allowCodecs) => {
-    if (!allowCodecs || allowCodecs.trim() === "") {
-      return "Allow Codecs is required";
     }
     return null;
   };
@@ -2956,6 +3102,12 @@ const SipRegisterPage = () => {
           font-weight: 600 !important;
         }
 
+        .sip-reg .MuiFormControlLabel-root {
+          margin: 0 !important;
+          margin-left: 0 !important;
+          align-items: center !important;
+        }
+
       `}
           </style>
 
@@ -3065,7 +3217,7 @@ const SipRegisterPage = () => {
                       <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                         Enable SRTP
                       </label>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -3078,9 +3230,7 @@ const SipRegisterPage = () => {
                             />
                           }
                           label=""
-                          sx={{
-                            checkboxSx,
-                          }}
+                          sx={trunkFormCheckboxLabelSx}
                         />
                       </div>
                     </div>
@@ -3304,51 +3454,53 @@ const SipRegisterPage = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                        Show Outbound CallerID Name
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={!!form.ui_show_outbound_cid_name}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_show_outbound_cid_name",
-                                  e.target.checked,
-                                )
-                              }
-                              size="small"
-                              sx={checkboxSx}
-                            />
-                          }
-                          label=""
-                          sx={checkboxSx}
-                        />
-                      </div>
-                    </div>
-                    {form.ui_show_outbound_cid_name && (
+                    <div className="w-full">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
                         <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                          Outbound CallerId Name
+                          Show Outbound CallerID Name
                         </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.ui_outbound_cid_name}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_outbound_cid_name",
-                                e.target.value,
-                              )
+                        <div className="flex-1 min-w-0 flex items-center justify-start">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={!!form.ui_show_outbound_cid_name}
+                                onChange={(e) =>
+                                  handleChange(
+                                    "ui_show_outbound_cid_name",
+                                    e.target.checked,
+                                  )
+                                }
+                                size="small"
+                                sx={checkboxSx}
+                              />
                             }
-                            inputProps={{ style: { fontSize: 13 } }}
+                            label=""
+                            sx={trunkFormCheckboxLabelSx}
                           />
                         </div>
                       </div>
-                    )}
+                      {form.ui_show_outbound_cid_name && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            Outbound CallerId Name
+                          </label>
+                          <div className="flex-1 min-w-0">
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={form.ui_outbound_cid_name}
+                              onChange={(e) =>
+                                handleChange(
+                                  "ui_outbound_cid_name",
+                                  e.target.value,
+                                )
+                              }
+                              inputProps={{ style: { fontSize: 13 } }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
                       <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
@@ -3473,55 +3625,57 @@ const SipRegisterPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                            Enable Proxy
-                          </label>
-                          <div className="flex-1 min-w-0 flex items-center">
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={!!form.ui_enable_proxy}
-                                  onChange={(e) =>
-                                    handleChange(
-                                      "ui_enable_proxy",
-                                      e.target.checked,
-                                    )
-                                  }
-                                  size="small"
-                                  sx={checkboxSx}
-                                />
-                              }
-                              label=""
-                              sx={checkboxSx}
-                            />
-                          </div>
-                        </div>
-
-                        {form.ui_enable_proxy && (
+                        <div className="w-full">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
                             <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                              Proxy IP <span className="text-red-500">*</span>
+                              Enable Proxy
                             </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.ui_proxy_ip || ""}
-                                onChange={(e) =>
-                                  handleChange("ui_proxy_ip", e.target.value)
+                            <div className="flex-1 min-w-0 flex items-center justify-start">
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!form.ui_enable_proxy}
+                                    onChange={(e) =>
+                                      handleChange(
+                                        "ui_enable_proxy",
+                                        e.target.checked,
+                                      )
+                                    }
+                                    size="small"
+                                    sx={checkboxSx}
+                                  />
                                 }
-                                error={!!validationErrors.ui_proxy_ip}
-                                inputProps={{ style: { fontSize: 14 } }}
+                                label=""
+                                sx={trunkFormCheckboxLabelSx}
                               />
-                              {validationErrors.ui_proxy_ip && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.ui_proxy_ip}
-                                </div>
-                              )}
                             </div>
                           </div>
-                        )}
+
+                          {form.ui_enable_proxy && (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                              <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                                Proxy IP <span className="text-red-500">*</span>
+                              </label>
+                              <div className="flex-1 min-w-0">
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={form.ui_proxy_ip || ""}
+                                  onChange={(e) =>
+                                    handleChange("ui_proxy_ip", e.target.value)
+                                  }
+                                  error={!!validationErrors.ui_proxy_ip}
+                                  inputProps={{ style: { fontSize: 14 } }}
+                                />
+                                {validationErrors.ui_proxy_ip && (
+                                  <div className="text-red-500 text-xs mt-0.5">
+                                    {validationErrors.ui_proxy_ip}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
@@ -3530,46 +3684,158 @@ const SipRegisterPage = () => {
             )}
 
             {modalTab === "codec" && (
-              <div className="p-3 sm:p-5 flex flex-col items-center">
-                <p
-                  className="text-[13px] mb-3 text-center"
+              <div className="p-3 sm:p-5">
+                <TrunkModalSectionHeading title="CODEC Priority" isFirst />
+                <div
                   style={{
-                    color: TRUNK_SECTION_HEADING_COLOR,
-                    fontWeight: 600,
+                    display: "grid",
+                    gridTemplateColumns: isCompact
+                      ? "1fr"
+                      : "1fr 48px 1fr 48px",
+                    gap: 12,
+                    maxWidth: 720,
+                    margin: "0 auto",
                   }}
                 >
-                  Select codecs allowed on this trunk (required).
-                </p>
-                <FormGroup
-                  row
-                  sx={{ flexWrap: "wrap", gap: 1, justifyContent: "center" }}
-                >
-                  {CODEC_OPTIONS.map((codec) => (
-                    <FormControlLabel
-                      key={codec.value}
-                      control={
-                        <Checkbox
-                          checked={isCodecSelected(codec.value)}
-                          onChange={(e) =>
-                            handleCodecChange(codec.value, e.target.checked)
-                          }
-                          size="small"
-                          sx={checkboxSx}
-                        />
-                      }
-                      label={codec.label}
-                      sx={{
-                        "& .MuiFormControlLabel-label": {
-                          fontSize: 13,
-                          color: TRUNK_FIELD_LABEL_COLOR,
-                          fontWeight: 600,
-                        },
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: TRUNK_FIELD_LABEL_COLOR,
+                        textAlign: "center",
+                        marginBottom: 8,
                       }}
-                    />
-                  ))}
-                </FormGroup>
+                    >
+                      Available
+                    </div>
+                    <select
+                      multiple
+                      size={6}
+                      value={codecAvailableSelected}
+                      onChange={(e) =>
+                        setCodecAvailableSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {availableCodecList.length === 0 ? (
+                        <option disabled value="">
+                          No codecs
+                        </option>
+                      ) : (
+                        availableCodecList.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: isCompact ? 0 : 28,
+                    }}
+                  >
+                    <CodecDualListBtn onClick={addSelectedCodecs}>
+                      &gt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={addAllCodecs}>
+                      &gt;&gt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeSelectedCodecs}>
+                      &lt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeAllCodecs}>
+                      &lt;&lt;
+                    </CodecDualListBtn>
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: TRUNK_FIELD_LABEL_COLOR,
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Selected
+                    </div>
+                    <select
+                      multiple
+                      size={6}
+                      value={codecChosenSelected}
+                      onChange={(e) =>
+                        setCodecChosenSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {selectedCodecList.length === 0 ? (
+                        <option disabled value="">
+                          No selected codecs
+                        </option>
+                      ) : (
+                        selectedCodecList.map((id) => (
+                          <option key={id} value={id}>
+                            {getCodecLabel(id)}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: isCompact ? 0 : 28,
+                    }}
+                  >
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveCodecToBottom}
+                    >
+                      vv
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveCodecUp}
+                    >
+                      ^
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveCodecDown}
+                    >
+                      v
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveCodecToTop}
+                    >
+                      ^^
+                    </CodecDualListBtn>
+                  </div>
+                </div>
                 {validationErrors.allow_codecs && (
-                  <div className="text-red-500 text-xs mt-2 text-center">
+                  <div className="text-red-500 text-xs mt-3 text-center">
                     {validationErrors.allow_codecs}
                   </div>
                 )}
@@ -3986,7 +4252,7 @@ const SipRegisterPage = () => {
                       <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                         User Phone
                       </label>
-                      <div className="flex-1 min-w-0 flex items-center">
+                      <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -3999,7 +4265,7 @@ const SipRegisterPage = () => {
                             />
                           }
                           label=""
-                          sx={checkboxSx}
+                          sx={trunkFormCheckboxLabelSx}
                         />
                       </div>
                     </div>
@@ -4057,11 +4323,14 @@ const SipRegisterPage = () => {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div className="w-full">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
                       <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                         DNIS
                       </label>
-                      <div className="flex-1 min-w-0 flex items-center">
+                      <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -4074,13 +4343,12 @@ const SipRegisterPage = () => {
                             />
                           }
                           label=""
-                          sx={checkboxSx}
+                          sx={trunkFormCheckboxLabelSx}
                         />
                       </div>
                     </div>
-                  </div>
-                  {form.ui_dnis && (
-                    <div className="mt-3 bg-white border border-gray-200 rounded-md p-3">
+                    {form.ui_dnis && (
+                      <div className="mt-2 bg-white border border-gray-200 rounded-md p-3">
                       <div className="flex items-center justify-between mb-2">
                         <div
                           className="font-semibold"
@@ -4202,6 +4470,7 @@ const SipRegisterPage = () => {
                     </div>
                   )}
                 </div>
+              </div>
               </div>
             )}
 

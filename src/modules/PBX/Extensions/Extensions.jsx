@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import {
   SIP_ACCOUNT_FIELDS,
   SIP_ACCOUNT_TABLE_COLUMNS,
@@ -346,6 +352,35 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
+const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative", width: "100%" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PBX_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 0,
+      }}
+    >
+      <ExtensionTooltipLabel
+        tooltipKey={tooltipKey}
+        style={{ fontSize: 14, color: PBX_MODAL_SECTION_HEADING_COLOR }}
+      >
+        Allow Codecs
+      </ExtensionTooltipLabel>
+      {required && <span style={{ color: C.errorRed }}> *</span>}
+    </span>
+  </div>
+);
+
 const SIP_PCM_TABLE_CARD_RADIUS = 10;
 
 const sipPcmCardStyle = {
@@ -545,7 +580,9 @@ const PbxToolbarSearchBar = ({
           }}
         />
       ) : null}
-      <span style={{ fontSize: 12, color: C.mutedText, flexShrink: 0 }}>🔍</span>
+      <span style={{ fontSize: 12, color: C.mutedText, flexShrink: 0 }}>
+        🔍
+      </span>
       <input
         ref={inputRef}
         type="text"
@@ -745,12 +782,15 @@ const pbxDualListBtnStyle = {
   textAlign: "center",
 };
 
-const PbxDualListBtn = ({ onClick, title, children }) => (
+const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={pbxDualListBtnStyle}
+    style={{
+      ...pbxDualListBtnStyle,
+      fontWeight: reorder ? 400 : pbxDualListBtnStyle.fontWeight,
+    }}
     onMouseEnter={(e) => {
       e.currentTarget.style.backgroundColor = "#c5cbd3";
     }}
@@ -763,6 +803,12 @@ const PbxDualListBtn = ({ onClick, title, children }) => (
 );
 
 const MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
+
+const parseCodecList = (value) =>
+  (value || "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
 
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
@@ -867,6 +913,8 @@ const SipAccountPage = () => {
     fixedPassword: "",
     passwordPrefix: "",
   });
+  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
+  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
 
   // Pagination
   const itemsPerPage = 50;
@@ -975,7 +1023,7 @@ const SipAccountPage = () => {
         (a, b) => (parseInt(a.extension) || 0) - (parseInt(b.extension) || 0),
       )
       .map((item, index) => ({
-        index: index.toString(),
+        index: (index + 1).toString(),
         extension: item.extension,
         context: item.context,
         allow_codecs: item.allow_codecs || item.codecs || "",
@@ -1341,36 +1389,114 @@ const SipAccountPage = () => {
     if (err) setValidationErrors((prev) => ({ ...prev, [key]: err }));
   };
 
-  const handleCodecChange = (codec, checked) => {
-    setForm((prev) => {
-      const cur = prev.allow_codecs
-        ? prev.allow_codecs.split(",").map((c) => c.trim())
-        : [];
-      const next = checked
-        ? cur.includes(codec)
-          ? cur
-          : [...cur, codec]
-        : cur.filter((c) => c !== codec);
-      const str = next.join(",");
-      if (validationErrors.allow_codecs) {
-        setValidationErrors((p) => {
-          const n = { ...p };
-          delete n.allow_codecs;
-          return n;
-        });
-      }
-      const ae = validateAllowCodecs(str);
-      if (ae) setValidationErrors((p) => ({ ...p, allow_codecs: ae }));
-      return { ...prev, allow_codecs: str };
-    });
+  const selectedCodecList = useMemo(
+    () => parseCodecList(form.allow_codecs),
+    [form.allow_codecs],
+  );
+
+  const availableCodecList = useMemo(
+    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    [selectedCodecList],
+  );
+
+  const getCodecLabel = (value) =>
+    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const updateCodecList = (newList) => {
+    const str = newList.join(",");
+    if (validationErrors.allow_codecs) {
+      setValidationErrors((p) => {
+        const n = { ...p };
+        delete n.allow_codecs;
+        return n;
+      });
+    }
+    const ae = validateAllowCodecs(str);
+    if (ae) setValidationErrors((p) => ({ ...p, allow_codecs: ae }));
+    setForm((prev) => ({ ...prev, allow_codecs: str }));
   };
 
-  const isCodecSelected = (codec) => {
-    if (!form.allow_codecs) return false;
-    return form.allow_codecs
-      .split(",")
-      .map((c) => c.trim())
-      .includes(codec);
+  const addSelectedCodecs = () => {
+    if (!codecAvailableSelected.length) return;
+    updateCodecList([
+      ...selectedCodecList,
+      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
+    ]);
+    setCodecAvailableSelected([]);
+  };
+
+  const addAllCodecs = () => {
+    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    setCodecAvailableSelected([]);
+  };
+
+  const removeSelectedCodecs = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
+    );
+    setCodecChosenSelected([]);
+  };
+
+  const removeAllCodecs = () => {
+    updateCodecList([]);
+    setCodecChosenSelected([]);
+  };
+
+  const moveCodecToBottom = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...rest, ...moving];
+      })(),
+    );
+  };
+
+  const moveCodecUp = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        codecChosenSelected.forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx > 0) {
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecDown = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        [...codecChosenSelected].reverse().forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx >= 0 && idx < next.length - 1) {
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecToTop = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...moving, ...rest];
+      })(),
+    );
   };
 
   // ── Follow Me helpers ─────────────────────────────────────────────────────
@@ -1426,7 +1552,13 @@ const SipAccountPage = () => {
 
   // ── Modal open/close ──────────────────────────────────────────────────────
   const handleOpenModal = (row = null, idx = null) => {
-    setForm(row ? { ...row } : { ...SIP_ACCOUNT_INITIAL_FORM });
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
+    setForm(
+      row
+        ? { ...row, allow_codecs: row.allow_codecs || "ulaw,alaw" }
+        : { ...SIP_ACCOUNT_INITIAL_FORM },
+    );
     setEditIndex(row ? idx : null);
     setFormMode("single");
     setActiveTab("basic");
@@ -1434,6 +1566,8 @@ const SipAccountPage = () => {
   };
 
   const openBulkModal = () => {
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
     setForm({ ...SIP_ACCOUNT_INITIAL_FORM });
     setEditIndex(null);
     setBulkForm({
@@ -1453,6 +1587,8 @@ const SipAccountPage = () => {
     setEditIndex(null);
     setShowPassword(false);
     setValidationErrors({});
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
     setFormMode("single");
     setActiveTab("basic");
   };
@@ -2622,7 +2758,10 @@ const SipAccountPage = () => {
                       </FieldRow>
                     )}
 
-                    <FieldRow label="Max Registrations:" tooltipKey="max_registrations">
+                    <FieldRow
+                      label="Max Registrations:"
+                      tooltipKey="max_registrations"
+                    >
                       <TextField
                         type="number"
                         value={form.max_registrations || ""}
@@ -2660,52 +2799,141 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
+                  </div>
 
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <FieldRow label="Allow Codecs:" wide tooltipKey="allow_codecs">
-                        <FormGroup
-                          row
-                          sx={{
-                            gap: 0.5,
-                            flexWrap: "nowrap",
-                            width: "100%",
-                            justifyContent: "flex-start",
-                          }}
+                  <div style={{ width: "100%" }}>
+                    <AllowCodecsSectionHeading
+                      tooltipKey="allow_codecs"
+                      required
+                    />
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 48px 1fr 48px",
+                        gap: 12,
+                        width: "100%",
+                      }}
+                    >
+                      <div>
+                        <div style={pbxDualListLabelStyle}>Available</div>
+                        <select
+                          multiple
+                          size={6}
+                          value={codecAvailableSelected}
+                          onChange={(e) =>
+                            setCodecAvailableSelected(
+                              Array.from(
+                                e.target.selectedOptions,
+                                (opt) => opt.value,
+                              ),
+                            )
+                          }
+                          style={pbxDualListSelectStyle}
                         >
-                          {CODEC_OPTIONS.map((codec) => (
-                            <FormControlLabel
-                              key={codec.value}
-                              control={
-                                <Checkbox
-                                  checked={isCodecSelected(codec.value)}
-                                  onChange={(e) =>
-                                    handleCodecChange(
-                                      codec.value,
-                                      e.target.checked,
-                                    )
-                                  }
-                                  size="small"
-                                  sx={extensionTableCheckboxSx}
-                                />
-                              }
-                              label={codec.label}
-                              sx={{
-                                margin: 0,
-                                flexShrink: 0,
-                                "& .MuiFormControlLabel-label": {
-                                  fontSize: 12,
-                                  fontWeight: 500,
-                                  color: "#374151",
-                                },
-                              }}
-                            />
-                          ))}
-                        </FormGroup>
-                        {validationErrors.allow_codecs && (
-                          <ErrMsg>{validationErrors.allow_codecs}</ErrMsg>
-                        )}
-                      </FieldRow>
+                          {availableCodecList.length === 0 ? (
+                            <option disabled value="">
+                              No codecs
+                            </option>
+                          ) : (
+                            availableCodecList.map((c) => (
+                              <option key={c.value} value={c.value}>
+                                {c.label}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                          paddingTop: MONITOR_DUAL_LIST_LABEL_OFFSET,
+                        }}
+                      >
+                        <PbxDualListBtn onClick={addSelectedCodecs}>
+                          &gt;
+                        </PbxDualListBtn>
+                        <PbxDualListBtn onClick={addAllCodecs}>
+                          &gt;&gt;
+                        </PbxDualListBtn>
+                        <PbxDualListBtn onClick={removeSelectedCodecs}>
+                          &lt;
+                        </PbxDualListBtn>
+                        <PbxDualListBtn onClick={removeAllCodecs}>
+                          &lt;&lt;
+                        </PbxDualListBtn>
+                      </div>
+                      <div>
+                        <div style={pbxDualListLabelStyle}>Selected</div>
+                        <select
+                          multiple
+                          size={6}
+                          value={codecChosenSelected}
+                          onChange={(e) =>
+                            setCodecChosenSelected(
+                              Array.from(
+                                e.target.selectedOptions,
+                                (opt) => opt.value,
+                              ),
+                            )
+                          }
+                          style={pbxDualListSelectStyle}
+                        >
+                          {selectedCodecList.length === 0 ? (
+                            <option disabled value="">
+                              No selected codecs
+                            </option>
+                          ) : (
+                            selectedCodecList.map((id) => (
+                              <option key={id} value={id}>
+                                {getCodecLabel(id)}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                          paddingTop: MONITOR_DUAL_LIST_LABEL_OFFSET,
+                        }}
+                      >
+                        <PbxDualListBtn
+                          reorder
+                          title="Move to bottom"
+                          onClick={moveCodecToBottom}
+                        >
+                          vv
+                        </PbxDualListBtn>
+                        <PbxDualListBtn
+                          reorder
+                          title="Move up"
+                          onClick={moveCodecUp}
+                        >
+                          ^
+                        </PbxDualListBtn>
+                        <PbxDualListBtn
+                          reorder
+                          title="Move down"
+                          onClick={moveCodecDown}
+                        >
+                          v
+                        </PbxDualListBtn>
+                        <PbxDualListBtn
+                          reorder
+                          title="Move to top"
+                          onClick={moveCodecToTop}
+                        >
+                          ^^
+                        </PbxDualListBtn>
+                      </div>
                     </div>
+                    {validationErrors.allow_codecs && (
+                      <ErrMsg>{validationErrors.allow_codecs}</ErrMsg>
+                    )}
                   </div>
                 </SectionCard>
 
@@ -2826,7 +3054,10 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Voicemail Enabled:" tooltipKey="voicemail_enabled">
+                    <FieldRow
+                      label="Voicemail Enabled:"
+                      tooltipKey="voicemail_enabled"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_enabled || "no"}
@@ -2840,7 +3071,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Voicemail Keep Local:" tooltipKey="voicemail_keep_local">
+                    <FieldRow
+                      label="Voicemail Keep Local:"
+                      tooltipKey="voicemail_keep_local"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_keep_local || "yes"}
@@ -2854,7 +3088,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Voicemail File:" tooltipKey="voicemail_file">
+                    <FieldRow
+                      label="Voicemail File:"
+                      tooltipKey="voicemail_file"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.voicemail_file || "audio_file_attachment"}
@@ -2872,7 +3109,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Voicemail Password:" tooltipKey="voicemail_password">
+                    <FieldRow
+                      label="Voicemail Password:"
+                      tooltipKey="voicemail_password"
+                    >
                       <TextField
                         type="text"
                         value={form.voicemail_password || ""}
@@ -3615,7 +3855,10 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Allow Being Monitored:" tooltipKey="monitor_allow">
+                    <FieldRow
+                      label="Allow Being Monitored:"
+                      tooltipKey="monitor_allow"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.monitor_allow || "disable"}
@@ -3698,7 +3941,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="SIP Bypass Media:" tooltipKey="sip_bypass_media">
+                    <FieldRow
+                      label="SIP Bypass Media:"
+                      tooltipKey="sip_bypass_media"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.sip_bypass_media || "proxy_media"}
@@ -3725,7 +3971,10 @@ const SipAccountPage = () => {
                       gap: "8px 32px",
                     }}
                   >
-                    <FieldRow label="Call Timeout (s):" tooltipKey="call_timeout">
+                    <FieldRow
+                      label="Call Timeout (s):"
+                      tooltipKey="call_timeout"
+                    >
                       <TextField
                         type="number"
                         value={form.call_timeout ?? 30}
@@ -3746,7 +3995,10 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Max Call Duration (s):" tooltipKey="max_call_duration">
+                    <FieldRow
+                      label="Max Call Duration (s):"
+                      tooltipKey="max_call_duration"
+                    >
                       <TextField
                         type="number"
                         value={form.max_call_duration ?? 6000}
@@ -3767,7 +4019,10 @@ const SipAccountPage = () => {
                         sx={modalTextFieldSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Outbound Restriction:" tooltipKey="outbound_restriction">
+                    <FieldRow
+                      label="Outbound Restriction:"
+                      tooltipKey="outbound_restriction"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.outbound_restriction || "disable"}
@@ -3781,7 +4036,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Max Call Permission:" tooltipKey="max_call_permission">
+                    <FieldRow
+                      label="Max Call Permission:"
+                      tooltipKey="max_call_permission"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={
@@ -3809,7 +4067,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Extension Trunk:" tooltipKey="extension_trunk">
+                    <FieldRow
+                      label="Extension Trunk:"
+                      tooltipKey="extension_trunk"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.extension_trunk || "disable"}
@@ -3823,7 +4084,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Used Call Permission:" tooltipKey="used_call_permission">
+                    <FieldRow
+                      label="Used Call Permission:"
+                      tooltipKey="used_call_permission"
+                    >
                       <div
                         style={{
                           fontSize: 13,
@@ -3842,7 +4106,10 @@ const SipAccountPage = () => {
                         }[form.call_permission] || "International Call"}
                       </div>
                     </FieldRow>
-                    <FieldRow label="Dynamic Lock Pin:" tooltipKey="dynamic_lock_pin">
+                    <FieldRow
+                      label="Dynamic Lock Pin:"
+                      tooltipKey="dynamic_lock_pin"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.dynamic_lock_pin || "default"}
@@ -3874,7 +4141,10 @@ const SipAccountPage = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Call Prohibition:" tooltipKey="call_prohibition">
+                    <FieldRow
+                      label="Call Prohibition:"
+                      tooltipKey="call_prohibition"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.call_prohibition || "disable"}

@@ -377,7 +377,7 @@ const IPRoutingTable = () => {
   const normalizeRows = (list) =>
     (list || []).map((row, idx) => ({
       ...row,
-      no: idx,
+      no: idx + 1,
     }));
 
   // Persistent routes file helpers - save routes to config file for boot persistence
@@ -619,7 +619,7 @@ WantedBy=multi-user.target
     if (rowIdx !== null) {
       setForm({ ...rows[rowIdx] });
     } else {
-      setForm({ ...IP_ROUTING_TABLE_INITIAL_ROW, no: rows.length });
+      setForm({ ...IP_ROUTING_TABLE_INITIAL_ROW, no: rows.length + 1 });
     }
     // Always refresh network options when opening modal (prefer LAN1 when adding new)
     loadNetworkOptions(rowIdx !== null);

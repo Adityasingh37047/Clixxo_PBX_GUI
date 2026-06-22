@@ -129,7 +129,7 @@ export const SIP_ACCOUNT_FIELDS = [
     name: "allow_codecs",
     label: "Allow Codecs",
     type: "checkbox",
-    defaultValue: "",
+    defaultValue: "ulaw,alaw",
   },
   {
     name: "password",

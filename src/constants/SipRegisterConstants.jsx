@@ -5,7 +5,7 @@ export const sipRegisterFields = [
   { name: 'auth_username', label: 'Auth Username', type: 'text', defaultValue: '' },
   { name: 'password', label: 'Password', type: 'password', defaultValue: '' },
   { name: 'context', label: 'Context', type: 'text', defaultValue: '' },
-  { name: 'allow_codecs', label: 'Allow Codecs', type: 'checkbox', defaultValue: '' },
+  { name: 'allow_codecs', label: 'Allow Codecs', type: 'checkbox', defaultValue: 'ulaw,alaw' },
   { name: 'expire_in_sec', label: 'Expire In Sec', type: 'text', defaultValue: '' },
   { name: 'provider', label: 'Provider', type: 'text', defaultValue: '' },
   { name: 'sip_header', label: 'SIP Header', type: 'text', defaultValue: '' },
@@ -30,6 +30,8 @@ export const SIP_REGISTER_TABLE_COLUMNS = [
   { key: 'registerStatus', label: 'Status' },
   { key: 'modify', label: 'Modify' },
 ];
+
+export const SIP_REGISTER_DEFAULT_CODECS = 'ulaw,alaw';
 
 export const CODEC_OPTIONS = [
   { value: 'ulaw', label: 'ulaw' },

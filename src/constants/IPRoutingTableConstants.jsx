@@ -8,7 +8,7 @@ export const IP_ROUTING_TABLE_COLUMNS = [
 ];
 
 export const IP_ROUTING_TABLE_MODAL_FIELDS = [
-  { key: "no", label: "No.", type: "number", initial: 0 },
+  { key: "no", label: "No.", type: "number", initial: 1 },
   { key: "destination", label: "Destination", type: "text", initial: "" },
   { key: "subnetMask", label: "Subnet Mask", type: "text", initial: "" },
   {
@@ -32,7 +32,7 @@ export const IP_ROUTING_TABLE_MODAL_FIELDS = [
 
 export const IP_ROUTING_TABLE_INITIAL_ROW = {
   checked: false,
-  no: 0,
+  no: 1,
   destination: "",
   subnetMask: "",
   networkPort: "NET 1(192.168.1.101)",

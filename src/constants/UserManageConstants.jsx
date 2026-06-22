@@ -242,6 +242,7 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "sysManagement", label: "Management" },
           { id: "sysGlobalSip", label: "Global SIP" },
           { id: "sysIpRoutingTable", label: "IP Route Table" },
+          { id: "sysSipAccessControl", label: "SIP Access Control" },
           { id: "sysAccessControl", label: "Access Control" },
           { id: "sysVpn", label: "VPN" },
           { id: "sysCentralizedManage", label: "Centralized Manage" },

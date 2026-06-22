@@ -1255,19 +1255,16 @@ const DisaPage = () => {
   sx={{
     "& .MuiDialog-container": {
       alignItems: "flex-start",
-    },
-    "& .MuiDialog-paper": {
-      mt: "140px",
-      mb: "20px",
+      pt: 5,
     },
   }}
   PaperProps={{
     sx: {
-      width: 1000,
-      maxWidth: "98vw",
+      width: 900,
+      maxWidth: "96vw",
       mx: "auto",
       p: 0,
-      borderRadius: 2,
+      borderRadius: "8px",
       overflow: "hidden",
       boxShadow:
         "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",

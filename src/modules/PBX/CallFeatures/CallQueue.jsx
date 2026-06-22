@@ -867,16 +867,23 @@ const CallQueue = () => {
         }}
         maxWidth={false}
         className="z-50"
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 5,
+          },
+        }}
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
         PaperProps={{
           sx: {
-            width: 1020,
-            maxWidth: "98vw",
+            width: 900,
+            maxWidth: "96vw",
             mx: "auto",
             p: 0,
             borderRadius: "8px",
+            overflow: "hidden",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
             backgroundColor: "#ffffff",

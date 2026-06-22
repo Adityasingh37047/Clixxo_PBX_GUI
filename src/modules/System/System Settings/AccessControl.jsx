@@ -350,7 +350,7 @@ const AccessControl = () => {
       setForm({ index: row.index, command: row.command });
       setEditIndex(idx);
     } else {
-      const nextIndex = commands.length.toString();
+      const nextIndex = (commands.length + 1).toString();
       setForm({ index: nextIndex, command: "" });
       setEditIndex(null);
     }
@@ -501,7 +501,11 @@ const AccessControl = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     setTimeout(() => {
-      setCommands((prev) => prev.filter((_, idx) => !selected.includes(idx)));
+      setCommands((prev) =>
+        prev
+          .filter((_, idx) => !selected.includes(idx))
+          .map((cmd, idx) => ({ ...cmd, index: (idx + 1).toString() })),
+      );
       setSelected([]);
       showToast(
         `${selected.length} command(s) deleted successfully`,
