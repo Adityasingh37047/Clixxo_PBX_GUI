@@ -27,7 +27,13 @@ const BTN_FORM_PRIMARY =
 const BTN_FORM_CANCEL =
   "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
 
-const Btn = ({ children, onClick, disabled, variant = "formPrimary", type }) => (
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "formPrimary",
+  type,
+}) => (
   <button
     type={type}
     onClick={onClick}
@@ -133,7 +139,11 @@ const FxsVoipMediaBreadcrumb = ({ current }) => (
 
 const FxsVoipMediaPageShell = ({ children, fullWidth = false }) => (
   <div className={FXS_VOIP_MEDIA_PAGE_WRAP}>
-    <div className={fullWidth ? "w-full max-w-full mx-auto" : FXS_VOIP_MEDIA_PAGE_INNER}>
+    <div
+      className={
+        fullWidth ? "w-full max-w-full mx-auto" : FXS_VOIP_MEDIA_PAGE_INNER
+      }
+    >
       {children}
     </div>
   </div>
@@ -176,7 +186,11 @@ const FxsVoipMediaDualListBtn = ({ onClick, title, children, reorder }) => (
     type="button"
     title={title}
     onClick={onClick}
-    className={reorder ? FXS_VOIP_MEDIA_DUAL_LIST_BTN_REORDER : FXS_VOIP_MEDIA_DUAL_LIST_BTN}
+    className={
+      reorder
+        ? FXS_VOIP_MEDIA_DUAL_LIST_BTN_REORDER
+        : FXS_VOIP_MEDIA_DUAL_LIST_BTN
+    }
   >
     {children}
   </button>
@@ -557,7 +571,10 @@ const FxsVoipMediaPage = () => {
         </Alert>
       )}
       <FxsVoipMediaBreadcrumb current="Media Parameters" />
-      <div className={FXS_VOIP_MEDIA_TABLE_CONTAINER} style={{ marginBottom: 0 }}>
+      <div
+        className={FXS_VOIP_MEDIA_TABLE_CONTAINER}
+        style={{ marginBottom: 0 }}
+      >
         <div className={FXS_VOIP_MEDIA_BLUE_BAR}>
           <span>Media Parameters</span>
         </div>
@@ -737,7 +754,11 @@ const FxsVoipMediaPage = () => {
                   >
                     vv
                   </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn reorder title="Move up" onClick={moveCodecUp}>
+                  <FxsVoipMediaDualListBtn
+                    reorder
+                    title="Move up"
+                    onClick={moveCodecUp}
+                  >
                     ^
                   </FxsVoipMediaDualListBtn>
                   <FxsVoipMediaDualListBtn
