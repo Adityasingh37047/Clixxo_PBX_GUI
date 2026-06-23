@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import Tooltip from "@mui/material/Tooltip";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {Alert,
   Button,
@@ -321,29 +322,62 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required }) => (
+const FieldRow = ({ label, children, required, tooltip }) => (
   <div
     style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 140,
-        flexShrink: 0,
-      }}
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: 140,
+          flexShrink: 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
 const PBX_MODAL_SECTION_BG = "#f5f7fa";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const SectionHeading = ({ title, isFirst = false, required }) => (
+const SectionHeading = ({
+  title,
+  isFirst = false,
+  required,
+  tooltip,
+}) => (
   <div
     style={{
       margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
@@ -352,21 +386,29 @@ const SectionHeading = ({ title, isFirst = false, required }) => (
     }}
   >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: PBX_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#30415A",
-      }}
+
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
-    </span>
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: 0,
+          background: PBX_MODAL_SECTION_BG,
+          paddingRight: 8,
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#30415A",
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {title}
+        {required && <span style={{ color: C.errorRed }}> *</span>}
+      </span>
+    </Tooltip>
   </div>
 );
 
@@ -1093,7 +1135,7 @@ const PickupGroup = () => {
                   gap: "16px 32px",
                 }}
               >
-                <FieldRow label="Name" required>
+                <FieldRow label="Name" required  tooltip="User-defined name of a pickup group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
                   <TextField
                     size="small"
                     fullWidth
@@ -1112,7 +1154,7 @@ const PickupGroup = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 8 }}
                 >
-                  <SectionHeading title="Member" required />
+                  <SectionHeading title="Member" required tooltip="Select the members to add to the pickup group. By default it is null." />
 
                   <div
                     style={{

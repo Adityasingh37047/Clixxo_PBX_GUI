@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import Tooltip from "@mui/material/Tooltip";
 import {Button,
   CircularProgress,
   Dialog,
@@ -11,7 +12,7 @@ import {Button,
   Select as MuiSelect,
   Checkbox,
   TextField,
-  Tooltip,
+
   Alert,
   Tabs,
   Tab, useMediaQuery } from "@mui/material";
@@ -358,24 +359,54 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required }) => (
+const FieldRow = ({ label, children, required, tooltip }) => (
   <div
     style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 150,
-        flexShrink: 0,
-      }}
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: 150,
+          flexShrink: 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1 }}>{children}</div>
   </div>
 );
+
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1498,7 +1529,12 @@ const ConferencePage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label="Room Name" required>
+                        <FieldRow label={<Tooltip
+    title="The number dialed to reach this conference room, with the default value ranges of 6400~6499 which can be modified in 'PBX->Preference->Extension Preferences'. It is null by default and must be filled in: otherwise the configuration will fail to be saved."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Room Name</span>
+  </Tooltip>} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -1513,7 +1549,12 @@ const ConferencePage = () => {
                             }}
                           />
                         </FieldRow>
-                        <FieldRow label="Conference Number" required>
+                        <FieldRow label={<Tooltip
+    title="The conference number is the number that will be used to dial into the conference."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Conference Number</span>
+  </Tooltip>} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -1530,8 +1571,11 @@ const ConferencePage = () => {
                             }}
                           />
                         </FieldRow>
-                        <FieldRow label="Greeting">
-                          <MuiSelect
+                        <FieldRow
+  label="Greeting"
+  tooltip="The greeting played upon joining this conference room. The default setting is default."
+  required
+>                          <MuiSelect
                             size="small"
                             fullWidth
                             value={greeting}
@@ -1564,8 +1608,11 @@ const ConferencePage = () => {
                             ))}
                           </MuiSelect>
                         </FieldRow>
-                        <FieldRow label="Announce">
-                          <MuiSelect
+                        <FieldRow
+  label="Announce"
+  tooltip="If set to Yes, other members will hear prompts upon a memd=ber enters or exits this conference room: if set to No, there will be no prompt for a member's entering or exiting. The default setting is No."
+  required
+>                          <MuiSelect
                             size="small"
                             fullWidth
                             value={announce}
@@ -1592,8 +1639,11 @@ const ConferencePage = () => {
                             ))}
                           </MuiSelect>
                         </FieldRow>
-                        <FieldRow label="Record">
-                          <MuiSelect
+                        <FieldRow
+  label="Record"
+  tooltip="Set whether to enable the recording. The default setting is No."
+  required
+>                          <MuiSelect
                             size="small"
                             fullWidth
                             value={record}
@@ -1630,8 +1680,11 @@ const ConferencePage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label="Enabled" required>
-                          <MuiSelect
+                        <FieldRow
+  label="Enabled"
+  tooltip="Set whether to use this conference room. The default setting is Yes."
+  required
+>                          <MuiSelect
                             size="small"
                             fullWidth
                             value={enabled}
@@ -1658,8 +1711,10 @@ const ConferencePage = () => {
                             ))}
                           </MuiSelect>
                         </FieldRow>
-                        <FieldRow label="Schedule Start">
-                          <TextField
+                          <FieldRow label="Schedule Start"
+  tooltip="The start time of the conference room. The default setting is null."
+  required
+>                          <TextField
                             size="small"
                             fullWidth
                             type="datetime-local"
@@ -1674,8 +1729,10 @@ const ConferencePage = () => {
                             }}
                           />
                         </FieldRow>
-                        <FieldRow label="Schedule End">
-                          <TextField
+                        <FieldRow label="Schedule End"
+  tooltip="The end time of the conference room. The default setting is null."
+  required
+>                          <TextField
                             size="small"
                             fullWidth
                             type="datetime-local"
@@ -1690,7 +1747,11 @@ const ConferencePage = () => {
                             }}
                           />
                         </FieldRow>
-                        <FieldRow label="Pin">
+                        <FieldRow
+  label="Pin"
+  tooltip="Enter the PIN that users must provide to access or use this feature."
+  required
+>
                           <MuiSelect
                             size="small"
                             fullWidth
@@ -1762,7 +1823,10 @@ const ConferencePage = () => {
                             </FieldRow>
                           </>
                         )}
-                        <FieldRow label="Max Members">
+                       <FieldRow
+  label="Max Members"
+  tooltip="Specify the maximum number of participants allowed in the conference room."
+>
                           <TextField
                             size="small"
                             fullWidth
@@ -1943,7 +2007,9 @@ const ConferencePage = () => {
                         gap: 16,
                       }}
                     >
-                      <FieldRow label="Wait for Moderator">
+                      <FieldRow label="Wait for Moderator"
+                      tooltip="If set to Yes, the participants could not hear each other until the moderator joins the conference. the default setting is Yes."
+                      >
                         <MuiSelect
                           size="small"
                           fullWidth
@@ -1953,16 +2019,18 @@ const ConferencePage = () => {
                         >
                           {YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
+                                  key={opt}
+                                  value={opt}
+                                  sx={{ fontSize: 13 }}
                             >
                               {opt}
                             </MenuItem>
                           ))}
                         </MuiSelect>
                       </FieldRow>
-                      <FieldRow label="Say Your Name">
+                      <FieldRow label="Say Your Name"
+                      tooltip="If set to  Yes, you will hear a propmt'Please say yur name' upon you enter a conference room, and other members will hear a prompt 'XXX enters the conference' upon you successfully join in the conference. The default setting is Yes."
+                      >
                         <MuiSelect
                           size="small"
                           fullWidth
@@ -1989,7 +2057,9 @@ const ConferencePage = () => {
                         gap: 16,
                       }}
                     >
-                      <FieldRow label="Mute Participant">
+                      <FieldRow label="Mute Participant"
+                      tooltip="If set  to Yes, the participants expect for the moderator are not allowed to speak in this conference room."The default setting is No
+                      >
                         <MuiSelect
                           size="small"
                           fullWidth
@@ -2008,7 +2078,8 @@ const ConferencePage = () => {
                           ))}
                         </MuiSelect>
                       </FieldRow>
-                      <FieldRow label="Allow Participant to Invite">
+                      <FieldRow label="Allow Participant to Invite"
+                      tooltip="If set to Yes, all participants could press *0 to invite other users to enter this conference room, press *1 to launch an invitation with confirmation request and press 82 to kick the member they invited out of this room. The administrator could press *3 to kick out all participants in the conference. the default setting is Yes."                      >
                         <MuiSelect
                           size="small"
                           fullWidth

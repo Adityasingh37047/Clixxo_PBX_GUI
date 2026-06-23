@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import Tooltip from "@mui/material/Tooltip";
 import {Alert,
   Button,
   CircularProgress,
@@ -357,24 +358,60 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
+const FieldRow = ({
+  label,
+  children,
+  required,
+  align = "center",
+  tooltip,
+}) => (
   <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 170,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: 170,
+          flexShrink: 0,
+          paddingTop: align === "flex-start" ? 8 : 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
 
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 const PBX_MODAL_SECTION_BG = "#f5f7fa";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
@@ -1369,7 +1406,7 @@ const RingGroup = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <FieldRow label="Name" required>
+                  <FieldRow label="Name" required tooltip="User-defined name of a ring group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
                     <TextField
                       size="small"
                       fullWidth
@@ -1385,7 +1422,8 @@ const RingGroup = () => {
                     />
                   </FieldRow>
 
-                    <FieldRow label="Ring Strategy" required>
+                    <FieldRow label="Ring Strategy" required
+                    tooltip="Select the ring strategy for this ring group. Simultaneous: All available extensions ring simultaneously. Sequential: The extensions ring in the order already configured. Random: All available extensions ring randomly.">
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={ringStrategy}
@@ -1410,7 +1448,8 @@ const RingGroup = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label="Ring Timeout (s)">
+                    <FieldRow label="Ring Timeout (s)"
+                    tooltip="The timeout time to ring next extension, and also the timeout time to enter Timeout destination if all extensions are unavailable. The default value is 30s.">
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={ringTimeout}
@@ -1435,7 +1474,8 @@ const RingGroup = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label="Alert Info">
+                  <FieldRow label="Alert Info"
+                  tooltip="Set the content of the alert-info field. By default it is null.">
                     <TextField
                       size="small"
                       fullWidth
@@ -1451,7 +1491,8 @@ const RingGroup = () => {
                     />
                   </FieldRow>
 
-                  <FieldRow label="Extension Answer Confirm" required>
+                    <FieldRow label="Extension Answer Confirm" required
+                  tooltip="If set to Yes, the extension user will hear the following prompts upon picking up the call: Press 1 to answer: press 2 to reject. The default setting is No.">
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={extensionAnswerConfirm}
@@ -1483,7 +1524,8 @@ const RingGroup = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <FieldRow label="Ring Group Number" required>
+                  <FieldRow label="Ring Group Number" required
+                  tooltip="The number dialed to reach this ring group. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.">
                     <TextField
                       size="small"
                       fullWidth
@@ -1500,7 +1542,8 @@ const RingGroup = () => {
                     />
                   </FieldRow>
 
-                  <FieldRow label="Timeout Destination" required>
+                  <FieldRow label="Timeout Destination" required
+                  tooltip="Select the destination to ring when the timeout period is reached. Call Queue: Ring the call queue. CallBacks: Ring the callbacks. Conference Rooms: Ring the conference rooms. DISA: Ring the DISA. Extensions: Ring the extensions. Fax To Mail: Ring the fax to mail. IVR Menus: Ring the IVR menus. Ring Group: Ring the ring group. Voicemails: Ring the voicemails. Other: Hang up the call.">
                     <div style={{ display: "flex", gap: 12 }}>
                       <FormControl size="small" sx={{ flex: 1 }}>
                         <MuiSelect
@@ -1591,7 +1634,8 @@ const RingGroup = () => {
                     </div>
                   </FieldRow>
 
-                  <FieldRow label="Enable" required>
+                  <FieldRow label="Enable" required
+                  tooltip="Set whether to enable this ring group. Yes: The ring group is enabled. No: The ring group is disabled.">
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={enabled}
@@ -1616,7 +1660,8 @@ const RingGroup = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label="Ring Back" align="flex-start">
+                  <FieldRow label="Ring Back" align="flex-start"
+                  tooltip="Select the ring back to play when the ring group rings. By default it is null.">
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={ringBack}
@@ -1705,7 +1750,8 @@ const RingGroup = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label="Caller ID Name Prefix">
+                  <FieldRow label="Caller ID Name Prefix"
+                  tooltip="The prefix of a caller ID name sent when the ring group rings. By default it is null.">
                     <TextField
                       size="small"
                       fullWidth
