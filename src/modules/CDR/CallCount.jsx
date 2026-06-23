@@ -7,8 +7,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
+import { CALL_COUNT_FILTER_TOOLTIPS } from "../../constants/CallCountConstants.jsx";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
@@ -911,30 +913,81 @@ const controlBase = {
   boxShadow: "none",
 };
 
-const FilterLabel = ({ children }) => (
-  <span
-    style={{
-      fontSize: 11,
-      fontWeight: 600,
-      color: C.labelText,
-      letterSpacing: "0.04em",
-      textTransform: "uppercase",
-      marginBottom: 6,
-      display: "block",
-    }}
-  >
-    {children}
-  </span>
-);
+const CALL_COUNT_FILTER_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatCallCountFilterTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FilterLabel = ({ children, tooltipKey }) => {
+  const tooltip = tooltipKey ? CALL_COUNT_FILTER_TOOLTIPS[tooltipKey] : "";
+  const label = (
+    <span
+      style={{
+        fontSize: 11,
+        fontWeight: 600,
+        color: C.labelText,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        marginBottom: 6,
+        display: "inline-block",
+        cursor: tooltip ? "help" : undefined,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatCallCountFilterTooltipTitle(tooltip)}
+      {...CALL_COUNT_FILTER_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
 
 const FilterField = ({
   label,
+  tooltipKey,
   children,
   minWidth = 140,
   style: extraStyle,
 }) => (
   <div style={{ minWidth, flex: "0 0 auto", ...extraStyle }}>
-    {label && <FilterLabel>{label}</FilterLabel>}
+    {label && <FilterLabel tooltipKey={tooltipKey}>{label}</FilterLabel>}
     {children}
   </div>
 );
@@ -1740,6 +1793,7 @@ const CallCount = () => {
             >
               <FilterField
                 label="Call Status"
+                tooltipKey="call_status"
                 minWidth={0}
                 style={{ width: "100%" }}
               >
@@ -1758,6 +1812,7 @@ const CallCount = () => {
 
               <FilterField
                 label="Direction"
+                tooltipKey="direction"
                 minWidth={0}
                 style={{ width: "100%" }}
               >
@@ -1776,6 +1831,7 @@ const CallCount = () => {
 
               <FilterField
                 label="Call From"
+                tooltipKey="call_from"
                 minWidth={0}
                 style={{ width: "100%" }}
               >
@@ -1794,6 +1850,7 @@ const CallCount = () => {
 
               <FilterField
                 label="Call To"
+                tooltipKey="call_to"
                 minWidth={0}
                 style={{ width: "100%" }}
               >
@@ -1812,6 +1869,7 @@ const CallCount = () => {
 
               <FilterField
                 label="Trunk Name"
+                tooltipKey="trunk_name"
                 minWidth={0}
                 style={{ width: "100%" }}
               >
@@ -1830,6 +1888,7 @@ const CallCount = () => {
 
               <FilterField
                 label="Talk Duration"
+                tooltipKey="talk_duration"
                 minWidth={0}
                 style={{ width: "100%" }}
               >
@@ -1870,6 +1929,7 @@ const CallCount = () => {
 
               <FilterField
                 label="Time Range"
+                tooltipKey="time_range"
                 minWidth={0}
                 style={{ width: "100%" }}
               >

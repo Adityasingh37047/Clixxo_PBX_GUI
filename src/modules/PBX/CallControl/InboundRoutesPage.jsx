@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Alert,
+import {
+  Alert,
   Button,
   Checkbox,
   CircularProgress,
@@ -14,7 +15,8 @@ import {Alert,
   Select,
   TextField,
   Tooltip,
-  useMediaQuery } from "@mui/material";
+  useMediaQuery,
+} from "@mui/material";
 import {
   createInboundRoute,
   deleteInboundRoute,
@@ -413,7 +415,7 @@ const INBOUND_ROUTE_TOOLTIP_PROPS = {
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 12,
         lineHeight: 1.45,
-        maxWidth: 320,
+        maxWidth: 500,
         padding: "10px 12px",
       },
     },
@@ -1462,7 +1464,14 @@ const InboundRoutesPage = () => {
         <PbxBreadcrumb section="Call Control" current="Inbound Routes" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
@@ -1504,7 +1513,16 @@ const InboundRoutesPage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1519,7 +1537,8 @@ const InboundRoutesPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
+                  minWidth: 900,
+                  ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1830,7 +1849,8 @@ const InboundRoutesPage = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                gridTemplateColumns: "1fr 1fr",
+                ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                 gap: "8px 28px",
                 alignItems: "start",
               }}
@@ -1864,7 +1884,10 @@ const InboundRoutesPage = () => {
                     />
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="Caller ID Pattern" tooltipKey="caller_id_pattern">
+                <FieldRow
+                  label="Caller ID Pattern"
+                  tooltipKey="caller_id_pattern"
+                >
                   <InboundLeftField>
                     <TextField
                       size="small"
@@ -1875,7 +1898,10 @@ const InboundRoutesPage = () => {
                     />
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="Distinctive RingTone" tooltipKey="distinctive_ringtone">
+                <FieldRow
+                  label="Distinctive RingTone"
+                  tooltipKey="distinctive_ringtone"
+                >
                   <InboundLeftField>
                     <TextField
                       size="small"
@@ -1978,7 +2004,10 @@ const InboundRoutesPage = () => {
                   </FormControl>
                 </InboundRightRow>
 
-                <InboundRightRow label="Send RingTone" tooltipKey="send_ringtone">
+                <InboundRightRow
+                  label="Send RingTone"
+                  tooltipKey="send_ringtone"
+                >
                   <FormControl size="small" fullWidth>
                     <Select
                       value={sendRingTone}

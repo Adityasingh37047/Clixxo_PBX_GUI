@@ -23,6 +23,8 @@ import {
   CircularProgress,
   Checkbox,
 } from "@mui/material";
+import { FILTERING_RULE_FIELD_TOOLTIPS } from "../../../constants/E1PriNumberFilterTooltipConstants";
+import { E1PriRouteFieldLabel } from "../Route/e1PriRouteTooltipUi";
 // Modify column disabled — uncomment when enabling modify column:
 // import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -955,19 +957,21 @@ const FilteringRule = () => {
                 gap: 12,
               }}
             >
-              <label
+              <E1PriRouteFieldLabel
+                tooltipKey="id"
+                tooltips={FILTERING_RULE_FIELD_TOOLTIPS}
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
-                  color: C.labelText,
                   width: 240,
                   whiteSpace: "nowrap",
                   lineHeight: 1.2,
                   textAlign: "left",
+                  display: "inline-block",
                 }}
               >
                 No.:
-              </label>
+              </E1PriRouteFieldLabel>
               <div style={{ width: "min(100%, 280px)" }}>
                 <TextField
                   name="id"
@@ -1052,19 +1056,21 @@ const FilteringRule = () => {
                   gap: 12,
                 }}
               >
-                <label
+                <E1PriRouteFieldLabel
+                  tooltipKey={field.key}
+                  tooltips={FILTERING_RULE_FIELD_TOOLTIPS}
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: C.labelText,
                     width: 240,
                     whiteSpace: "nowrap",
                     lineHeight: 1.2,
                     textAlign: "left",
+                    display: "inline-block",
                   }}
                 >
                   {field.label}
-                </label>
+                </E1PriRouteFieldLabel>
                 <div style={{ width: "min(100%, 280px)" }}>
                   <MuiSelect
                     name={field.key}

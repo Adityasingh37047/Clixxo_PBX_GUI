@@ -1,8 +1,5 @@
-import {
-  FEATURE_CODE_TOOLTIPS,
-} from "../../../constants/FeatureCodeConstants";
+import { FEATURE_CODE_TOOLTIPS } from "../../../constants/FeatureCodeConstants";
 import Tooltip from "@mui/material/Tooltip";
-
 
 import React, { useState, useEffect, useRef } from "react";
 import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
@@ -598,38 +595,38 @@ const FeatureCodePage = () => {
                                   gap: 12,
                                 }}
                               >
-                           <Tooltip
-  title={FEATURE_CODE_TOOLTIPS[field.key] || ""}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
-        maxWidth: 650,
-        padding: "12px 16px",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      ...GRID_LABEL_STYLE,
-      cursor: "help",
-    }}
-  >
-    {field.label}
-  </label>
-</Tooltip>
+                                <Tooltip
+                                  title={FEATURE_CODE_TOOLTIPS[field.key] || ""}
+                                  arrow
+                                  placement="top"
+                                  slotProps={{
+                                    tooltip: {
+                                      sx: {
+                                        backgroundColor: "#fff",
+                                        color: "#333",
+                                        border: "1px solid #d1d5db",
+                                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                        fontSize: 13,
+                                        maxWidth: 500,
+                                        padding: "12px 16px",
+                                      },
+                                    },
+                                    arrow: {
+                                      sx: {
+                                        color: "#fff",
+                                      },
+                                    },
+                                  }}
+                                >
+                                  <label
+                                    style={{
+                                      ...GRID_LABEL_STYLE,
+                                      cursor: "help",
+                                    }}
+                                  >
+                                    {field.label}
+                                  </label>
+                                </Tooltip>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   {renderFieldControl(field)}
                                 </div>
@@ -659,38 +656,38 @@ const FeatureCodePage = () => {
                                   gap: 12,
                                 }}
                               >
-                       <Tooltip
-  title={FEATURE_CODE_TOOLTIPS[field.key] || ""}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
-        maxWidth: 650,
-        padding: "12px 16px",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      ...GRID_LABEL_STYLE,
-      cursor: "help",
-    }}
-  >
-    {field.label}
-  </label>
-</Tooltip>
+                                <Tooltip
+                                  title={FEATURE_CODE_TOOLTIPS[field.key] || ""}
+                                  arrow
+                                  placement="top"
+                                  slotProps={{
+                                    tooltip: {
+                                      sx: {
+                                        backgroundColor: "#fff",
+                                        color: "#333",
+                                        border: "1px solid #d1d5db",
+                                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                        fontSize: 13,
+                                        maxWidth: 650,
+                                        padding: "12px 16px",
+                                      },
+                                    },
+                                    arrow: {
+                                      sx: {
+                                        color: "#fff",
+                                      },
+                                    },
+                                  }}
+                                >
+                                  <label
+                                    style={{
+                                      ...GRID_LABEL_STYLE,
+                                      cursor: "help",
+                                    }}
+                                  >
+                                    {field.label}
+                                  </label>
+                                </Tooltip>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   {renderFieldControl(field)}
                                 </div>

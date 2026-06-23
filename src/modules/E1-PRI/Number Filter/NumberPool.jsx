@@ -21,6 +21,8 @@ import {
   updateNumberPool,
   deleteNumberPool,
 } from "../../../api/apiService";
+import { NUMBER_POOL_FIELD_TOOLTIPS } from "../../../constants/E1PriNumberFilterTooltipConstants";
+import { E1PriRouteFieldLabel } from "../Route/e1PriRouteTooltipUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Checkbox } from "@mui/material";
@@ -936,7 +938,16 @@ const NumberPool = () => {
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
             <div style={numberPoolFieldRowStyle}>
-              <label style={numberPoolFieldLabelStyle}>Group No.:</label>
+              <E1PriRouteFieldLabel
+                tooltipKey="groupNo"
+                tooltips={NUMBER_POOL_FIELD_TOOLTIPS}
+                style={{
+                  ...numberPoolFieldLabelStyle,
+                  display: "inline-block",
+                }}
+              >
+                Group No.:
+              </E1PriRouteFieldLabel>
               <div style={numberPoolFieldControlStyle}>
                 <MuiSelect
                   name="groupNo"
@@ -956,7 +967,16 @@ const NumberPool = () => {
             </div>
 
             <div style={numberPoolFieldRowStyle}>
-              <label style={numberPoolFieldLabelStyle}>Range:</label>
+              <E1PriRouteFieldLabel
+                tooltipKey="range"
+                tooltips={NUMBER_POOL_FIELD_TOOLTIPS}
+                style={{
+                  ...numberPoolFieldLabelStyle,
+                  display: "inline-block",
+                }}
+              >
+                Range:
+              </E1PriRouteFieldLabel>
               <div
                 style={{
                   ...numberPoolFieldControlStyle,

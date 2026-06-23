@@ -17,7 +17,10 @@ export const OUTBOUND_ROUTE_FIELD_TOOLTIPS = {
   enabled: "Enable or disable this route. Default: Yes.",
 
   password:
-    "Outbound PIN protection.\nNone — calls proceed without a PIN.\nSingle Pin — caller must enter the configured PIN.",
+    "Outbound PIN protection.\n" +
+    "None — calls proceed without a PIN.\n" +
+    "PIN List — entered PIN must match a PIN in the selected Pin Numbers list.\n" +
+    "Single Pin — caller must enter the configured PIN.",
 
   enter_password:
     "PIN required when Password is Single Pin. Digits only, 1–16 characters.",

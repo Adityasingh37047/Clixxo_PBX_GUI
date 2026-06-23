@@ -559,7 +559,7 @@ const TIME_CONDITION_TOOLTIP_PROPS = {
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 12,
         lineHeight: 1.45,
-        maxWidth: 320,
+        maxWidth: 500,
         padding: "10px 12px",
       },
     },
@@ -1504,7 +1504,12 @@ const TimeCondition = () => {
             {/* ── WorkTime fields ── */}
             {form.type === "worktime" && (
               <>
-                <FieldRow label="Settings" tooltipKey="settings" required fitContent>
+                <FieldRow
+                  label="Settings"
+                  tooltipKey="settings"
+                  required
+                  fitContent
+                >
                   <div
                     style={{
                       display: "flex",
@@ -1620,7 +1625,11 @@ const TimeCondition = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Day of Month" tooltipKey="day_of_month" required>
+                <FieldRow
+                  label="Day of Month"
+                  tooltipKey="day_of_month"
+                  required
+                >
                   <CheckGroup
                     items={TC_DAYS_OF_MONTH.map(String)}
                     checked={form.daysOfMonth.map(String)}

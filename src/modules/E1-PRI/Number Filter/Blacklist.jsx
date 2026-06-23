@@ -21,6 +21,8 @@ import {
   deleteNumberFilter,
   deleteAllNumberFilters,
 } from "../../../api/apiService";
+import { BLACKLIST_FIELD_TOOLTIPS } from "../../../constants/E1PriNumberFilterTooltipConstants";
+import { E1PriRouteFieldLabel } from "../Route/e1PriRouteTooltipUi";
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -1082,18 +1084,19 @@ const Blacklist = () => {
           <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
             {/* Group No. */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label
+              <E1PriRouteFieldLabel
+                tooltipKey="groupNo"
+                tooltips={BLACKLIST_FIELD_TOOLTIPS}
                 style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
                   width: 140,
                   whiteSpace: "normal",
                   lineHeight: 1.2,
+                  textAlign: "left",
+                  display: "inline-block",
                 }}
               >
                 Group No.:
-              </label>
+              </E1PriRouteFieldLabel>
               <MuiSelect
                 value={modalData.groupNo}
                 onChange={(e) => handleGroupNoChange(e.target.value)}
@@ -1112,18 +1115,19 @@ const Blacklist = () => {
 
             {/* ID Value */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <label
+              <E1PriRouteFieldLabel
+                tooltipKey={modalType === "caller" ? "callerId" : "calleeId"}
+                tooltips={BLACKLIST_FIELD_TOOLTIPS}
                 style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
                   width: 140,
                   whiteSpace: "normal",
                   lineHeight: 1.2,
+                  textAlign: "left",
+                  display: "inline-block",
                 }}
               >
                 {modalType === "caller" ? "CallerID:" : "CalleeID:"}
-              </label>
+              </E1PriRouteFieldLabel>
               <TextField
                 type="text"
                 value={modalData.idValue}

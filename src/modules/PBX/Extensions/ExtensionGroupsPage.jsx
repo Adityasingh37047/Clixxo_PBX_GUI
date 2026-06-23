@@ -167,7 +167,7 @@ const EXTENSION_GROUP_TOOLTIP_PROPS = {
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 13,
-        maxWidth: 650,
+        maxWidth: 500,
         padding: "12px 16px",
       },
     },
@@ -1148,55 +1148,59 @@ const ExtensionGroupsPage = () => {
                 }}
               >
                 <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
-                {loading.extensions ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      padding: 30,
-                    }}
-                  >
-                    <CircularProgress size={20} />
-                  </div>
-                ) : availableExtensions.length === 0 ? (
-                  <p
-                    style={{
-                      textAlign: "center",
-                      fontSize: 12,
-                      color: C.mutedText,
-                      margin: "20px 0",
-                    }}
-                  >
-                    No extensions found. Create SIP accounts first.
-                  </p>
-                ) : (
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 4 }}
-                  >
-                    {availableExtensions.map(({ extension, name }) => (
-                      <FormControlLabel
-                        key={extension}
-                        control={
-                          <Checkbox
-                            checked={selectedExtensions.includes(extension)}
-                            onChange={() => toggleExtension(extension)}
-                            size="small"
-                            sx={checkboxSx}
-                          />
-                        }
-                        label={
-                          <span style={{ fontSize: 13, color: C.valueText }}>
-                            {extension} {name ? `— ${name}` : ""}
-                          </span>
-                        }
-                        sx={{ margin: 0 }}
-                      />
-                    ))}
-                  </div>
-                )}
+                  {loading.extensions ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        padding: 30,
+                      }}
+                    >
+                      <CircularProgress size={20} />
+                    </div>
+                  ) : availableExtensions.length === 0 ? (
+                    <p
+                      style={{
+                        textAlign: "center",
+                        fontSize: 12,
+                        color: C.mutedText,
+                        margin: "20px 0",
+                      }}
+                    >
+                      No extensions found. Create SIP accounts first.
+                    </p>
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                      }}
+                    >
+                      {availableExtensions.map(({ extension, name }) => (
+                        <FormControlLabel
+                          key={extension}
+                          control={
+                            <Checkbox
+                              checked={selectedExtensions.includes(extension)}
+                              onChange={() => toggleExtension(extension)}
+                              size="small"
+                              sx={checkboxSx}
+                            />
+                          }
+                          label={
+                            <span style={{ fontSize: 13, color: C.valueText }}>
+                              {extension} {name ? `— ${name}` : ""}
+                            </span>
+                          }
+                          sx={{ margin: 0 }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
             </div>
 
             <div

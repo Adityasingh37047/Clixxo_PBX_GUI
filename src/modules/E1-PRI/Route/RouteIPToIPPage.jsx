@@ -27,6 +27,8 @@ import {
   deleteIpPstnRoute,
   listGroups,
 } from "../../../api/apiService";
+import { ROUTE_IP_IP_FIELD_TOOLTIPS } from "../../../constants/E1PriRouteTooltipConstants";
+import { E1PriRouteFieldRow } from "./e1PriRouteTooltipUi";
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -254,31 +256,6 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
-
-const FieldRow = ({ label, children }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 12,
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 170,
-        flexShrink: 0,
-        textAlign: "left",
-      }}
-    >
-      {label}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
 
 const checkboxSx = {
   padding: "1px",
@@ -1030,7 +1007,12 @@ const RouteIPIPPage = () => {
                 style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
                 {ROUTE_IP_IP_FIELDS.map((field) => (
-                  <FieldRow key={field.key} label={`${field.label}:`}>
+                  <E1PriRouteFieldRow
+                    key={field.key}
+                    label={`${field.label}:`}
+                    tooltipKey={field.key}
+                    tooltips={ROUTE_IP_IP_FIELD_TOOLTIPS}
+                  >
                     {field.type === "select" ? (
                       <FormControl size="small" fullWidth>
                         <MuiSelect
@@ -1105,7 +1087,7 @@ const RouteIPIPPage = () => {
                         sx={modalTextFieldSx}
                       />
                     )}
-                  </FieldRow>
+                  </E1PriRouteFieldRow>
                 ))}
               </div>
             </div>

@@ -342,7 +342,7 @@ const OUTBOUND_RESTRICTION_TOOLTIP_PROPS = {
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 12,
         lineHeight: 1.45,
-        maxWidth: 320,
+        maxWidth: 500,
         padding: "10px 12px",
       },
     },
@@ -856,7 +856,7 @@ const OutboundRestrictions = () => {
     const q = searchQuery.toLowerCase();
     return rows.filter((row) => {
       const extStr = (row.memberExtensions || []).join(" ").toLowerCase();
-  return (
+      return (
         (row.name || "").toLowerCase().includes(q) ||
         (row.timeLimit || "").toLowerCase().includes(q) ||
         (row.callsLimit || "").toLowerCase().includes(q) ||
@@ -1702,7 +1702,10 @@ const OutboundRestrictions = () => {
                   }}
                 />
               </FieldRow>
-              <FieldRow label="Number of Calls Limit *" tooltipKey="calls_limit">
+              <FieldRow
+                label="Number of Calls Limit *"
+                tooltipKey="calls_limit"
+              >
                 <TextField
                   value={callsLimit}
                   onChange={(e) => setCallsLimit(e.target.value)}
@@ -1755,7 +1758,10 @@ const OutboundRestrictions = () => {
               </FieldRow>
             </div>
 
-            <SectionCard title="Member Extensions" tooltipKey="member_extensions">
+            <SectionCard
+              title="Member Extensions"
+              tooltipKey="member_extensions"
+            >
               <div
                 style={{
                   display: "grid",

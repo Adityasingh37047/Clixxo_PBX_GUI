@@ -260,7 +260,7 @@ const EXTENSION_GROUP_TOOLTIP_PROPS = {
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 13,
-        maxWidth: 650,
+        maxWidth: 500,
         padding: "12px 16px",
       },
     },
@@ -291,12 +291,7 @@ const formatGroupTooltipTitle = (text) => {
 const TRUNK_FIELD_LABEL_CLASS =
   "text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0";
 
-const GroupFieldLabel = ({
-  tooltipKey,
-  children,
-  style = {},
-  className,
-}) => {
+const GroupFieldLabel = ({ tooltipKey, children, style = {}, className }) => {
   const tooltip = SIP_REGISTER_TOOLTIPS[tooltipKey] || "";
   const LabelTag = className ? "label" : "span";
 
@@ -4097,8 +4092,16 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="VoIP Settings" isFirst />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     {[
-                      ["Get CalledID Type", "ui_get_called_id_type", "get_called_id_type"],
-                      ["OPTIONS Interval (s)", "ui_options_interval", "options_interval"],
+                      [
+                        "Get CalledID Type",
+                        "ui_get_called_id_type",
+                        "get_called_id_type",
+                      ],
+                      [
+                        "OPTIONS Interval (s)",
+                        "ui_options_interval",
+                        "options_interval",
+                      ],
                       ["TX Volume", "ui_tx_volume", "tx_volume"],
                       ["RX Volume", "ui_rx_volume", "rx_volume"],
                       ["From User", "from_user", "from_user"],
@@ -4427,9 +4430,7 @@ const SipRegisterPage = () => {
 
                   <div className="w-full">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="dnis">
-                        DNIS
-                      </TrunkFieldLabel>
+                      <TrunkFieldLabel tooltipKey="dnis">DNIS</TrunkFieldLabel>
                       <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={

@@ -1,15 +1,18 @@
 /** Field tooltips for CC Route — keep to ~3 lines max */
 export const CC_ROUTE_FIELD_TOOLTIPS = {
   cc_interval_time:
-    "Retry interval for callbacks in the CC record. Default: 1 minute.",
+    "The callback interval for calls in the CC record. Default: 1 minute.",
 
   through:
-    "Callback routing mode.\nAuto: System picks the outbound path.\nFrom Come In: Outbound uses the inbound trunk.",
+    "Select the callback through type.\n" +
+    "Auto: The system chooses the outbound path.\n" +
+    "From Come In: Outbound uses the trunk the call arrived on.",
 
   record_keep_time:
-    "How long CC records are kept. Default: 8 hours.",
+    "The time to keep a CC record. Default: 8 hours.",
 
-  enable: "Turn this CC route on or off. Default: No.",
+  enable: "Set whether to enable the CC route. Default: No.",
 
-  member_extensions: "Extensions allowed to manage CC routes.",
+  member_extensions:
+    "Extensions authorized to control CC routes.",
 };

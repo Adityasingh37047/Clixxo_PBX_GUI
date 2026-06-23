@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Alert,
+import {
+  Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -13,7 +14,8 @@ import {Alert,
   Select,
   TextField,
   Tooltip,
-  useMediaQuery } from "@mui/material";
+  useMediaQuery,
+} from "@mui/material";
 import {
   createOutboundRoute,
   deleteOutboundRoute,
@@ -337,7 +339,7 @@ const OUTBOUND_ROUTE_TOOLTIP_PROPS = {
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 12,
         lineHeight: 1.45,
-        maxWidth: 320,
+        maxWidth: 500,
         padding: "10px 12px",
       },
     },
@@ -1596,7 +1598,14 @@ const OutboundRoutesPage = () => {
         <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1640,7 +1649,8 @@ const OutboundRoutesPage = () => {
             </div>
           </div>
 
-          <div style={{
+          <div
+            style={{
               overflowX: "auto",
               overflowY: "auto",
               flex: 1,
@@ -1660,7 +1670,8 @@ const OutboundRoutesPage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
+                  minWidth: 900,
+                  ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1983,7 +1994,8 @@ const OutboundRoutesPage = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                gridTemplateColumns: "1fr 1fr",
+                ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                 gap: "8px 28px",
                 alignItems: "start",
               }}
@@ -2276,7 +2288,10 @@ const OutboundRoutesPage = () => {
               </div>
             </div>
 
-            <SectionCard title="Member Extensions *" tooltipKey="member_extensions">
+            <SectionCard
+              title="Member Extensions *"
+              tooltipKey="member_extensions"
+            >
               <div
                 style={{
                   display: "grid",

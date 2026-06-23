@@ -4384,7 +4384,7 @@ const EXTENSION_FIELD_TOOLTIP_PROPS = {
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 13,
-        maxWidth: 650,
+        maxWidth: 500,
         padding: "12px 16px",
       },
     },

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Alert,
+import {
+  Alert,
   Button,
   CircularProgress,
   Checkbox,
@@ -13,7 +14,8 @@ import {Alert,
   MenuItem,
   Select,
   Tooltip,
-  useMediaQuery } from "@mui/material";
+  useMediaQuery,
+} from "@mui/material";
 import { CC_ROUTE_FIELD_TOOLTIPS } from "../../../constants/CCRouteConstants";
 import {
   createCCRoute,
@@ -339,7 +341,7 @@ const CC_ROUTE_TOOLTIP_PROPS = {
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 12,
         lineHeight: 1.45,
-        maxWidth: 300,
+        maxWidth: 500,
         padding: "10px 12px",
       },
     },
@@ -389,14 +391,19 @@ const CcFieldLabel = ({ tooltipKey, children, style = {} }) => {
 const ThWithTooltip = ({ tooltipKey, children, style: extra }) => {
   const tooltip = CC_ROUTE_FIELD_TOOLTIPS[tooltipKey];
   const content = (
-    <span style={{ cursor: tooltip ? "help" : undefined, display: "inline-block" }}>
+    <span
+      style={{ cursor: tooltip ? "help" : undefined, display: "inline-block" }}
+    >
       {children}
     </span>
   );
   return (
     <TH style={extra}>
       {tooltip ? (
-        <Tooltip title={formatCcTooltipTitle(tooltip)} {...CC_ROUTE_TOOLTIP_PROPS}>
+        <Tooltip
+          title={formatCcTooltipTitle(tooltip)}
+          {...CC_ROUTE_TOOLTIP_PROPS}
+        >
           {content}
         </Tooltip>
       ) : (
@@ -435,7 +442,10 @@ const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
     >
       <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
       {tooltip ? (
-        <Tooltip title={formatCcTooltipTitle(tooltip)} {...CC_ROUTE_TOOLTIP_PROPS}>
+        <Tooltip
+          title={formatCcTooltipTitle(tooltip)}
+          {...CC_ROUTE_TOOLTIP_PROPS}
+        >
           {heading}
         </Tooltip>
       ) : (
@@ -662,7 +672,13 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-const FieldRow = ({ label, tooltipKey, children, wide = false, labelWidth = 130 }) => (
+const FieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  wide = false,
+  labelWidth = 130,
+}) => (
   <div
     style={{
       display: "flex",
@@ -706,7 +722,11 @@ const FieldRow = ({ label, tooltipKey, children, wide = false, labelWidth = 130 
 
 const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading title={title} tooltipKey={tooltipKey} isFirst={isFirst} />
+    <PbxModalSectionHeading
+      title={title}
+      tooltipKey={tooltipKey}
+      isFirst={isFirst}
+    />
     <div>{children}</div>
   </div>
 );
@@ -1080,7 +1100,14 @@ const CCRoutePage = () => {
         <PbxBreadcrumb section="Call Control" current="CC Route" />
 
         <div style={sipPcmCardStyle}>
-          <div style={{ ...sipPcmToolbarStyle, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {}) }}>
+          <div
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1122,7 +1149,16 @@ const CCRoutePage = () => {
           </div>
 
           {/* Table */}
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1137,7 +1173,8 @@ const CCRoutePage = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
+                  minWidth: 900,
+                  ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1350,7 +1387,7 @@ const CCRoutePage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                                                    <EditDocumentIcon
+                          <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
                             style={{
@@ -1416,77 +1453,87 @@ const CCRoutePage = () => {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                gridTemplateColumns: "1fr 1fr",
+                ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
                 gap: "8px 32px",
               }}
             >
-              <FieldRow label="CC Interval Time *" tooltipKey="cc_interval_time">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={ccIntervalTime}
-                      onChange={(e) => setCcIntervalTime(e.target.value)}
-                      sx={modalSelectSx}
-                    >
-                      {CC_INTERVAL_OPTIONS.map((o) => (
-                        <MenuItem
-                          key={o.value}
-                          value={o.value}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {o.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-                <FieldRow label="Record Keep Time *" tooltipKey="record_keep_time">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={recordKeepTime}
-                      onChange={(e) => setRecordKeepTime(e.target.value)}
-                      sx={modalSelectSx}
-                    >
-                      {RECORD_KEEP_OPTIONS.map((o) => (
-                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
-                          {o}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-                <FieldRow label="Through *" tooltipKey="through">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={through}
-                      onChange={(e) => setThrough(e.target.value)}
-                      sx={modalSelectSx}
-                    >
-                      {THROUGH_OPTIONS.map((o) => (
-                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
-                          {o}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
-                <FieldRow label="Enable *" tooltipKey="enable">
-                  <FormControl size="small" fullWidth>
-                    <Select
-                      value={enabled}
-                      onChange={(e) => setEnabled(e.target.value)}
-                      sx={modalSelectSx}
-                    >
-                      {ENABLE_OPTIONS.map((o) => (
-                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
-                          {o}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </FieldRow>
+              <FieldRow
+                label="CC Interval Time *"
+                tooltipKey="cc_interval_time"
+              >
+                <FormControl size="small" fullWidth>
+                  <Select
+                    value={ccIntervalTime}
+                    onChange={(e) => setCcIntervalTime(e.target.value)}
+                    sx={modalSelectSx}
+                  >
+                    {CC_INTERVAL_OPTIONS.map((o) => (
+                      <MenuItem
+                        key={o.value}
+                        value={o.value}
+                        sx={{ fontSize: 13 }}
+                      >
+                        {o.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </FieldRow>
+              <FieldRow
+                label="Record Keep Time *"
+                tooltipKey="record_keep_time"
+              >
+                <FormControl size="small" fullWidth>
+                  <Select
+                    value={recordKeepTime}
+                    onChange={(e) => setRecordKeepTime(e.target.value)}
+                    sx={modalSelectSx}
+                  >
+                    {RECORD_KEEP_OPTIONS.map((o) => (
+                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                        {o}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </FieldRow>
+              <FieldRow label="Through *" tooltipKey="through">
+                <FormControl size="small" fullWidth>
+                  <Select
+                    value={through}
+                    onChange={(e) => setThrough(e.target.value)}
+                    sx={modalSelectSx}
+                  >
+                    {THROUGH_OPTIONS.map((o) => (
+                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                        {o}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </FieldRow>
+              <FieldRow label="Enable *" tooltipKey="enable">
+                <FormControl size="small" fullWidth>
+                  <Select
+                    value={enabled}
+                    onChange={(e) => setEnabled(e.target.value)}
+                    sx={modalSelectSx}
+                  >
+                    {ENABLE_OPTIONS.map((o) => (
+                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                        {o}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </FieldRow>
             </div>
 
-            <SectionCard title="Member Extensions" tooltipKey="member_extensions">
+            <SectionCard
+              title="Member Extensions"
+              tooltipKey="member_extensions"
+            >
               <div
                 style={{
                   display: "grid",

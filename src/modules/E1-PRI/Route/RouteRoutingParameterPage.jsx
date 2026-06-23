@@ -3,6 +3,8 @@ import {
   ROUTE_SETTINGS_OPTIONS,
   ROUTE_SETTINGS_DEFAULTS,
 } from "../../../constants/RouteRoutingParameterPageConstants";
+import { ROUTE_ROUTING_PARAMETER_TOOLTIPS } from "../../../constants/E1PriRouteTooltipConstants";
+import { E1PriRouteFieldLabel } from "./e1PriRouteTooltipUi";
 import { Select, MenuItem, FormControl, CircularProgress, Alert } from "@mui/material";
 
 // ── Local page UI (inlined from e1PriSharedUi) ──
@@ -212,18 +214,6 @@ const cardHeaderStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 
-const labelStyle = {
-  width: 320,
-  marginRight: 10,
-  lineHeight: 1.4,
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  whiteSpace: "nowrap",
-  flexShrink: 0,
-};
-
 const RouteRoutingParameterPage = () => {
   const [settings, setSettings] = useState({ ...ROUTE_SETTINGS_DEFAULTS });
   const [loading, setLoading] = useState(false);
@@ -325,12 +315,38 @@ const RouteRoutingParameterPage = () => {
               }}
             >
               <div className="flex items-center justify-between">
-                <label style={labelStyle}>IP Incoming</label>
+                <E1PriRouteFieldLabel
+                  tooltipKey="ipIncoming"
+                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
+                  style={{
+                    width: 320,
+                    marginRight: 10,
+                    lineHeight: 1.4,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  IP Incoming
+                </E1PriRouteFieldLabel>
                 {renderSelect("ipIncoming")}
               </div>
 
               <div className="flex items-center justify-between">
-                <label style={labelStyle}>PSTN Incoming</label>
+                <E1PriRouteFieldLabel
+                  tooltipKey="pstnIncoming"
+                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
+                  style={{
+                    width: 320,
+                    marginRight: 10,
+                    lineHeight: 1.4,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  PSTN Incoming
+                </E1PriRouteFieldLabel>
                 {renderSelect("pstnIncoming")}
               </div>
             </div>
