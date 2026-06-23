@@ -33,7 +33,7 @@ function NumberTypeTable({ title, data, setData, modalState, setModalState }) {
       <div className="w-full bg-gradient-to-b from-[#b3e0ff] to-[#3d92d0] text-[#222] font-semibold text-lg text-center py-1">
         {title}
       </div>
-      <div className="bg-gray-200 border-2 border-gray-400 border-t-0 rounded-b-lg">
+      <div className="bg-gray-200 border border-[var(--border-subtle)] border-t-0 rounded-b-lg">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[430px] border-collapse table-auto">
           <colgroup>
@@ -50,7 +50,7 @@ function NumberTypeTable({ title, data, setData, modalState, setModalState }) {
               {NUMBER_TYPE_TABLE_COLUMNS.map(col => (
                 <th
                   key={col.key}
-                  className={`bg-white text-gray-800 font-semibold text-xs border border-gray-400 px-1 py-0.5 whitespace-nowrap ${col.key === 'setRedirecting' ? 'whitespace-normal text-center' : ''}`}
+                  className={`bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold text-xs border border-[var(--border-subtle)] px-1 py-0.5 whitespace-nowrap ${col.key === 'setRedirecting' ? 'whitespace-normal text-center' : ''}`}
                   style={{ fontSize: col.key === 'setRedirecting' ? 11 : 12 }}
                 >
                   {col.key === 'setRedirecting'
@@ -63,13 +63,13 @@ function NumberTypeTable({ title, data, setData, modalState, setModalState }) {
           <tbody>
             {data.map((row, idx) => (
               <tr key={idx} style={{ borderBottom: '1px solid #bbb' }}>
-                  <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200"><Checkbox checked={selected.includes(idx)} onChange={() => handleSelectRow(idx)} size="small" /></td>
-                <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200 text-xs">{row.no}</td>
-                <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200 text-xs">{row.callerIdPrefix}</td>
-                <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200 text-xs">{row.calleeIdPrefix}</td>
-                <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200 text-xs">{NUMBER_TYPE_OPTIONS.find(opt => opt.value === row.type)?.label || ''}</td>
-                <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200 text-xs">{row.setRedirecting ? 'Yes' : 'No'}</td>
-                <td className="border border-gray-400 px-1 py-0.5 text-center bg-gray-200">
+                  <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200"><Checkbox checked={selected.includes(idx)} onChange={() => handleSelectRow(idx)} size="small" /></td>
+                <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200 text-xs">{row.no}</td>
+                <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200 text-xs">{row.callerIdPrefix}</td>
+                <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200 text-xs">{row.calleeIdPrefix}</td>
+                <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200 text-xs">{NUMBER_TYPE_OPTIONS.find(opt => opt.value === row.type)?.label || ''}</td>
+                <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200 text-xs">{row.setRedirecting ? 'Yes' : 'No'}</td>
+                <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-gray-200">
                   <Button onClick={() => setModalState({ open: true, editIdx: idx, form: row })} sx={{ minWidth: 0, p: 0, borderRadius: 1 }}>
                     <EditDocumentIcon style={{ fontSize: 24, color: '#0e8fd6', transition: 'color 0.2s, transform 0.2s' }} />
                   </Button>
@@ -77,9 +77,9 @@ function NumberTypeTable({ title, data, setData, modalState, setModalState }) {
               </tr>
             ))}
             {Array.from({ length: Math.max(0, 12 - data.length) }).map((_, i) => (
-                <tr key={`empty-${i}`} style={{ borderBottom: '1px solid #bbb', background: '#fff' }}>
+                <tr key={`empty-${i}`} style={{ borderBottom: '1px solid #bbb', background: 'var(--bg-main)' }}>
                 {NUMBER_TYPE_TABLE_COLUMNS.map((col, j) => (
-                  <td key={j} className="border border-gray-400 px-1 py-0.5 text-center bg-white" style={{ color: '#aaa' }}>&nbsp;</td>
+                  <td key={j} className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)]" style={{ color: '#aaa' }}>&nbsp;</td>
                 ))}
               </tr>
             ))}
@@ -90,16 +90,16 @@ function NumberTypeTable({ title, data, setData, modalState, setModalState }) {
       <div className="flex justify-between items-center bg-gray-300 rounded-b-lg px-1 py-0.5 mt-1">
         <div className="flex gap-1">
           <button
-            className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
+            className="bg-gray-400 text-[var(--text-secondary)] font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
             onClick={handleDelete}
           >Delete</button>
           <button
-            className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
+            className="bg-gray-400 text-[var(--text-secondary)] font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
             onClick={handleClearAll}
           >Clear All</button>
         </div>
         <button
-          className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
+          className="bg-gray-400 text-[var(--text-secondary)] font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500 disabled:bg-gray-200 disabled:text-gray-400"
           onClick={() => setModalState({ open: true, editIdx: -1, form: NUMBER_TYPE_MODAL_INITIAL_FORM })}
         >Add New</button>
       </div>
@@ -113,8 +113,8 @@ function NumberTypeModal({ open, form, setForm, onSave, onClose }) {
       <DialogTitle className="bg-gray-600 text-white text-center font-semibold text-lg">Calling Party Number Type</DialogTitle>
       <DialogContent className="bg-gray-200 flex flex-col gap-3 py-4">
           {NUMBER_TYPE_MODAL_FIELDS.map(field => (
-          <div key={field.name} className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1">
-            <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">{field.label}</label>
+          <div key={field.name} className="flex flex-row items-center border border-[var(--border-subtle)] rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)] mb-1">
+            <label className="text-xs text-[var(--text-secondary)] font-medium whitespace-nowrap text-left min-w-[120px] mr-2">{field.label}</label>
             <div className="flex-1 min-w-0">
               {field.type === 'select' ? (
                 <Select

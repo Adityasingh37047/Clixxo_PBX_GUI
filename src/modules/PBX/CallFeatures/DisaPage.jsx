@@ -40,20 +40,20 @@ const INITIAL_FORM = {
 };
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   errorRed: "#dc2626",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
@@ -98,7 +98,7 @@ const disaDualListSelectStyle = {
   width: "100%",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
+  background: "var(--bg-main)",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
@@ -126,7 +126,7 @@ const DisaDualListBtn = ({ onClick, title, children, reorder }) => (
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -155,7 +155,7 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -163,21 +163,21 @@ const checkboxSx = {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const DISA_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
 const DISA_PAGE_INNER = "w-full max-w-full mx-auto";
 const DISA_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const DISA_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const DISA_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
 const DISA_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
 const DISA_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const DISA_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const DISA_PAGE_BADGE =
-  "rounded-[6px] border-[0.5px] border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border-[0.5px] border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const DISA_PAGINATION =
-  "flex items-center justify-between border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
@@ -205,7 +205,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -287,7 +287,7 @@ const SectionHeading = ({ title, isFirst = false, required }) => (
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: "var(--text-primary)",
       }}
     >
       {title}
@@ -848,7 +848,7 @@ const DisaPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f8fafc";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1077,7 +1077,7 @@ const DisaPage = () => {
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+          style={{ padding: "20px 24px", backgroundColor: "var(--bg-surface)" }}
         >
           {loading.get ? (
             <div
@@ -1130,7 +1130,7 @@ const DisaPage = () => {
                           style: {
                             fontSize: 13,
                             padding: "6px 8px",
-                            backgroundColor: "#fff",
+                            backgroundColor: "var(--bg-surface)",
                           },
                         }}
                       />
@@ -1153,7 +1153,7 @@ const DisaPage = () => {
                           style: {
                             fontSize: 13,
                             padding: "6px 8px",
-                            backgroundColor: "#fff",
+                            backgroundColor: "var(--bg-surface)",
                           },
                         }}
                       />
@@ -1171,7 +1171,7 @@ const DisaPage = () => {
                           }
                           sx={{
                             fontSize: 13,
-                            backgroundColor: "#fff",
+                            backgroundColor: "var(--bg-surface)",
                             height: 32,
                             "& .MuiSelect-select": {
                               padding: "6px 8px",
@@ -1184,7 +1184,7 @@ const DisaPage = () => {
                             <MenuItem
                               key={opt}
                               value={opt}
-                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
+                              sx={{ fontSize: 13, backgroundColor: "var(--bg-surface)" }}
                             >
                               {opt}
                             </MenuItem>
@@ -1282,7 +1282,7 @@ const DisaPage = () => {
                                 style: {
                                   fontSize: 13,
                                   padding: "6px 8px",
-                                  backgroundColor: "#fff",
+                                  backgroundColor: "var(--bg-surface)",
                                 },
                               }}
                               InputProps={{
@@ -1335,7 +1335,7 @@ const DisaPage = () => {
                           style: {
                             fontSize: 13,
                             padding: "6px 8px",
-                            backgroundColor: "#fff",
+                            backgroundColor: "var(--bg-surface)",
                           },
                         }}
                       />
@@ -1353,7 +1353,7 @@ const DisaPage = () => {
                           }
                           sx={{
                             fontSize: 13,
-                            backgroundColor: "#fff",
+                            backgroundColor: "var(--bg-surface)",
                             height: 32,
                             "& .MuiSelect-select": {
                               padding: "6px 8px",
@@ -1387,7 +1387,7 @@ const DisaPage = () => {
                           }
                           sx={{
                             fontSize: 13,
-                            backgroundColor: "#fff",
+                            backgroundColor: "var(--bg-surface)",
                             height: 32,
                             "& .MuiSelect-select": {
                               padding: "6px 8px",

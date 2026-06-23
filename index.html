@@ -7,6 +7,16 @@
     <title>Clixxo</title>
   </head>
   <body>
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("clixxo-theme") === "dark") {
+            document.body.classList.add("dark");
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

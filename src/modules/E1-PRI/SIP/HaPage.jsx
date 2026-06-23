@@ -37,17 +37,17 @@ const HaPage = () => {
   const ipIsValid = isValidIPv4(virtualIp);
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0 flex flex-col items-center" style={{backgroundColor: "#dde0e4"}}>
+    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0 flex flex-col items-center" style={{backgroundColor: "var(--bg-muted)"}}>
       <div className="w-full max-w-3xl mx-auto">
-        <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-600 shadow mb-0">
+        <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-[var(--text-secondary)] shadow mb-0">
           HA
         </div>
-        <div className="border-2 border-gray-400 border-t-0 shadow-sm flex flex-col" style={{backgroundColor: "#dde0e4"}}>
+        <div className="border border-[var(--border-subtle)] border-t-0 shadow-sm flex flex-col" style={{backgroundColor: "var(--bg-muted)"}}>
           <div className="flex-1 py-6 px-20">
             <div className="space-y-4">
               {/* HA Enable Row */}
               <div className="flex items-center justify-between">
-                <label className="text-base text-gray-600 font-medium text-left">HA</label>
+                <label className="text-base text-[var(--text-secondary)] font-medium text-left">HA</label>
                 <div className="flex items-center w-60">
                   <input
                     type="checkbox"
@@ -55,20 +55,20 @@ const HaPage = () => {
                     onChange={() => setEnabled(prev => !prev)}
                     className="w-4 h-4 mr-2 accent-blue-600"
                   />
-                  <span className="text-base text-gray-600">Enable</span>
+                  <span className="text-base text-[var(--text-secondary)]">Enable</span>
                 </div>
               </div>
 
               {/* Public Virtual IP Row */}
               <div className="flex items-center justify-between">
-                <label className="text-base text-gray-600 font-medium text-left">Public Virtual IP</label>
+                <label className="text-base text-[var(--text-secondary)] font-medium text-left">Public Virtual IP</label>
                 <div className="flex flex-col items-end">
                   <input
                     type="text"
                     value={virtualIp}
                     onChange={e => setVirtualIp(e.target.value)}
                     onBlur={() => setIpTouched(true)}
-                    className={`w-60 text-base px-3 py-2 border ${!ipIsValid && ipTouched && enabled ? 'border-red-500' : 'border-gray-400'} bg-white`}
+                    className={`w-60 text-base px-3 py-2 border ${!ipIsValid && ipTouched && enabled ? 'border-red-500' : 'border-[var(--border-subtle)]'} bg-[var(--bg-surface)]`}
                     style={{ height: '32px' }}
                     disabled={!enabled}
                     placeholder="e.g. 192.168.1.100"
@@ -81,7 +81,7 @@ const HaPage = () => {
 
               {/* Primary/Backup Row */}
               <div className="flex items-center justify-between">
-                <label className="text-base text-gray-600 font-medium text-left">Primary/Backup</label>
+                <label className="text-base text-[var(--text-secondary)] font-medium text-left">Primary/Backup</label>
                 <FormControl size="small" className="w-60">
                   <Select
                     value={primaryBackup}
@@ -91,22 +91,22 @@ const HaPage = () => {
                     sx={{ 
                       fontSize: 16,
                       height: 36,
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--bg-surface)',
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--bg-surface)',
                         height: 36,
                         '& fieldset': {
-                          borderColor: '#999999',
+                          borderColor: 'var(--border-subtle)',
                         },
                         '&:hover fieldset': {
-                          borderColor: '#999999',
+                          borderColor: 'var(--border-subtle)',
                         },
                         '&.Mui-focused fieldset': {
-                          borderColor: '#999999',
+                          borderColor: 'var(--border-subtle)',
                         }
                       },
                       '& .MuiSelect-select': { 
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--bg-surface)',
                         padding: '6px 14px',
                         height: 'auto',
                         display: 'flex',
@@ -123,7 +123,7 @@ const HaPage = () => {
 
               {/* HA Eth Row */}
               <div className="flex items-center justify-between">
-                <label className="text-base text-gray-600 font-medium text-left">HA Eth</label>
+                <label className="text-base text-[var(--text-secondary)] font-medium text-left">HA Eth</label>
                 <FormControl size="small" className="w-60">
                   <Select
                     value={haEth}
@@ -133,22 +133,22 @@ const HaPage = () => {
                     sx={{ 
                       fontSize: 16,
                       height: 36,
-                      backgroundColor: '#ffffff',
+                      backgroundColor: 'var(--bg-surface)',
                       '& .MuiOutlinedInput-root': { 
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--bg-surface)',
                         height: 36,
                         '& fieldset': {
-                          borderColor: '#999999',
+                          borderColor: 'var(--border-subtle)',
                         },
                         '&:hover fieldset': {
-                          borderColor: '#999999',
+                          borderColor: 'var(--border-subtle)',
                         },
                         '&.Mui-focused fieldset': {
-                          borderColor: '#999999',
+                          borderColor: 'var(--border-subtle)',
                         }
                       },
                       '& .MuiSelect-select': { 
-                        backgroundColor: '#ffffff',
+                        backgroundColor: 'var(--bg-surface)',
                         padding: '6px 14px',
                         height: 'auto',
                         display: 'flex',

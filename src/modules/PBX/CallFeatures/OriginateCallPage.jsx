@@ -15,16 +15,16 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const ORIGINATE_CALL_FIELD_WIDTH = 200;
 const ORIGINATE_CALL_FIELD_HEIGHT = 32;
 
@@ -76,9 +76,9 @@ const ORIGINATE_CALL_INPUT_STYLE = {
   border: `1px solid ${OUTLINED_BORDER}`,
   fontSize: 12,
   textAlign: "left",
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
   outline: "none",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   boxShadow: "none",
@@ -94,12 +94,12 @@ const ORIGINATE_CALL_MUI_SELECT_SX = {
   fontSize: 12,
   width: ORIGINATE_CALL_FIELD_WIDTH,
   maxWidth: ORIGINATE_CALL_FIELD_WIDTH,
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
   borderRadius: "6px",
   "& .MuiOutlinedInput-root": {
     height: ORIGINATE_CALL_FIELD_HEIGHT,
     minHeight: ORIGINATE_CALL_FIELD_HEIGHT,
-    backgroundColor: "#ffffff",
+    backgroundColor: "var(--bg-surface)",
     transition: "border-color 0.2s ease",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
@@ -150,16 +150,16 @@ const BTN_BASE =
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 
 const ORIGINATE_CALL_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
 const ORIGINATE_CALL_PAGE_INNER = "w-full max-w-full mx-auto";
 const ORIGINATE_CALL_FORM_CONTENT =
   "w-full max-w-[640px] mx-auto box-border";
 const ORIGINATE_CALL_FORM_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const ORIGINATE_CALL_FORM_HEADER =
-  "flex min-h-[44px] w-full items-center border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] text-[13px] font-bold text-[#3E5475] rounded-t-[10px]";
+  "flex min-h-[44px] w-full items-center border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] text-[13px] font-bold text-[var(--text-label)] rounded-t-[10px]";
 const ORIGINATE_CALL_FORM_FOOTER =
-  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[#9CA3AF] box-border px-[20px] py-[10px]";
+  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[var(--border-strong)] box-border px-[20px] py-[10px]";
 const ORIGINATE_CALL_FORM_BTN =
   "min-w-[110px] h-[34px] m-0 px-[28px] text-[13px] leading-[34px] box-border";
 
@@ -183,7 +183,7 @@ const radioSx = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -222,11 +222,11 @@ const FormFieldRow = ({
   >
     {hideLabel ? (
       <span
-        className="flex-[0_0_48%] max-w-[48%] pr-[24px] text-left text-[13px] font-semibold leading-[1.35] text-[#3E5475]"
+        className="flex-[0_0_48%] max-w-[48%] pr-[24px] text-left text-[13px] font-semibold leading-[1.35] text-[var(--text-label)]"
         aria-hidden="true"
       />
     ) : (
-      <label className="flex-[0_0_48%] max-w-[48%] pr-[24px] text-left text-[13px] font-semibold leading-[1.35] text-[#3E5475]">
+      <label className="flex-[0_0_48%] max-w-[48%] pr-[24px] text-left text-[13px] font-semibold leading-[1.35] text-[var(--text-label)]">
         {label}
         {required ? <span style={{ color: C.amber }}> *</span> : null}
       </label>
@@ -451,7 +451,7 @@ const OriginateCallPage = () => {
                         />
                         <label
                           htmlFor="fixedApp"
-                          className="cursor-pointer text-[13px] font-medium text-[#3E5475]"
+                          className="cursor-pointer text-[13px] font-medium text-[var(--text-label)]"
                         >
                           Use fixed Application Wait + appData below
                           (recommended)

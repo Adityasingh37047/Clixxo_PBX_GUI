@@ -24,13 +24,13 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   errorRed: "#dc2626",
 };
 
@@ -38,8 +38,8 @@ const CARD_R = 10;
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
@@ -82,7 +82,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -120,7 +120,7 @@ const ExtensionTd = ({ children, isLast, style: extra }) => (
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -154,7 +154,7 @@ const modalShellStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
@@ -169,7 +169,7 @@ const modalFieldLabelStyle = {
 };
 
 const modalExtPanelStyle = {
-  background: "#fff",
+  background: "var(--bg-main)",
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 6,
   overflow: "hidden",
@@ -180,12 +180,12 @@ const modalExtPanelHeaderStyle = {
   justifyContent: "space-between",
   alignItems: "center",
   padding: "8px 12px",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 
 const sipPcmCardStyle = {
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderRadius: CARD_R,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -199,7 +199,7 @@ const sipPcmToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: CARD_R,
@@ -211,7 +211,7 @@ const sipPcmPaginationStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: CARD_R,
   borderBottomRightRadius: CARD_R,
@@ -262,7 +262,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex flex-col items-center justify-center min-h-[240px] p-6 text-center">
     <div
-      className={`text-[#3E5475] text-[13px] font-semibold${showButton && onAddNew ? " mb-4" : ""}`}
+      className={`text-[var(--text-label)] text-[13px] font-semibold${showButton && onAddNew ? " mb-4" : ""}`}
     >
       {message}
     </div>
@@ -528,7 +528,7 @@ const ExtensionGroupsPage = () => {
 
   return (
     <div
-      className={`bg-[#f8fafc] min-h-[calc(100vh-80px)] box-border ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+      className={`bg-[var(--bg-main)] min-h-[calc(100vh-80px)] box-border ${isCompact ? "p-[8px]" : "p-[16px]"}`}
     >
       <div className="w-full max-w-full mx-auto">
         {message.text && (
@@ -760,7 +760,7 @@ const ExtensionGroupsPage = () => {
             : "Add New Extension Group"}
         </DialogTitle>
 
-        <DialogContent className="!bg-white ![padding:24px]">
+        <DialogContent className="!bg-[var(--bg-surface)] ![padding:24px]">
           <div style={modalShellStyle}>
             <div>
               <label style={modalFieldLabelStyle}>Group Name</label>
@@ -771,7 +771,7 @@ const ExtensionGroupsPage = () => {
                 placeholder="e.g. Sales, Support"
                 size="small"
                 variant="outlined"
-                sx={{ background: "#fff" }}
+                sx={{ background: "var(--bg-main)" }}
                 inputProps={{ style: { fontSize: 13, padding: "8px 12px" } }}
               />
             </div>
@@ -834,7 +834,7 @@ const ExtensionGroupsPage = () => {
         </DialogContent>
 
         <DialogActions
-          className="!flex !justify-center !gap-[16px] !bg-[#f8fafc] !border-t !border-[#9CA3AF] ![padding:16px_24px] ![border-bottom-left-radius:8px] ![border-bottom-right-radius:8px]"
+          className="!flex !justify-center !gap-[16px] !bg-[var(--bg-main)] !border-t !border-[var(--border-strong)] ![padding:16px_24px] ![border-bottom-left-radius:8px] ![border-bottom-right-radius:8px]"
         >
           <Btn
             onClick={handleSaveGroup}

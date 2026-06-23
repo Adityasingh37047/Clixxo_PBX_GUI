@@ -3,9 +3,12 @@ import LOGO from "../assets/clixxo_white.png";
 import TOP_GIF from "../assets/toptip.png";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
 import MenuIcon from "@mui/icons-material/Menu";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../context/useAuth";
+import useTheme from "../context/useTheme";
 import { postLinuxCmd } from "../api/apiService";
 
 const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
@@ -15,6 +18,7 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
   const [timeOffset, setTimeOffset] = useState(0);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   // Fetch server time on component mount
   useEffect(() => {
@@ -163,6 +167,23 @@ const Navbar = ({ isMobile, sidebarOpen, setSidebarOpen }) => {
               {user?.username || "admin"}
             </span>
           </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="clixxo-theme-toggle"
+            aria-label={
+              theme === "dark"
+                ? "Switch to light mode"
+                : "Switch to dark mode"
+            }
+            title={theme === "dark" ? "Light mode" : "Dark mode"}
+          >
+            {theme === "dark" ? (
+              <LightModeIcon sx={{ fontSize: 18 }} />
+            ) : (
+              <DarkModeIcon sx={{ fontSize: 18 }} />
+            )}
+          </button>
           <button
             onClick={handleLogout}
             className="clixxo-logout-btn group flex items-center justify-center text-white text-xs sm:text-sm px-2 sm:px-2.5 py-1 border border-white rounded-full font-semibold gap-1 outline-none min-w-[60px] sm:min-w-[72px] cursor-pointer"

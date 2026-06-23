@@ -43,19 +43,19 @@ const deleteOutboundRestriction = (id) =>
   orPost({ type: "delete", id: Number(id) });
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
@@ -99,7 +99,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -129,7 +129,7 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -160,7 +160,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -199,7 +199,7 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_BG = "var(--bg-main)";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const PbxModalSectionHeading = ({ title, isFirst = false }) => (
@@ -231,7 +231,7 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
 const outboundRestrictionDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#3E5475",
+  color: "var(--text-primary)",
   textAlign: "center",
   marginBottom: 8,
 };
@@ -240,7 +240,7 @@ const outboundRestrictionDualListSelectStyle = {
   width: "340px",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
+  background: "var(--bg-main)",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
@@ -268,13 +268,13 @@ const OutboundRestrictionDualListBtn = ({
   </button>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -295,10 +295,10 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -333,7 +333,7 @@ const modalTextFieldFullSx = {
     padding: "5px 8px",
     fontSize: 13,
     boxSizing: "border-box",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -343,7 +343,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -362,14 +362,14 @@ const OUTBOUND_RESTRICTION_DIALOG_TITLE =
   "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:700] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:14px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
 
 const outboundRestrictionModalActionsCls =
-  "!flex !justify-center !gap-[16px] ![padding:16px_24px] bg-[#f8fafc] border-t border-[#9CA3AF] rounded-b-[8px]";
+  "!flex !justify-center !gap-[16px] ![padding:16px_24px] bg-[var(--bg-main)] border-t border-[var(--border-strong)] rounded-b-[8px]";
 
 const OUTBOUND_RESTRICTION_MENU_ITEM_SX = { fontSize: 13 };
 
 const OUTBOUND_RESTRICTION_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const OUTBOUND_RESTRICTION_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const OUTBOUND_RESTRICTION_TOOLBAR_COMPACT =
   "flex-col items-stretch gap-[10px]";
 const OUTBOUND_RESTRICTION_TOOLBAR_LEFT =
@@ -377,11 +377,11 @@ const OUTBOUND_RESTRICTION_TOOLBAR_LEFT =
 const OUTBOUND_RESTRICTION_TOOLBAR_ACTIONS =
   "flex flex-wrap items-center gap-[8px]";
 const OUTBOUND_RESTRICTION_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const OUTBOUND_RESTRICTION_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const OUTBOUND_RESTRICTION_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const OutboundRestrictionPagination = ({
   page,
@@ -890,7 +890,7 @@ const OutboundRestrictions = () => {
 
   return (
     <div
-      className={`box-border min-h-[calc(100vh-80px)] bg-[#f8fafc] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+      className={`box-border min-h-[calc(100vh-80px)] bg-[var(--bg-main)] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
     >
       <div className="mx-auto w-full max-w-full">
         {message.text && (
@@ -922,7 +922,7 @@ const OutboundRestrictions = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  background: "#ffffff",
+                  background: "var(--bg-surface)",
                   border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
                   borderRadius: 6,
                   padding: "5px 10px",
@@ -987,7 +987,7 @@ const OutboundRestrictions = () => {
                 variant="cancel"
               >
                 {loading.delete && (
-                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                  <CircularProgress size={11} style={{ color: "var(--text-secondary)" }} />
                 )}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1119,7 +1119,7 @@ const OutboundRestrictions = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f8fafc";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1317,7 +1317,7 @@ const OutboundRestrictions = () => {
             : "Add Outbound Restriction"}
         </DialogTitle>
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+          style={{ padding: "20px 24px", backgroundColor: "var(--bg-surface)" }}
         >
           <div
             style={{

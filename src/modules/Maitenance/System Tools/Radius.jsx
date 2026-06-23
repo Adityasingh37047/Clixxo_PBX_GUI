@@ -14,15 +14,15 @@ import {
 } from "@mui/material";
 // ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  divider: "var(--border-subtle)",
+  cardShadow: "var(--shadow-soft)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  strongText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
   accent: "#0284c7",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
@@ -38,9 +38,9 @@ const SYS_TOAST_SX = {
   boxShadow: 3,
 };
 // ── Local field UI (inlined from maitenanceSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -126,20 +126,20 @@ const systemToolsFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   fontSize: 14,
   width: "100%",
-  backgroundColor: "#f8fafc",
+  backgroundColor: "var(--row-alt)",
   outline: "none",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   boxShadow: "none",
 };
 
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
+const SYSTEM_TOOLS_FILL_BG_EDITABLE = "var(--bg-main)";
+const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "var(--bg-muted)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-main)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -158,10 +158,10 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-main)",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-main)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -229,9 +229,9 @@ const advancedFormBtnStyle = {
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
@@ -288,14 +288,14 @@ const blueBarStyle = {
   gap: 12,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
+  color: "var(--text-primary)",
   borderBottom: `1px solid ${C.divider}`,
 };
 
 const callTypeCheckboxSx = {
   padding: "6px 8px",
   "& .MuiSvgIcon-root": { fontSize: 20 },
-  color: "#64748b",
+  color: "var(--text-muted)",
   "&.Mui-checked": { color: C.accent },
 };
 
@@ -377,7 +377,7 @@ const Radius = () => {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       {/* ── Alerts ── */}
@@ -429,7 +429,7 @@ const Radius = () => {
                   <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
                     {ENABLE_CHECKBOX_FIELDS.map((field) => (
                       <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
+                        <div className="flex items-center text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words">
                           <span style={{ color: C.labelText }}>
                             {field.label}
                           </span>
@@ -449,7 +449,7 @@ const Radius = () => {
                   {RADIUS_FORM_FIELDS.map((field) =>
                     field.type === "checkboxGroup" ? (
                       <React.Fragment key={field.name || "callTypeGroup"}>
-                        <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
+                        <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words">
                           <span style={{ color: C.labelText }}>
                             {field.label}
                           </span>
@@ -469,7 +469,7 @@ const Radius = () => {
                       </React.Fragment>
                     ) : (
                       <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[34px]">
+                        <div className="flex items-center text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words min-h-[34px]">
                           <span style={{ color: C.labelText }}>
                             {field.label}
                           </span>

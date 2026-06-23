@@ -19,19 +19,19 @@ import {
 } from "@mui/material";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_FORM_PRIMARY =
@@ -71,13 +71,13 @@ const Btn = ({
   </button>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -99,7 +99,7 @@ const muiTextFieldSx = {
 const muiSelectInnerSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -112,7 +112,7 @@ const muiSelectInnerSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   ...muiSelectInnerSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
@@ -130,7 +130,7 @@ const muiSelectSx = {
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -164,21 +164,21 @@ const tdStyle = {
 };
 
 const COLOR_RING_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
 const COLOR_RING_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
 const COLOR_RING_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const COLOR_RING_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const COLOR_RING_TOOLBAR_LEFT = "flex items-center gap-[8px]";
 const COLOR_RING_TOOLBAR_ACTIONS =
   "flex flex-wrap items-center gap-[8px]";
 const COLOR_RING_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const COLOR_RING_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const COLOR_RING_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const FxsAdvancedBreadcrumb = ({ current, className = "" }) => (
   <div
@@ -258,14 +258,14 @@ const colorRingModalTitleStyle = {
 const colorRingModalContentStyle = {
   padding: "20px 24px",
   paddingBottom: "16px",
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
 };
 
 const colorRingModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
@@ -277,7 +277,7 @@ const colorRingModalFooterStyle = {
   gap: 12,
   padding: "10px 16px",
   borderTop: `1px solid ${C.cardBorder}`,
-  background: "#f8fafc",
+  background: "var(--row-alt)",
 };
 
 const DATA_COLUMNS = COLOR_RING_TABLE_COLUMNS.filter(
@@ -288,7 +288,7 @@ const COLOR_RING_TH_GAP = { padding: "8px 14px" };
 const COLOR_RING_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
 const COLOR_RING_CHECKBOX_SX = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -597,7 +597,7 @@ const ColorRingPage = () => {
           <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
             {rules.length === 0 ? (
               <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
-                <div className="mb-[16px] text-[13px] font-semibold text-[#3E5475]">
+                <div className="mb-[16px] text-[13px] font-semibold text-[var(--text-label)]">
                   No available color ring!
                 </div>
                 <Btn

@@ -383,20 +383,20 @@ const PstnStatus = () => {
         {/* Sync & Signaling Status Table */}
         <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center font-medium text-xs sm:text-sm md:text-base lg:text-lg shadow mb-0 pl-4" />
         <div className="overflow-x-auto w-full">
-          <table className="w-full bg-white border-collapse mb-10 shadow-sm text-xs sm:text-sm">
+          <table className="w-full bg-[var(--bg-surface)] border-collapse mb-10 shadow-sm text-xs sm:text-sm">
             <thead>
               <tr>
-                <th className="border border-gray-400 bg-[#f8fafd] font-medium py-1 px-0.5">{PSTN_SYNC_HEADERS[0]}</th>
+                <th className="border border-[var(--border-subtle)] bg-[#f8fafd] font-medium py-1 px-0.5">{PSTN_SYNC_HEADERS[0]}</th>
                 {PSTN_SYNC_HEADERS.slice(1).map((h, i) => (
-                  <th key={i} className="border border-gray-400 bg-[#f8fafd] text-gray-700 font-medium py-1 px-0.5">{h}</th>
+                  <th key={i} className="border border-[var(--border-subtle)] bg-[#f8fafd] text-[var(--text-secondary)] font-medium py-1 px-0.5">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-400 bg-[#f8fafd] font-medium py-1 px-0.5 text-center">Color</td>
+                <td className="border border-[var(--border-subtle)] bg-[#f8fafd] font-medium py-1 px-0.5 text-center">Color</td>
                 {PSTN_SYNC_COLORS.map((c, i) => (
-                  <td key={i} className="border border-gray-400 text-center py-1 px-2">{colorBlock(c.color)}</td>
+                  <td key={i} className="border border-[var(--border-subtle)] text-center py-1 px-2">{colorBlock(c.color)}</td>
                 ))}
               </tr>
             </tbody>
@@ -406,20 +406,20 @@ const PstnStatus = () => {
         {/* Voice Path Status Table */}
         <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center font-medium px-1 py-0.5 text-xs sm:text-sm md:text-base lg:text-lg shadow mb-0 pl-4" />
         <div className="overflow-x-auto w-full">
-          <table className="w-full bg-white border-collapse shadow-sm text-xs sm:text-sm">
+          <table className="w-full bg-[var(--bg-surface)] border-collapse shadow-sm text-xs sm:text-sm">
             <thead>
               <tr>
-                <th className="border border-gray-400 bg-[#f8fafd]  font-medium py-1 px-0.5">{PSTN_VOICE_PATH_HEADERS[0]}</th>
+                <th className="border border-[var(--border-subtle)] bg-[#f8fafd]  font-medium py-1 px-0.5">{PSTN_VOICE_PATH_HEADERS[0]}</th>
                 {PSTN_VOICE_PATH_HEADERS.slice(1).map((h, i) => (
-                    <th key={i} className="border border-gray-400 bg-[#f8fafd] text-gray-700 font-medium py-1 px-0.5">{h}</th>
+                    <th key={i} className="border border-[var(--border-subtle)] bg-[#f8fafd] text-[var(--text-secondary)] font-medium py-1 px-0.5">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td className="border border-gray-400 bg-[#f8fafd] font-medium py-1 px-0.5 text-center">Icon</td>
+                <td className="border border-[var(--border-subtle)] bg-[#f8fafd] font-medium py-1 px-0.5 text-center">Icon</td>
                 {ICONS.map((icon, i) => (
-                  <td key={i} className="border border-gray-400 py-1 px-0.5">
+                  <td key={i} className="border border-[var(--border-subtle)] py-1 px-0.5">
                     <div className="flex items-center justify-center w-full h-full">
                       {typeof icon === 'string' ? (
                         <span className="text-lg">{icon}</span>
@@ -431,9 +431,9 @@ const PstnStatus = () => {
                 ))}
               </tr>
               <tr>
-                <td className="border border-gray-400 bg-[#f8fafd] font-medium py-1 px-0.5 text-center">Statistics</td>
+                <td className="border border-[var(--border-subtle)] bg-[#f8fafd] font-medium py-1 px-0.5 text-center">Statistics</td>
                 {statsValues.map((v, i) => (
-                  <td key={i} className="border border-gray-400 text-center py-1 px-0.5">{v}</td>
+                  <td key={i} className="border border-[var(--border-subtle)] text-center py-1 px-0.5">{v}</td>
                 ))}
               </tr>
             </tbody>
@@ -442,7 +442,7 @@ const PstnStatus = () => {
                 <td colSpan={ICONS.length + 1} style={{ padding: 0, border: 'none', background: '#dde0e4' }}>
                   <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', fontSize: 14, color: '#444', padding: '2px 8px 2px 0', marginBottom: '15px' }}>
                     <span style={{ marginRight: 4 }}>1/1 Previous Next Go to Page</span>
-                    <select style={{ fontSize: 13, padding: '1px 4px', borderRadius: 2, border: '1px solid #bbb', background: '#fff', marginRight: 4 }} value={1} readOnly>
+                    <select style={{ fontSize: 13, padding: '1px 4px', borderRadius: 2, border: '1px solid #bbb', background: 'var(--bg-main)', marginRight: 4 }} value={1} readOnly>
                       <option value={1}>1</option>
                     </select>
                     <span>Page</span>
@@ -455,7 +455,7 @@ const PstnStatus = () => {
 
         {/* Dynamic Gateway Tables */}
         {spansData.length === 0 ? (
-          <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center text-gray-700 font-medium text-xs sm:text-sm md:text-base lg:text-lg shadow mb-0">
+          <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center text-[var(--text-secondary)] font-medium text-xs sm:text-sm md:text-base lg:text-lg shadow mb-0">
             <span>No PSTN Spans Configured</span>
           </div>
         ) : (
@@ -467,7 +467,7 @@ const PstnStatus = () => {
             return (
               <div key={span.spanId} className={spanIndex > 0 ? "mt-8" : ""}>
                 {/* Gateway Header */}
-                <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center text-gray-700 font-medium text-xs sm:text-sm md:text-base lg:text-lg shadow mb-0">
+                <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center text-[var(--text-secondary)] font-medium text-xs sm:text-sm md:text-base lg:text-lg shadow mb-0">
                   <span>
                     {span.name} &nbsp;·&nbsp; {span.ip}
                   </span>
@@ -475,18 +475,18 @@ const PstnStatus = () => {
                 
                 {/* Time Slot Table */}
                 <div className="overflow-x-auto w-full">
-                  <table className="w-full bg-white border-collapse shadow-sm text-xs sm:text-sm md:text-base lg:text-lg">
+                  <table className="w-full bg-[var(--bg-surface)] border-collapse shadow-sm text-xs sm:text-sm md:text-base lg:text-lg">
                     <thead>
                       <tr>
-                        <th className="border border-gray-400 bg-white font-medium py-2 px-0.5 whitespace-nowrap text-xs w-24">Time Slot No.</th>
+                        <th className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] font-medium py-2 px-0.5 whitespace-nowrap text-xs w-24">Time Slot No.</th>
                         {channelRanges.map((channelId, i) => (
-                          <th key={i} className="border border-gray-400 bg-white text-gray-700 font-medium py-1 px-0.5 whitespace-nowrap text-xs w-10">{channelId}</th>
+                          <th key={i} className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] font-medium py-1 px-0.5 whitespace-nowrap text-xs w-10">{channelId}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td className="border border-gray-400 bg-white font-medium py-1 px-0.5 whitespace-nowrap text-xs w-24 text-center align-middle">{span.name}</td>
+                        <td className="border border-[var(--border-subtle)] bg-[var(--bg-surface)] font-medium py-1 px-0.5 whitespace-nowrap text-xs w-24 text-center align-middle">{span.name}</td>
                         {pcmValues.map((v, i) => {
                           const channelId = channelRanges[i];
                           const ch = channels.find(c => Number(c.channelid) === channelId) || {};
@@ -530,7 +530,7 @@ const PstnStatus = () => {
                             </div>
                           );
                   return (
-                    <td key={i} className="border border-gray-400 text-center py-1 px-0.5 w-10 align-middle">
+                    <td key={i} className="border border-[var(--border-subtle)] text-center py-1 px-0.5 w-10 align-middle">
                       <Tooltip
                         title={tooltipContent}
                         arrow

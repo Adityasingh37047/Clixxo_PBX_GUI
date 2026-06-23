@@ -10,22 +10,12 @@ import {
   fetchSystemInfo,
 } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
+import { THEME_PALETTE } from "../../../constants/themePalette";
 
-// ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#0284c7",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
-  errorRed: "#dc2626",
+  ...THEME_PALETTE,
+  cardShadow: "var(--shadow-soft)",
+  divider: "var(--border-subtle)",
 };
 
 const SYS_TOAST_SX = {
@@ -40,9 +30,9 @@ const SYS_TOAST_SX = {
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
@@ -96,7 +86,7 @@ const blueBarStyle = {
   gap: 12,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
 };
 const labelStyle = {
@@ -109,12 +99,12 @@ const labelStyle = {
 const valueBoxStyle = {
   padding: "6px 12px",
   borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
+  border: "1px solid var(--border-subtle)",
   fontSize: 12,
   fontWeight: 500,
   width: "100%",
   minHeight: 34,
-  backgroundColor: "#f8fafc",
+  backgroundColor: "var(--bg-main)",
   color: C.valueText,
   textAlign: "center",
   lineHeight: 1.45,
@@ -415,14 +405,14 @@ const Upgrade = () => {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       {(uploading || rebooting) && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
-            <CircularProgress />
-            <div className="text-gray-700 text-sm whitespace-pre-line">
+          <div className="bg-[var(--bg-surface)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
+            <CircularProgress sx={{ color: "var(--status-primary)" }} />
+            <div className="text-[var(--text-secondary)] text-sm whitespace-pre-line">
               {progressMessage ||
                 (rebooting
                   ? "Device is rebooting. Please wait..."
@@ -482,7 +472,11 @@ const Upgrade = () => {
           </div>
           <div
             className="w-full px-5 pt-3 pb-3 flex flex-col items-center"
-            style={{ borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+            style={{
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
+              backgroundColor: "var(--bg-surface)",
+            }}
           >
             <div
               className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
@@ -525,6 +519,7 @@ const Upgrade = () => {
             padding: "16px 20px",
             gap: 16,
             flexWrap: "wrap",
+            backgroundColor: "var(--bg-surface)",
           }}
         >
           <span

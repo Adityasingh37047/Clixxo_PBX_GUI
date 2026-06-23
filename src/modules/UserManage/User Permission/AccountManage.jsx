@@ -20,16 +20,16 @@ import Alert from "@mui/material/Alert";
 import Checkbox from "@mui/material/Checkbox";
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  divider: "var(--border-subtle)",
+  cardShadow: "var(--shadow-soft)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  strongText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
@@ -44,9 +44,9 @@ const SYS_TOAST_SX = {
   boxShadow: 3,
 };
 // ── Local field UI (inlined from userManageSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -120,8 +120,8 @@ const userPermissionModalInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  color: "#1e293b",
-  background: "#ffffff",
+  color: "var(--text-primary)",
+  background: "var(--bg-surface)",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
@@ -132,7 +132,7 @@ const addHostFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
@@ -143,8 +143,8 @@ const CARD_RADIUS = 20;
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
@@ -185,7 +185,7 @@ const modalOverlayStyle = {
   justifyContent: "center",
 };
 const modalStyle = {
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   border: `none`,
   borderRadius: 8,
   width: 500,
@@ -213,7 +213,7 @@ const modalBodyStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
 };
 const modalRowStyle = {
   display: "flex",
@@ -237,7 +237,7 @@ const modalFooterStyle = {
   justifyContent: "center",
   gap: 12,
   padding: "10px 16px",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
@@ -272,7 +272,7 @@ const blueBarStyle = {
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -295,7 +295,7 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
@@ -303,7 +303,7 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -1017,7 +1017,7 @@ const AccountManage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f1f5f9";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1138,7 +1138,7 @@ const AccountManage = () => {
               alignItems: "center",
               justifyContent: "space-between",
               padding: "7px 14px",
-              background: "#ffffff",
+              background: "var(--bg-surface)",
               borderTop: `1px solid ${C.cardBorder}`,
               borderBottomLeftRadius: CARD_RADIUS,
               borderBottomRightRadius: CARD_RADIUS,
@@ -1177,8 +1177,8 @@ const AccountManage = () => {
                           ...modalInputStyle,
                           ...(field.disabled
                             ? {
-                                backgroundColor: "#f1f5f9",
-                                color: "#94a3b8",
+                                backgroundColor: "var(--bg-muted)",
+                                color: "var(--text-muted)",
                                 cursor: "not-allowed",
                               }
                             : {}),
@@ -1202,8 +1202,8 @@ const AccountManage = () => {
                           ...modalInputStyle,
                           ...(field.disabled
                             ? {
-                                backgroundColor: "#f1f5f9",
-                                color: "#94a3b8",
+                                backgroundColor: "var(--bg-muted)",
+                                color: "var(--text-muted)",
                                 cursor: "not-allowed",
                               }
                             : {}),

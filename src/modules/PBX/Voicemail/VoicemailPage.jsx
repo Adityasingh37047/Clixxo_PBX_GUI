@@ -5,19 +5,19 @@ import { getVoicemailSettings, updateVoicemailSettings } from "../../../api/apiS
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
 };
 
 const CARD_RADIUS = 10;
 
 const Btn = ({ children, onClick, disabled, variant = "default", style: extraStyle }) => {
   const styles = {
-    default: { background: C.cardBg, color: C.valueText, border: "1px solid #9ca3af" },
+    default: { background: C.cardBg, color: C.valueText, border: "1px solid var(--border-subtle)" },
     primary: {
       background: "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
@@ -60,10 +60,10 @@ const Btn = ({ children, onClick, disabled, variant = "default", style: extraSty
 };
 
 const PbxBreadcrumb = ({ section, current }) => (
-  <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 16, fontWeight: 400, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+  <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16, fontWeight: 400, display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
     <span>PBX</span><span>&gt;</span>
     <span>{section}</span><span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
@@ -76,14 +76,14 @@ const TableListLoading = () => (
 const SectionHeading = ({ title, isFirst = false }) => (
   <div style={{ margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0", position: "relative", width: "100%" }}>
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span style={{ position: "absolute", top: -10, left: 0, background: C.cardBg, paddingRight: 8, fontSize: 13, fontWeight: 600, color: "#30415A" }}>
+    <span style={{ position: "absolute", top: -10, left: 0, background: C.cardBg, paddingRight: 8, fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
       {title}
     </span>
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0,0,0,0.23)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const LABEL_W = 220;
 
@@ -104,9 +104,9 @@ const inputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   fontSize: 12,
   width: "100%",
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
   outline: "none",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   height: 32,
@@ -116,7 +116,7 @@ const inputStyle = {
 const fieldInteraction = {
   onFocus: (e) => { e.target.style.borderColor = OUTLINED_FOCUS; e.target.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`; },
   onBlur: (e) => { e.target.style.borderColor = OUTLINED_BORDER; e.target.style.boxShadow = "none"; },
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "rgba(0,0,0,0.87)"; },
+  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "var(--border-strong)"; },
   onMouseLeave: (e) => { if (document.activeElement !== e.target) { e.target.style.borderColor = OUTLINED_BORDER; e.target.style.boxShadow = "none"; } },
 };
 
@@ -130,7 +130,7 @@ const GridRow = ({ children }) => (
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -260,7 +260,7 @@ const VoicemailPage = () => {
 
         <PbxBreadcrumb section="Voicemail" current="Voicemail" />
 
-        <div style={{ background: "#ffffff", borderRadius: CARD_RADIUS, overflow: "hidden", border: `1.5px solid ${C.cardBorder}`, boxShadow: "0 10px 30px rgba(15,23,42,0.06)" }}>
+        <div style={{ background: "var(--bg-surface)", borderRadius: CARD_RADIUS, overflow: "hidden", border: `1.5px solid ${C.cardBorder}`, boxShadow: "0 10px 30px rgba(15,23,42,0.06)" }}>
           <div style={{ width: "100%", minHeight: 44, background: C.cardBg, borderTopLeftRadius: CARD_RADIUS, borderTopRightRadius: CARD_RADIUS, display: "flex", alignItems: "center", padding: "7px 14px", fontWeight: 700, fontSize: 13, color: C.labelText, borderBottom: `1px solid ${C.cardBorder}` }}>
             <span>Voicemail</span>
           </div>

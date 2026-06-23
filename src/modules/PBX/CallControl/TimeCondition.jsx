@@ -31,18 +31,18 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
@@ -57,7 +57,7 @@ const btnVariantCls = {
   dialogPrimary: BTN_DIALOG_PRIMARY,
   dialogCancel: BTN_DIALOG_CANCEL,
   danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
-  outline: `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`,
+  outline: `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`,
 };
 
 const Btn = ({
@@ -85,7 +85,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -118,7 +118,7 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -149,7 +149,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -167,18 +167,18 @@ const TableListEmptyState = ({
 );
 
 const TIME_CONDITION_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const TIME_CONDITION_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const TIME_CONDITION_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
 const TIME_CONDITION_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
 const TIME_CONDITION_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const TIME_CONDITION_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const TIME_CONDITION_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const TIME_CONDITION_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const TimeConditionPagination = ({
   page,
@@ -221,17 +221,17 @@ const timeConditionModalPaperSx = {
   mx: "auto",
   borderRadius: "8px",
   boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
   backgroundImage: "none",
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -263,7 +263,7 @@ const modalTextFieldFullSx = {
     padding: "7px 10px",
     fontSize: 13,
     boxSizing: "border-box",
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -327,8 +327,8 @@ const timeSelectStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  backgroundColor: "var(--bg-surface)",
+  color: "var(--text-primary)",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -408,7 +408,7 @@ const FieldRow = ({ label, required, children, fitContent }) => (
         flexShrink: 0,
         fontSize: 13,
         fontWeight: 600,
-        color: "#30415A",
+        color: "var(--text-primary)",
         paddingTop: 4,
       }}
     >
@@ -424,7 +424,7 @@ const modalCheckboxLabelSx = {
   whiteSpace: "nowrap",
   "& .MuiFormControlLabel-label": {
     fontSize: 13,
-    color: "#30415A",
+    color: "var(--text-primary)",
     lineHeight: 1.2,
   },
 };
@@ -505,7 +505,7 @@ const TIME_COL_LABEL_STYLE = {
 const TIME_ROW_LABEL_STYLE = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#30415A",
+  color: "var(--text-primary)",
   flexShrink: 0,
   paddingBottom: 2,
 };
@@ -849,7 +849,7 @@ const TimeCondition = () => {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div
-      className={`box-border min-h-[calc(100vh-80px)] bg-[#f8fafc] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+      className={`box-border min-h-[calc(100vh-80px)] bg-[var(--bg-main)] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
     >
       <div className="mx-auto w-full max-w-full">
         {toast.msg && (
@@ -1005,7 +1005,7 @@ const TimeCondition = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f8fafc";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1166,13 +1166,13 @@ const TimeCondition = () => {
           {editId !== null ? "Edit Time Condition" : "Add Time Condition"}
         </DialogTitle>
 
-        <DialogContent sx={{ p: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent sx={{ p: "24px", backgroundColor: "var(--bg-surface)" }}>
          <div
   style={{
     display: "flex",
     flexDirection: "column",
     gap: 14,
-    background: "#f8fafc",
+    background: "var(--row-alt)",
     border: `1px solid ${C.cardBorder}`,
     borderRadius: 8,
     padding: 20,
@@ -1384,7 +1384,7 @@ const TimeCondition = () => {
             py: "10px",
             px: "16px",
             borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "#f8fafc",
+            backgroundColor: "var(--row-alt)",
           }}
         >
           <Btn

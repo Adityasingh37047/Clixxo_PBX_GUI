@@ -53,7 +53,7 @@ const PcmPcmPage = () => {
           PCM Settings
         </div>
         <div className="overflow-x-auto w-full">
-          <table className="w-full min-w-[1200px] bg-white border-collapse border-2 border-[#888]">
+          <table className="w-full min-w-[1200px] bg-[var(--bg-surface)] border-collapse border-2 border-[#888]">
             <thead>
               <tr>
                 {TABLE_HEADERS.map((h, i) => (
@@ -98,8 +98,8 @@ const PcmPcmPage = () => {
         <DialogContent className="flex flex-col gap-2 py-4" style={{ backgroundColor: '#dde0e4', border: '1px solid #444444', borderTop: 'none' }}>
           <div className="flex flex-col gap-2 w-full">
             {/* PCM No. */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>PCM No.:</label>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>PCM No.:</label>
               <div className="flex-1 min-w-0">
                 <TextField
                   type="text"
@@ -108,13 +108,13 @@ const PcmPcmPage = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: '3px 6px', background: '#fff' } }}
+                  inputProps={{ style: { fontSize: 14, padding: '3px 6px', background: 'var(--bg-main)' } }}
                 />
               </div>
             </div>
             {/* Signaling Protocol */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Signaling Protocol:</label>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Signaling Protocol:</label>
               <div className="flex-1 min-w-0">
                 <Select
                   value={modalForm.signalingProtocol}
@@ -122,7 +122,7 @@ const PcmPcmPage = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                  className="bg-white"
+                  className="bg-[var(--bg-surface)]"
                   sx={{ width: '100%' }}
                 >
                   {SIGNALING_PROTOCOL_OPTIONS.map(opt => (
@@ -132,8 +132,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Signaling Time Slot */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Signaling Time Slot:</label>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Signaling Time Slot:</label>
               <div className="flex-1 min-w-0">
                 <TextField
                   type="text"
@@ -142,13 +142,13 @@ const PcmPcmPage = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: '3px 6px', background: '#fff' } }}
+                  inputProps={{ style: { fontSize: 14, padding: '3px 6px', background: 'var(--bg-main)' } }}
                 />
               </div>
             </div>
             {/* Clock */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Clock:</label>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Clock:</label>
               <div className="flex-1 min-w-0">
                 <Select
                   value={modalForm.clock}
@@ -156,7 +156,7 @@ const PcmPcmPage = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                  className="bg-white"
+                  className="bg-[var(--bg-surface)]"
                   sx={{ width: '100%' }}
                 >
                   {CLOCK_OPTIONS.map(opt => (
@@ -166,8 +166,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Connection Line */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Connection Line:</label>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Connection Line:</label>
               <div className="flex-1 min-w-0">
                 <Select
                   value={modalForm.connectionLine}
@@ -175,7 +175,7 @@ const PcmPcmPage = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                  className="bg-white"
+                  className="bg-[var(--bg-surface)]"
                   sx={{ width: '100%' }}
                 >
                   {CONNECTION_LINE_OPTIONS.map(opt => (
@@ -185,8 +185,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Option Sip Trunk ID */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Option Sip Trunk ID:</label>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Option Sip Trunk ID:</label>
               <div className="flex-1 min-w-0">
                 <TextField
                   type="text"
@@ -195,13 +195,13 @@ const PcmPcmPage = () => {
                   size="small"
                   fullWidth
                   variant="outlined"
-                  inputProps={{ style: { fontSize: 14, padding: '3px 6px', background: '#fff' } }}
+                  inputProps={{ style: { fontSize: 14, padding: '3px 6px', background: 'var(--bg-main)' } }}
                 />
               </div>
             </div>
             {/* Enable CRC-4 */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left flex items-center" style={{width:180, marginRight:10}}>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left flex items-center" style={{width:180, marginRight:10}}>
                 <Checkbox
                   checked={modalForm.crc4 || false}
                   onChange={() => handleModalCheckbox('crc4')}
@@ -212,8 +212,8 @@ const PcmPcmPage = () => {
               <div className="flex-1"></div>
             </div>
             {/* Apply to All PCMs */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-gray-700 font-medium whitespace-nowrap text-left flex items-center" style={{width:180, marginRight:10}}>
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
+              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left flex items-center" style={{width:180, marginRight:10}}>
                 <Checkbox
                   checked={modalForm.applyToAllPcMs || false}
                   onChange={() => handleModalCheckbox('applyToAllPcMs')}
@@ -250,14 +250,14 @@ const PcmPcmPage = () => {
             variant="contained"
             sx={{
               background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: '#374151',
+              color: 'var(--text-secondary)',
               fontWeight: 600,
               fontSize: '16px',
               borderRadius: 1,
               minWidth: 100,
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
               textTransform: 'none',
-              '&:hover': { background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)', color: '#374151' },
+              '&:hover': { background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)', color: 'var(--text-secondary)' },
             }}
             onClick={closeModal}
           >

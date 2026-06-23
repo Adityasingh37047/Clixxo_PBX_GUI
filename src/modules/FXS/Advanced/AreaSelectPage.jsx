@@ -7,23 +7,23 @@ import {
 
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
-  labelText: "#3E5475",
+  labelText: "var(--text-primary)",
 };
 
 const AREA_SELECT_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
 const AREA_SELECT_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
 const AREA_SELECT_TABLE_CONTAINER =
-  "w-full max-w-full mx-auto mb-[24px] overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_4px_20px_rgba(15,23,42,0.06)]";
+  "w-full max-w-full mx-auto mb-[24px] overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_4px_20px_rgba(15,23,42,0.06)]";
 const AREA_SELECT_BLUE_BAR =
-  "flex w-full min-h-[44px] flex-wrap items-center justify-start gap-[12px] rounded-t-[10px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] text-[13px] font-bold text-[#3E5475]";
+  "flex w-full min-h-[44px] flex-wrap items-center justify-start gap-[12px] rounded-t-[10px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] text-[13px] font-bold text-[var(--text-label)]";
 const AREA_SELECT_FORM_BODY = "px-[20px] pt-[12px]";
 const AREA_SELECT_FORM_FOOTER =
-  "flex w-full flex-wrap items-center justify-center gap-[12px] w-[calc(100%+40px)] -mx-[20px] border-t border-[#9CA3AF] box-border px-[20px] py-[10px]";
+  "flex w-full flex-wrap items-center justify-center gap-[12px] w-[calc(100%+40px)] -mx-[20px] border-t border-[var(--border-strong)] box-border px-[20px] py-[10px]";
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_FORM_PRIMARY =
@@ -57,14 +57,14 @@ const Btn = ({
   </button>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiSelectInnerSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -77,7 +77,7 @@ const muiSelectInnerSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   ...muiSelectInnerSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,

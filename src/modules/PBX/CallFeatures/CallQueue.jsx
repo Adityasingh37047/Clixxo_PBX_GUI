@@ -38,14 +38,14 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
@@ -53,8 +53,8 @@ const C = {
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
@@ -98,7 +98,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -131,31 +131,31 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const CALL_QUEUE_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
 const CALL_QUEUE_PAGE_INNER = "w-full max-w-full mx-auto";
 const CALL_QUEUE_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const CALL_QUEUE_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const CALL_QUEUE_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
 const CALL_QUEUE_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
 const CALL_QUEUE_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const CALL_QUEUE_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const CALL_QUEUE_PAGE_BADGE =
-  "rounded-[6px] border-[0.5px] border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border-[0.5px] border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const CALL_QUEUE_PAGINATION =
-  "flex items-center justify-between border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const PBX_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
 };
 
 const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
@@ -194,7 +194,7 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_BG = "var(--bg-main)";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const PbxModalSectionHeading = ({ title, isFirst = false }) => (
@@ -248,7 +248,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -309,11 +309,11 @@ const selectSx = {
   "& .MuiOutlinedInput-input": {
     padding: "4px 6px",
     fontSize: 13,
-    background: "#fff",
+    background: "var(--bg-main)",
   },
 };
 const inputProps = {
-  style: { fontSize: 13, padding: "4px 6px", background: "#fff" },
+  style: { fontSize: 13, padding: "4px 6px", background: "var(--bg-main)" },
 };
 const LABEL_W = 175;
 
@@ -325,7 +325,7 @@ const FieldRow = ({ label, children }) => (
     }}
   >
     <label
-      className="text-[13px] text-gray-700 font-medium whitespace-nowrap text-left"
+      className="text-[13px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left"
       style={{
         width: LABEL_W,
         flexShrink: 0,
@@ -777,7 +777,7 @@ const CallQueue = () => {
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
             backgroundImage: "none",
           },
         }}
@@ -810,7 +810,7 @@ const CallQueue = () => {
         <DialogContent
           sx={{
             p: "24px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
           }}
         >
           <div
@@ -1232,7 +1232,7 @@ const CallQueue = () => {
                         </div>
                         <select
                           multiple
-                          className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+                          className="w-full h-40 border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded px-2 py-1 text-[14px] outline-none"
                           value={highlightAvail}
                           onChange={(e) =>
                             setHighlightAvail(
@@ -1283,7 +1283,7 @@ const CallQueue = () => {
                         </div>
                         <select
                           multiple
-                          className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
+                          className="w-full h-40 border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded px-2 py-1 text-[14px] outline-none"
                           value={highlightSel}
                           onChange={(e) =>
                             setHighlightSel(
@@ -1837,7 +1837,7 @@ const CallQueue = () => {
             py: "10px",
             px: "16px",
             borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "#f8fafc",
+            backgroundColor: "var(--row-alt)",
           }}
         >
           <Btn
@@ -1997,7 +1997,7 @@ const CallQueue = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f8fafc";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)

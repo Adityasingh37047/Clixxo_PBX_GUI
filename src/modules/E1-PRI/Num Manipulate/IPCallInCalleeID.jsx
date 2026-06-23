@@ -28,21 +28,21 @@ import {
 } from "../../../api/apiService";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 
@@ -70,13 +70,13 @@ const Btn = ({ children, onClick, disabled, variant = "default", className = "",
 const CARD_RADIUS = 20;
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
     "&:hover fieldset": { borderColor: OUTLINED_HOVER },
     "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
@@ -86,8 +86,8 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": { minHeight: 36, backgroundColor: "#fff" },
+  backgroundColor: "var(--bg-surface)",
+  "& .MuiOutlinedInput-root": { minHeight: 36, backgroundColor: "var(--bg-surface)" },
   "& .MuiSelect-select": {
     display: "flex",
     alignItems: "center",
@@ -113,7 +113,7 @@ const modalTextFieldSx = {
     height: 32,
   },
   "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -123,7 +123,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -131,7 +131,7 @@ const modalSelectSx = {
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -162,20 +162,20 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const E1_PAGE = "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px]";
+const E1_PAGE = "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px]";
 const E1_INNER = "w-full max-w-full mx-auto";
 const E1_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const E1_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[20px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[20px]";
 const E1_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
 const E1_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const E1_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const E1_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[20px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[20px]";
 const E1_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const E1_TOAST_SX = {
   position: "fixed",
   top: 20,
@@ -200,14 +200,14 @@ const e1DialogTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const e1DialogContentStyle = { padding: "24px", backgroundColor: "#ffffff" };
+const e1DialogContentStyle = { padding: "24px", backgroundColor: "var(--bg-surface)" };
 
 const e1DialogFormStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: "#f8fafc",
-  border: "1px solid #9CA3AF",
+  background: "var(--row-alt)",
+  border: "1px solid var(--border-subtle)",
   borderRadius: 8,
   padding: 20,
 };
@@ -221,7 +221,7 @@ const e1DialogFieldRowStyle = {
 
 const e1DialogFieldLabelStyle = {
   fontSize: 13,
-  color: "#3E5475",
+  color: "var(--text-primary)",
   fontWeight: 600,
   whiteSpace: "nowrap",
   width: 170,
@@ -236,7 +236,7 @@ const e1DialogActionsStyle = {
   justifyContent: "center",
   gap: 16,
   padding: "16px 24px",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   borderTop: "1px solid #9CA3AF",
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
@@ -264,7 +264,7 @@ const E1Breadcrumb = ({ section, current }) => (
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -810,7 +810,7 @@ const IPCallInCalleeID = () => {
         {/* Main Card */}
         <div
           style={{
-            background: "#ffffff",
+            background: "var(--bg-surface)",
             borderRadius: 10,
             overflow: "hidden",
             border: `1.5px solid ${C.cardBorder}`,
@@ -907,7 +907,7 @@ const IPCallInCalleeID = () => {
                   <div
                     style={{
                       marginTop: 12,
-                      color: "#3E5475",
+                      color: "var(--text-primary)",
                       fontSize: 13,
                       fontWeight: 500,
                     }}
@@ -932,7 +932,7 @@ const IPCallInCalleeID = () => {
               >
                 <div
                   style={{
-                    color: "#3E5475",
+                    color: "var(--text-primary)",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -1025,7 +1025,7 @@ const IPCallInCalleeID = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
+                                e.currentTarget.style.background = "var(--row-alt)";
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected)
@@ -1154,7 +1154,7 @@ const IPCallInCalleeID = () => {
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "7px 14px",
-                    background: "#ffffff",
+                    background: "var(--bg-surface)",
                     borderTop: `1px solid ${C.cardBorder}`,
                     borderBottomLeftRadius: CARD_RADIUS,
                     borderBottomRightRadius: CARD_RADIUS,
@@ -1227,13 +1227,13 @@ const IPCallInCalleeID = () => {
             ? "Edit IP Call In CalleeID"
             : "Add IP Call In CalleeID"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "var(--bg-surface)" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "#f8fafc",
+              background: "var(--row-alt)",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
@@ -1317,7 +1317,7 @@ const IPCallInCalleeID = () => {
             justifyContent: "center",
             gap: 16,
             padding: "16px 24px",
-            background: "#f8fafc",
+            background: "var(--row-alt)",
             borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: 8,
             borderBottomRightRadius: 8,

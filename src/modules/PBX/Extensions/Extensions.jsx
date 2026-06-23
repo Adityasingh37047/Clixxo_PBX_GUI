@@ -44,14 +44,14 @@ const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
@@ -60,7 +60,7 @@ const C = {
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_TOOLBAR = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_DIALOG_CANCEL =
   "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_DIALOG_PRIMARY =
@@ -70,7 +70,7 @@ const DIALOG_TITLE_ADD =
   "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
 
 const btnVariantCls = {
-  default: `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`,
+  default: `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`,
   primary: `${BTN_BASE} text-white border-[#5A6F8F] font-semibold bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`,
   cancel: BTN_TOOLBAR,
   danger:
@@ -117,7 +117,7 @@ const tdStyle = {
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -179,7 +179,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex flex-col items-center justify-center min-h-[240px] p-6 text-center">
     <div
-      className={`text-[#3E5475] text-[13px] font-semibold ${showButton && onAddNew ? "mb-4" : "mb-0"}`}
+      className={`text-[var(--text-label)] text-[13px] font-semibold ${showButton && onAddNew ? "mb-4" : "mb-0"}`}
     >
       {message}
     </div>
@@ -210,7 +210,7 @@ const pbxModalTabsSx = {
 };
 
 const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
-  <div className="border-b border-[#e5e7eb] bg-white">
+  <div className="border-b border-[#e5e7eb] bg-[var(--bg-surface)]">
     <Tabs
       value={value}
       onChange={(_, next) => onChange(next)}
@@ -254,19 +254,19 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
 );
 
 const SIP_PCM_CARD =
-  "bg-white rounded-[10px] overflow-hidden border-[1.5px] border-[#9CA3AF] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "bg-[var(--bg-surface)] rounded-[10px] overflow-hidden border-[1.5px] border-[var(--border-strong)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const SIP_PCM_TOOLBAR =
-  "flex items-center justify-between min-h-[44px] py-[7px] px-[14px] border-b border-[#9CA3AF] bg-white flex-wrap gap-[12px] rounded-t-[10px]";
+  "flex items-center justify-between min-h-[44px] py-[7px] px-[14px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] flex-wrap gap-[12px] rounded-t-[10px]";
 const SIP_PCM_TOOLBAR_COMPACT =
-  "flex flex-col items-stretch gap-[10px] min-h-[44px] py-[7px] px-[14px] border-b border-[#9CA3AF] bg-white flex-wrap rounded-t-[10px]";
+  "flex flex-col items-stretch gap-[10px] min-h-[44px] py-[7px] px-[14px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] flex-wrap rounded-t-[10px]";
 const SIP_PCM_PAGINATION =
-  "flex items-center justify-between py-[7px] px-[14px] bg-white border-t border-[#9CA3AF] rounded-b-[10px] overflow-hidden";
+  "flex items-center justify-between py-[7px] px-[14px] bg-[var(--bg-surface)] border-t border-[var(--border-strong)] rounded-b-[10px] overflow-hidden";
 const SIP_PCM_SELECTED_BADGE =
-  "bg-[#eff6ff] text-[#3E5475] text-[11px] font-bold py-[5px] px-[12px] rounded-full border border-[#3E5475]";
+  "bg-[#eff6ff] text-[var(--text-label)] text-[11px] font-bold py-[5px] px-[12px] rounded-full border border-[#3E5475]";
 const SIP_PCM_PAGE_BADGE =
-  "text-[11px] font-semibold text-[#3E5475] bg-[#e0f2fe] py-[5px] px-[14px] rounded-[6px] border border-[#9CA3AF]";
+  "text-[11px] font-semibold text-[var(--text-label)] bg-[#e0f2fe] py-[5px] px-[14px] rounded-[6px] border border-[var(--border-strong)]";
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_BG = "var(--bg-main)";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const modalTabShellStyle = {
@@ -274,7 +274,7 @@ const modalTabShellStyle = {
   flexDirection: "column",
   gap: 14,
   width: "100%",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
@@ -316,7 +316,7 @@ const featureToggleLabelStyle = (minWidth = 100) => ({
 
 const featureTimeLabelStyle = {
   fontSize: 12,
-  color: "#374151",
+  color: "var(--text-secondary)",
 };
 
 const followMePanelStyle = {
@@ -346,7 +346,7 @@ const panelAddBtnStyle = {
   height: 22,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 4,
-  background: "#f1f5f9",
+  background: "var(--bg-muted)",
   cursor: "pointer",
   fontSize: 14,
   lineHeight: 1,
@@ -367,7 +367,7 @@ const callPermDisplayStyle = {
   fontSize: 13,
   color: "#475569",
   padding: "6px 8px",
-  background: "#f1f5f9",
+  background: "var(--bg-muted)",
   borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
@@ -407,13 +407,13 @@ const SipPcmPagination = ({
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -435,7 +435,7 @@ const muiTextFieldSx = {
 const muiSelectInnerSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -448,7 +448,7 @@ const muiSelectInnerSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   ...muiSelectInnerSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
@@ -479,7 +479,7 @@ const modalTextFieldSx = {
     height: 32,
   },
   "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -489,7 +489,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -536,9 +536,9 @@ const gatedModalFieldSx = (
 
 const DUAL_LIST_SELECT_H = 160;
 const DUAL_LIST_LABEL =
-  "text-xs font-semibold text-[#3E5475] text-center mb-2";
+  "text-xs font-semibold text-[var(--text-label)] text-center mb-2";
 const DUAL_LIST_SELECT =
-  "w-full h-40 border border-[#9CA3AF] bg-white rounded p-1 px-2 text-[13px] outline-none box-border overflow-y-auto";
+  "w-full h-40 border border-[var(--border-strong)] bg-[var(--bg-surface)] rounded p-1 px-2 text-[13px] outline-none box-border overflow-y-auto";
 const MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
 
 const PbxDualListBtn = ({ onClick, title, children }) => (
@@ -576,7 +576,7 @@ const Pill = ({ text, bg, color }) => (
 
 const extensionTableCheckboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -1533,7 +1533,7 @@ const SipAccountPage = () => {
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div
-      className={`bg-[#f8fafc] min-h-[calc(100vh-80px)] box-border ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+      className={`bg-[var(--bg-main)] min-h-[calc(100vh-80px)] box-border ${isCompact ? "p-[8px]" : "p-[16px]"}`}
     >
       <div className="w-full max-w-full mx-auto">
         {/* ── Error / success banner ── */}
@@ -1570,14 +1570,14 @@ const SipAccountPage = () => {
             <div className="flex items-center gap-[8px] flex-wrap">
               {/* Search */}
               <div
-                className={`flex items-center gap-[8px] bg-white rounded-[10px] py-[5px] px-[12px] transition-[border-color,box-shadow] duration-150 ease-in-out ${
+                className={`flex items-center gap-[8px] bg-[var(--bg-surface)] rounded-[10px] py-[5px] px-[12px] transition-[border-color,box-shadow] duration-150 ease-in-out ${
                   searchFocused
                     ? "border border-[#3E5475] shadow-[0_0_0_3px_rgba(62,84,117,0.10)]"
-                    : "border border-[#9CA3AF] shadow-none"
+                    : "border border-[var(--border-strong)] shadow-none"
                 }`}
               >
                 <span
-                  className={`text-[12px] ${searchFocused ? "text-[#3E5475]" : "text-[#94a3b8]"}`}
+                  className={`text-[12px] ${searchFocused ? "text-[var(--text-label)]" : "text-[#94a3b8]"}`}
                 >
                   🔍
                 </span>
@@ -1591,7 +1591,7 @@ const SipAccountPage = () => {
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
                   placeholder="Search extension, context, status..."
-                  className="border-none bg-transparent text-[12px] text-[#0f172a] outline-none w-[240px] min-w-[180px]"
+                  className="border-none bg-transparent text-[12px] text-[var(--text-primary)] outline-none w-[240px] min-w-[180px]"
                 />
                 {searchQuery && (
                   <span
@@ -1609,7 +1609,7 @@ const SipAccountPage = () => {
                 variant="cancel"
               >
                 {loading.delete ? (
-                  <CircularProgress size={11} sx={{ color: "#374151" }} />
+                  <CircularProgress size={11} sx={{ color: "var(--text-secondary)" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1733,7 +1733,7 @@ const SipAccountPage = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected)
-                                e.currentTarget.style.background = "#f8fafc";
+                                e.currentTarget.style.background = "var(--row-alt)";
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected)
@@ -1908,14 +1908,14 @@ const SipAccountPage = () => {
         >
           Import Extensions
         </DialogTitle>
-        <DialogContent className="bg-[#f8fafc] ![padding:20px_24px_12px]">
+        <DialogContent className="bg-[var(--bg-main)] ![padding:20px_24px_12px]">
           <div className="flex flex-col gap-[12px] pt-[4px]">
             <p className="text-[13px] text-[#475569] m-0">
               Select a CSV or JSON file containing extension data to import.
             </p>
             <div
               onClick={() => importFileRef.current?.click()}
-              className="border-2 border-dashed border-[#9ca3af] rounded-lg py-6 px-4 text-center cursor-pointer transition-all duration-150 bg-white hover:border-[#3E5475] hover:bg-[#f8fafc]"
+              className="border-2 border-dashed border-[var(--border-subtle)] rounded-lg py-6 px-4 text-center cursor-pointer transition-all duration-150 bg-[var(--bg-surface)] hover:border-[#3E5475] hover:bg-[var(--bg-main)]"
             >
               <span
                 className={`text-[13px] ${importFile ? "text-[#16a34a] font-semibold" : "text-[#64748b] font-normal"}`}
@@ -1934,7 +1934,7 @@ const SipAccountPage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions className="!flex !justify-center !gap-[16px] !bg-[#dde0e4] ![padding:12px_24px_16px]">
+        <DialogActions className="!flex !justify-center !gap-[16px] !bg-[var(--bg-muted)] ![padding:12px_24px_16px]">
           <Btn
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
@@ -2007,7 +2007,7 @@ const SipAccountPage = () => {
           ]}
         />
 
-        <DialogContent className="!bg-white ![padding:24px]">
+        <DialogContent className="!bg-[var(--bg-surface)] ![padding:24px]">
           <div style={modalTabShellStyle}>
             {/* ── BASIC TAB ── */}
             {activeTab === "basic" && (
@@ -2273,7 +2273,7 @@ const SipAccountPage = () => {
                                 "& .MuiFormControlLabel-label": {
                                   fontSize: 12,
                                   fontWeight: 500,
-                                  color: "#374151",
+                                  color: "var(--text-secondary)",
                                 },
                               }}
                             />
@@ -3233,7 +3233,7 @@ const SipAccountPage = () => {
           </div>
         </DialogContent>
 
-        <DialogActions className="!flex !justify-center !gap-[16px] !bg-[#f8fafc] !border-t !border-[#9CA3AF] ![padding:16px_24px] ![border-bottom-left-radius:8px] ![border-bottom-right-radius:8px]">
+        <DialogActions className="!flex !justify-center !gap-[16px] !bg-[var(--bg-main)] !border-t !border-[var(--border-strong)] ![padding:16px_24px] ![border-bottom-left-radius:8px] ![border-bottom-right-radius:8px]">
           <Btn
             onClick={formMode === "single" ? handleSave : handleBulkSave}
             disabled={loading.save}

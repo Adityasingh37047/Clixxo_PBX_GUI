@@ -33,14 +33,14 @@ import {
 
 // ── Local page UI (inlined from systemSharedUi) ──
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-subtle)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
 };
 
@@ -51,22 +51,22 @@ const systemSettingsTdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid var(--border-subtle)`,
+  borderRight: `1px solid var(--border-subtle)`,
   whiteSpace: "nowrap",
 };
 
 const SystemSettingsTH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid var(--border-subtle)`,
+      borderRight: `1px solid var(--border-subtle)`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -79,9 +79,9 @@ const SystemSettingsTH = ({ children, style: extra }) => (
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
@@ -115,7 +115,7 @@ const SystemSettingsBtn = ({ children, onClick, disabled, variant = "default", c
 
 const systemSettingsCheckboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -142,28 +142,28 @@ const SYS_TOAST_SX = {
   minWidth: 300,
   boxShadow: 3,
 };
-const SYS_PAGE = "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] flex flex-col items-center box-border";
+const SYS_PAGE = "clixxo-system-settings theme-page-bg bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] flex flex-col items-center box-border";
 const SYS_INNER = "w-full max-w-[1000px] mx-auto";
-const SYS_CARD = "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)] mb-[24px]";
-const SYS_TOOLBAR = "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[20px]";
+const SYS_CARD = "overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)] mb-[24px]";
+const SYS_TOOLBAR = "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[20px]";
 const SYS_TOOLBAR_SIDE = "flex flex-wrap items-center gap-[8px]";
-const SYS_SELECTED_BADGE = "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
-const SYS_PAGINATION = "flex flex-wrap items-center justify-between gap-[8px] overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[20px]";
-const SYS_PAGE_BADGE = "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+const SYS_SELECTED_BADGE = "rounded-full border border-[var(--border-subtle)] bg-[var(--row-selected)] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
+const SYS_PAGINATION = "flex flex-wrap items-center justify-between gap-[8px] overflow-hidden border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[20px]";
+const SYS_PAGE_BADGE = "rounded-[6px] border border-[var(--border-strong)] bg-[var(--row-selected)] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 
 const SystemSettingsBreadcrumb = ({ current }) => (
-  <div className="mb-[16px] flex flex-nowrap items-center gap-[4px] whitespace-nowrap text-[12px] font-normal leading-[1.5] text-[#94a3b8]">
+  <div className="mb-[16px] flex flex-nowrap items-center gap-[4px] whitespace-nowrap text-[12px] font-normal leading-[1.5] text-[var(--text-muted)]">
     <span>System</span>
     <span>&gt;</span>
     <span>System Settings</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span className="font-semibold text-[var(--text-primary)]">{current}</span>
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -219,8 +219,8 @@ const { height: _nh, ...nativeFieldBase } = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  backgroundColor: "var(--bg-surface)",
+  color: "var(--text-primary)",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -233,12 +233,12 @@ const systemModalFieldInputStyle = {
   width: "100%",
   padding: "0 10px",
   lineHeight: 1.35,
-  color: "#1e293b",
+  color: "var(--text-primary)",
 };
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -253,10 +253,10 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -284,7 +284,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -836,7 +836,7 @@ const SipTrunkPage = () => {
               <>
                 <div
                   style={{
-                    color: "#3E5475",
+                    color: "var(--text-primary)",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -916,10 +916,10 @@ const SipTrunkPage = () => {
                     const isLastRow = idx === pagedRegisters.length - 1;
                     const isRowChecked = selected.includes(realIdx);
                     const rowBg = isRowChecked
-                      ? "#f0f9ff"
+                      ? "var(--row-selected)"
                       : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                        ? "var(--row-alt)"
+                        : "var(--bg-surface)";
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
@@ -933,7 +933,7 @@ const SipTrunkPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isRowChecked)
-                            e.currentTarget.style.background = "#f1f5f9";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isRowChecked)
@@ -1081,7 +1081,7 @@ const SipTrunkPage = () => {
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
             backgroundImage: "none",
             maxHeight: "90vh",
             display: "flex",
@@ -1097,7 +1097,7 @@ const SipTrunkPage = () => {
             fontSize: "16px",
             color: "#ffffff",
             backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.cardBorder}`,
+            borderBottom: `1px solid var(--border-subtle)`,
             px: 3,
             py: 2,
             textAlign: "center",
@@ -1111,7 +1111,7 @@ const SipTrunkPage = () => {
         <DialogContent
           sx={{
             p: "24px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
             overflowY: "auto",
             flex: "1 1 auto",
           }}
@@ -1121,8 +1121,8 @@ const SipTrunkPage = () => {
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
+              background: "var(--row-alt)",
+              border: `1px solid var(--border-subtle)`,
               borderRadius: 8,
               padding: 20,
               marginTop: 22,
@@ -1264,7 +1264,7 @@ const SipTrunkPage = () => {
                                 "& .MuiFormControlLabel-label": {
                                   fontSize: 12,
                                   fontWeight: 500,
-                                  color: "#374151",
+                                  color: "var(--text-secondary)",
                                 },
                               }}
                             />
@@ -1414,8 +1414,8 @@ const SipTrunkPage = () => {
             gap: 2,
             py: "10px",
             px: "16px",
-            borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "#f8fafc",
+            borderTop: `1px solid var(--border-subtle)`,
+            backgroundColor: "var(--row-alt)",
             flexShrink: 0,
           }}
         >

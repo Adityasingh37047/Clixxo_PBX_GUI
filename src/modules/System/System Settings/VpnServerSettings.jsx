@@ -15,13 +15,13 @@ import {
 } from "@mui/material";
 
 // ── Local field UI (inlined from maitenanceSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-main)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -40,10 +40,10 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-main)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -67,7 +67,7 @@ const muiSelectSx = {
 
 const systemToolsMuiSelectSx = {
   ...muiSelectSx,
-  backgroundColor: "#f8fafc",
+  backgroundColor: "var(--row-alt)",
   borderRadius: "6px",
   fontSize: 14,
 };
@@ -92,18 +92,18 @@ const VpnServerSettings = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0 flex flex-col items-center">
+    <div className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-200px)] py-0 flex flex-col items-center">
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
-        <div className="w-full bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] h-12 flex items-center justify-center font-semibold text-lg text-gray-600 shadow mb-0 border-t-2 border-x-2 border-gray-400">
+        <div className="w-full bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] h-12 flex items-center justify-center font-semibold text-lg text-[var(--text-secondary)] shadow mb-0 border-t-2 border-x-2 border-[var(--border-subtle)]">
           VPN Server Settings
         </div>
         <form
-          className="w-full bg-gray-50 border-x-2 border-b-2 border-gray-400 flex flex-col gap-0 px-2 md:px-8 py-6"
+          className="w-full bg-[var(--bg-main)] border-x-2 border-b-2 border-[var(--border-subtle)] flex flex-col gap-0 px-2 md:px-8 py-6"
           onSubmit={handleSave}
         >
           <div className="flex flex-col gap-6 w-full">
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-              <div className="md:w-1/2 w-full text-[17px] font-medium text-gray-600 text-left mb-1 md:mb-0">
+              <div className="md:w-1/2 w-full text-[17px] font-medium text-[var(--text-primary)] text-left mb-1 md:mb-0">
                 VPN Server:
               </div>
               <div className="md:w-1/2 w-full flex items-center">
@@ -122,7 +122,7 @@ const VpnServerSettings = () => {
               </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full ">
-              <div className="md:w-1/2 w-full text-[17px] font-medium text-gray-600 text-left mb-1 md:mb-0">
+              <div className="md:w-1/2 w-full text-[17px] font-medium text-[var(--text-primary)] text-left mb-1 md:mb-0">
                 VPN Type:
               </div>
               <div className="md:w-1/2 w-full">
@@ -146,7 +146,7 @@ const VpnServerSettings = () => {
               </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-              <div className="md:w-1/2 w-full text-[17px] font-medium text-gray-600 text-left mb-1 md:mb-0">
+              <div className="md:w-1/2 w-full text-[17px] font-medium text-[var(--text-primary)] text-left mb-1 md:mb-0">
                 Identity Verification Protocol:
               </div>
               <div className="md:w-1/2 w-full">
@@ -170,7 +170,7 @@ const VpnServerSettings = () => {
               </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-              <div className="md:w-1/2 w-full text-[17px] font-medium text-gray-600 text-left mb-1 md:mb-0">
+              <div className="md:w-1/2 w-full text-[17px] font-medium text-[var(--text-primary)] text-left mb-1 md:mb-0">
                 Client IP Range:
               </div>
               <div className="md:w-1/2 w-full">
@@ -186,7 +186,7 @@ const VpnServerSettings = () => {
               </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-              <div className="md:w-1/2 w-full text-[17px] font-medium text-gray-600 text-left mb-1 md:mb-0">
+              <div className="md:w-1/2 w-full text-[17px] font-medium text-[var(--text-primary)] text-left mb-1 md:mb-0">
                 Preferred WINS Address (Optional):
               </div>
               <div className="md:w-1/2 w-full">
@@ -202,7 +202,7 @@ const VpnServerSettings = () => {
               </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-center gap-2 w-full">
-              <div className="md:w-1/2 w-full text-[17px] font-medium text-gray-600 text-left mb-1 md:mb-0">
+              <div className="md:w-1/2 w-full text-[17px] font-medium text-[var(--text-primary)] text-left mb-1 md:mb-0">
                 Spare WINS Address (Optional):
               </div>
               <div className="md:w-1/2 w-full">

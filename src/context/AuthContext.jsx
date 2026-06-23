@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
       ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
 
     if (isLocalhost) {
-      let testIp = "192.168.0.99";
+      let testIp = "192.168.0.98";
       // Local development → backend usually runs on 5000
       return `https://${testIp}:443/api`;
     } else {
@@ -239,7 +239,7 @@ export const AuthProvider = ({ children }) => {
             <div style={{ fontWeight: 700, marginBottom: 2 }}>
               Read-Only Access
             </div>
-            <div style={{ fontSize: 12, fontWeight: 400, color: "#94a3b8" }}>
+            <div style={{ fontSize: 12, fontWeight: 400, color: "var(--text-muted)" }}>
               You do not have permission to make changes.
             </div>
           </div>
@@ -249,7 +249,7 @@ export const AuthProvider = ({ children }) => {
               marginLeft: "auto",
               background: "none",
               border: "none",
-              color: "#94a3b8",
+              color: "var(--text-muted)",
               cursor: "pointer",
               fontSize: 18,
               lineHeight: 1,

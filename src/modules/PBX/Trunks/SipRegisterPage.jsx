@@ -51,24 +51,24 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
   "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_EMPTY_ADD = `${BTN_CANCEL} px-[24px] py-[8px] text-[12px] rounded-[6px]`;
 
 const btnVariantCls = {
@@ -78,7 +78,7 @@ const btnVariantCls = {
   dialogPrimary: BTN_DIALOG_PRIMARY,
   dialogCancel: BTN_DIALOG_CANCEL,
   danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
-  outline: `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`,
+  outline: `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`,
 };
 
 const Btn = ({
@@ -106,7 +106,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -139,18 +139,19 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  color: "var(--border-strong)",
+  "&.Mui-checked": { color: "var(--status-primary)" },
+  "&.MuiCheckbox-indeterminate": { color: "var(--status-primary)" },
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-main)",
+    color: "var(--text-primary)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -166,6 +167,44 @@ const muiTextFieldSx = {
       borderColor: OUTLINED_FOCUS,
       borderWidth: 2,
     },
+    "&.Mui-disabled": {
+      backgroundColor: "var(--bg-muted)",
+      "& fieldset": { borderColor: OUTLINED_BORDER },
+    },
+  },
+  "& .MuiOutlinedInput-input": {
+    color: "var(--text-primary)",
+    "&::placeholder": {
+      color: "var(--text-secondary)",
+      opacity: 1,
+    },
+  },
+  "& .MuiOutlinedInput-input.Mui-disabled": {
+    WebkitTextFillColor: "var(--text-muted)",
+    color: "var(--text-muted)",
+  },
+};
+
+const trunkSelectSx = {
+  fontSize: 13,
+  backgroundColor: "var(--bg-main)",
+  color: "var(--text-primary)",
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+  "& .MuiSelect-select": {
+    backgroundColor: "var(--bg-main)",
+    color: "var(--text-primary)",
+  },
+  "& .MuiSelect-icon": {
+    color: "var(--text-secondary)",
   },
 };
 
@@ -216,13 +255,13 @@ const nativeFieldInteraction = {
 
 const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[var(--text-muted)] ${className}`.trim()}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span className="font-semibold text-[var(--text-primary)]">{current}</span>
   </div>
 );
 
@@ -240,7 +279,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -254,12 +293,12 @@ const TableListEmptyState = ({
 );
 
 const PBX_MODAL_TAB_BAR_STYLE = {
-  borderBottom: "1px solid #e5e7eb",
-  background: "#ffffff",
+  borderBottom: "1px solid var(--border-subtle)",
+  background: "var(--bg-surface)",
 };
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+const PBX_MODAL_TAB_ACTIVE_COLOR = "var(--text-primary)";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "var(--text-secondary)";
 
 const pbxModalTabsSx = {
   minHeight: 45,
@@ -294,9 +333,8 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const TRUNK_SECTION_HEADING_COLOR = "#30415A";
-const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
-const PBX_MODAL_SECTION_BG = "#f8fafc";
+const TRUNK_SECTION_HEADING_COLOR = "var(--text-primary)";
+const PBX_MODAL_SECTION_BG = "var(--bg-surface)";
 
 const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
   <div
@@ -360,16 +398,17 @@ const trunkModalFormPanelStyle = {
   flexDirection: "column",
   gap: 14,
   width: "100%",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
+  background: "var(--bg-surface)",
+  border: "1px solid var(--border-subtle)",
   borderRadius: 8,
   paddingTop: 0,
   paddingBottom: 0,
   boxSizing: "border-box",
+  boxShadow: "var(--shadow-soft)",
 };
 
 const trunkModalActionsCls =
-  "!flex !justify-center !gap-[16px] ![padding:16px_24px] bg-[#f8fafc] border-t border-[#9CA3AF] rounded-b-[8px]";
+  "!flex !justify-end !items-center !gap-[12px] ![padding:16px_24px] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)] rounded-b-[8px]";
 
 const MODAL_INPUT_13 = { style: { fontSize: 13 } };
 const MODAL_INPUT_14 = { style: { fontSize: 14 } };
@@ -398,7 +437,7 @@ const trunkAdaptRowActionBtnSx = {
   height: 32,
   padding: 0,
   backgroundColor: "#cbd5e1",
-  color: "#374151",
+  color: "var(--text-secondary)",
   "&:hover": {
     backgroundColor: "#b6c2d3",
   },
@@ -412,8 +451,8 @@ const trunkDodCompactInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 6,
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  backgroundColor: "var(--bg-main)",
+  color: "var(--text-primary)",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -423,7 +462,7 @@ const trunkDodCompactInputStyle = {
 const pbxDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#3E5475",
+  color: "var(--text-primary)",
   textAlign: "center",
   marginBottom: 8,
 };
@@ -431,8 +470,9 @@ const pbxDualListLabelStyle = {
 const pbxDualListSelectStyle = {
   width: "100%",
   height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
+  border: "1px solid var(--border-subtle)",
+  background: "var(--bg-main)",
+  color: "var(--text-primary)",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
@@ -446,24 +486,24 @@ const PbxDualListBtn = ({ onClick, title, children }) => (
     type="button"
     title={title}
     onClick={onClick}
-    className="box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] font-semibold leading-none text-[#111827] hover:bg-[#c5cbd3]"
+    className="box-border m-0 block h-[36px] w-full cursor-pointer border border-[var(--border-subtle)] bg-[var(--bg-muted)] p-0 text-center text-[14px] font-semibold leading-none text-[var(--text-primary)] hover:opacity-90"
   >
     {children}
   </button>
 );
 
 const SIP_PCM_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-[var(--shadow-soft)]";
 const SIP_PCM_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const SIP_PCM_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
 const SIP_PCM_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const SIP_PCM_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const SIP_PCM_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const SIP_PCM_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const SipPcmPagination = ({
   page,
@@ -2226,7 +2266,7 @@ const SipRegisterPage = () => {
 
   return (
     <div
-      className={`box-border min-h-[calc(100vh-80px)] bg-[#f8fafc] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
+      className={`box-border min-h-[calc(100vh-80px)] bg-[var(--bg-main)] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
     >
       <div className="mx-auto w-full max-w-full">
         {message.text && (
@@ -2461,10 +2501,10 @@ const SipRegisterPage = () => {
                             selectedIds.includes(trunk.trunk_id);
                           const isLastRow = idx === pagedRows.length - 1;
                           const rowBg = isSelected
-                            ? "#f0f9ff"
+                            ? "var(--row-selected)"
                             : idx % 2 === 1
-                              ? "#f8fafc"
-                              : "#ffffff";
+                              ? "var(--row-alt)"
+                              : "var(--bg-surface)";
                           const lastRowCellStyle = isLastRow
                             ? { borderBottom: "none" }
                             : {};
@@ -2479,7 +2519,7 @@ const SipRegisterPage = () => {
                               }}
                               onMouseEnter={(e) => {
                                 if (!isSelected)
-                                  e.currentTarget.style.background = "#f1f5f9";
+                                  e.currentTarget.style.background = "var(--row-alt)";
                               }}
                               onMouseLeave={(e) => {
                                 if (!isSelected)
@@ -2686,7 +2726,7 @@ const SipRegisterPage = () => {
         <DialogContent
           style={{
             padding: "20px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
           }}
         >
           <style>
@@ -2695,13 +2735,13 @@ const SipRegisterPage = () => {
         .sip-reg .MuiSelect-root,
         .sip-reg .MuiSelect-select,
         .sip-reg .MuiInputBase-root input {
-          background: #ffffff !important;
+          background: var(--bg-main) !important;
+          color: var(--text-primary) !important;
           border-radius: 6px !important;
         }
 
         .sip-reg .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-          border-color: ${OUTLINED_BORDER} !important;
-          border-width: 1px !important;
+          border: 1px solid ${OUTLINED_BORDER} !important;
         }
 
         .sip-reg .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
@@ -2713,12 +2753,16 @@ const SipRegisterPage = () => {
           border-width: 2px !important;
         }
 
-        
+        .sip-reg .MuiOutlinedInput-input::placeholder,
+        .sip-reg input::placeholder {
+          color: var(--text-secondary) !important;
+          opacity: 1 !important;
+        }
 
         .sip-reg label,
         .sip-reg .MuiFormControlLabel-label,
         .sip-reg .MuiInputLabel-root {
-          color: ${TRUNK_FIELD_LABEL_COLOR} !important;
+          color: var(--text-primary) !important;
         }
 
         .sip-reg label {
@@ -2731,16 +2775,29 @@ const SipRegisterPage = () => {
           font-weight: 600 !important;
         }
 
+        .sip-reg .MuiRadio-root,
+        .sip-reg .MuiCheckbox-root {
+          color: var(--border-strong);
+        }
+
+        .sip-reg .MuiRadio-root.Mui-checked,
+        .sip-reg .MuiCheckbox-root.Mui-checked {
+          color: var(--status-primary);
+        }
+
+        .sip-reg .MuiSelect-icon {
+          color: var(--text-secondary);
+        }
       `}
           </style>
 
-          <div className="sip-reg" style={trunkModalFormPanelStyle}>
+          <div className="sip-reg clixxo-form-panel" style={trunkModalFormPanelStyle}>
             {modalTab === "basic" && (
               <div className="p-3 sm:p-5">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Trunk Type <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2760,7 +2817,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Trunk Name <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2784,7 +2841,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Select Country <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2798,7 +2855,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_country", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -2815,7 +2872,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Transport
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2825,7 +2882,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_transport", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -2837,7 +2894,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Enable SRTP
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2860,7 +2917,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Register <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2870,7 +2927,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_register", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -2884,7 +2941,7 @@ const SipRegisterPage = () => {
                     {form.ui_register === "Yes" && (
                       <>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             Username <span className="text-red-500">*</span>
                           </label>
                           <div className="flex-1 min-w-0">
@@ -2908,7 +2965,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             Auth Username
                           </label>
                           <div className="flex-1 min-w-0">
@@ -2926,7 +2983,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             RegFail Retry{" "}
                             <span className="text-red-500">*</span>
                           </label>
@@ -2955,7 +3012,7 @@ const SipRegisterPage = () => {
                       </>
                     )}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Outbound CallerId Source
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2969,7 +3026,7 @@ const SipRegisterPage = () => {
                               )
                             }
                             displayEmpty
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
                               (c) => (
@@ -2985,7 +3042,7 @@ const SipRegisterPage = () => {
                   </div>
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Record
                       </label>
                       <div className="flex-1 min-w-0">
@@ -2995,7 +3052,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_record", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3007,7 +3064,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Enabled <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3017,7 +3074,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_enabled", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3029,7 +3086,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Eth Port <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3039,7 +3096,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_eth_port", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={trunkSelectSx}
                           >
                             {(ethPortOptions.length
                               ? ethPortOptions
@@ -3057,7 +3114,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Trunk IP/Domain <span className="text-red-500">*</span>
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3080,7 +3137,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Show Outbound CallerID Name
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3105,7 +3162,7 @@ const SipRegisterPage = () => {
                     </div>
                     {form.ui_show_outbound_cid_name && (
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                           Outbound CallerId Name
                         </label>
                         <div className="flex-1 min-w-0">
@@ -3126,7 +3183,7 @@ const SipRegisterPage = () => {
                     )}
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Outbound CallerId Number
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3148,7 +3205,7 @@ const SipRegisterPage = () => {
                     {form.ui_register === "Yes" && (
                       <>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             Password <span className="text-red-500">*</span>
                           </label>
                           <div className="flex-1 min-w-0">
@@ -3189,7 +3246,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             Expire Seconds{" "}
                             <span className="text-red-500">*</span>
                           </label>
@@ -3213,7 +3270,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             Match Username{" "}
                             <span className="text-red-500">*</span>
                           </label>
@@ -3249,7 +3306,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                             Enable Proxy
                           </label>
                           <div className="flex-1 min-w-0 flex items-center">
@@ -3275,7 +3332,7 @@ const SipRegisterPage = () => {
 
                         {form.ui_enable_proxy && (
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                               Proxy IP <span className="text-red-500">*</span>
                             </label>
                             <div className="flex-1 min-w-0">
@@ -3354,12 +3411,12 @@ const SipRegisterPage = () => {
             {modalTab === "advance" && (
               <div className="p-3 sm:p-5 space-y-6">
                 <div className="hidden">
-                  <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
+                  <h3 className="text-base font-semibold text-[var(--text-primary)] mb-3 border-b border-gray-100 pb-1">
                     SIP registration
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         SIP Header
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3376,7 +3433,7 @@ const SipRegisterPage = () => {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-[var(--text-secondary)]">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3391,7 +3448,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Server Domain
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3407,7 +3464,7 @@ const SipRegisterPage = () => {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-[var(--text-secondary)]">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3422,7 +3479,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Client Domain
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3438,7 +3495,7 @@ const SipRegisterPage = () => {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-[var(--text-secondary)]">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3453,7 +3510,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Outbound Proxy
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3468,7 +3525,7 @@ const SipRegisterPage = () => {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-[var(--text-secondary)]">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3478,7 +3535,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Identifier IP
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3517,7 +3574,7 @@ const SipRegisterPage = () => {
                         key={key}
                         className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
                       >
-                        <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                        <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                           {lbl}
                         </label>
                         <div className="flex-1 min-w-0">
@@ -3532,7 +3589,7 @@ const SipRegisterPage = () => {
                       </div>
                     ))}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Send Privacy ID
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3554,7 +3611,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Sip Force Contact
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3589,7 +3646,7 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="Outbound parameters" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         P-Preferred-Identity
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3615,7 +3672,7 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Remote-Party-ID
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3638,7 +3695,7 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         P-Asserted-Identity
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3664,7 +3721,7 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Contact
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3692,7 +3749,7 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="Other Settings" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Limit Max Calls
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3708,7 +3765,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Enable Early Session
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3733,7 +3790,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Enable Early Media
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3758,7 +3815,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         User Phone
                       </label>
                       <div className="flex-1 min-w-0 flex items-center">
@@ -3779,7 +3836,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Call Timeout(s)
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3795,7 +3852,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         DTMF Transmit Mode
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3817,7 +3874,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         Max Call Duration (s)
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3833,7 +3890,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
                         DNIS
                       </label>
                       <div className="flex-1 min-w-0 flex items-center">
@@ -3855,7 +3912,7 @@ const SipRegisterPage = () => {
                     </div>
                   </div>
                   {form.ui_dnis && (
-                    <div className="mt-3 bg-white border border-gray-200 rounded-md p-3">
+                    <div className="mt-3 bg-[var(--bg-surface)] border border-gray-200 rounded-md p-3">
                       <div className="flex items-center justify-between mb-2">
                         <div
                           className="font-semibold"
@@ -3888,7 +3945,7 @@ const SipRegisterPage = () => {
                       <div className="overflow-x-auto border border-gray-200 rounded">
                         <table className="w-full min-w-[520px] text-sm">
                           <thead>
-                            <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                            <tr className="bg-gray-50 text-[var(--text-secondary)] border-b border-gray-200">
                               <th className="p-2 text-left font-medium">
                                 DNIS Number
                               </th>
@@ -4012,11 +4069,11 @@ const SipRegisterPage = () => {
                 </div>
 
                 {showDodAddModal ? (
-                  <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
+                  <div className="mt-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-md p-3 sm:p-4 shadow-sm">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-4 w-full">
                       <div className="flex items-center gap-8 min-w-0">
                         <label
-                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
+                          className="text-[13px] font-semibold text-[var(--text-primary)] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
                         >
                           DOD Name <span className="text-red-500">*</span>
@@ -4031,7 +4088,7 @@ const SipRegisterPage = () => {
                       </div>
                       <div className="flex items-center gap-8 min-w-0">
                         <label
-                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
+                          className="text-[13px] font-semibold text-[var(--text-primary)] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
                         >
                           DOD Number <span className="text-red-500">*</span>
@@ -4171,7 +4228,7 @@ const SipRegisterPage = () => {
                   <div className="overflow-x-auto border border-gray-200 rounded">
                     <table className="w-full min-w-[480px] text-sm">
                       <thead>
-                        <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                        <tr className="bg-gray-50 text-[var(--text-secondary)] border-b border-gray-200">
                           <th className="p-2 w-10 text-left">
                             <input
                               type="checkbox"

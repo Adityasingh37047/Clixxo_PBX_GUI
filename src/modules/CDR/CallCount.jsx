@@ -463,7 +463,7 @@ const getRowKey = (row, idx) =>
 const CALL_COUNT_COMPACT_BREAKPOINT = "(max-width: 768px)";
 const CHK = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -471,7 +471,7 @@ const CHK = {
 const BTN_BASE =
   "inline-flex items-center justify-center gap-1.5 h-[30px] px-3.5 py-1.5 rounded-[10px] text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_TOOLBAR = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = BTN_TOOLBAR;
 const BTN_PRIMARY = `${BTN_BASE} min-w-[100px] h-[33px] text-[13px] text-white border-[#5A6F8F] bg-gradient-to-b from-[#5A6F8F] via-[#3E5475] to-[#2C3E57] hover:from-[#3E5475] hover:via-[#5A6F8F] hover:to-[#5A6F8F]`;
 const BTN_DIALOG_CANCEL =
@@ -482,11 +482,11 @@ const BTN_DIALOG_PRIMARY =
 const DIALOG_TITLE_FILTER =
   "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px]";
 const TH_BASE =
-  "bg-[#F8FAFC] text-[#3E5475] font-bold text-[11px] text-center border-b border-r border-[#9CA3AF] whitespace-nowrap uppercase sticky top-0 z-10 box-border";
+  "bg-[var(--table-header-bg)] text-[var(--text-label)] font-bold text-[11px] text-center border-b border-r border-[var(--border-strong)] whitespace-nowrap uppercase sticky top-0 z-10 box-border";
 const TD_BASE =
-  "text-[13px] text-[#0f172a] text-center border-b border-r border-[#9CA3AF] whitespace-nowrap overflow-hidden text-ellipsis box-border";
+  "text-[13px] text-[var(--text-primary)] text-center border-b border-r border-[var(--border-strong)] whitespace-nowrap overflow-hidden text-ellipsis box-border";
 const INPUT_BASE =
-  "w-full h-[38px] text-[13px] text-[#0f172a] bg-white border border-[rgba(0,0,0,0.23)] rounded-[10px] px-3 outline-none font-[Inter,sans-serif] transition-[border-color,box-shadow] duration-200 box-border shadow-none hover:border-[rgba(0,0,0,0.87)] focus:border-[#1976d2] focus:shadow-[0_0_0_1px_#1976d2]";
+  "w-full h-[38px] text-[13px] text-[var(--text-primary)] bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-[10px] px-3 outline-none font-[Inter,sans-serif] transition-[border-color,box-shadow] duration-200 box-border shadow-none hover:border-[var(--border-strong)] focus:border-[var(--status-primary)] focus:shadow-[0_0_0_1px_var(--status-primary)] placeholder:text-[var(--text-muted)]";
 
 const statusCls = (s) => {
   const v = String(s || "").toLowerCase();
@@ -553,7 +553,7 @@ const PageBreadcrumb = ({ segments, flat }) => (
 
 const TableListLoading = () => (
   <div className="flex justify-center items-center p-12">
-    <CircularProgress size={28} sx={{ color: "#3E5475" }} />
+    <CircularProgress size={28} sx={{ color: "var(--text-primary)" }} />
   </div>
 );
 
@@ -586,7 +586,7 @@ const SipPcmPagination = ({
   compact = false,
 }) => (
   <div
-    className={`flex items-center justify-between py-[7px] px-3.5 bg-white border-t border-[#9CA3AF] rounded-b-[10px] overflow-hidden${compact ? " flex-col items-stretch gap-[10px]" : ""}`}
+    className={`flex items-center justify-between py-[7px] px-3.5 bg-[var(--bg-surface)] border-t border-[var(--border-strong)] rounded-b-[10px] overflow-hidden${compact ? " flex-col items-stretch gap-[10px]" : ""}`}
   >
     <span
       className={`text-[11px] text-[#94a3b8]${compact ? " text-center" : " text-left"}`}
@@ -604,7 +604,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span className="text-[11px] font-semibold text-[#3E5475] bg-[#e0f2fe] py-[5px] px-3.5 rounded-md border border-[#9CA3AF]">
+      <span className="text-[11px] font-semibold text-[var(--text-label)] bg-[#e0f2fe] py-[5px] px-3.5 rounded-md border border-[var(--border-strong)]">
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -621,7 +621,7 @@ const SipPcmPagination = ({
 const Dash = () => <span className="text-[#94a3b8]">—</span>;
 
 const FilterLabel = ({ children }) => (
-  <span className="block text-[11px] font-semibold text-[#3E5475] tracking-[0.04em] uppercase mb-[6px]">
+  <span className="block text-[11px] font-semibold text-[var(--text-label)] tracking-[0.04em] uppercase mb-[6px]">
     {children}
   </span>
 );
@@ -700,7 +700,7 @@ const FiltersActiveSummary = ({
   endDate,
 }) => (
   <div className="mt-[14px] pt-[7px] border-t border-[#f1f5f9] text-[12px] text-[#94a3b8] flex items-center gap-2 flex-wrap">
-    <span className="bg-[#eff6ff] text-[#3E5475] font-semibold py-[4px] px-[10px] text-center rounded-full text-[11px]">
+    <span className="bg-[#eff6ff] text-[var(--text-label)] font-semibold py-[4px] px-[10px] text-center rounded-full text-[11px]">
       Filters active
     </span>
     <span>
@@ -757,14 +757,14 @@ const CallCountTableRow = ({
   columns,
   helpers,
 }) => {
-  const rowBg = isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+  const rowBg = isSelected ? "var(--row-selected)" : idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
   const isLastRow = idx === totalRows - 1;
   const lastBorder = isLastRow ? " border-b-0" : "";
   return (
     <tr
       style={{ background: rowBg, transition: "background 0.15s ease" }}
       onMouseEnter={(e) => {
-        if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+        if (!isSelected) e.currentTarget.style.background = "var(--row-alt)";
       }}
       onMouseLeave={(e) => {
         if (!isSelected) e.currentTarget.style.background = rowBg;
@@ -1228,7 +1228,7 @@ const CallCount = () => {
 
   return (
     <div
-      className={`min-h-[calc(100vh-80px)] bg-[#f8fafc] box-border ${isCompact ? "p-3" : "p-4"}`}
+      className={`min-h-[calc(100vh-80px)] bg-[var(--bg-main)] box-border ${isCompact ? "p-3" : "p-4"}`}
     >
       <div className="w-full max-w-full mx-auto">
         {error && (
@@ -1255,13 +1255,13 @@ const CallCount = () => {
           )}
         </div>
 
-        <div className="bg-white rounded-[10px] overflow-hidden border-[1.5px] border-[#9CA3AF] shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <div className="bg-[var(--bg-surface)] rounded-[10px] overflow-hidden border-[1.5px] border-[var(--border-strong)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
           <div
-            className={`flex items-center justify-between flex-wrap gap-3 min-h-[44px] py-[7px] px-3.5 border-b border-[#9CA3AF] bg-white rounded-t-[10px]${isCompact ? " flex-col items-stretch" : ""}`}
+            className={`flex items-center justify-between flex-wrap gap-3 min-h-[44px] py-[7px] px-3.5 border-b border-[var(--border-strong)] bg-[var(--bg-surface)] rounded-t-[10px]${isCompact ? " flex-col items-stretch" : ""}`}
           >
             <div className="flex items-center gap-2.5">
               {selectedIds.length > 0 && (
-                <span className="bg-[#eff6ff] text-[#3E5475] text-[11px] font-bold py-[5px] px-3 rounded-full border border-[#3E5475]">
+                <span className="bg-[#eff6ff] text-[var(--text-label)] text-[11px] font-bold py-[5px] px-3 rounded-full border border-[#3E5475]">
                   {selectedIds.length} selected
                 </span>
               )}
@@ -1287,7 +1287,7 @@ const CallCount = () => {
                 disabled={loading}
               >
                 {loading ? (
-                  <CircularProgress size={16} sx={{ color: "#374151" }} />
+                  <CircularProgress size={16} sx={{ color: "var(--text-secondary)" }} />
                 ) : (
                   "Refresh"
                 )}
@@ -1363,9 +1363,9 @@ const CallCount = () => {
             Filter Call Count
           </DialogTitle>
 
-          <DialogContent className="!m-0 !bg-white ![padding:24px]">
+          <DialogContent className="!m-0 !bg-[var(--bg-surface)] ![padding:24px]">
             <div
-              className={`grid gap-[14px] w-full bg-[#f8fafc] border border-[#9CA3AF] rounded-[8px] ![padding:20px] ${isCompact ? "grid-cols-1" : "grid-cols-2"}`}
+              className={`grid gap-[14px] w-full bg-[var(--bg-main)] border border-[var(--border-strong)] rounded-[8px] ![padding:20px] ${isCompact ? "grid-cols-1" : "grid-cols-2"}`}
             >
               {MODAL_FILTER_FIELDS.map(renderModalField)}
             </div>
@@ -1380,7 +1380,7 @@ const CallCount = () => {
             )}
           </DialogContent>
 
-          <DialogActions className="!flex !items-center !justify-center !gap-3 !m-0 bg-[#f8fafc] ![padding:12px_24px_16px] !border-t !border-[#9CA3AF]">
+          <DialogActions className="!flex !items-center !justify-center !gap-3 !m-0 bg-[var(--bg-main)] ![padding:12px_24px_16px] !border-t !border-[var(--border-strong)]">
             <Btn onClick={handleModifyReset} variant="dialog-cancel">
               Cancel
             </Btn>

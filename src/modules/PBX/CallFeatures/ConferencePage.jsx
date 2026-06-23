@@ -36,14 +36,14 @@ const YES_NO_OPTIONS = ["Yes", "No"];
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
   successGreen: "#16a34a",
   errorRed: "#dc2626",
@@ -51,8 +51,8 @@ const C = {
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_DIALOG_PRIMARY =
@@ -97,7 +97,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -126,14 +126,14 @@ const tdStyle = {
 };
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const PBX_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
 };
 
 const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
@@ -172,7 +172,7 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
+const PBX_MODAL_SECTION_BG = "var(--bg-main)";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const PbxModalSectionHeading = ({ title, isFirst = false }) => (
@@ -193,7 +193,7 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: "var(--text-primary)",
       }}
     >
       {title}
@@ -202,21 +202,21 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
 );
 
 const CONFERENCE_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
 const CONFERENCE_PAGE_INNER = "w-full max-w-full mx-auto";
 const CONFERENCE_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const CONFERENCE_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const CONFERENCE_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
 const CONFERENCE_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
 const CONFERENCE_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const CONFERENCE_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const CONFERENCE_PAGE_BADGE =
-  "rounded-[6px] border-[0.5px] border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border-[0.5px] border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const CONFERENCE_PAGINATION =
-  "flex items-center justify-between border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 
 const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
@@ -244,7 +244,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -909,7 +909,7 @@ const ConferencePage = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  background: "#ffffff",
+                  background: "var(--bg-surface)",
                   border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
                   borderRadius: 6,
                   padding: "5px 10px",
@@ -1101,7 +1101,7 @@ const ConferencePage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f8fafc";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1274,13 +1274,13 @@ const ConferencePage = () => {
 <DialogContent
   style={{
     padding: "0px 24px 20px",
-    backgroundColor: "#ffffff",
+    backgroundColor: "var(--bg-surface)",
   }}
 >
           <div
             style={{
               borderBottom: "0.5px solid #eef2f7",
-              background: "#ffffff",
+              background: "var(--bg-surface)",
               marginLeft: "-24px",
               marginRight: "-24px",
             }}
@@ -1294,7 +1294,7 @@ const ConferencePage = () => {
   ]}
 />
           </div>
-          <div style={{ background: "#ffffff" }}>
+          <div style={{ background: "var(--bg-surface)" }}>
             <div
               style={{
                 padding: 0,
@@ -1340,7 +1340,7 @@ const ConferencePage = () => {
                               style: {
                                 fontSize: 13,
                                 padding: "6px 8px",
-                                background: "#fff",
+                                background: "var(--bg-main)",
                               },
                             }}
                           />
@@ -1357,7 +1357,7 @@ const ConferencePage = () => {
                               style: {
                                 fontSize: 13,
                                 padding: "6px 8px",
-                                background: "#fff",
+                                background: "var(--bg-main)",
                               },
                             }}
                           />
@@ -1373,7 +1373,7 @@ const ConferencePage = () => {
                             }}
                             sx={{
                               fontSize: 13,
-                              backgroundColor: "#fff",
+                              backgroundColor: "var(--bg-surface)",
                               height: 32,
                               "& .MuiSelect-select": {
                                 padding: "6px 8px",
@@ -1404,7 +1404,7 @@ const ConferencePage = () => {
                             onChange={(e) => setAnnounce(e.target.value)}
                             sx={{
                               fontSize: 13,
-                              backgroundColor: "#fff",
+                              backgroundColor: "var(--bg-surface)",
                               height: 32,
                               "& .MuiSelect-select": {
                                 padding: "6px 8px",
@@ -1432,7 +1432,7 @@ const ConferencePage = () => {
                             onChange={(e) => setRecord(e.target.value)}
                             sx={{
                               fontSize: 13,
-                              backgroundColor: "#fff",
+                              backgroundColor: "var(--bg-surface)",
                               height: 32,
                               "& .MuiSelect-select": {
                                 padding: "6px 8px",
@@ -1470,7 +1470,7 @@ const ConferencePage = () => {
                             onChange={(e) => setEnabled(e.target.value)}
                             sx={{
                               fontSize: 13,
-                              backgroundColor: "#fff",
+                              backgroundColor: "var(--bg-surface)",
                               height: 32,
                               "& .MuiSelect-select": {
                                 padding: "6px 8px",
@@ -1501,7 +1501,7 @@ const ConferencePage = () => {
                               style: {
                                 fontSize: 13,
                                 padding: "6px 8px",
-                                background: "#fff",
+                                background: "var(--bg-main)",
                               },
                             }}
                           />
@@ -1517,7 +1517,7 @@ const ConferencePage = () => {
                               style: {
                                 fontSize: 13,
                                 padding: "6px 8px",
-                                background: "#fff",
+                                background: "var(--bg-main)",
                               },
                             }}
                           />
@@ -1536,7 +1536,7 @@ const ConferencePage = () => {
                             }}
                             sx={{
                               fontSize: 13,
-                              backgroundColor: "#fff",
+                              backgroundColor: "var(--bg-surface)",
                               height: 32,
                               "& .MuiSelect-select": {
                                 padding: "6px 8px",
@@ -1570,7 +1570,7 @@ const ConferencePage = () => {
                                   style: {
                                     fontSize: 13,
                                     padding: "6px 8px",
-                                    background: "#fff",
+                                    background: "var(--bg-main)",
                                   },
                                 }}
                               />
@@ -1587,7 +1587,7 @@ const ConferencePage = () => {
                                   style: {
                                     fontSize: 13,
                                     padding: "6px 8px",
-                                    background: "#fff",
+                                    background: "var(--bg-main)",
                                   },
                                 }}
                               />
@@ -1604,7 +1604,7 @@ const ConferencePage = () => {
                               style: {
                                 fontSize: 13,
                                 padding: "6px 8px",
-                                background: "#fff",
+                                background: "var(--bg-main)",
                               },
                             }}
                           />
@@ -1632,7 +1632,7 @@ const ConferencePage = () => {
                             style={{
                               fontSize: 14,
                               fontWeight: 600,
-                              color: "#30415A",
+                              color: "var(--text-primary)",
                               marginBottom: 6,
                               textAlign: "center",
                             }}
@@ -1642,7 +1642,7 @@ const ConferencePage = () => {
                           <div
                             style={{
                               border: `1px solid ${C.cardBorder}`,
-                              background: "#fff",
+                              background: "var(--bg-main)",
                               borderRadius: 4,
                               padding: 8,
                               height: 160,
@@ -1684,7 +1684,7 @@ const ConferencePage = () => {
                             style={{
                               fontSize: 14,
                               fontWeight: 600,
-                              color: "#30415A",
+                              color: "var(--text-primary)",
                               marginBottom: 6,
                               textAlign: "center",
                             }}
@@ -1694,7 +1694,7 @@ const ConferencePage = () => {
                           <div
                             style={{
                               border: `1px solid ${C.cardBorder}`,
-                              background: "#fff",
+                              background: "var(--bg-main)",
                               borderRadius: 4,
                               padding: 8,
                               height: 160,
@@ -1779,7 +1779,7 @@ const ConferencePage = () => {
                           fullWidth
                           value={waitForModerator}
                           onChange={(e) => setWaitForModerator(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={{ fontSize: 13, background: "var(--bg-main)" }}
                         >
                           {YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1798,7 +1798,7 @@ const ConferencePage = () => {
                           fullWidth
                           value={sayYourName}
                           onChange={(e) => setSayYourName(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={{ fontSize: 13, background: "var(--bg-main)" }}
                         >
                           {YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1825,7 +1825,7 @@ const ConferencePage = () => {
                           fullWidth
                           value={muteParticipant}
                           onChange={(e) => setMuteParticipant(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={{ fontSize: 13, background: "var(--bg-main)" }}
                         >
                           {YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
@@ -1844,7 +1844,7 @@ const ConferencePage = () => {
                           fullWidth
                           value={allowInvite}
                           onChange={(e) => setAllowInvite(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={{ fontSize: 13, background: "var(--bg-main)" }}
                         >
                           {YES_NO_OPTIONS.map((opt) => (
                             <MenuItem

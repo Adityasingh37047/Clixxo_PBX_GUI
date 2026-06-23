@@ -2,29 +2,16 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 import { Button, CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import { THEME_PALETTE as C } from "../../../constants/themePalette";
 
 const REFRESH_INTERVAL_MS = 5000;
-
-// ── Color palette ─────────────────────────────────────────────────────────────
-const C = {
-  cardBg: "#ffffff",
-  cardBorder: "#dde4ed",
-  cardHeader: "#1e2d42",
-  labelText: "#64748b",
-  valueText: "#1e293b",
-  mutedText: "#94a3b8",
-  accent: "#29a8e0",
-  successGreen: "#16a34a",
-  warningAmber: "#d97706",
-  pageBg: "#eef2f7",
-};
 
 // ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
 const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
       fontSize: 12,
-      color: "#94a3b8",
+      color: "var(--text-muted)",
       marginBottom: 16,
       fontWeight: 400,
       display: "flex",
@@ -42,7 +29,7 @@ const PageBreadcrumb = ({ segments, style }) => (
         <span
           style={
             index === segments.length - 1
-              ? { color: "#1e293b", fontWeight: 600 }
+              ? { color: "var(--text-primary)", fontWeight: 600 }
               : undefined
           }
         >
@@ -171,7 +158,7 @@ const InfoTableRow = ({ label, value, keyName, even }) => (
       padding: "5px 14px",
       minHeight: 28,
       alignItems: "center",
-      background: even ? "#f8fafc" : "#ffffff",
+      background: even ? "var(--row-alt)" : "var(--bg-surface)",
     }}
   >
     <span
@@ -495,7 +482,7 @@ const SystemInfo = () => {
   const packetLoss = getMetric(["packet loss", "packet_loss", "rx loss"]);
 
   const refreshBtnSx = {
-    background: "#ffffff",
+    background: "var(--bg-surface)",
     color: C.accent,
     fontWeight: 600,
     fontSize: 13,
@@ -624,7 +611,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -662,7 +649,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -733,7 +720,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -759,7 +746,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}

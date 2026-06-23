@@ -19,14 +19,14 @@ import PortFxsModifyPage from "./PortFxsModifyPage";
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
   amber: "#dc2626",
 };
 
@@ -47,7 +47,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid #9ca3af",
+      border: "1px solid var(--border-subtle)",
     },
     primary: {
       background:
@@ -61,7 +61,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "#374151",
+      color: "var(--text-secondary)",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -127,7 +127,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -161,7 +161,7 @@ const tdStyle = {
 };
 
 const numManipulateCardStyle = {
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderRadius: CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -175,7 +175,7 @@ const numManipulateToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: CARD_RADIUS,
@@ -187,7 +187,7 @@ const numManipulatePaginationStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
@@ -245,7 +245,7 @@ const fxsDialogTitleStyle = {
 
 const fxsDialogActionsStyle = {
   padding: "16px 24px",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   borderTop: `1px solid ${C.cardBorder}`,
   justifyContent: "center",
   gap: 12,
@@ -401,7 +401,7 @@ const PortFxsPage = () => {
     >
       <div
         style={{
-          color: "#3E5475",
+          color: "var(--text-primary)",
           fontSize: 13,
           fontWeight: 600,
           marginBottom: 16,
@@ -601,7 +601,7 @@ const PortFxsPage = () => {
               </thead>
               <tbody>
                 {pagedPorts.map((port, idx) => {
-                  const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                  const rowBg = idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
                   const isLastRow = idx === pagedPorts.length - 1;
                   return (
                     <tr
@@ -611,7 +611,7 @@ const PortFxsPage = () => {
                         transition: "background 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#f1f5f9";
+                        e.currentTarget.style.background = "var(--row-alt)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = rowBg;
@@ -686,7 +686,7 @@ const PortFxsPage = () => {
         <div
           style={{
             fontSize: 12,
-            color: "#94a3b8",
+            color: "var(--text-muted)",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -699,7 +699,7 @@ const PortFxsPage = () => {
           <span>&gt;</span>
           <span>Port</span>
           <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
             FXS Settings
           </span>
         </div>
@@ -720,7 +720,7 @@ const PortFxsPage = () => {
           <DialogContent
             style={{
               padding: "24px",
-              backgroundColor: "#ffffff",
+              backgroundColor: "var(--bg-surface)",
               maxHeight: "75vh",
               overflowY: "auto",
             }}
@@ -774,7 +774,7 @@ const PortFxsPage = () => {
           <DialogContent
             style={{
               padding: "24px",
-              backgroundColor: "#ffffff",
+              backgroundColor: "var(--bg-surface)",
               maxHeight: "75vh",
               overflowY: "auto",
             }}

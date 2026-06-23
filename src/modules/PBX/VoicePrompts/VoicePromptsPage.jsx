@@ -39,20 +39,20 @@ const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   errorRed: "#dc2626",
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 
@@ -93,12 +93,12 @@ const Btn = ({
 );
 
 const VOICE_PROMPT_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
 const VOICE_PROMPT_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
 const VOICE_PROMPT_FORM_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const VOICE_PROMPT_FORM_HEADER =
-  "flex w-full min-h-[44px] items-center border-b border-[#9CA3AF] bg-white py-0 pl-[6px] pr-[8px] text-[13px] font-bold text-[#3E5475] rounded-t-[10px]";
+  "flex w-full min-h-[44px] items-center border-b border-[var(--border-strong)] bg-[var(--bg-surface)] py-0 pl-[6px] pr-[8px] text-[13px] font-bold text-[var(--text-label)] rounded-t-[10px]";
 const VOICE_PROMPT_FORM_HEADER_COMPACT = "flex-col items-stretch";
 
 const PbxBreadcrumb = ({ section, current, className = "" }) => (
@@ -127,7 +127,7 @@ const TableListEmptyState = ({
 }) => (
   <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
     <div
-      className="text-[13px] font-semibold text-[#3E5475]"
+      className="text-[13px] font-semibold text-[var(--text-label)]"
       style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
     >
       {message}
@@ -185,7 +185,7 @@ const VoicePromptSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: "#30415A",
+        color: "var(--text-primary)",
       }}
     >
       {title}
@@ -694,7 +694,7 @@ const VoicePromptsPage = () => {
                     display: "grid",
                     gridTemplateColumns: "1fr",
                     gap: 16,
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     padding: 16,
                     borderRadius: 6,
                     border: `1px solid #e2e8f0`,
@@ -706,7 +706,7 @@ const VoicePromptsPage = () => {
                         value={promptMohCategory}
                         onChange={(e) => setPromptMohCategory(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13, background: "#fff" }}
+                        sx={{ fontSize: 13, background: "var(--bg-main)" }}
                       >
                         {categories.length === 0 ? (
                           promptMohCategory ? (
@@ -752,7 +752,7 @@ const VoicePromptsPage = () => {
   size="small"
   sx={{
     padding: "1px",
-    color: "#3E5475",
+    color: "var(--text-primary)",
     "&.Mui-checked": { color: "#0284c7" },
     "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
     alignSelf: "flex-start",
@@ -787,7 +787,7 @@ const VoicePromptsPage = () => {
                     alignItems: "center",
                     gap: 16,
                     flexWrap: "wrap",
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     padding: 16,
                     borderRadius: 6,
                     border: `1px solid #e2e8f0`,
@@ -815,7 +815,7 @@ const VoicePromptsPage = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          background: "#fff",
+                          background: "var(--bg-main)",
                           width: 200,
                         },
                       }}
@@ -913,7 +913,7 @@ const VoicePromptsPage = () => {
                             key={item.id}
                             style={{
                               borderBottom: "1px solid #e2e8f0",
-                              background: idx % 2 === 1 ? "#f8fafc" : "#fff",
+                              background: idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)",
                             }}
                           >
                             <td
@@ -1144,7 +1144,7 @@ const VoicePromptsPage = () => {
                     alignItems: "center",
                     gap: 16,
                     flexWrap: "wrap",
-                    background: "#f8fafc",
+                    background: "var(--row-alt)",
                     padding: 16,
                     borderRadius: 6,
                     border: `1px solid #e2e8f0`,
@@ -1242,7 +1242,7 @@ const VoicePromptsPage = () => {
                             key={item.id}
                             style={{
                               borderBottom: "1px solid #e2e8f0",
-                              background: idx % 2 === 1 ? "#f8fafc" : "#fff",
+                              background: idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)",
                             }}
                           >
                             <td
@@ -1470,7 +1470,7 @@ const VoicePromptsPage = () => {
               display: "flex",
               flexDirection: "column",
               gap: 16,
-              background: "#fff",
+              background: "var(--bg-main)",
               padding: 20,
               borderRadius: 6,
               border: `1px solid ${C.cardBorder}`,

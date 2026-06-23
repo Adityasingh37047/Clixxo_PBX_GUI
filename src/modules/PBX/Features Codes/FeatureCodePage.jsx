@@ -12,16 +12,16 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const FEATURE_CODE_FIELD_HEIGHT = 32;
 const FEATURE_CODE_GRID_LABEL_WIDTH = 220;
 
@@ -80,9 +80,9 @@ const FEATURE_CODE_GRID_INPUT_STYLE = {
   fontSize: 12,
   width: "100%",
   maxWidth: "100%",
-  backgroundColor: "#ffffff",
+  backgroundColor: "var(--bg-surface)",
   outline: "none",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   boxShadow: "none",
@@ -97,14 +97,14 @@ const BTN_FORM_PRIMARY =
   "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
 
 const FEATURE_CODE_PAGE_WRAP =
-  "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
+  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
 const FEATURE_CODE_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
 const FEATURE_CODE_FORM_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const FEATURE_CODE_FORM_HEADER =
-  "flex w-full min-h-[44px] items-center border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] text-[13px] font-bold text-[#3E5475] rounded-t-[10px]";
+  "flex w-full min-h-[44px] items-center border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] text-[13px] font-bold text-[var(--text-label)] rounded-t-[10px]";
 const FEATURE_CODE_FORM_FOOTER =
-  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[#9CA3AF] box-border px-[20px] py-[10px]";
+  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[var(--border-strong)] box-border px-[20px] py-[10px]";
 
 const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
@@ -142,7 +142,7 @@ const FeatureCodeSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: "#30415A",
+        color: "var(--text-primary)",
       }}
     >
       {title}

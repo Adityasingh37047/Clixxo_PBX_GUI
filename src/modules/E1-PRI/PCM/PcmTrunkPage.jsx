@@ -20,22 +20,22 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 const LOCAL_STORAGE_KEY = "pcm_trunks";
 
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  strongText: "var(--text-primary)",
+  accent: "var(--accent-brand)",
 };
 
 const CARD_RADIUS = 20;
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 
@@ -63,7 +63,7 @@ const Btn = ({ children, onClick, disabled, variant = "default", className = "",
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -86,26 +86,26 @@ const cellStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
 
-const E1_PAGE = "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px]";
+const E1_PAGE = "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px]";
 const E1_INNER = "w-full max-w-full mx-auto";
 const E1_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const E1_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[20px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[20px]";
 const E1_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
 const E1_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const E1_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const E1_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[20px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[20px]";
 const E1_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const E1_TOAST_SX = {
   position: "fixed",
   top: 20,
@@ -130,14 +130,14 @@ const e1DialogTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const e1DialogContentStyle = { padding: "24px", backgroundColor: "#ffffff" };
+const e1DialogContentStyle = { padding: "24px", backgroundColor: "var(--bg-surface)" };
 
 const e1DialogFormStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: "#f8fafc",
-  border: "1px solid #9CA3AF",
+  background: "var(--row-alt)",
+  border: "1px solid var(--border-subtle)",
   borderRadius: 8,
   padding: 20,
 };
@@ -151,7 +151,7 @@ const e1DialogFieldRowStyle = {
 
 const e1DialogFieldLabelStyle = {
   fontSize: 13,
-  color: "#3E5475",
+  color: "var(--text-primary)",
   fontWeight: 600,
   whiteSpace: "nowrap",
   width: 170,
@@ -166,7 +166,7 @@ const e1DialogActionsStyle = {
   justifyContent: "center",
   gap: 16,
   padding: "16px 24px",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   borderTop: "1px solid #9CA3AF",
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
@@ -194,7 +194,7 @@ const E1Breadcrumb = ({ section, current }) => (
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
 };
 const modalOverlayStyle = {
@@ -255,7 +255,7 @@ const modalInputStyle = {
   padding: "3px 6px",
   borderRadius: 3,
   border: "1px solid #bbb",
-  background: "#fff",
+  background: "var(--bg-main)",
 };
 const modalFooterStyle = {
   display: "flex",
@@ -319,7 +319,7 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 const thStyle = {
-  background: "#F8FAFC",
+  background: "var(--table-header-bg)",
   color: C.labelText,
   fontWeight: 700,
   fontSize: 11,
@@ -336,7 +336,7 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   padding: "7px 14px",
   fontSize: 13,
-  background: "#fff",
+  background: "var(--bg-main)",
   textAlign: "center",
   whiteSpace: "nowrap",
   color: C.valueText,
@@ -371,7 +371,7 @@ const pageSelectStyle = {
   padding: "2px 6px",
   borderRadius: 3,
   border: "1px solid #bbb",
-  background: "#fff",
+  background: "var(--bg-main)",
 };
 
 const PcmTrunkPage = () => {
@@ -472,7 +472,7 @@ const PcmTrunkPage = () => {
         {trunks.length === 0 ? (
           <div
             style={{
-              background: "#ffffff",
+              background: "var(--bg-surface)",
               borderRadius: 10,
               border: `1.5px solid ${C.cardBorder}`,
               boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
@@ -487,7 +487,7 @@ const PcmTrunkPage = () => {
           >
             <div
               style={{
-                color: "#3E5475",
+                color: "var(--text-primary)",
                 fontSize: 13,
                 fontWeight: 600,
                 marginBottom: 16,
@@ -662,7 +662,7 @@ const PcmTrunkPage = () => {
                 justifyContent: "space-between",
                 padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
+                background: "var(--bg-surface)",
                 borderBottomLeftRadius: CARD_RADIUS,
                 borderBottomRightRadius: CARD_RADIUS,
               }}
@@ -715,14 +715,14 @@ const PcmTrunkPage = () => {
         <DialogContent
           className="flex flex-col gap-2 py-4"
           style={{
-            backgroundColor: "#dde0e4",
+            backgroundColor: "var(--bg-muted)",
             border: "1px solid #444444",
             borderTop: "none",
           }}
         >
           {/* Index Block */}
-          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
+          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)] mb-2">
+            <label className="text-[15px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
               Index:
             </label>
             <Select
@@ -733,7 +733,7 @@ const PcmTrunkPage = () => {
               size="small"
               fullWidth
               variant="outlined"
-              className="bg-white"
+              className="bg-[var(--bg-surface)]"
               sx={{ maxWidth: 120, minWidth: 0 }}
             >
               {PCM_TRUNK_INDEX_OPTIONS.map((i) => (
@@ -744,8 +744,8 @@ const PcmTrunkPage = () => {
             </Select>
           </div>
           {/* PCM NO. Block */}
-          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
+          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)] mb-2">
+            <label className="text-[15px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
               PCM NO.:
             </label>
             <Select
@@ -756,7 +756,7 @@ const PcmTrunkPage = () => {
               size="small"
               fullWidth
               variant="outlined"
-              className="bg-white"
+              className="bg-[var(--bg-surface)]"
               sx={{ maxWidth: 120, minWidth: 0 }}
             >
               {PCM_TRUNK_PCM_NO_OPTIONS.map((i) => (
@@ -767,8 +767,8 @@ const PcmTrunkPage = () => {
             </Select>
           </div>
           {/* Including Ts Block */}
-          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
+          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)] mb-2">
+            <label className="text-[15px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
               Including Ts:
             </label>
             <Checkbox
@@ -779,7 +779,7 @@ const PcmTrunkPage = () => {
             <span className="font-medium">Check All</span>
           </div>
           {/* TS Checkboxes Block */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-gray-200 rounded bg-white p-2 mb-2 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-gray-200 rounded bg-[var(--bg-surface)] p-2 mb-2 w-full">
             {form.ts.map((checked, idx) => (
               <label
                 key={idx}
@@ -823,7 +823,7 @@ const PcmTrunkPage = () => {
             sx={{
               background:
                 "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "#374151",
+              color: "var(--text-secondary)",
               fontWeight: 600,
               fontSize: "16px",
               borderRadius: 1,
@@ -833,7 +833,7 @@ const PcmTrunkPage = () => {
               "&:hover": {
                 background:
                   "linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)",
-                color: "#374151",
+                color: "var(--text-secondary)",
               },
             }}
             onClick={handleCloseModal}

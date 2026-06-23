@@ -20,17 +20,17 @@ import {
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  gridHeaderBg: "#F8FAFC",
-  labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-subtle)",
+  divider: "var(--border-subtle)",
+  cardShadow: "var(--shadow-soft)",
+  gridHeaderBg: "var(--table-header-bg)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  strongText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
@@ -45,9 +45,9 @@ const SYS_TOAST_SX = {
   boxShadow: 3,
 };
 // ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -76,8 +76,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  backgroundColor: "var(--bg-main)",
+  color: "var(--text-primary)",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -117,12 +117,12 @@ const systemModalFieldInputStyle = {
   width: "100%",
   padding: "0 10px",
   lineHeight: 1.35,
-  color: "#1e293b",
+  color: "var(--text-primary)",
 };
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -141,10 +141,10 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
+  backgroundColor: "var(--bg-surface)",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -172,7 +172,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
   },
 };
 
@@ -194,14 +194,14 @@ const CARD_RADIUS = 20;
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid var(--border-subtle)`,
+      borderRight: `1px solid var(--border-subtle)`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -217,23 +217,23 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid var(--border-subtle)`,
+  borderRight: `1px solid var(--border-subtle)`,
   whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: "var(--text-primary)",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
+const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
@@ -1252,7 +1252,7 @@ WantedBy=multi-user.target
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       {/* ── Alerts ── */}
@@ -1270,14 +1270,14 @@ WantedBy=multi-user.target
       {savingRoute && modalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
           <div
-            className="bg-white rounded-lg shadow-xl p-4 flex flex-col items-center gap-2 pointer-events-auto"
+            className="bg-[var(--bg-surface)] rounded-lg shadow-xl p-4 flex flex-col items-center gap-2 pointer-events-auto"
             style={{ minWidth: "260px" }}
           >
             <div className="animate-spin h-8 w-8 border-4 border-[#0e8fd6] border-t-transparent rounded-full" />
-            <div className="text-sm font-medium text-gray-700">
+            <div className="text-sm font-medium text-[var(--text-secondary)]">
               Applying routing changes...
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-[var(--text-muted)]">
               Updating kernel routes and persistent config
             </div>
           </div>
@@ -1314,7 +1314,7 @@ WantedBy=multi-user.target
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
+            border: `1px solid var(--border-subtle)`,
           }}
         >
           {/* Toolbar */}
@@ -1327,8 +1327,8 @@ WantedBy=multi-user.target
               justifyContent: "space-between",
               minHeight: 44,
               padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
+              borderBottom: `1px solid var(--border-subtle)`,
+              background: "var(--bg-surface)",
               borderTopLeftRadius: CARD_RADIUS,
               borderTopRightRadius: CARD_RADIUS,
             }}
@@ -1337,7 +1337,7 @@ WantedBy=multi-user.target
               {rows.some((r) => r.checked) && (
                 <span
                   style={{
-                    background: "#eff6ff",
+                    background: "var(--row-selected)",
                     color: C.accent,
                     fontSize: 11,
                     fontWeight: 700,
@@ -1415,7 +1415,7 @@ WantedBy=multi-user.target
               <>
                 <div
                   style={{
-                    color: "#3E5475",
+                    color: "var(--text-primary)",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -1504,10 +1504,10 @@ WantedBy=multi-user.target
                     const isLastRow = idx === rows.length - 1;
                     const isRowChecked = row.checked || false;
                     const rowBg = isRowChecked
-                      ? "#f0f9ff"
+                      ? "var(--row-selected)"
                       : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                        ? "var(--row-alt)"
+                        : "var(--bg-surface)";
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
@@ -1521,7 +1521,7 @@ WantedBy=multi-user.target
                         }}
                         onMouseEnter={(e) => {
                           if (!isRowChecked)
-                            e.currentTarget.style.background = "#f1f5f9";
+                            e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           if (!isRowChecked)
@@ -1634,8 +1634,8 @@ WantedBy=multi-user.target
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "7px 14px",
-                background: "#ffffff",
-                borderTop: `1px solid ${C.cardBorder}`,
+                background: "var(--bg-surface)",
+                borderTop: `1px solid var(--border-subtle)`,
                 borderBottomLeftRadius: CARD_RADIUS,
                 borderBottomRightRadius: CARD_RADIUS,
                 overflow: "hidden",
@@ -1674,7 +1674,7 @@ WantedBy=multi-user.target
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
             backgroundImage: "none",
           },
         }}
@@ -1698,7 +1698,7 @@ WantedBy=multi-user.target
         <DialogContent
           sx={{
             p: "24px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-surface)",
           }}
         >
           <div
@@ -1706,8 +1706,8 @@ WantedBy=multi-user.target
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
+              background: "var(--row-alt)",
+              border: `1px solid var(--border-subtle)`,
               borderRadius: 8,
               padding: 20,
               marginTop: 22,
@@ -1804,7 +1804,7 @@ WantedBy=multi-user.target
             py: "10px",
             px: "16px",
             borderTop: `1px solid ${C.divider}`,
-            backgroundColor: "#f8fafc",
+            backgroundColor: "var(--row-alt)",
           }}
         >
           <Btn

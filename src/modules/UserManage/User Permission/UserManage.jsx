@@ -16,16 +16,16 @@ import useAuth from "../../../context/useAuth";
 
 // ── Color palette (matches CallCount) ────────────────────────────────────────
 const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  pageBg: "var(--bg-main)",
+  cardBg: "var(--bg-surface)",
+  cardBorder: "var(--border-strong)",
+  divider: "var(--border-subtle)",
+  cardShadow: "var(--shadow-soft)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  strongText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   successGreen: "#16a34a",
@@ -41,9 +41,9 @@ const SYS_TOAST_SX = {
   boxShadow: 3,
 };
 // ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -72,8 +72,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  backgroundColor: "var(--bg-surface)",
+  color: "var(--text-primary)",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -117,8 +117,8 @@ const userPermissionFieldInputStyle = {
   outline: "none",
   width: "100%",
   boxSizing: "border-box",
-  color: "#0f172a",
-  background: "#ffffff",
+  color: "var(--text-primary)",
+  background: "var(--bg-surface)",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
@@ -128,8 +128,8 @@ const inputStyle = userPermissionFieldInputStyle;
 // ── Button Component ──────────────────────────────────────────────────────────
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[5px] h-[30px] px-[14px] py-[5px] rounded-[6px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-transparent text-[#3E5475] border-[0.5px] border-[#9CA3AF] hover:bg-[rgba(2,132,199,0.10)]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-transparent text-[var(--text-label)] border-[0.5px] border-[var(--border-strong)] hover:bg-[rgba(2,132,199,0.10)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
@@ -162,7 +162,7 @@ const Btn = ({ children, onClick, disabled, variant = "default", className = "",
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -185,7 +185,7 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
@@ -363,7 +363,7 @@ function PermissionTree({ permissions, setPermissions }) {
   return (
     <div
       style={{
-        background: "#ffffff",
+        background: "var(--bg-surface)",
         overflow: "hidden",
       }}
     >
@@ -374,7 +374,7 @@ function PermissionTree({ permissions, setPermissions }) {
             <div
               className="flex items-center py-1.5 pr-3"
               style={{
-                backgroundColor: "#f8fafc",
+                backgroundColor: "var(--row-alt)",
                 paddingLeft: L1,
               }}
             >
@@ -401,7 +401,7 @@ function PermissionTree({ permissions, setPermissions }) {
                 <div
                   className="flex items-center py-1 pr-3"
                   style={{
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "var(--bg-surface)",
                     paddingLeft: L2,
                   }}
                 >
@@ -886,7 +886,7 @@ export default function UserManage() {
                     const isSuperAdmin =
                       accessType === "superadmin" || accessType === "admin";
                     const isLastRow = i === users.length - 1;
-                    const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    const rowBg = i % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
@@ -898,7 +898,7 @@ export default function UserManage() {
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = rowBg;
@@ -1295,7 +1295,7 @@ export default function UserManage() {
                 onClick={closeForm}
                 style={{
                   background: "#cbd5e1",
-                  color: "#374151",
+                  color: "var(--text-secondary)",
                   border: "none",
                   borderRadius: 12,
                   padding: "10px 28px",

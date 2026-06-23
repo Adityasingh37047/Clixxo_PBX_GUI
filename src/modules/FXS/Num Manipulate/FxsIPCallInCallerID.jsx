@@ -20,19 +20,19 @@ import {
   Alert,
 } from "@mui/material";
 const C = {
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
+  cardBorder: "var(--border-strong)",
+  labelText: "var(--text-primary)",
+  valueText: "var(--text-primary)",
+  mutedText: "var(--text-muted)",
+  accent: "var(--accent-brand)",
 };
 
 const CARD_RADIUS = 10;
 
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-white text-[#0f172a] border-[#9ca3af] hover:bg-[#e2e8f0]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-white text-[#3E5475] border-[#9CA3AF] hover:bg-[#e2e8f0]`;
+const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
+const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
 const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
 const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
 
@@ -57,13 +57,13 @@ const Btn = ({ children, onClick, disabled, variant = "default", className = "",
   </button>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
+    backgroundColor: "var(--bg-surface)",
     "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
     "&:hover fieldset": { borderColor: OUTLINED_HOVER },
     "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
@@ -73,8 +73,8 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": { minHeight: 36, backgroundColor: "#fff" },
+  backgroundColor: "var(--bg-surface)",
+  "& .MuiOutlinedInput-root": { minHeight: 36, backgroundColor: "var(--bg-surface)" },
   "& .MuiSelect-select": {
     display: "flex",
     alignItems: "center",
@@ -104,7 +104,7 @@ const checkboxSx = {
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -135,19 +135,19 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const FXS_NUM_PAGE = "bg-[#f8fafc] min-h-[calc(100vh-80px)] p-[16px]";
+const FXS_NUM_PAGE = "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px]";
 const FXS_NUM_INNER = "w-full max-w-full mx-auto";
 const FXS_NUM_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[#9CA3AF] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
+  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
 const FXS_NUM_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-t-[10px]";
+  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
 const FXS_NUM_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
 const FXS_NUM_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[#3E5475]";
+  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
 const FXS_NUM_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[#9CA3AF] bg-white px-[14px] py-[7px] rounded-b-[10px]";
+  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
 const FXS_NUM_PAGE_BADGE =
-  "rounded-[6px] border border-[#9CA3AF] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[#3E5475]";
+  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
 const FXS_NUM_TOAST_SX = {
   position: "fixed",
   top: 20,
@@ -172,13 +172,13 @@ const numDialogTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const numDialogContentStyle = { padding: "24px", backgroundColor: "#ffffff" };
+const numDialogContentStyle = { padding: "24px", backgroundColor: "var(--bg-surface)" };
 
 const numDialogFormStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
@@ -208,7 +208,7 @@ const numDialogActionsStyle = {
   justifyContent: "center",
   gap: 16,
   padding: "16px 24px",
-  background: "#f8fafc",
+  background: "var(--row-alt)",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
@@ -701,7 +701,7 @@ const IPCallInCallerID = () => {
                   <div
                     style={{
                       marginTop: 12,
-                      color: "#3E5475",
+                      color: "var(--text-primary)",
                       fontSize: 13,
                       fontWeight: 500,
                     }}
@@ -726,7 +726,7 @@ const IPCallInCallerID = () => {
               >
                 <div
                   style={{
-                    color: "#3E5475",
+                    color: "var(--text-primary)",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -817,7 +817,7 @@ const IPCallInCallerID = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
+                                e.currentTarget.style.background = "var(--row-alt)";
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected)

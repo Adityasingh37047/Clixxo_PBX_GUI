@@ -7,19 +7,7 @@ import React, {
 } from "react";
 import { CircularProgress, Tabs, Tab } from "@mui/material";
 import { monitorBoth } from "../../../api/apiService";
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-};
+import { THEME_PALETTE as C } from "../../../constants/themePalette";
 
 // ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
 const Btn = ({
@@ -37,7 +25,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid #9ca3af",
+      border: "1px solid var(--border-subtle)",
     },
     primary: {
       background:
@@ -51,13 +39,13 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "#374151",
+      color: "var(--text-secondary)",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     danger: {
       background: "#fef2f2",
-      color: C.amber,
+      color: C.errorRed,
       border: "0.5px solid #fecaca",
     },
     outline: {
@@ -117,7 +105,7 @@ const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
       fontSize: 12,
-      color: "#94a3b8",
+      color: "var(--text-muted)",
       marginBottom: 16,
       fontWeight: 400,
       display: "flex",
@@ -133,7 +121,7 @@ const PageBreadcrumb = ({ segments, style }) => (
         <span
           style={
             index === segments.length - 1
-              ? { color: "#1e293b", fontWeight: 600 }
+              ? { color: "var(--text-primary)", fontWeight: 600 }
               : undefined
           }
         >
@@ -188,7 +176,7 @@ const TableListEmptyState = ({
   >
     <div
       style={{
-        color: "#3E5475",
+        color: "var(--text-primary)",
         fontSize: 13,
         fontWeight: 600,
         marginBottom: showButton && onAddNew ? 16 : 0,
@@ -231,9 +219,9 @@ const pbxHeaderTabsSx = {
   },
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "var(--border-subtle)";
+const OUTLINED_HOVER = "var(--border-strong)";
+const OUTLINED_FOCUS = "var(--status-primary)";
 const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
 const PBX_TOOLBAR_SEARCH_WIDTH = 168;
 const PBX_TOOLBAR_SEARCH_FOCUS_RING = `0 0 0 1px ${OUTLINED_FOCUS}`;
@@ -298,7 +286,7 @@ const PbxToolbarSearchBar = ({
         gap: 6,
         height: PBX_TOOLBAR_SEARCH_HEIGHT,
         boxSizing: "border-box",
-        background: "#ffffff",
+        background: "var(--bg-surface)",
         border: `1px solid ${OUTLINED_BORDER}`,
         borderRadius: 10,
         padding: fitPlaceholder ? "0 8px" : "0 10px",
@@ -375,7 +363,7 @@ const SIP_PCM_TABLE_CARD_RADIUS = 10;
 const SIP_PCM_FORM_HEADER_RADIUS = 20;
 
 const sipPcmFormCardStyle = {
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -404,7 +392,7 @@ const sipPcmToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
@@ -414,7 +402,7 @@ const sipPcmToolbarStyle = {
 const sipPcmCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
-  color: "#374151",
+  color: "var(--text-secondary)",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
@@ -424,7 +412,7 @@ const monitorFooterStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "#ffffff",
+  background: "var(--bg-surface)",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
   borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
@@ -447,7 +435,7 @@ const purple = "#8b5cf6";
 const StatCard = ({ label, value, accent, ready }) => (
   <div
     style={{
-      background: "#ffffff",
+      background: "var(--bg-surface)",
       borderRadius: 8,
       padding: "8px 12px",
       minHeight: 52,
@@ -579,7 +567,7 @@ const tableStyle = {
 const TH = ({ children, width, align = "center", style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: "var(--table-header-bg)",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -899,7 +887,7 @@ const PbxMonitor = () => {
                 <tbody>
                   {filteredExtensions.map((row, idx) => {
                     const status = getStatus(row.status);
-                    const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    const rowBg = idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
                     const isLastRow = idx === filteredExtensions.length - 1;
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
@@ -913,7 +901,7 @@ const PbxMonitor = () => {
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f8fafc";
+                          e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = rowBg;
@@ -968,7 +956,7 @@ const PbxMonitor = () => {
                 <tbody>
                   {filteredTrunks.map((row, idx) => {
                     const status = getStatus(row.status);
-                    const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    const rowBg = idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
                     const isLastRow = idx === filteredTrunks.length - 1;
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
@@ -982,7 +970,7 @@ const PbxMonitor = () => {
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f8fafc";
+                          e.currentTarget.style.background = "var(--row-alt)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = rowBg;

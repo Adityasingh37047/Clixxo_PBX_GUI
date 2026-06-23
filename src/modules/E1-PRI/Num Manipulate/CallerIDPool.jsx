@@ -164,12 +164,12 @@ const CallerIDPool = () => {
         : CALLERID_POOL_TABLE_COLUMNS;
     return (
       <div className="w-full md:w-[49%] flex flex-col gap-2">
-        <div className="bg-gray-200 border-b-2 border-gray-400 rounded-b-lg w-full min-h-[300px] sm:min-h-[400px] flex flex-col">
+        <div className="bg-gray-200 border-b-2 border-[var(--border-subtle)] rounded-b-lg w-full min-h-[300px] sm:min-h-[400px] flex flex-col">
           <div className="w-full bg-gradient-to-b from-[#b3e0ff] to-[#3d92d0] text-[#222] font-semibold text-lg text-center py-1">
             {title}
           </div>
           <div
-            className="overflow-x-auto w-full flex-1 border-l-2 border-r-2 border-gray-400"
+            className="overflow-x-auto w-full flex-1 border-l-2 border-r-2 border-[var(--border-subtle)]"
             style={{ height: "300px", minHeight: "300px" }}
           >
             <table className="w-full min-w-[500px] border-collapse table-auto">
@@ -178,7 +178,7 @@ const CallerIDPool = () => {
                   {columns.map((col) => (
                     <th
                       key={col.key}
-                      className="bg-white text-gray-600 font-semibold text-xs border border-gray-400 px-1 py-0.5 whitespace-nowrap text-center"
+                      className="bg-[var(--bg-surface)] text-[var(--text-secondary)] font-semibold text-xs border border-[var(--border-subtle)] px-1 py-0.5 whitespace-nowrap text-center"
                     >
                       {col.label}
                     </th>
@@ -188,7 +188,7 @@ const CallerIDPool = () => {
               <tbody>
                 {rows.map((row, idx) => (
                   <tr key={idx} style={{ borderBottom: "1px solid #bbb" }}>
-                    <td className="border border-gray-400 px-1 py-0.5 text-center bg-white">
+                    <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)]">
                       <input
                         type="checkbox"
                         checked={checked.includes(idx)}
@@ -196,19 +196,19 @@ const CallerIDPool = () => {
                         className="w-4 h-4"
                       />
                     </td>
-                    <td className="border border-gray-400 px-1 py-0.5 text-center bg-white text-xs">
+                    <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)] text-xs">
                       {row.no}
                     </td>
-                    <td className="border border-gray-400 px-1 py-0.5 text-center bg-white text-xs">
+                    <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)] text-xs">
                       {row.callerIdRange}
                     </td>
-                    <td className="border border-gray-400 px-1 py-0.5 text-center bg-white text-xs">
+                    <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)] text-xs">
                       {row.outgoingCallResource}
                     </td>
-                    <td className="border border-gray-400 px-1 py-0.5 text-center bg-white text-xs">
+                    <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)] text-xs">
                       {row.destinationPcm}
                     </td>
-                    <td className="border border-gray-400 px-1 py-0.5 text-center bg-white">
+                    <td className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)]">
                       <EditDocumentIcon
                         style={{
                           color: "#0e8fd6",
@@ -227,13 +227,13 @@ const CallerIDPool = () => {
                       key={`empty-${idx}`}
                       style={{
                         borderBottom: "1px solid #bbb",
-                        background: "#fff",
+                        background: "var(--bg-main)",
                       }}
                     >
                       {columns.map((col, j) => (
                         <td
                           key={j}
-                          className="border border-gray-400 px-1 py-0.5 text-center bg-white"
+                          className="border border-[var(--border-subtle)] px-1 py-0.5 text-center bg-[var(--bg-surface)]"
                           style={{ color: "#aaa" }}
                         >
                           &nbsp;
@@ -249,20 +249,20 @@ const CallerIDPool = () => {
         <div className="flex justify-between items-center bg-gray-300 rounded-b-lg px-1 py-0.5 mt-1">
           <div className="flex gap-1">
             <button
-              className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
+              className="bg-gray-400 text-[var(--text-secondary)] font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
               onClick={() => handleDelete(tableKey)}
             >
               Delete
             </button>
             <button
-              className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
+              className="bg-gray-400 text-[var(--text-secondary)] font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
               onClick={() => handleClear(tableKey)}
             >
               Clear All
             </button>
           </div>
           <button
-            className="bg-gray-400 text-gray-700 font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
+            className="bg-gray-400 text-[var(--text-secondary)] font-semibold text-xs rounded px-2 py-0.5 min-w-[70px] shadow hover:bg-gray-500"
             onClick={() => handleAddNew(tableKey)}
           >
             Add New
@@ -275,7 +275,7 @@ const CallerIDPool = () => {
   return (
     <div
       className="bg-gray-50 min-h-[calc(100vh-200px)] w-full p-0 m-0"
-      style={{ backgroundColor: "#dde0e4" }}
+      style={{ backgroundColor: "var(--bg-muted)" }}
     >
       {/* Top controls */}
       <form
@@ -535,9 +535,9 @@ const CallerIDPool = () => {
           ).map((field) => (
             <div
               key={field.key}
-              className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1"
+              className="flex flex-row items-center border border-[var(--border-subtle)] rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)] mb-1"
             >
-              <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
+              <label className="text-xs text-[var(--text-secondary)] font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
                 {field.key === "destinationPcm" && modalTable === "pstn_ip"
                   ? "Source PCM:"
                   : field.label + ":"}
@@ -622,8 +622,8 @@ const CallerIDPool = () => {
               </div>
             </div>
           ))}
-          <div className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1">
-            <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
+          <div className="flex flex-row items-center border border-[var(--border-subtle)] rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)] mb-1">
+            <label className="text-xs text-[var(--text-secondary)] font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
               CallerID:
             </label>
             <div className="flex gap-2 w-full">
