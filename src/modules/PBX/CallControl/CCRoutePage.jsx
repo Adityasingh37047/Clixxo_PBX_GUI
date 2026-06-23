@@ -11,7 +11,10 @@ import {Alert,
   DialogTitle,
   FormControl,
   MenuItem,
-  Select, useMediaQuery } from "@mui/material";
+  Select,
+  Tooltip,
+  useMediaQuery } from "@mui/material";
+import { CC_ROUTE_FIELD_TOOLTIPS } from "../../../constants/CCRouteConstants";
 import {
   createCCRoute,
   deleteCCRoute,
@@ -324,15 +327,87 @@ const formatPbxItemListDisplay = (
 const PBX_MODAL_SECTION_BG = "#f8fafc";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const CC_ROUTE_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 300,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatCcTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const CcFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = CC_ROUTE_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip title={formatCcTooltipTitle(tooltip)} {...CC_ROUTE_TOOLTIP_PROPS}>
+      {label}
+    </Tooltip>
+  );
+};
+
+const ThWithTooltip = ({ tooltipKey, children, style: extra }) => {
+  const tooltip = CC_ROUTE_FIELD_TOOLTIPS[tooltipKey];
+  const content = (
+    <span style={{ cursor: tooltip ? "help" : undefined, display: "inline-block" }}>
+      {children}
+    </span>
+  );
+  return (
+    <TH style={extra}>
+      {tooltip ? (
+        <Tooltip title={formatCcTooltipTitle(tooltip)} {...CC_ROUTE_TOOLTIP_PROPS}>
+          {content}
+        </Tooltip>
+      ) : (
+        content
+      )}
+    </TH>
+  );
+};
+
+const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
@@ -343,12 +418,32 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         fontSize: 14,
         fontWeight: 600,
         color: PBX_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
     </span>
-  </div>
-);
+  );
+  const tooltip = tooltipKey ? CC_ROUTE_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      {tooltip ? (
+        <Tooltip title={formatCcTooltipTitle(tooltip)} {...CC_ROUTE_TOOLTIP_PROPS}>
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
 
 const pbxDualListLabelStyle = {
   fontSize: 12,
@@ -567,7 +662,7 @@ const checkboxSx = {
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+const FieldRow = ({ label, tooltipKey, children, wide = false, labelWidth = 130 }) => (
   <div
     style={{
       display: "flex",
@@ -576,27 +671,42 @@ const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
       width: "100%",
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        width: labelWidth,
-        flexShrink: 0,
-        paddingTop: wide ? 4 : 0,
-      }}
-    >
-      {label}
-    </label>
+    {tooltipKey ? (
+      <CcFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: labelWidth,
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </CcFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: labelWidth,
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </label>
+    )}
     <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
   </div>
 );
 
-const SectionCard = ({ title, children, isFirst = false }) => (
+const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <PbxModalSectionHeading title={title} tooltipKey={tooltipKey} isFirst={isFirst} />
     <div>{children}</div>
   </div>
 );
@@ -1060,21 +1170,36 @@ const CCRoutePage = () => {
                     >
                       ID
                     </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    <ThWithTooltip
+                      tooltipKey="cc_interval_time"
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
                       CC Interval Time
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    </ThWithTooltip>
+                    <ThWithTooltip
+                      tooltipKey="through"
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
                       Through
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    </ThWithTooltip>
+                    <ThWithTooltip
+                      tooltipKey="record_keep_time"
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
                       Record Keep Time
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    </ThWithTooltip>
+                    <ThWithTooltip
+                      tooltipKey="enable"
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
                       Enable
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    </ThWithTooltip>
+                    <ThWithTooltip
+                      tooltipKey="member_extensions"
+                      style={{ position: "sticky", top: 0, zIndex: 10 }}
+                    >
                       Member Extensions
-                    </TH>
+                    </ThWithTooltip>
                     <TH
                       style={{
                         width: 70,
@@ -1295,7 +1420,7 @@ const CCRoutePage = () => {
                 gap: "8px 32px",
               }}
             >
-              <FieldRow label="CC Interval Time *">
+              <FieldRow label="CC Interval Time *" tooltipKey="cc_interval_time">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={ccIntervalTime}
@@ -1314,7 +1439,7 @@ const CCRoutePage = () => {
                     </Select>
                   </FormControl>
                 </FieldRow>
-                <FieldRow label="Record Keep Time *">
+                <FieldRow label="Record Keep Time *" tooltipKey="record_keep_time">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={recordKeepTime}
@@ -1329,7 +1454,7 @@ const CCRoutePage = () => {
                     </Select>
                   </FormControl>
                 </FieldRow>
-                <FieldRow label="Through *">
+                <FieldRow label="Through *" tooltipKey="through">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={through}
@@ -1344,7 +1469,7 @@ const CCRoutePage = () => {
                     </Select>
                   </FormControl>
                 </FieldRow>
-                <FieldRow label="Enable *">
+                <FieldRow label="Enable *" tooltipKey="enable">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={enabled}
@@ -1361,7 +1486,7 @@ const CCRoutePage = () => {
                 </FieldRow>
             </div>
 
-            <SectionCard title="Member Extensions">
+            <SectionCard title="Member Extensions" tooltipKey="member_extensions">
               <div
                 style={{
                   display: "grid",

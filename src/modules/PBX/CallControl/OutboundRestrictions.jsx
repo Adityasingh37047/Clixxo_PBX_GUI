@@ -14,10 +14,12 @@ import {
   MenuItem,
   Select,
   TextField,
+  Tooltip,
   useMediaQuery,
 } from "@mui/material";
 import axiosInstance from "../../../api/axiosInstance";
 import { listOutboundRouteExtensions } from "../../../api/apiService";
+import { OUTBOUND_RESTRICTION_FIELD_TOOLTIPS } from "../../../constants/OutboundRestrictionConstants";
 
 const ENABLE_OPTIONS = ["Yes", "No"];
 const PBX_COMPACT_MQ = "(max-width: 768px)";
@@ -328,31 +330,111 @@ const formatPbxItemListDisplay = (
 const PBX_MODAL_SECTION_BG = "#f8fafc";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const OUTBOUND_RESTRICTION_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 320,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatOutboundRestrictionTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const RestrictionFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = OUTBOUND_RESTRICTION_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatOutboundRestrictionTooltipTitle(tooltip)}
+      {...OUTBOUND_RESTRICTION_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
         top: -12,
         left: 0,
-        background: "#f5f7fa", // ya modal ka background color
+        background: "#f5f7fa",
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
         color: PBX_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
     </span>
-  </div>
-);
+  );
+  const tooltip = tooltipKey
+    ? OUTBOUND_RESTRICTION_FIELD_TOOLTIPS[tooltipKey]
+    : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatOutboundRestrictionTooltipTitle(tooltip)}
+          {...OUTBOUND_RESTRICTION_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
 
 const pbxDualListLabelStyle = {
   fontSize: 12,
@@ -620,7 +702,13 @@ const SipPcmPagination = ({
   </div>
 );
 
-const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+const FieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  wide = false,
+  labelWidth = 130,
+}) => (
   <div
     style={{
       display: "flex",
@@ -629,28 +717,47 @@ const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
       width: "100%",
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        minWidth: labelWidth,
-        width: "auto",
-        flexShrink: 0,
-        paddingTop: wide ? 4 : 0,
-      }}
-    >
-      {label}
-    </label>
+    {tooltipKey ? (
+      <RestrictionFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          textAlign: "left",
+          minWidth: labelWidth,
+          width: "auto",
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </RestrictionFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          minWidth: labelWidth,
+          width: "auto",
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </label>
+    )}
     <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
   </div>
 );
 
-const SectionCard = ({ title, children, isFirst = false }) => (
+const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <PbxModalSectionHeading
+      title={title}
+      tooltipKey={tooltipKey}
+      isFirst={isFirst}
+    />
     <div>{children}</div>
   </div>
 );
@@ -1566,7 +1673,7 @@ const OutboundRestrictions = () => {
                 gap: 14,
               }}
             >
-              <FieldRow label="Name *">
+              <FieldRow label="Name *" tooltipKey="name">
                 <TextField
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -1580,7 +1687,7 @@ const OutboundRestrictions = () => {
                   }}
                 />
               </FieldRow>
-              <FieldRow label="Time Limit *">
+              <FieldRow label="Time Limit *" tooltipKey="time_limit">
                 <TextField
                   value={timeLimit}
                   onChange={(e) => setTimeLimit(e.target.value)}
@@ -1595,7 +1702,7 @@ const OutboundRestrictions = () => {
                   }}
                 />
               </FieldRow>
-              <FieldRow label="Number of Calls Limit *">
+              <FieldRow label="Number of Calls Limit *" tooltipKey="calls_limit">
                 <TextField
                   value={callsLimit}
                   onChange={(e) => setCallsLimit(e.target.value)}
@@ -1609,7 +1716,10 @@ const OutboundRestrictions = () => {
                   }}
                 />
               </FieldRow>
-              <FieldRow label="Auto Cancel Restriction *">
+              <FieldRow
+                label="Auto Cancel Restriction *"
+                tooltipKey="auto_cancel_restriction"
+              >
                 <FormControl size="small" fullWidth>
                   <Select
                     value={autoCancelRestriction}
@@ -1624,7 +1734,7 @@ const OutboundRestrictions = () => {
                   </Select>
                 </FormControl>
               </FieldRow>
-              <FieldRow label="Enabled *">
+              <FieldRow label="Enabled *" tooltipKey="enabled">
                 <FormControl size="small" fullWidth>
                   <Select
                     value={enabled}
@@ -1645,7 +1755,7 @@ const OutboundRestrictions = () => {
               </FieldRow>
             </div>
 
-            <SectionCard title="Member Extensions">
+            <SectionCard title="Member Extensions" tooltipKey="member_extensions">
               <div
                 style={{
                   display: "grid",

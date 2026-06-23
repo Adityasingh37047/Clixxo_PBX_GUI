@@ -11,7 +11,9 @@ import {Alert,
   FormControl,
   MenuItem,
   Select,
-  TextField, useMediaQuery } from "@mui/material";
+  TextField,
+  Tooltip,
+  useMediaQuery } from "@mui/material";
 import {
   createOutboundRoute,
   deleteOutboundRoute,
@@ -20,6 +22,7 @@ import {
   listSipRegistrations,
   updateOutboundRoute,
 } from "../../../api/apiService";
+import { OUTBOUND_ROUTE_FIELD_TOOLTIPS } from "../../../constants/OutboundRouteConstants";
 const ENABLE_OPTIONS = ["Yes", "No"];
 const PASSWORD_OPTIONS = ["None", "Single Pin"];
 const REMEMORY_HUNT_OPTIONS = ["No", "Yes"];
@@ -322,15 +325,70 @@ const formatPbxItemListDisplay = (
 const PBX_MODAL_SECTION_BG = "#f8fafc";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const OUTBOUND_ROUTE_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 320,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatOutboundTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const OutboundFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = OUTBOUND_ROUTE_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatOutboundTooltipTitle(tooltip)}
+      {...OUTBOUND_ROUTE_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
@@ -341,12 +399,35 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         fontSize: 14,
         fontWeight: 600,
         color: PBX_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
     </span>
-  </div>
-);
+  );
+  const tooltip = tooltipKey ? OUTBOUND_ROUTE_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatOutboundTooltipTitle(tooltip)}
+          {...OUTBOUND_ROUTE_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
 
 const pbxDualListLabelStyle = {
   fontSize: 12,
@@ -682,7 +763,13 @@ const OUTBOUND_MODAL_LABEL_WIDTH = 185;
 const OUTBOUND_MODAL_FIELD_WIDTH = 210;
 const OUTBOUND_RIGHT_LABEL_PADDING_LEFT = 28;
 
-const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+const FieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  wide = false,
+  labelWidth = 130,
+}) => (
   <div
     style={{
       display: "flex",
@@ -692,21 +779,36 @@ const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
       minHeight: 36,
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        minWidth: labelWidth,
-        width: "auto",
-        flexShrink: 0,
-        paddingTop: wide ? 4 : 0,
-      }}
-    >
-      {label}
-    </label>
+    {tooltipKey ? (
+      <OutboundFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          textAlign: "left",
+          minWidth: labelWidth,
+          width: "auto",
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </OutboundFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          minWidth: labelWidth,
+          width: "auto",
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </label>
+    )}
     <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
   </div>
 );
@@ -736,6 +838,7 @@ const OutboundLeftField = ({ children }) => (
 
 const OutboundRightRow = ({
   label,
+  tooltipKey,
   children,
   fieldWidth = OUTBOUND_MODAL_FIELD_WIDTH,
 }) => (
@@ -748,22 +851,38 @@ const OutboundRightRow = ({
       minHeight: 36,
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        width: OUTBOUND_MODAL_LABEL_WIDTH,
-        minWidth: OUTBOUND_MODAL_LABEL_WIDTH,
-        flexShrink: 0,
-        paddingLeft: OUTBOUND_RIGHT_LABEL_PADDING_LEFT,
-        boxSizing: "border-box",
-      }}
-    >
-      {label}
-    </label>
+    {tooltipKey ? (
+      <OutboundFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          textAlign: "left",
+          width: OUTBOUND_MODAL_LABEL_WIDTH,
+          minWidth: OUTBOUND_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          paddingLeft: OUTBOUND_RIGHT_LABEL_PADDING_LEFT,
+          boxSizing: "border-box",
+        }}
+      >
+        {label}
+      </OutboundFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: OUTBOUND_MODAL_LABEL_WIDTH,
+          minWidth: OUTBOUND_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          paddingLeft: OUTBOUND_RIGHT_LABEL_PADDING_LEFT,
+          boxSizing: "border-box",
+        }}
+      >
+        {label}
+      </label>
+    )}
     <div style={{ width: fieldWidth, flexShrink: 0 }}>{children}</div>
   </div>
 );
@@ -775,9 +894,13 @@ const outboundRightColStyle = {
   width: "100%",
 };
 
-const SectionCard = ({ title, children, isFirst = false }) => (
+const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <PbxModalSectionHeading
+      title={title}
+      tooltipKey={tooltipKey}
+      isFirst={isFirst}
+    />
     <div>{children}</div>
   </div>
 );
@@ -1872,7 +1995,7 @@ const OutboundRoutesPage = () => {
                   gap: 8,
                 }}
               >
-                <FieldRow label="Name *">
+                <FieldRow label="Name *" tooltipKey="name">
                   <OutboundLeftField>
                     <TextField
                       size="small"
@@ -1883,7 +2006,7 @@ const OutboundRoutesPage = () => {
                     />
                   </OutboundLeftField>
                 </FieldRow>
-                <FieldRow label="Priority *">
+                <FieldRow label="Priority *" tooltipKey="priority">
                   <OutboundLeftField>
                     <TextField
                       size="small"
@@ -1894,7 +2017,7 @@ const OutboundRoutesPage = () => {
                     />
                   </OutboundLeftField>
                 </FieldRow>
-                <FieldRow label="Description">
+                <FieldRow label="Description" tooltipKey="description">
                   <OutboundLeftField>
                     <TextField
                       size="small"
@@ -1905,7 +2028,7 @@ const OutboundRoutesPage = () => {
                     />
                   </OutboundLeftField>
                 </FieldRow>
-                <FieldRow label="Rmemory Hunt">
+                <FieldRow label="Rmemory Hunt" tooltipKey="rememory_hunt">
                   <OutboundLeftField>
                     <FormControl size="small" fullWidth>
                       <Select
@@ -1925,7 +2048,7 @@ const OutboundRoutesPage = () => {
               </div>
 
               <div style={outboundRightColStyle}>
-                <OutboundRightRow label="Next Route">
+                <OutboundRightRow label="Next Route" tooltipKey="next_route">
                   <Checkbox
                     checked={nextRoute}
                     onChange={(e) => setNextRoute(e.target.checked)}
@@ -1933,7 +2056,7 @@ const OutboundRoutesPage = () => {
                     sx={checkboxSx}
                   />
                 </OutboundRightRow>
-                <OutboundRightRow label="Enabled *">
+                <OutboundRightRow label="Enabled *" tooltipKey="enabled">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={enabled}
@@ -1948,7 +2071,7 @@ const OutboundRoutesPage = () => {
                     </Select>
                   </FormControl>
                 </OutboundRightRow>
-                <OutboundRightRow label="Password">
+                <OutboundRightRow label="Password" tooltipKey="password">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={passwordType}
@@ -1967,7 +2090,10 @@ const OutboundRoutesPage = () => {
                   </FormControl>
                 </OutboundRightRow>
                 {passwordType === "Single Pin" && (
-                  <OutboundRightRow label="Enter Password">
+                  <OutboundRightRow
+                    label="Enter Password"
+                    tooltipKey="enter_password"
+                  >
                     <TextField
                       size="small"
                       fullWidth
@@ -1977,7 +2103,11 @@ const OutboundRoutesPage = () => {
                     />
                   </OutboundRightRow>
                 )}
-                <OutboundRightRow label="Time Condition" fieldWidth={280}>
+                <OutboundRightRow
+                  label="Time Condition"
+                  tooltipKey="time_condition"
+                  fieldWidth={280}
+                >
                   <div
                     style={{
                       display: "flex",
@@ -2015,7 +2145,10 @@ const OutboundRoutesPage = () => {
             </div>
 
             <div style={{ marginTop: 12 }}>
-              <PbxModalSectionHeading title="Dial Patterns" />
+              <PbxModalSectionHeading
+                title="Dial Patterns"
+                tooltipKey="dial_patterns"
+              />
 
               <div
                 style={{
@@ -2094,7 +2227,10 @@ const OutboundRoutesPage = () => {
             </div>
 
             <div style={{ marginTop: 8 }}>
-              <PbxModalSectionHeading title="Caller Number Conversion" />
+              <PbxModalSectionHeading
+                title="Caller Number Conversion"
+                tooltipKey="caller_number_conversion"
+              />
               <div
                 style={{
                   display: "grid",
@@ -2140,7 +2276,7 @@ const OutboundRoutesPage = () => {
               </div>
             </div>
 
-            <SectionCard title="Member Extensions *">
+            <SectionCard title="Member Extensions *" tooltipKey="member_extensions">
               <div
                 style={{
                   display: "grid",
@@ -2261,7 +2397,7 @@ const OutboundRoutesPage = () => {
               </div>
             </SectionCard>
 
-            <SectionCard title="Member Trunks *">
+            <SectionCard title="Member Trunks *" tooltipKey="member_trunks">
               <div
                 style={{
                   display: "grid",

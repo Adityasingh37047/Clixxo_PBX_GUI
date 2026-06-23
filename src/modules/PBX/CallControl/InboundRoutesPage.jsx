@@ -12,7 +12,9 @@ import {Alert,
   FormControl,
   MenuItem,
   Select,
-  TextField, useMediaQuery } from "@mui/material";
+  TextField,
+  Tooltip,
+  useMediaQuery } from "@mui/material";
 import {
   createInboundRoute,
   deleteInboundRoute,
@@ -21,6 +23,7 @@ import {
   listSipRegistrations,
   updateInboundRoute,
 } from "../../../api/apiService";
+import { INBOUND_ROUTE_FIELD_TOOLTIPS } from "../../../constants/InboundRouteConstants";
 const ENABLE_OPTIONS = ["Yes", "No"];
 const T38_OPTIONS = ["Yes", "No"];
 const TIME_CONDITION_OPTIONS = ["Yes", "No"];
@@ -398,15 +401,70 @@ const formatPbxItemListDisplay = (
 const PBX_MODAL_SECTION_BG = "#f8fafc";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const INBOUND_ROUTE_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 320,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatInboundTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const InboundFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = INBOUND_ROUTE_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        color: C.labelText,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatInboundTooltipTitle(tooltip)}
+      {...INBOUND_ROUTE_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
@@ -417,12 +475,35 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         fontSize: 14,
         fontWeight: 600,
         color: PBX_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
     </span>
-  </div>
-);
+  );
+  const tooltip = tooltipKey ? INBOUND_ROUTE_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatInboundTooltipTitle(tooltip)}
+          {...INBOUND_ROUTE_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
 
 const pbxDualListLabelStyle = {
   fontSize: 12,
@@ -695,7 +776,13 @@ const INBOUND_MODAL_LABEL_WIDTH = 185;
 const INBOUND_MODAL_FIELD_WIDTH = 210;
 const INBOUND_RIGHT_LABEL_PADDING_LEFT = 28;
 
-const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
+const FieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  wide = false,
+  labelWidth = 130,
+}) => (
   <div
     style={{
       display: "flex",
@@ -704,21 +791,36 @@ const FieldRow = ({ label, children, wide = false, labelWidth = 130 }) => (
       width: "100%",
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        minWidth: labelWidth,
-        width: "auto",
-        flexShrink: 0,
-        paddingTop: wide ? 4 : 0,
-      }}
-    >
-      {label}
-    </label>
+    {tooltipKey ? (
+      <InboundFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          textAlign: "left",
+          minWidth: labelWidth,
+          width: "auto",
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </InboundFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          minWidth: labelWidth,
+          width: "auto",
+          flexShrink: 0,
+          paddingTop: wide ? 4 : 0,
+        }}
+      >
+        {label}
+      </label>
+    )}
     <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
   </div>
 );
@@ -730,7 +832,7 @@ const InboundLeftField = ({ children }) => (
   </div>
 );
 
-const InboundRightRow = ({ label, children }) => (
+const InboundRightRow = ({ label, tooltipKey, children }) => (
   <div
     style={{
       display: "flex",
@@ -739,22 +841,38 @@ const InboundRightRow = ({ label, children }) => (
       width: "100%",
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        textAlign: "left",
-        width: INBOUND_MODAL_LABEL_WIDTH,
-        minWidth: INBOUND_MODAL_LABEL_WIDTH,
-        flexShrink: 0,
-        paddingLeft: INBOUND_RIGHT_LABEL_PADDING_LEFT,
-        boxSizing: "border-box",
-      }}
-    >
-      {label}
-    </label>
+    {tooltipKey ? (
+      <InboundFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          textAlign: "left",
+          width: INBOUND_MODAL_LABEL_WIDTH,
+          minWidth: INBOUND_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          paddingLeft: INBOUND_RIGHT_LABEL_PADDING_LEFT,
+          boxSizing: "border-box",
+        }}
+      >
+        {label}
+      </InboundFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: INBOUND_MODAL_LABEL_WIDTH,
+          minWidth: INBOUND_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          paddingLeft: INBOUND_RIGHT_LABEL_PADDING_LEFT,
+          boxSizing: "border-box",
+        }}
+      >
+        {label}
+      </label>
+    )}
     <div style={{ width: INBOUND_MODAL_FIELD_WIDTH, flexShrink: 0 }}>
       {children}
     </div>
@@ -768,9 +886,13 @@ const inboundRightColStyle = {
   width: "100%",
 };
 
-const SectionCard = ({ title, children, isFirst = false }) => (
+const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <PbxModalSectionHeading
+      title={title}
+      tooltipKey={tooltipKey}
+      isFirst={isFirst}
+    />
     <div>{children}</div>
   </div>
 );
@@ -1720,7 +1842,7 @@ const InboundRoutesPage = () => {
                   gap: 8,
                 }}
               >
-                <FieldRow label="Name *">
+                <FieldRow label="Name *" tooltipKey="name">
                   <InboundLeftField>
                     <TextField
                       size="small"
@@ -1731,7 +1853,7 @@ const InboundRoutesPage = () => {
                     />
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="DID Pattern">
+                <FieldRow label="DID Pattern" tooltipKey="did_pattern">
                   <InboundLeftField>
                     <TextField
                       size="small"
@@ -1742,7 +1864,7 @@ const InboundRoutesPage = () => {
                     />
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="Caller ID Pattern">
+                <FieldRow label="Caller ID Pattern" tooltipKey="caller_id_pattern">
                   <InboundLeftField>
                     <TextField
                       size="small"
@@ -1753,7 +1875,7 @@ const InboundRoutesPage = () => {
                     />
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="Distinctive RingTone">
+                <FieldRow label="Distinctive RingTone" tooltipKey="distinctive_ringtone">
                   <InboundLeftField>
                     <TextField
                       size="small"
@@ -1764,7 +1886,7 @@ const InboundRoutesPage = () => {
                     />
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="Enable T.38">
+                <FieldRow label="Enable T.38" tooltipKey="enable_t38">
                   <InboundLeftField>
                     <FormControl size="small" fullWidth>
                       <Select
@@ -1781,7 +1903,7 @@ const InboundRoutesPage = () => {
                     </FormControl>
                   </InboundLeftField>
                 </FieldRow>
-                <FieldRow label="Destination *">
+                <FieldRow label="Destination *" tooltipKey="destination">
                   <InboundLeftField>
                     <FormControl size="small" fullWidth>
                       <Select
@@ -1809,7 +1931,7 @@ const InboundRoutesPage = () => {
               </div>
 
               <div style={inboundRightColStyle}>
-                <InboundRightRow label="Enabled">
+                <InboundRightRow label="Enabled" tooltipKey="enabled">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={enabled}
@@ -1825,7 +1947,7 @@ const InboundRoutesPage = () => {
                   </FormControl>
                 </InboundRightRow>
 
-                <InboundRightRow label="Priority">
+                <InboundRightRow label="Priority" tooltipKey="priority">
                   <TextField
                     size="small"
                     fullWidth
@@ -1835,7 +1957,10 @@ const InboundRoutesPage = () => {
                   />
                 </InboundRightRow>
 
-                <InboundRightRow label="Enable Mobility Extension">
+                <InboundRightRow
+                  label="Enable Mobility Extension"
+                  tooltipKey="enable_mobility_extension"
+                >
                   <FormControl size="small" fullWidth>
                     <Select
                       value={enableMobilityExtension}
@@ -1853,7 +1978,7 @@ const InboundRoutesPage = () => {
                   </FormControl>
                 </InboundRightRow>
 
-                <InboundRightRow label="Send RingTone">
+                <InboundRightRow label="Send RingTone" tooltipKey="send_ringtone">
                   <FormControl size="small" fullWidth>
                     <Select
                       value={sendRingTone}
@@ -1869,7 +1994,10 @@ const InboundRoutesPage = () => {
                   </FormControl>
                 </InboundRightRow>
 
-                <InboundRightRow label="Enable Time Condition">
+                <InboundRightRow
+                  label="Enable Time Condition"
+                  tooltipKey="enable_time_condition"
+                >
                   <FormControl size="small" fullWidth>
                     <Select
                       value={enableTimeCondition}
@@ -1886,7 +2014,10 @@ const InboundRoutesPage = () => {
                 </InboundRightRow>
 
                 {destination === "Extension_Range" ? (
-                  <InboundRightRow label="Extension Range *">
+                  <InboundRightRow
+                    label="Extension Range *"
+                    tooltipKey="extension_range"
+                  >
                     <TextField
                       size="small"
                       fullWidth
@@ -1897,7 +2028,10 @@ const InboundRoutesPage = () => {
                     />
                   </InboundRightRow>
                 ) : needsDestinationTarget ? (
-                  <InboundRightRow label="Destination Value *">
+                  <InboundRightRow
+                    label="Destination Value *"
+                    tooltipKey="destination_value"
+                  >
                     <FormControl size="small" fullWidth>
                       <Select
                         value={destinationTarget}
@@ -1933,7 +2067,7 @@ const InboundRoutesPage = () => {
               </div>
             </div>
 
-            <SectionCard title="Member Trunks *">
+            <SectionCard title="Member Trunks *" tooltipKey="member_trunks">
               <div
                 style={{
                   display: "grid",

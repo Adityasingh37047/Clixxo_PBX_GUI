@@ -11,6 +11,7 @@ import {
   DialogTitle,
   FormControlLabel,
   TextField,
+  Tooltip,
   useMediaQuery,
 } from "@mui/material";
 import {
@@ -24,6 +25,7 @@ import {
   TC_TABLE_COLUMNS,
   TC_INITIAL_FORM,
 } from "../../../constants/TimeComditionConstants";
+import { TIME_CONDITION_FIELD_TOOLTIPS } from "../../../constants/TimeConditionTooltipConstants";
 import {
   fetchTimeConditions,
   createTimeCondition,
@@ -545,7 +547,79 @@ const apiSlotsToFormRanges = (slots) =>
   }));
 
 // ─── sub-components ───────────────────────────────────────────────────────────
-const FieldRow = ({ label, required, children, fitContent }) => (
+const TIME_CONDITION_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 320,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatTimeConditionTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const TimeConditionFieldLabel = ({
+  tooltipKey,
+  label,
+  required,
+  style = {},
+}) => {
+  const tooltip = TIME_CONDITION_FIELD_TOOLTIPS[tooltipKey] || "";
+  const content = (
+    <>
+      {label}
+      {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
+    </>
+  );
+  const labelEl = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#30415A",
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {content}
+    </span>
+  );
+  if (!tooltip) return labelEl;
+  return (
+    <Tooltip
+      title={formatTimeConditionTooltipTitle(tooltip)}
+      {...TIME_CONDITION_TOOLTIP_PROPS}
+    >
+      {labelEl}
+    </Tooltip>
+  );
+};
+
+const FieldRow = ({ label, tooltipKey, required, children, fitContent }) => (
   <div
     style={{
       display: "flex",
@@ -555,19 +629,33 @@ const FieldRow = ({ label, required, children, fitContent }) => (
       width: fitContent ? "max-content" : "100%",
     }}
   >
-    <label
-      style={{
-        width: 120,
-        flexShrink: 0,
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#30415A",
-        paddingTop: 4,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
-    </label>
+    {tooltipKey ? (
+      <TimeConditionFieldLabel
+        tooltipKey={tooltipKey}
+        label={label}
+        required={required}
+        style={{
+          width: 120,
+          flexShrink: 0,
+          paddingTop: 4,
+          display: "inline-block",
+        }}
+      />
+    ) : (
+      <label
+        style={{
+          width: 120,
+          flexShrink: 0,
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#30415A",
+          paddingTop: 4,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
+      </label>
+    )}
     <div style={fitContent ? { flexShrink: 0 } : { flex: 1 }}>{children}</div>
   </div>
 );
@@ -1370,7 +1458,7 @@ const TimeCondition = () => {
             }}
           >
             {/* Name */}
-            <FieldRow label="Name" required>
+            <FieldRow label="Name" tooltipKey="name" required>
               <TextField
                 value={form.name}
                 onChange={(e) =>
@@ -1385,7 +1473,7 @@ const TimeCondition = () => {
             </FieldRow>
 
             {/* Type */}
-            <FieldRow label="Type" required>
+            <FieldRow label="Type" tooltipKey="type" required>
               <div style={{ display: "flex", gap: 20 }}>
                 {TC_TYPES.map((t) => (
                   <label
@@ -1416,7 +1504,7 @@ const TimeCondition = () => {
             {/* ── WorkTime fields ── */}
             {form.type === "worktime" && (
               <>
-                <FieldRow label="Settings" required fitContent>
+                <FieldRow label="Settings" tooltipKey="settings" required fitContent>
                   <div
                     style={{
                       display: "flex",
@@ -1509,7 +1597,7 @@ const TimeCondition = () => {
                   </div>
                 </FieldRow>
 
-                <FieldRow label="Day of Week" required>
+                <FieldRow label="Day of Week" tooltipKey="day_of_week" required>
                   <CheckGroup
                     items={TC_DAYS_OF_WEEK}
                     checked={form.daysOfWeek}
@@ -1523,7 +1611,7 @@ const TimeCondition = () => {
             {/* ── Holiday fields ── */}
             {form.type === "holiday" && (
               <>
-                <FieldRow label="Month" required>
+                <FieldRow label="Month" tooltipKey="month" required>
                   <CheckGroup
                     items={TC_MONTHS}
                     checked={form.months}
@@ -1532,7 +1620,7 @@ const TimeCondition = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Day of Month" required>
+                <FieldRow label="Day of Month" tooltipKey="day_of_month" required>
                   <CheckGroup
                     items={TC_DAYS_OF_MONTH.map(String)}
                     checked={form.daysOfMonth.map(String)}
