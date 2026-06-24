@@ -299,6 +299,7 @@ const tooltipProps = {
         color: "#334155",
         border: "1px solid #d1d5db",
         fontSize: 12,
+        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
       },
     },
