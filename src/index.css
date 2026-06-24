@@ -37,6 +37,18 @@ body, html {
   background-color: #dde0e4 !important;
 }
 
+/* App-wide smooth scroll (anchors, keyboard, programmatic scroll).
+   Mouse-wheel easing is wired in Layout.jsx — pure CSS cannot slow wheel scroll. */
+html {
+  scroll-behavior: smooth;
+}
+
+body,
+.app-main-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* VoIP settings pages — outer layout #eef2f7 + inner page shell #f8fafc (matches Media Parameters) */
 .fxs-voip-media-page {
   background: #f8fafc;
