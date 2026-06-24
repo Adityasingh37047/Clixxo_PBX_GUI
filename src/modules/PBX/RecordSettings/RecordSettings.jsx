@@ -691,7 +691,7 @@ const RecordSettings = () => {
   const [selectedTrunks, setSelectedTrunks] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
   const [selectedConferences, setSelectedConferences] = useState([]);
-  const [destinations, setDestinations] = useState([]);
+  const [Destinations, setDestinations] = useState([]);
 
   const [expandedSections] = useState({
     trunks: true,
@@ -717,7 +717,6 @@ console.log("Conferences:", availableConferences);
         console.log("Destinations:", data);
         console.log("Message:", data.message);
         console.log("Keys:", Object.keys(data.message || {}));
-  
         setDestinations(data);
       } catch (error) {
         console.error("Failed to load destinations:", error);

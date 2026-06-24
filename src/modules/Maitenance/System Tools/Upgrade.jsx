@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material"; 
 import {
   UPGRADE_LABELS,
   UPGRADE_BUTTONS,
@@ -220,28 +222,73 @@ const formatVersionValue = (raw) => {
   return String(raw).trim() || "Unavailable";
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  serialNumber: "The serial number of the device.",
+  webVersion: "The web version of the device.",
+  service: "The service of the device.",
+  uboot: "The uboot of the device.",
+  kernel: "The kernel of the device.",
+  firmware: "The firmware of the device.",
+};
+
 const VERSION_FIELDS = [
   {
     key: "serial_no",
     label: "Serial Number",
     formatter: (val) => val || "Unavailable",
+    tooltip: tooltips.serialNumber,
   },
   {
     key: "web_version",
     label: "WEB",
     formatter: (val) => val || "Unavailable",
+    tooltip: tooltips.webVersion,
   },
   {
     key: "service",
     label: "Service",
     formatter: (val) => val || "Unavailable",
+    tooltip: tooltips.service,
   },
-  { key: "uboot", label: "Uboot", formatter: (val) => val || "Unavailable" },
-  { key: "kernel", label: "Kernel", formatter: (val) => val || "Unavailable" },
+  {
+    key: "uboot",
+    label: "Uboot",
+    formatter: (val) => val || "Unavailable",
+    tooltip: tooltips.uboot,
+  },
+  {
+    key: "kernel",
+    label: "Kernel",
+    formatter: (val) => val || "Unavailable",
+    tooltip: tooltips.kernel,
+  },
   {
     key: "firmware",
     label: "Firmware",
     formatter: (val) => val || "Unavailable",
+    tooltip: tooltips.firmware,
   },
 ];
 
@@ -558,7 +605,9 @@ const Upgrade = () => {
             >
               {versionRows.map((row) => (
                 <React.Fragment key={row.key}>
-                  <label style={labelStyle}>{row.label}:</label>
+                  <Tooltip title={row.tooltip} {...tooltipProps}>
+                    <label style={labelStyle}>{row.label}:</label>
+                  </Tooltip>
                   <div className="flex flex-col min-w-0 w-full">
                     <div style={valueBoxStyle}>
                       {row.version || "Unavailable"}

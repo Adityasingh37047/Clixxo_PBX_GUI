@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   RADIUS_FIELDS,
   LOCAL_IP_OPTIONS,
@@ -217,7 +219,42 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
+const tooltips = {
+  radius: "Specifies whether the Radius is enabled or disabled.",
+  certification: "Specifies whether the Certification is enabled or disabled.",
+  allowCalls: "Specifies whether the Allow Calls is enabled or disabled.",
+  localIp: "Specifies the local IP address.",
+  masterServer: "Specifies the master server address.",
+  sharedKey: "Specifies the shared key.",
+  spareServer: "Specifies the spare server address.",
+  spareSharedKey: "Specifies the spare shared key.",
+  timeout: "Specifies the timeout in seconds.",
+  retransmission: "Specifies the retransmission times.",
+  transmitInterval: "Specifies the transmit interval of charge alive package(s).",
+  callType: "Specifies the call type.",
+};
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
@@ -476,9 +513,11 @@ const Radius = () => {
                     {ENABLE_CHECKBOX_FIELDS.map((field) => (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
-                          <span style={{ color: C.labelText }}>
+                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                            <span style={{ color: C.labelText }}>
                             {field.label}
-                          </span>
+                            </span>
+                          </Tooltip>
                         </div>
                         <div className="flex items-center pl-2 sm:pl-0">
                           <CallTypeCheckbox
@@ -496,9 +535,11 @@ const Radius = () => {
                     field.type === "checkboxGroup" ? (
                       <React.Fragment key={field.name || "callTypeGroup"}>
                         <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
-                          <span style={{ color: C.labelText }}>
+                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                            <span style={{ color: C.labelText }}>
                             {field.label}
-                          </span>
+                            </span>
+                          </Tooltip>
                         </div>
                         <div className="flex flex-col min-h-[34px] pl-2 sm:pl-0 gap-0 pt-0.5">
                           {CALL_TYPE_OPTIONS.map((opt) => (
@@ -516,9 +557,11 @@ const Radius = () => {
                     ) : (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[34px]">
-                          <span style={{ color: C.labelText }}>
+                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                            <span style={{ color: C.labelText }}>
                             {field.label}
-                          </span>
+                            </span>
+                          </Tooltip>
                         </div>
                         <div className="flex items-center min-h-[34px] pl-2 sm:pl-0">
                           {field.type === "select" ? (

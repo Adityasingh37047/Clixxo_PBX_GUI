@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material"; 
 import {
   ACCOUNT_MANAGE_TABLE_COLUMNS,
   ACCOUNT_MANAGE_MODAL_FIELDS,
@@ -130,6 +132,35 @@ const addHostFormPanelStyle = {
 };
 
 const CARD_RADIUS = 20;
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+ index: "The index of the user.",
+ userName: "The username of the user.",
+ password: "The password of the user.",
+ authority: "The authority of the user.",
+};
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
@@ -1240,7 +1271,9 @@ const AccountManage = () => {
               <div style={addHostFormPanelStyle}>
                 {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
                   <div key={field.name} style={modalRowStyle}>
-                    <label style={modalLabelStyle}>{field.label}:</label>
+                    <Tooltip title={tooltips[field.name] || ""} {...tooltipProps}>
+                      <label style={modalLabelStyle}>{field.label}:</label>
+                    </Tooltip>
                     {field.type === "select" ? (
                       <select
                         name={field.name}

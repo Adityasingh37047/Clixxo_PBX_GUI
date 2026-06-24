@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   SCTRACK_TITLE,
   SCTRACK_RADIO_OPTIONS,
@@ -137,6 +139,33 @@ const systemToolsFieldInputStyleWhite = {
 };
 const inputStyle = systemToolsFieldInputStyleWhite;
 
+  const tooltipProps = {
+    arrow: true,
+    placement: "top",
+    slotProps: {
+      tooltip: {
+        sx: {
+          bgcolor: "#fff",
+          color: "#334155",
+          border: "1px solid #d1d5db",
+          fontSize: 12,
+          maxWidth: 500,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        },
+      },
+      arrow: {
+        sx: {
+          color: "#fff",
+        },
+      },
+    },
+  };
+
+  const tooltips = {
+    filterType: "Specifies the filter type.",
+    filterValue: "Specifies the filter value.",
+    trackMessage: "Specifies the track message.",
+  };
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
@@ -594,7 +623,9 @@ const SignalingCallTrack = () => {
                           fontWeight: 500,
                         }}
                       >
-                        {opt.label}
+                        <Tooltip title={tooltips.filterType} {...tooltipProps}>
+                          <span style={{ color: C.labelText }}>{opt.label}</span>
+                        </Tooltip>
                       </span>
                     }
                     sx={{ margin: 0 }}
@@ -677,7 +708,9 @@ const SignalingCallTrack = () => {
               <label
                 style={{ fontSize: 14, color: C.labelText, fontWeight: 600 }}
               >
-                {SCTRACK_LABELS.trackMessage}
+                <Tooltip title={tooltips.trackMessage} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCTRACK_LABELS.trackMessage}</span>
+                </Tooltip>
               </label>
               <textarea
                 value={trackMessage}

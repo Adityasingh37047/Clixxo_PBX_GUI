@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Alert, CircularProgress } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import axiosInstance from "../../../api/axiosInstance";
 const fetchRoutingInfo = async () => {
   const res = await axiosInstance.get("/get-routing-info");
@@ -268,20 +269,52 @@ const routesTableShellStyle = {
   background: C.cardBg,
 };
 
-const FieldRow = ({ label, children }) => (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-    <label
-      style={{
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
         fontSize: 12,
-        fontWeight: 600,
-        color: C.labelText,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const FieldRow = ({ label, tooltip, children }) => (
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+    <div
+      style={{
         width: "100%",
         maxWidth: 220,
         flexShrink: 0,
       }}
     >
-      {label}
-    </label>
+      <Tooltip title={tooltip || ""} {...tooltipProps}>
+        <span>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: C.labelText,
+            }}
+          >
+            {label}
+          </label>
+        </span>
+      </Tooltip>
+    </div>
+
     <div className="flex-1 w-full">{children}</div>
   </div>
 );
@@ -593,7 +626,9 @@ const RoutingInterface = () => {
                     className="flex flex-col gap-3 w-full"
                     style={{ maxWidth: 640, margin: "0 auto" }}
                   >
-                    <FieldRow label="Active Interface:">
+                    <FieldRow label="Active Interface:"
+                    tooltip="The interface that is currently active and being used for routing."
+                    >
                       <input
                         type="text"
                         readOnly
@@ -602,7 +637,8 @@ const RoutingInterface = () => {
                         style={disabledInputStyle}
                       />
                     </FieldRow>
-                    <FieldRow label="IP Address:">
+                    <FieldRow label="IP Address:"
+                    tooltip="The IP address of the current active interface.">
                       <input
                         type="text"
                         readOnly
@@ -611,7 +647,8 @@ const RoutingInterface = () => {
                         style={disabledInputStyle}
                       />
                     </FieldRow>
-                    <FieldRow label="Subnet Mask:">
+                    <FieldRow label="Subnet Mask:"
+                    tooltip="The subnet mask of the current active interface.">
                       <input
                         type="text"
                         readOnly
@@ -620,7 +657,8 @@ const RoutingInterface = () => {
                         style={disabledInputStyle}
                       />
                     </FieldRow>
-                    <FieldRow label="Gateway IP:">
+                    <FieldRow label="Gateway IP:"
+                    tooltip="The gateway IP address of the current active interface.">
                       <input
                         type="text"
                         readOnly
@@ -629,7 +667,9 @@ const RoutingInterface = () => {
                         style={disabledInputStyle}
                       />
                     </FieldRow>
-                    <FieldRow label="Metric:">
+                    <FieldRow label="Metric:"
+                    tooltip="The metric of the current active interface."
+                    >
                       <input
                         type="text"
                         readOnly
@@ -733,7 +773,8 @@ const RoutingInterface = () => {
                       style={{ maxWidth: 640, margin: "0 auto 12px" }}
                     >
                       {/* Interface dropdown */}
-                      <FieldRow label="Select Interface (M):">
+                      <FieldRow label="Select Interface (M):"
+                      tooltip="Select the interface to switch to.">
                         <select
                           value={form.interface}
                           onChange={(e) => handleIfaceChange(e.target.value)}
@@ -753,7 +794,8 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* IP Address — read-only, auto-filled */}
-                      <FieldRow label="IP Address:">
+                      <FieldRow label="IP Address:"
+                      tooltip="The IP address of the selected interface.">
                         <input
                           type="text"
                           readOnly
@@ -764,7 +806,8 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* Subnet Mask — read-only, auto-filled */}
-                      <FieldRow label="Subnet Mask:">
+                      <FieldRow label="Subnet Mask:"
+                      tooltip="The subnet mask of the selected interface.">
                         <input
                           type="text"
                           readOnly
@@ -775,7 +818,8 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* Gateway — editable */}
-                      <FieldRow label="Gateway IP (M):">
+                      <FieldRow label="Gateway IP (M):"
+                      tooltip="The gateway IP address of the selected interface.">
                         <input
                           type="text"
                           value={form.gateway}
@@ -809,7 +853,8 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* Metric — editable */}
-                      <FieldRow label="Metric:">
+                      <FieldRow label="Metric:"
+                      tooltip="The metric of the selected interface.">
                         <input
                           type="text"
                           value={form.metric}

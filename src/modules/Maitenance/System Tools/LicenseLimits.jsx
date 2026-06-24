@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material"; 
 import { Alert } from "@mui/material";
 import {
   getLicenseLimits,
@@ -192,6 +194,34 @@ const FIELDS = [
   { key: "max_trunks", label: "Maximum Trunks" },
 ];
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  max_extensions: "The maximum number of extensions allowed for this system.",
+  max_fxs_ports: "The maximum number of FXS ports allowed for this system.",
+  max_trunks: "The maximum number of trunks allowed for this system.",
+};
+
 const LicenseLimits = () => {
   const [form, setForm] = useState(INITIAL_FORM);
   const [loading, setLoading] = useState(false);
@@ -317,7 +347,9 @@ const LicenseLimits = () => {
             >
               {FIELDS.map(({ key, label }) => (
                 <React.Fragment key={key}>
-                  <label style={labelStyle}>{label}</label>
+                  <Tooltip title={tooltips[key]} {...tooltipProps}>
+                    <label style={labelStyle}>{label}</label>
+                  </Tooltip>
                   <input
                     type="number"
                     min={0}

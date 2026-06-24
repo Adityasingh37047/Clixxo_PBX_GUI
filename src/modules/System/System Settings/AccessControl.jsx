@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Tooltip } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Button,
@@ -110,6 +111,34 @@ const systemModalFieldInputStyle = {
 
 
 const CARD_RADIUS = 20;
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+  
+const tooltips = {
+  index: "Enter the index of the rule to edit.",
+  command: "Enter the command to execute.",
+
+};
+
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -220,6 +249,10 @@ const Btn = ({
   })();
 
   const baseBg = s.background;
+
+
+
+
 
   return (
     <button
@@ -1186,18 +1219,30 @@ const AccessControl = () => {
                 gap: 12,
               }}
             >
-              <label
-                style={{
-                  width: 170,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Index:
-              </label>
+             <Tooltip
+  title={tooltips.index}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      width: 170,
+      display: "inline-block",
+    }}
+  >
+    <label
+      style={{
+        width: 170,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        textAlign: "left",
+        whiteSpace: "nowrap",
+      }}
+    >
+      Index:
+    </label>
+  </span>
+</Tooltip>
               <div style={{ width: "min(100%, 320px)" }}>
                 <input
                   type="text"
@@ -1224,18 +1269,30 @@ const AccessControl = () => {
                 gap: 12,
               }}
             >
-              <label
-                style={{
-                  width: 170,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Command:
-              </label>
+            <Tooltip
+  title={tooltips.command}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      width: 170,
+      display: "inline-block",
+    }}
+  >
+    <label
+      style={{
+        width: 170,
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        textAlign: "left",
+        whiteSpace: "nowrap",
+      }}
+    >
+      Command:
+    </label>
+  </span>
+</Tooltip>
               <div style={{ width: "min(100%, 320px)" }}>
                 <input
                   type="text"

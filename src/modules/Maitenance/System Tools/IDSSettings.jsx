@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Tooltip } from "@mui/material";
 import {
   IDS_TYPES,
   IDS_INITIAL_FORM,
@@ -172,7 +173,53 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
+const tooltips = {
+  idsSettings:
+  "Enable or configure Intrusion Detection System (IDS) settings for monitoring and detecting suspicious network activity.",
+  enable: "Shows the current enable status of the IDS settings.",
+  type: "Select the type of IDS to use.",
+  warningThreshold: "Shows the current warning threshold for the IDS.",
+  blacklistThreshold: "Shows the current blacklist threshold for the IDS.",
+  blacklistValidity: "Shows the current blacklist validity for the IDS.", "TLS Connection Failed":
+    "Triggered when TLS handshake or secure SIP connection establishment fails.",
+
+  "Malformed SIP Datagram":
+    "Triggered when invalid or malformed SIP packets are received.",
+
+  "Registration Failed":
+    "Triggered when SIP registration attempts repeatedly fail.",
+
+  "Call Failed":
+    "Triggered when call setup attempts fail unexpectedly.",
+
+  "SIP Exception Flow":
+    "Triggered when abnormal or excessive SIP traffic patterns are detected.",
+
+    blacklistValidityTooltip:
+  "Specifies how long a blacklisted IP address remains blocked before being automatically removed from the blacklist.",
+};
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
@@ -392,16 +439,22 @@ const IDSSettings = () => {
                   paddingBottom: 8,
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    minWidth: 100,
-                  }}
-                >
-                  IDS Settings:
-                </span>
+               <Tooltip
+  title={tooltips.idsSettings}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      minWidth: 100,
+      display: "inline-block",
+    }}
+  >
+    IDS Settings:
+  </span>
+</Tooltip>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -413,30 +466,43 @@ const IDSSettings = () => {
                       "&.Mui-checked": { color: C.accent },
                     }}
                   />
-                  <span style={{ fontSize: 14, color: C.valueText }}>
-                    Enable
-                  </span>
+  <Tooltip
+    title={tooltips.enable}
+    {...tooltipProps}
+  >
+    <span style={{ fontSize: 14, color: C.valueText }}>
+      Enable
+    </span>
+  </Tooltip>
                 </div>
               </div>
 
               {/* Table Header - Hidden on mobile, shown on larger screens */}
               <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-3 px-2 py-2 rounded">
-                <span
-                  style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
-                >
-                  Type
-                </span>
-                <span
-                  style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
-                >
-                  Warning Threshold (per 10 seconds)
-                </span>
-                <span
-                  style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
-                >
-                  Blacklist Threshold (per 10 seconds)
-                </span>
-              </div>
+              <Tooltip title={tooltips.type} {...tooltipProps}>
+  <span
+    style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
+  >
+    Type
+  </span>
+</Tooltip>
+
+<Tooltip title={tooltips.warningThreshold} {...tooltipProps}>
+  <span
+    style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
+  >
+    Warning Threshold (per 10 seconds)
+  </span>
+</Tooltip>
+
+<Tooltip title={tooltips.blacklistThreshold} {...tooltipProps}>
+  <span
+    style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
+  >
+    Blacklist Threshold (per 10 seconds)
+  </span>
+</Tooltip>
+                </div>
 
               {/* Desktop Layout - Grid table */}
               <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-3 items-center w-full px-2">
@@ -453,15 +519,20 @@ const IDSSettings = () => {
                           "&.Mui-checked": { color: C.accent },
                         }}
                       />
-                      <span
-                        style={{
-                          fontSize: 13,
-                          color: C.valueText,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {type.label}
-                      </span>
+                  <Tooltip
+  title={tooltips[type.label] || ""}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      fontSize: 13,
+      color: C.valueText,
+      fontWeight: 500,
+    }}
+  >
+    {type.label}
+  </span>
+</Tooltip>
                     </div>
                     <div className="col-span-1 flex items-center">
                       <input
@@ -585,16 +656,21 @@ const IDSSettings = () => {
                 className="flex flex-col sm:flex-row items-start sm:items-center mt-3 pt-3 gap-2"
                 style={{ borderTop: `1px solid ${C.divider}` }}
               >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    minWidth: 140,
-                  }}
-                >
-                  Blacklist Validity(s)
-                </span>
+               <Tooltip
+  title={tooltips.blacklistValidity}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      minWidth: 140,
+    }}
+  >
+    Blacklist Validity(s)
+  </span>
+</Tooltip>
                 <input
                   type="number"
                   value={form.blacklistValidity}

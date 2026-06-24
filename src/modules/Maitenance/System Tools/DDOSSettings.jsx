@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   DDOS_FIELDS,
   DDOS_INITIAL_FORM,
@@ -147,6 +149,43 @@ const systemToolsReadOnlyFieldTextAreaStyle = {
 };
 const inputStyle = systemToolsEditableFieldInputStyle;
 const selectStyle = systemToolsEditableFieldSelectStyle;
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  webPortAttack:
+    "Protects the system from suspicious or excessive access attempts targeting web management ports.",
+  ftpPortAttack: "Protects the system from suspicious or excessive access attempts targeting FTP ports.",
+  sshPortAttack: "Protects the system from suspicious or excessive access attempts targeting SSH ports.",
+  telnetPortAttack: "Protects the system from suspicious or excessive access attempts targeting TELNET ports.",
+  blacklistValidity: "Specifies how long a blacklisted IP address remains blocked before being automatically removed from the blacklist.",
+  blacklistTime: "Specifies the time duration for which a blacklisted IP address remains blocked.",
+  ftpLimit: "Specifies the maximum number of FTP connections allowed per minute.",
+  sshLimit: "Specifies the maximum number of SSH connections allowed per minute.",
+  telnetLimit: "Specifies the maximum number of TELNET connections allowed per minute.",
+  blacklistValidityTooltip: "Specifies how long a blacklisted IP address remains blocked before being automatically removed from the blacklist.",
+  blacklistTimeTooltip: "Specifies the time duration for which a blacklisted IP address remains blocked.",
+  webLimit: "Specifies the maximum number of WEB connections allowed per minute.",
+};
 
 
 // ── Button Component (same as AccountManage) ─────────────────────────────────
@@ -697,7 +736,9 @@ const DDOSSettings = () => {
             >
               {/* Form Fields Grid — centered like Signaling Call Test */}
               <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center">
-                <label style={labelStyle}>WEB Port Attack Protection</label>
+                <Tooltip title={tooltips.webPortAttack} {...tooltipProps}>
+                  <span style={labelStyle}>WEB Port Attack Protection</span>
+                </Tooltip>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -718,7 +759,9 @@ const DDOSSettings = () => {
 
                 {form.webPortAttack && (
                   <>
-                    <label style={labelStyle}>WEB Limit</label>
+                    <Tooltip title={tooltips.webLimit} {...tooltipProps}>
+                      <span style={labelStyle}>WEB Limit</span>
+                    </Tooltip>
                     <input
                       type="number"
                       value={form.webLimit || ""}
@@ -735,7 +778,9 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <label style={labelStyle}>FTP Port Attack Protection</label>
+                <Tooltip title={tooltips.ftpPortAttack} {...tooltipProps}>
+                  <span style={labelStyle}>FTP Port Attack Protection</span>
+                </Tooltip>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -756,7 +801,9 @@ const DDOSSettings = () => {
 
                 {form.ftpPortAttack && (
                   <>
-                    <label style={labelStyle}>FTP Limit</label>
+                    <Tooltip title={tooltips.ftpLimit} {...tooltipProps}>
+                      <span style={labelStyle}>FTP Limit</span>
+                    </Tooltip>
                     <input
                       type="number"
                       value={form.ftpLimit || ""}
@@ -773,7 +820,9 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <label style={labelStyle}>SSH Port Attack Protection</label>
+                <Tooltip title={tooltips.sshPortAttack} {...tooltipProps}>
+                  <span style={labelStyle}>SSH Port Attack Protection</span>
+                </Tooltip>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -794,7 +843,9 @@ const DDOSSettings = () => {
 
                 {form.sshPortAttack && (
                   <>
-                    <label style={labelStyle}>SSH Limit</label>
+                    <Tooltip title={tooltips.sshLimit} {...tooltipProps}>
+                      <span style={labelStyle}>SSH Limit</span>
+                    </Tooltip>
                     <input
                       type="number"
                       value={form.sshLimit || ""}
@@ -811,7 +862,9 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <label style={labelStyle}>TELNET Port Attack Protection</label>
+                <Tooltip title={tooltips.telnetPortAttack} {...tooltipProps}>
+                  <span style={labelStyle}>TELNET Port Attack Protection</span>
+                </Tooltip>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -832,7 +885,9 @@ const DDOSSettings = () => {
 
                 {form.telnetPortAttack && (
                   <>
-                    <label style={labelStyle}>TELNET Limit</label>
+                    <Tooltip title={tooltips.telnetLimit} {...tooltipProps}>
+                      <span style={labelStyle}>TELNET Limit</span>
+                    </Tooltip>
                     <input
                       type="number"
                       value={form.telnetLimit || ""}
@@ -849,9 +904,11 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <label style={labelStyle}>
+                  <Tooltip title={tooltips.blacklistValidity} {...tooltipProps}>
+                  <span style={labelStyle}>
                   Set Validity of Attacker IP Blacklist
-                </label>
+                </span>
+                </Tooltip>
                 <select
                   value={form.blacklistValidityType}
                   onChange={(e) =>
@@ -870,7 +927,9 @@ const DDOSSettings = () => {
 
                 {form.blacklistValidityType === "inSetTime" && (
                   <>
-                    <label style={labelStyle}>Time (Min)</label>
+                    <Tooltip title={tooltips.blacklistTime} {...tooltipProps}>
+                      <span style={labelStyle}>Time (Min)</span>
+                    </Tooltip>
                     <input
                       type="number"
                       value={form.blacklistTime || ""}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material"; 
 import { fetchChangePassword } from "../../../api/apiService";
 import useAuth from "../../../context/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -199,6 +201,36 @@ const advancedFormBtnStyle = {
   lineHeight: "34px",
   boxSizing: "border-box",
 };
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",  
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  username: "The current username of the user.",
+  newUsername: "The new username of the user.",
+
+  password: "The password of the user.",
+  confirmPassword: "The confirmation password of the user.",
+};  
 
 const Btn = ({
   children,
@@ -515,7 +547,9 @@ const ChangePassword = () => {
               >
                 {CHANGE_PASSWORD_FIELDS.map((field) => (
                   <React.Fragment key={field.name}>
-                    <label style={labelStyle}>{field.label}:</label>
+                    <Tooltip title={tooltips[field.name] || ""} {...tooltipProps}>
+                      <label style={labelStyle}>{field.label}:</label>
+                    </Tooltip>
                     <div className="flex flex-col min-w-0 w-full">
                       {field.type === "password" ? (
                         <TextField

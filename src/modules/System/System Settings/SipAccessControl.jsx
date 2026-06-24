@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Tooltip } from "@mui/material";  
 import {
   SIP_ACCESS_CONTROL_COLUMNS,
   SIP_ACCESS_CONTROL_MODAL_FIELDS,
@@ -138,6 +139,33 @@ const systemModalSelectSx = {
 };
 
 const CARD_RADIUS = 20;
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+  const tooltips = {
+    Name: "Enter a descriptive name for this SIP access control entry.",
+    "Default": "Select the default action for this SIP access control entry.",
+    "Description": "Enter a description for this SIP access control entry.",
+  };
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -853,20 +881,33 @@ const SipAccessControl = () => {
                   gap: 12,
                 }}
               >
-                <label
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    width: 120,
-                    flexShrink: 0,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                    paddingTop: field.type === "textarea" ? 8 : 0,
-                  }}
-                >
-                  {field.label}:
-                </label>
+               <Tooltip
+  title={tooltips[field.label] || ""}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      width: 120,
+      flexShrink: 0,
+      display: "inline-block",
+    }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 120,
+        flexShrink: 0,
+        textAlign: "left",
+        whiteSpace: "nowrap",
+        paddingTop: field.type === "textarea" ? 8 : 0,
+      }}
+    >
+      {field.label}:
+    </label>
+  </span>
+</Tooltip>
                 <div style={{ width: "min(100%, 320px)", display: "flex" }}>
                   {field.type === "text" ? (
                     <input
