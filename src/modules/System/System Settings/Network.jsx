@@ -273,6 +273,50 @@ const SectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  ipv4NetworkType:
+    "Select the IPv4 network configuration type. Static allows manual IP configuration, while DHCP obtains settings automatically.",
+  ipAddress: "Specify the IPv4 address assigned to this interface.",
+  subnetMask:
+    "Specify the subnet mask used for the IPv4 network. It defines the network and host portions of the IP address.",
+  defaultGateway:
+    "Specify the default gateway IP address used to route traffic outside the local network.",
+  ipv6Address:
+    "Specify the IPv6 address assigned to this interface for IPv6 network communication.",
+  ipv6Prefix:
+    "Specify the prefix length for the IPv6 address assigned to this interface. The prefix length is the number of bits in the prefix.",
+  vlanEnable:
+    "Enable VLAN tagging for this interface. When enabled, network traffic will be associated with the configured VLAN ID.",
+  preferredDnsServer:
+    "Specify the preferred DNS server used for domain name resolution. This server will be queried first when resolving hostnames.",
+  standbyDnsServer:
+    "Specify the standby (secondary) DNS server. It will be used if the preferred DNS server is unavailable.",
+  defaultMode:
+    "Select the default network mode for this interface. The selected mode determines how the device obtains and manages network connectivity.",
+};
+
 const Network = () => {
   const [lanInterfaces, setLanInterfaces] = useState([]);
   const [dnsServers, setDnsServers] = useState(["", ""]);
@@ -1241,30 +1285,13 @@ const Network = () => {
                           className="flex flex-col gap-3 w-full"
                           style={{ maxWidth: 640, margin: "0 auto" }}
                         >
-                          {/* IPV4 Network Type */}
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        {/* IPV4 Network Type */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                           <Tooltip
-  title="Select the IPv4 network configuration type. Static allows manual IP configuration, while DHCP obtains settings automatically."
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-<label
+                            title={tooltips.ipv4NetworkType}
+                            {...tooltipProps}
+                          >
+                            <label
                               style={{
                                 fontSize: 12,
                                 fontWeight: 600,
@@ -1276,35 +1303,35 @@ const Network = () => {
                             >
                               IPV4 Network Type (M):
                             </label>
-</Tooltip>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <select
-                                value={lan.ipv4Type || "Static"}
-                                onChange={(e) =>
-                                  handleLanChange(
-                                    idx,
-                                    "ipv4Type",
-                                    e.target.value,
-                                  )
-                                }
-                                style={selectStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
-                              >
-                                <option value="Static">Static</option>
-                                <option value="DHCP">DHCP</option>
-                              </select>
-                            </div>
+                          </Tooltip>
+                          <div className="flex-1 w-full max-w-[280px]">
+                            <select
+                              value={lan.ipv4Type || "Static"}
+                              onChange={(e) =>
+                                handleLanChange(
+                                  idx,
+                                  "ipv4Type",
+                                  e.target.value,
+                                )
+                              }
+                              style={selectStyle}
+                              onFocus={inputInteraction.onFocus}
+                              onBlur={inputInteraction.onBlur}
+                              onMouseEnter={inputInteraction.onMouseEnter}
+                              onMouseLeave={inputInteraction.onMouseLeave}
+                            >
+                              <option value="Static">Static</option>
+                              <option value="DHCP">DHCP</option>
+                            </select>
                           </div>
+                        </div>
 
                           {(lan.ipv4Type || "Static") === "Static" && (
                             <>
                                   {/* IP Address */}
                                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                                   <Tooltip
-    title="Specify the IPv4 address assigned to this interface."
+    title={tooltips.ipAddress}
     arrow
     placement="top"
     slotProps={{
@@ -1377,7 +1404,7 @@ const Network = () => {
                               {/* Subnet Mask */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                               <Tooltip
-    title="Specify the subnet mask used for the IPv4 network. It defines the network and host portions of the IP address."
+    title={tooltips.subnetMask}
     arrow
     placement="top"
     slotProps={{
@@ -1450,7 +1477,7 @@ const Network = () => {
                               {/* Default Gateway */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                               <Tooltip
-  title="Specify the default gateway IP address used to route traffic outside the local network."
+  title={tooltips.defaultGateway}
   arrow
   placement="top"
   slotProps={{
@@ -1523,7 +1550,7 @@ const Network = () => {
                               {/* IPV6 Address */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                               <Tooltip
-  title="Specify the IPv6 address assigned to this interface for IPv6 network communication."
+  title={tooltips.ipv6Address}
   arrow
   placement="top"
   slotProps={{
@@ -1580,7 +1607,7 @@ const Network = () => {
                               {/* IPV6 Address Prefix */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                               <Tooltip
-  title="Specify the prefix length for the IPv6 address assigned to this interface. The prefix length is the number of bits in the prefix."
+  title={tooltips.ipv6Prefix}
   arrow
   placement="top"
   slotProps={{
@@ -1650,7 +1677,7 @@ const Network = () => {
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
-  title="Enable VLAN tagging for this interface. When enabled, network traffic will be associated with the configured VLAN ID."
+  title={tooltips.vlanEnable}
   arrow
   placement="top"
   slotProps={{
@@ -1921,7 +1948,7 @@ const Network = () => {
                       {/* Preferred DNS Server */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
-  title="Specify the preferred DNS server used for domain name resolution. This server will be queried first when resolving hostnames."
+  title={tooltips.preferredDnsServer}
   arrow
   placement="top"
   slotProps={{
@@ -1988,7 +2015,7 @@ const Network = () => {
                       {/* Standby DNS Server */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
-  title="Specify the standby (secondary) DNS server. It will be used if the preferred DNS server is unavailable."
+  title={tooltips.standbyDnsServer}
   arrow
   placement="top"
   slotProps={{
@@ -2063,7 +2090,7 @@ const Network = () => {
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
-  title="Select the default network mode for this interface. The selected mode determines how the device obtains and manages network connectivity."
+  title={tooltips.defaultMode}
   arrow
   placement="top"
   slotProps={{

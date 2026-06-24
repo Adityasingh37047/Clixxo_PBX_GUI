@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   SC_SECTIONS,
   SC_LABELS,
@@ -135,6 +137,56 @@ const systemToolsEditableFieldInputStyle = {
 };
 const inputStyle = systemToolsEditableFieldInputStyle;
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  networkInterface:
+    "Select the network interface to capture packet data on. Choose All LAN to monitor every interface, or a specific LAN port to limit capture to that network.",
+  captureSyslog:
+    "Limit packet capture to syslog traffic only. When enabled, only packets sent to or from the configured syslog destination are recorded.",
+  syslogDest:
+    "IP address of the syslog server used to filter captured traffic. Capture includes UDP and TCP traffic on port 514 to or from this address.",
+  pcmTs:
+    "Select the PCM trunk and E1 time slot to record signaling data from. PCM identifies the physical trunk; the time slot specifies which channel on that trunk to monitor.",
+  e1PcmTs:
+    "Select the PCM trunk and E1 time slot for two-way E1 signaling capture. PCM identifies the physical trunk; the time slot specifies which channel to record in both directions.",
+};
+
+const FieldLabel = ({ tooltipKey, className, style, children }) => {
+  const label = (
+    <label className={className} style={style}>
+      {children}
+    </label>
+  );
+
+  if (!tooltips[tooltipKey]) return label;
+
+  return (
+    <Tooltip title={tooltips[tooltipKey]} {...tooltipProps}>
+      {label}
+    </Tooltip>
+  );
+};
 
 const Btn = ({
   children,
@@ -929,12 +981,13 @@ const SignalingCapture = () => {
             <div className="flex flex-col gap-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label
+                  <FieldLabel
+                    tooltipKey="networkInterface"
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
                     {SC_LABELS.networkInterface}
-                  </label>
+                  </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
                       style={{ ...inputStyle, width: "100%", minWidth: 220 }}
@@ -1009,12 +1062,13 @@ const SignalingCapture = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label
+                <FieldLabel
+                  tooltipKey="captureSyslog"
                   className="sm:w-[280px] whitespace-nowrap"
                   style={labelStyle}
                 >
                   {SC_LABELS.captureSyslog}
-                </label>
+                </FieldLabel>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -1049,12 +1103,13 @@ const SignalingCapture = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label
+                <FieldLabel
+                  tooltipKey="syslogDest"
                   className="sm:w-[280px] whitespace-nowrap"
                   style={labelStyle}
                 >
                   {SC_LABELS.syslogDest}
-                </label>
+                </FieldLabel>
                 <input
                   type="text"
                   value={syslogDest}
@@ -1111,12 +1166,13 @@ const SignalingCapture = () => {
                 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label
+                  <FieldLabel
+                    tooltipKey="pcmTs"
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
                     {SC_LABELS.pcmTs}
-                  </label>
+                  </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
                       style={{ ...inputStyle, minWidth: 100 }}
@@ -1209,12 +1265,13 @@ const SignalingCapture = () => {
                 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label
+                  <FieldLabel
+                    tooltipKey="e1PcmTs"
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
                     {SC_LABELS.pcmTs}
-                  </label>
+                  </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
                       style={{ ...inputStyle, minWidth: 100 }}

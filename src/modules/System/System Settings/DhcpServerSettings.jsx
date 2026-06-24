@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Tooltip from "@mui/material/Tooltip";
 import {
   buildDhcpLanSections,
   DHCP_SERVER_SETTINGS_INITIAL_FORM,
@@ -135,6 +136,55 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  enabled:
+    "Enable the DHCP server on this LAN interface. When enabled, connected devices can automatically obtain IP addresses from the configured address pool.",
+  ipRange:
+    "Specify the range of IP addresses the DHCP server can assign to clients on this interface. Typically entered as a start and end address (e.g., 192.168.1.100-192.168.1.200).",
+  subnetMask:
+    "Specify the subnet mask for the DHCP address pool. It must match the subnet of this LAN interface.",
+  defaultGateway:
+    "Specify the default gateway IP address assigned to DHCP clients. Clients will use this address to route traffic outside the local network.",
+  dnsServer:
+    "Specify the DNS server IP address provided to DHCP clients for domain name resolution.",
+};
+
+const getTooltipKey = (name) => name.replace(/\d+$/, "");
+
+const FieldLabel = ({ name, style, children }) => {
+  const tooltipKey = getTooltipKey(name);
+  const label = <label style={style}>{children}</label>;
+
+  if (!tooltips[tooltipKey]) return label;
+
+  return (
+    <Tooltip title={tooltips[tooltipKey]} {...tooltipProps}>
+      {label}
+    </Tooltip>
+  );
+};
 
 const Btn = ({
   children,
@@ -567,7 +617,8 @@ const DhcpServerSettings = () => {
                     >
                       {/* Enable DHCP Checkbox */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                        <label
+                        <FieldLabel
+                          name={lanGroup.fields[0].name}
                           style={{
                             fontSize: 12,
                             fontWeight: 600,
@@ -578,7 +629,7 @@ const DhcpServerSettings = () => {
                           }}
                         >
                           DHCP Server:
-                        </label>
+                        </FieldLabel>
                         <div className="flex flex-col w-full max-w-[280px]">
                           <div className="flex items-center gap-2">
                             <Checkbox
@@ -610,7 +661,8 @@ const DhcpServerSettings = () => {
                           key={field.name}
                           className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
                         >
-                          <label
+                          <FieldLabel
+                            name={field.name}
                             style={{
                               fontSize: 12,
                               fontWeight: 600,
@@ -622,7 +674,7 @@ const DhcpServerSettings = () => {
                             }}
                           >
                             {field.label}:
-                          </label>
+                          </FieldLabel>
                           <div className="flex flex-col w-full max-w-[280px]">
                             <input
                               type="text"

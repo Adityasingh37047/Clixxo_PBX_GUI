@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { Tooltip } from "@mui/material";
 import {
   SIP_TRUNK_FIELDS,
   SIP_TRUNK_INITIAL_FORM,
@@ -349,6 +350,35 @@ const muiTextFieldSx = {
       borderWidth: 2,
     },
   },
+};
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  Description: "Enter a descriptive name for this SIP trunk.",
+  "Local IP": "Select the local IP address/interface for this trunk.",
+  "Local SIP Port": "Specify the SIP port used for communication.",
+  "Transport Mode": "Choose the transport protocol such as UDP, TCP, or TLS.",
 };
 
 const muiSelectSx = {
@@ -890,7 +920,9 @@ const SipTrunkPage = () => {
                 disabled={selected.length === 0 || loading.delete}
                 style={{ height: 30 }}
               >
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                <Tooltip title="Delete the selected SIP trunks." {...tooltipProps}>
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                </Tooltip>
                 {loading.delete ? "Working..." : "Delete"}
               </SystemSettingsBtn>
               <SystemSettingsBtn
@@ -1189,7 +1221,7 @@ const SipTrunkPage = () => {
         }}
         PaperProps={{
           sx: {
-            width: 560,
+            width: 600,
             maxWidth: "95vw",
             mx: "auto",
             borderRadius: "8px",
@@ -1269,19 +1301,31 @@ const SipTrunkPage = () => {
                         : "center",
                   }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 170,
-                      flexShrink: 0,
-                      textAlign: "left",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {field.label}:
-                  </label>
+                 <div
+  style={{
+    width: 170,
+    flexShrink: 0,
+    textAlign: "left",
+  }}
+>
+  <Tooltip
+    title={tooltips[field.label] || ""}
+    {...tooltipProps}
+  >
+    <span>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {field.label}:
+      </label>
+    </span>
+  </Tooltip>
+</div>
                   <div style={modalFieldControlStyle}>
                     {field.type === "select" ? (
                       <div className="w-full">

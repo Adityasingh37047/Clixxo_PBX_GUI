@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
 import {
   CENTRALIZED_MANAGE_FIELDS,
   MANAGEMENT_PLATFORM_OPTIONS,
@@ -143,6 +144,78 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  centralizedManage:
+    "Enable centralized management to allow remote monitoring and configuration of this device from a management platform.",
+  notificationSetting:
+    "Enable SNMP trap notifications when system resource thresholds are exceeded or connection rates fall below configured limits.",
+  trapServerPort:
+    "UDP port on the trap receiver host where SNMP alert notifications are sent. The standard trap port is 162.",
+  cpuUsage:
+    "CPU utilization percentage that triggers an SNMP trap when exceeded. Alerts the management platform of high processor load.",
+  memoryUsage:
+    "Memory utilization percentage that triggers an SNMP trap when exceeded. Alerts the management platform of low available memory.",
+  highCps:
+    "Calls-per-second percentage threshold that triggers an SNMP trap when call volume is unusually high.",
+  lowConnRate:
+    "Connection success rate percentage below which an SNMP trap is sent to indicate degraded call connectivity.",
+  autoChangeGateway:
+    "Automatically switch the default network gateway when directed by the centralized management platform.",
+  managementPlatform:
+    "Select the remote management system this device registers with. DCMS uses the Clixxo cloud platform; Custom1 and Others use direct SNMP configuration.",
+  centralizedProtocol:
+    "Protocol used for centralized management communication. Currently SNMP is supported for device monitoring and remote management.",
+  snmpVersion:
+    "SNMP protocol version used for management queries and traps. V2 is recommended for most deployments; V3 adds authentication and encryption.",
+  snmpServerAddress:
+    "IP address of the SNMP management station allowed to query this device. Use 'all' or '*' to permit any manager.",
+  monitoringPort:
+    "UDP port on which the local SNMP agent listens for management queries. The standard monitoring port is 161; enable the checkbox to use a custom port.",
+  communityString:
+    "SNMP community name used for authentication between this device and the management station. Must match the value configured on the manager.",
+  companyName:
+    "Company or organization name registered with the DCMS management platform for device identification.",
+  gatewayDesc:
+    "Descriptive label for this gateway device as displayed in the DCMS management console.",
+  snmpServer:
+    "IP address of the SNMP trap server used by DCMS to receive alerts and status updates from this device.",
+  authCode:
+    "Authorization code provided by DCMS to authenticate and register this device with the management platform.",
+};
+
+const FieldLabel = ({ name, style, children }) => {
+  const label = <label style={style}>{children}</label>;
+
+  if (!tooltips[name]) return label;
+
+  return (
+    <Tooltip title={tooltips[name]} {...tooltipProps}>
+      {label}
+    </Tooltip>
+  );
+};
 
 const Btn = ({
   children,
@@ -854,7 +927,8 @@ fi`;
                       key={field.name}
                       className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full justify-center"
                     >
-                      <label
+                      <FieldLabel
+                        name={field.name}
                         style={{
                           fontSize: 12,
                           fontWeight: 600,
@@ -868,7 +942,7 @@ fi`;
                         }}
                       >
                         {field.label}
-                      </label>
+                      </FieldLabel>
                       <div className="flex flex-col w-full max-w-[280px]">
                         {field.name === "monitoringPort" ? (
                           <div className="flex items-center gap-2">

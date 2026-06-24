@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   CERTIFICATE_FIELDS,
   CERTIFICATE_BUTTONS,
@@ -275,6 +277,37 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  country: "Specifies the country of the certificate.",
+  province: "Specifies the province of the certificate.",
+  city: "Specifies the city of the certificate.",
+  company: "Specifies the company of the certificate.",
+  department: "Specifies the department of the certificate.",
+  hostName: "Specifies the host name of the certificate.",
+  email: "Specifies the email of the certificate.",
+};
 const CertificateManage = () => {
   const [form, setForm] = useState({});
   const [toast, setToast] = useState({ msg: "", type: "success" });
@@ -352,7 +385,9 @@ const CertificateManage = () => {
             >
               {CERTIFICATE_FIELDS.map((field) => (
                 <React.Fragment key={field.name}>
-                  <label style={labelStyle}>{field.label}:</label>
+                  <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                    <span style={labelStyle}>{field.label}:</span>
+                  </Tooltip>
                   <div className="flex items-center min-w-0 w-full">
                     <input
                       type="text"

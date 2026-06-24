@@ -595,40 +595,6 @@ const FeatureCodePage = () => {
                                   gap: 12,
                                 }}
                               >
-<<<<<<< HEAD
-                                <Tooltip
-                                  title={FEATURE_CODE_TOOLTIPS[field.key] || ""}
-                                  arrow
-                                  placement="top"
-                                  slotProps={{
-                                    tooltip: {
-                                      sx: {
-                                        backgroundColor: "#fff",
-                                        color: "#333",
-                                        border: "1px solid #d1d5db",
-                                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                                        fontSize: 13,
-                                        maxWidth: 500,
-                                        padding: "12px 16px",
-                                      },
-                                    },
-                                    arrow: {
-                                      sx: {
-                                        color: "#fff",
-                                      },
-                                    },
-                                  }}
-                                >
-                                  <label
-                                    style={{
-                                      ...GRID_LABEL_STYLE,
-                                      cursor: "help",
-                                    }}
-                                  >
-                                    {field.label}
-                                  </label>
-                                </Tooltip>
-=======
                            <Tooltip
   title={FEATURE_CODE_TOOLTIPS[field.key] || ""}
   arrow
@@ -661,7 +627,6 @@ const FeatureCodePage = () => {
     {field.label}
   </label>
 </Tooltip>
->>>>>>> 4a382262667613fbb98f95a17fbca87b2824f31b
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   {renderFieldControl(field)}
                                 </div>

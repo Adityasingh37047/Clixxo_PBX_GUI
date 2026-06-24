@@ -246,7 +246,7 @@ const FormFieldRow = ({
         border: "1px solid #d1d5db",
         fontSize: 12,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        maxWidth: 260,
+        maxWidth: 500,
       },
     },
     arrow: {

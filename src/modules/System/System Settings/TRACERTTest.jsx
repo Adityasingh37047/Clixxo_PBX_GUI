@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Alert } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { postTracerttest, fetchNetwork } from "../../../api/apiService";
 import {
   TRACERT_TITLE,
@@ -105,6 +106,38 @@ const systemToolFieldSelectStyle = {
   lineHeight: 1.35,
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",    
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  sourceIp:
+    "Select the source IP address from which the traceroute request will be sent.",
+  destIp:
+    "Enter the destination IP address or hostname to trace the network path.",
+  maxJumps:
+    "Specify the maximum number of hops the traceroute can traverse before stopping.",
+  info:
+    "Displays traceroute results, including intermediate hops and response details.",
+};
 const inputStyle = systemToolFieldInputStyle;
 const selectStyle = systemToolFieldSelectStyle;
 
@@ -499,7 +532,14 @@ const TRACERTTest = () => {
               style={{ maxWidth: 460, margin: "0 auto" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{TRACERT_LABELS.sourceIp}</span>
+              <Tooltip
+  title={tooltips.sourceIp}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {TRACERT_LABELS.sourceIp}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <select
                     style={selectStyle}
@@ -533,7 +573,14 @@ const TRACERTTest = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{TRACERT_LABELS.destIp}</span>
+              <Tooltip
+  title={tooltips.destIp}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {TRACERT_LABELS.destIp}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <input
                     type="text"
@@ -557,7 +604,14 @@ const TRACERTTest = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{TRACERT_LABELS.maxJumps}</span>
+              <Tooltip
+  title={tooltips.maxJumps}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {TRACERT_LABELS.maxJumps}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <input
                     type="number"

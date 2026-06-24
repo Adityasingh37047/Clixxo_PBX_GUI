@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   SCT_TITLE,
   SCT_LABELS,
@@ -145,6 +147,35 @@ const systemToolsFieldSelectStyleWhite = {
 const inputStyle = systemToolsFieldInputStyleWhite;
 const selectStyle = systemToolsFieldSelectStyleWhite;
 
+  const tooltipProps = {
+    arrow: true,
+    placement: "top",
+    slotProps: {
+      tooltip: {
+        sx: {
+          bgcolor: "#fff",
+          color: "#334155",
+          border: "1px solid #d1d5db",
+          fontSize: 12,
+          maxWidth: 500,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        },
+      },
+      arrow: {
+        sx: {
+          color: "#fff",
+        },
+      },
+    },
+  };
+
+  const tooltips = {
+    testType: "Specifies the test type.",
+    trunkGroup: "Specifies the SIP trunk group.",
+    callerId: "Specifies the caller ID.",
+    calledId: "Specifies the called ID.",
+    originalCallee: "Specifies the original callee ID.",
+  };
 
 const Btn = ({
   children,
@@ -567,7 +598,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.testType}
+                <Tooltip title={tooltips.testType} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.testType}</span>
+                </Tooltip>
               </label>
               <select
                 style={selectStyle}
@@ -590,7 +623,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.trunkGroup}
+                <Tooltip title={tooltips.trunkGroup} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.trunkGroup}</span>
+                </Tooltip>
               </label>
               <select
                 style={selectStyle}
@@ -613,7 +648,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.callerId}
+                <Tooltip title={tooltips.callerId} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.callerId}</span>
+                </Tooltip>
               </label>
               <input
                 type="text"
@@ -631,7 +668,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.calledId}
+                <Tooltip title={tooltips.calledId} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.calledId}</span>
+                </Tooltip>
               </label>
               <input
                 type="text"
@@ -649,7 +688,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.originalCallee}
+                <Tooltip title={tooltips.originalCallee} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.originalCallee}</span>
+                </Tooltip>
               </label>
               <input
                 type="text"
@@ -713,7 +754,9 @@ const SignalingCallTest = () => {
                   fontWeight: 600,
                 }}
               >
-                {SCT_TRACE_LABEL}
+                <Tooltip title={tooltips.trace} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_TRACE_LABEL}</span>
+                </Tooltip>
               </label>
               <textarea
                 value={trace}
