@@ -24,8 +24,8 @@ import {
   TC_DAYS_OF_MONTH,
   TC_TABLE_COLUMNS,
   TC_INITIAL_FORM,
-} from "../../../constants/TimeComditionConstants";
-import { TIME_CONDITION_FIELD_TOOLTIPS } from "../../../constants/TimeConditionTooltipConstants";
+  TIME_CONDITION_FIELD_TOOLTIPS,
+} from "../../../constants/TimeConditionConstants";
 import {
   fetchTimeConditions,
   createTimeCondition,

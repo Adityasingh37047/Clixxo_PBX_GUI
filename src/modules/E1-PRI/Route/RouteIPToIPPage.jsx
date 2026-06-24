@@ -3,6 +3,7 @@ import {
   ROUTE_IP_IP_FIELDS,
   ROUTE_IP_IP_INITIAL_FORM,
   ROUTE_IP_IP_TABLE_COLUMNS,
+  ROUTE_IP_IP_FIELD_TOOLTIPS,
 } from "../../../constants/RouteIPIPConstants";
 import {
   Button,
@@ -17,6 +18,7 @@ import {
   FormControl,
   Alert,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -27,8 +29,98 @@ import {
   deleteIpPstnRoute,
   listGroups,
 } from "../../../api/apiService";
-import { ROUTE_IP_IP_FIELD_TOOLTIPS } from "../../../constants/E1PriRouteTooltipConstants";
-import { E1PriRouteFieldRow } from "./e1PriRouteTooltipUi";
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 170,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+  </div>
+);
+
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -1007,7 +1099,7 @@ const RouteIPIPPage = () => {
                 style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
                 {ROUTE_IP_IP_FIELDS.map((field) => (
-                  <E1PriRouteFieldRow
+                  <E1PriFieldRow
                     key={field.key}
                     label={`${field.label}:`}
                     tooltipKey={field.key}
@@ -1087,7 +1179,7 @@ const RouteIPIPPage = () => {
                         sx={modalTextFieldSx}
                       />
                     )}
-                  </E1PriRouteFieldRow>
+                  </E1PriFieldRow>
                 ))}
               </div>
             </div>

@@ -11,7 +11,7 @@ import {
   SIP_ACCOUNT_INITIAL_FORM,
   CODEC_OPTIONS,
   EXTENSION_FIELD_TOOLTIPS,
-} from "../../../constants/SipAccountConstants";
+} from "../../../constants/ExtensionsConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";

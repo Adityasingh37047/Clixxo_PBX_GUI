@@ -17,3 +17,9 @@ export const CALLERID_RESERVE_POOL_INITIAL_FORM = {
   no: 0,
   callerId: '',
 };
+
+/** CallerID Reserve Pool modal — local component state only */
+export const CALLERID_RESERVE_POOL_FIELD_TOOLTIPS = {
+  no: "Entry number. Required on save. Minimum: 0. Default: 0.",
+  callerId: "Caller ID text. Required on save.",
+};

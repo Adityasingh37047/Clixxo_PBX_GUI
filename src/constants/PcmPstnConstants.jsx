@@ -200,3 +200,56 @@ export const PCM_PSTN_INITIAL_FORM = {
   echocancel: "yes",
   echocancelwhenbridged: "yes",
 };
+
+const spanField = (field, options, extra = "") =>
+  `Saved in span.${field} on create (POST /pstn).\n` +
+  (options ? `Options: ${options}.` : "Free-text field.") +
+  (extra ? `\n${extra}` : "");
+
+const channelsField = (field, options, extra = "") =>
+  `Saved in channels.${field} on create (POST /pstn).\n` +
+  (options ? `Options: ${options}.` : "Free-text or number field.") +
+  (extra ? `\n${extra}` : "");
+
+const yesNoChannels = (field, defaultVal) =>
+  channelsField(field, "yes, no", `Default: ${defaultVal}.`);
+
+/** PCM PSTN (PcmPstnPage) — POST /pstn create */
+export const PCM_PSTN_FIELD_TOOLTIPS = {
+  id: spanField("id", null, "Required. Saved as span_id and span.id. Duplicate ID blocked on create."),
+  timing: spanField("timing", "0, 1", "Default: 0."),
+  lbo: spanField("lbo", "0, 1", "Default: 0."),
+  framing: spanField("framing", "d4, esf, ccs, cas"),
+  coding: spanField("coding", "ami, b8zs, hdb3"),
+  flags:
+    spanField("flags", "crc4, Disabled", "Sent as span.flags only when not Disabled."),
+  bchan:
+    spanField("bchan", null, "Required. Also saved as channels.channel with the same value."),
+  hardhdlc: spanField("hardhdlc", null),
+  signalling:
+    channelsField("signalling", "pri_net, pri_cpe, ss7, mfcr2", "Required."),
+  context:
+    channelsField("context", "outbound1, outbound2", "Required. Default: outbound1."),
+  switchtype:
+    channelsField(
+      "switchtype",
+      "euroisdn, national, ni1, dms100, 4ess, 5ess, qsig"
+    ),
+  group: channelsField("group", null, "Numeric. Default: 1."),
+  accountcode: channelsField("accountcode", null, "Default: sales."),
+  pickupgroup: channelsField("pickupgroup", null, "Numeric. Default: 1."),
+  callgroup: channelsField("callgroup", null, "Numeric. Default: 1."),
+  pridialplan: channelsField("pridialplan", null, "Default: national."),
+  prilocaldialplan: channelsField("prilocaldialplan", null, "Default: local."),
+  facilityenable: yesNoChannels("facilityenable", "yes"),
+  usecallerid: yesNoChannels("usecallerid", "yes"),
+  hidecallerid: yesNoChannels("hidecallerid", "no"),
+  usecallingpres: yesNoChannels("usecallingpres", "yes"),
+  immediate: yesNoChannels("immediate", "no"),
+  overlapdial: yesNoChannels("overlapdial", "yes"),
+  faxdetect: yesNoChannels("faxdetect", "no"),
+  rxgain: channelsField("rxgain", null, "Numeric. Default: 0.0."),
+  txgain: channelsField("txgain", null, "Numeric. Default: 0.0."),
+  echocancel: yesNoChannels("echocancel", "yes"),
+  echocancelwhenbridged: yesNoChannels("echocancelwhenbridged", "yes"),
+};

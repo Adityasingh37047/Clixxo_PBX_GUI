@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import Tooltip from "@mui/material/Tooltip";
 import {Alert,
   Button,
   Dialog,
@@ -288,6 +289,26 @@ const TableListEmptyState = ({
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
 const BlockedListPage = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -1114,17 +1135,23 @@ const BlockedListPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Name <span style={{ color: C.errorRed }}>*</span>
-                  </label>
+                 <Tooltip
+  title="User-defined name of a blocked list. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_only."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 160,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Name <span style={{ color: C.errorRed }}>*</span>
+  </label>
+</Tooltip>
                   <TextField
                     size="small"
                     fullWidth
@@ -1143,17 +1170,23 @@ const BlockedListPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Match Mode <span style={{ color: C.errorRed }}>*</span>
-                  </label>
+                     <Tooltip
+  title="Select match mode. You can select Exact Match, Regex Match, or Extension. The pattern that selects the exact match number can match the excact number, the pattern that selects the regex match mode can match the regex expression. For example, enter 888*, so can matches anythings starting with 888(include 888)."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 160,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Match Mode <span style={{ color: C.errorRed }}>*</span>
+  </label>
+</Tooltip>
                   <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={matchMode}
@@ -1239,18 +1272,24 @@ const BlockedListPage = () => {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 160,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Blocked List Number{" "}
-                      <span style={{ color: C.errorRed }}>*</span>
-                    </label>
+                 <Tooltip
+  title="Enter or select the blocked list number that will be used to identify and block matching calls."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 160,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Blocked List Number{" "}
+    <span style={{ color: C.errorRed }}>*</span>
+  </label>
+</Tooltip>
                     <TextField
                       fullWidth
                       size="small"
@@ -1270,18 +1309,24 @@ const BlockedListPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Blocked List Direction{" "}
-                    <span style={{ color: C.errorRed }}>*</span>
-                  </label>
+                   <Tooltip
+  title="Select the call direction for which the blocked list will be applied, such as inbound, outbound, or both."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 160,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Blocked List Direction{" "}
+    <span style={{ color: C.errorRed }}>*</span>
+  </label>
+</Tooltip>
                   <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={direction}
@@ -1313,17 +1358,23 @@ const BlockedListPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 160,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Enable <span style={{ color: C.errorRed }}>*</span>
-                  </label>
+                <Tooltip
+  title="Enable or disable this configuration. When enabled, the settings in this section will be applied and become active."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 160,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Enable <span style={{ color: C.errorRed }}>*</span>
+  </label>
+</Tooltip>
                   <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={enabled}

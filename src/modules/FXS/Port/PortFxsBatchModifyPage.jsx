@@ -218,7 +218,7 @@ const FWD_TYPE_TO_API = {
   Unconditional: "unconditional",
   Busy: "busy",
 };
-import { ROUTE_PATHS } from "../../../constants/routeConstatns";
+import { ROUTE_PATHS } from "../../../constants/routeConstants";
 const dialogFieldStyle = {
   ...fxsNativeFieldInputStyle,
   height: 32,

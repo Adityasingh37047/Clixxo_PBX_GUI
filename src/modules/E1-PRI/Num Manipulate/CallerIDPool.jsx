@@ -1,7 +1,68 @@
 import React, { useState } from 'react';
-import { CALLERID_POOL_TABLE_COLUMNS, CALLERID_POOL_MODAL_FIELDS, CALLERID_POOL_INITIAL_FORM } from '../../../constants/CallerIDPoolConstants';
+import { CALLERID_POOL_TABLE_COLUMNS, CALLERID_POOL_MODAL_FIELDS, CALLERID_POOL_INITIAL_FORM, CALLERID_POOL_FIELD_TOOLTIPS } from '../../../constants/CallerIDPoolConstants';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import { Button, TextField, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel } from '@mui/material';
+import { Button, TextField, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Tooltip } from '@mui/material';
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const CallerIDPool = () => {
   // Top controls state
@@ -419,9 +480,20 @@ const CallerIDPool = () => {
         <DialogContent className="bg-gray-200 flex flex-col gap-3 py-4">
           {CALLERID_POOL_MODAL_FIELDS.filter(f => f.key !== 'callerIdRange').map(field => (
             <div key={field.key} className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1">
-              <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
+              <E1PriFieldLabel
+                tooltipKey={field.key}
+                tooltips={CALLERID_POOL_FIELD_TOOLTIPS}
+                style={{
+                  fontSize: 12,
+                  minWidth: 120,
+                  marginRight: 8,
+                  textAlign: "left",
+                  whiteSpace: "nowrap",
+                  display: "inline-block",
+                }}
+              >
                 {field.key === 'destinationPcm' && modalTable === 'pstn_ip' ? 'Source PCM:' : field.label + ':'}
-              </label>
+              </E1PriFieldLabel>
               <div className="flex-1 min-w-0">
                 {field.type === 'select' ? (
                   <FormControl size="small" className="w-full">
@@ -493,7 +565,20 @@ const CallerIDPool = () => {
             </div>
           ))}
           <div className="flex flex-row items-center border border-gray-400 rounded px-2 py-1 gap-2 w-full bg-white mb-1">
-            <label className="text-xs text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">CallerID:</label>
+            <E1PriFieldLabel
+              tooltipKey="callerIdRange"
+              tooltips={CALLERID_POOL_FIELD_TOOLTIPS}
+              style={{
+                fontSize: 12,
+                minWidth: 120,
+                marginRight: 8,
+                textAlign: "left",
+                whiteSpace: "nowrap",
+                display: "inline-block",
+              }}
+            >
+              CallerID:
+            </E1PriFieldLabel>
             <div className="flex gap-2 w-full">
               <TextField
                 size="small"

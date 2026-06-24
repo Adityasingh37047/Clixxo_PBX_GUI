@@ -29,3 +29,14 @@ export const PCM_TRUNK_GROUP_TABLE_COLUMNS = [
   { key: 'description', label: 'Description' },
   { key: 'modify', label: 'Modify' },
 ];
+
+/** PCM Trunk Group (PcmTrunkGroupPage) — POST /pstngroups */
+export const PCM_TRUNK_GROUP_FIELD_TOOLTIPS = {
+  groupId:
+    "Saved as group_id. Select 0–255. Required.\nDuplicate group ID is blocked.",
+  description:
+    "Saved as description. Required non-empty text. Default: Testing.",
+  pstnIds:
+    "Saved as pstn_ids (span IDs from listPstn).\n" +
+    "At least one PCM trunk must be selected. Multiple IDs create separate groups.",
+};

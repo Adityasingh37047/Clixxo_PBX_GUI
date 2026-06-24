@@ -23,3 +23,14 @@ export const CALLERID_POOL_INITIAL_FORM = {
   destinationPcm: 'Any',
   callerIdRange: '',
 };
+
+/** CallerID Pool modal — local component state only */
+export const CALLERID_POOL_FIELD_TOOLTIPS = {
+  no: "Entry number (No.). Stored in local table state.",
+  outgoingCallResource:
+    "Outgoing call resource text. Stored in local table state.",
+  destinationPcm:
+    "Stored in local table state.\nOptions: Any, PCM. Default: Any.\nPSTN->IP table label shows as Source PCM.",
+  callerIdRange:
+    "Built on save as callerIdRange from Start and End values.\nFormat: start or start--end.",
+};

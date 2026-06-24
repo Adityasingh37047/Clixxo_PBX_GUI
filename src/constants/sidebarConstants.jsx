@@ -14,7 +14,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import PhoneInTalkIcon from "@mui/icons-material/PhoneInTalk";
 import SettingsPhoneIcon from "@mui/icons-material/SettingsPhone";
-import { ROUTE_PATHS } from "./routeConstatns";
+import { ROUTE_PATHS } from "./routeConstants";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
 import TuneIcon from "@mui/icons-material/Tune";

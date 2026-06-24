@@ -25,3 +25,11 @@ export const PCM_RECEPTION_TIMEOUT_TABLE_COLUMNS = [
   { key: 'description', label: 'Description' },
   { key: 'modify', label: 'Modify' },
 ];
+
+/** Number-Receiving Timeout (PcmReceptionTimeoutPage) — local React state only */
+export const PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS = {
+  interDigitTimeout:
+    "Inter digit timeout in seconds. Stored in local table state. Default: 4.",
+  description:
+    "Description text. Stored in local table state. Default: example.",
+};

@@ -40,3 +40,21 @@ export const PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM = {
   suffix_to_add: '',
   description: '',
 };
+
+/** PSTN Call In OriCalleeID (manipulation_type: pstn_in_oricalleeid) */
+export const PSTN_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS = {
+  call_initiator:
+    "Saved as call_initiator. manipulation_type: pstn_in_oricalleeid.\n" +
+    "Select a PCM trunk group from the loaded list. Required.",
+  callerid_prefix: `Saved as callerid_prefix. Required text field. Default: *.`,
+  calleeid_prefix: `Saved as calleeid_prefix. Required text field. Default: *.`,
+  stripped_digits_from_left:
+    "Saved as stripped_digits_from_left.\nEmpty value is saved as 0. Default: 0.",
+  stripped_digits_from_right:
+    "Saved as stripped_digits_from_right.\nEmpty value is saved as 0. Default: 0.",
+  reserved_digits_from_right:
+    "Saved as reserved_digits_from_right.\nEmpty value is saved as 0. Default: 20.",
+  prefix_to_add: "Saved as prefix_to_add. Free-text field. Default: empty.",
+  suffix_to_add: "Saved as suffix_to_add. Free-text field. Default: empty.",
+  description: "Saved as description. Free-text field. Default: empty.",
+};

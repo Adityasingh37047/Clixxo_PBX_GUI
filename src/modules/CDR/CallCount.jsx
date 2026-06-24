@@ -10,7 +10,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
-import { CALL_COUNT_FILTER_TOOLTIPS } from "../../constants/CallCountConstants.jsx";
+import { CALL_COUNT_FILTER_TOOLTIPS } from "../../constants/CallCountConstants";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────

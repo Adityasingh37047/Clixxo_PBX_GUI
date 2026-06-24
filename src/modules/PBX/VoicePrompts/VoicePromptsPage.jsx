@@ -1010,7 +1010,7 @@ const VoicePromptsPage = () => {
                         color: C.labelText,
                       }}
                     >
-                        Category
+                      Category
                       </label>
                     </Tooltip>
                     <TextField

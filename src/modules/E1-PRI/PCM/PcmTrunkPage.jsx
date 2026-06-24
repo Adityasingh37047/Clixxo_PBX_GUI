@@ -6,6 +6,7 @@ import {
   PCM_TRUNK_TS_COUNT,
   PCM_TRUNK_INITIAL_FORM,
   PCM_TRUNK_ITEMS_PER_PAGE,
+  PCM_TRUNK_FIELD_TOOLTIPS,
 } from "../../../constants/PcmTrunkConstants";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -15,7 +16,69 @@ import DialogActions from "@mui/material/DialogActions";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
+import Tooltip from "@mui/material/Tooltip";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const LOCAL_STORAGE_KEY = "pcm_trunks";
 
@@ -740,9 +803,20 @@ const PcmTrunkPage = () => {
         >
           {/* Index Block */}
           <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
+            <E1PriFieldLabel
+              tooltipKey="index"
+              tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
+              style={{
+                fontSize: 15,
+                minWidth: 80,
+                marginRight: 8,
+                textAlign: "left",
+                whiteSpace: "nowrap",
+                display: "inline-block",
+              }}
+            >
               Index:
-            </label>
+            </E1PriFieldLabel>
             <Select
               value={form.index}
               onChange={(e) =>
@@ -763,9 +837,20 @@ const PcmTrunkPage = () => {
           </div>
           {/* PCM NO. Block */}
           <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
+            <E1PriFieldLabel
+              tooltipKey="pcmNo"
+              tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
+              style={{
+                fontSize: 15,
+                minWidth: 80,
+                marginRight: 8,
+                textAlign: "left",
+                whiteSpace: "nowrap",
+                display: "inline-block",
+              }}
+            >
               PCM NO.:
-            </label>
+            </E1PriFieldLabel>
             <Select
               value={form.pcmNo}
               onChange={(e) =>
@@ -786,9 +871,20 @@ const PcmTrunkPage = () => {
           </div>
           {/* Including Ts Block */}
           <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[80px] mr-2">
+            <E1PriFieldLabel
+              tooltipKey="ts"
+              tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
+              style={{
+                fontSize: 15,
+                minWidth: 80,
+                marginRight: 8,
+                textAlign: "left",
+                whiteSpace: "nowrap",
+                display: "inline-block",
+              }}
+            >
               Including Ts:
-            </label>
+            </E1PriFieldLabel>
             <Checkbox
               checked={checkAll}
               onChange={handleCheckAllTs}

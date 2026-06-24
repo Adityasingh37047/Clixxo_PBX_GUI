@@ -3,6 +3,7 @@ import {
   SIP_TRUNK_GROUP_FIELDS,
   SIP_TRUNK_GROUP_INITIAL_FORM,
   SIP_TRUNK_GROUP_TABLE_COLUMNS,
+  SIP_TRUNK_GROUP_FIELD_TOOLTIPS,
 } from "../../../constants/SipTrunkGroupConstants";
 import {
   addGroup,
@@ -26,10 +27,72 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 // ── Local page UI (inlined from e1PriSharedUi)
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -1261,17 +1324,18 @@ const SipTrunkGroup = () => {
                     gap: 12,
                   }}
                 >
-                  <label
+                  <E1PriFieldLabel
+                    tooltipKey="sip_trunk_id"
+                    tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
                     style={{
                       fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
                       width: 120,
                       flexShrink: 0,
+                      display: "inline-block",
                     }}
                   >
                     SIP Trunk ID:
-                  </label>
+                  </E1PriFieldLabel>
 
                   <div style={{ flex: 1 }}>
                     <Select
@@ -1331,17 +1395,18 @@ const SipTrunkGroup = () => {
                     gap: 12,
                   }}
                 >
-                  <label
+                  <E1PriFieldLabel
+                    tooltipKey="group_id"
+                    tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
                     style={{
                       fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
                       width: 120,
                       flexShrink: 0,
+                      display: "inline-block",
                     }}
                   >
                     Group ID:
-                  </label>
+                  </E1PriFieldLabel>
 
                   <div style={{ flex: 1 }}>
                     <TextField

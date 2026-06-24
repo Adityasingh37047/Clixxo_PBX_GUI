@@ -75,3 +75,55 @@ export const SIP_MEDIA_INITIAL_FORM = {
   packTimeDefault: 'Yes',
   codecSetting: 'Default Priority',
 };
+
+const SIP_MEDIA_UI_TO_API = {
+  dtmfTransmitMode: "dtmf_transmit_mode",
+  rfc2833Payload: "rfc2833_payload",
+  rtpPortRange: "rtp_port_range",
+  silenceSuppression: "slience_suppression",
+  noiseReduction: "noise_reduction",
+  comfortNoise: "comfort_noise_generation",
+  jitterMode: "jitter_mode",
+  jitterBuffer: "jitter_buffer_ms",
+  jitterUnderrunLead: "jitter_under_run_lead_ms",
+  jitterOverrunLead: "jitter_over_run_lead_ms",
+  ipOutputLevelControl: "ip_side_output_level_control_mode",
+  voiceGainOutput: "voice_gain_output_from_ip_db",
+  packTimeDefault: "pack_time_when_nego_fail_default_value",
+  codecSetting: "codec_seq_setting",
+};
+
+const sipFieldOpts = (field) => {
+  if (!field.options) return "";
+  const opts = field.options.map((o) =>
+    typeof o === "object" ? o.value ?? o.label : o
+  );
+  return `Options: ${opts.join(", ")}.`;
+};
+
+const buildSipMediaTooltips = () => {
+  const tooltips = {};
+  [...SIP_MEDIA_FIELDS, SIP_MEDIA_CODEC_FIELD].forEach((field) => {
+    const apiKey = SIP_MEDIA_UI_TO_API[field.name];
+    const parts = [];
+    if (apiKey) {
+      parts.push(
+        `Saved as ${apiKey} via updateMediaSettings (id: 1).`
+      );
+    } else {
+      parts.push(
+        "Shown in media settings form. Not sent in updateMediaSettings payload."
+      );
+    }
+    const opts = sipFieldOpts(field);
+    if (opts) parts.push(opts);
+    if (field.conditional) {
+      parts.push(`Conditionally shown based on ${field.conditional}.`);
+    }
+    tooltips[field.name] = parts.join("\n");
+  });
+  return tooltips;
+};
+
+/** SIP Media (SipMediaPage) — listMediaSettings / updateMediaSettings */
+export const SIP_MEDIA_FIELD_TOOLTIPS = buildSipMediaTooltips();

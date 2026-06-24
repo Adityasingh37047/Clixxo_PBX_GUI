@@ -8,3 +8,12 @@ export const PCM_TRUNK_INITIAL_FORM = {
   pcmNo: 0,
   ts: Array(PCM_TRUNK_TS_COUNT).fill(true),
 };
+
+/** PCM Trunk (PcmTrunkPage) — local React state only */
+export const PCM_TRUNK_FIELD_TOOLTIPS = {
+  index: "Trunk index. Select 0–15. Stored in local table state. Default: 0.",
+  pcmNo: "PCM number. Select 0–15. Stored in local table state. Default: 0.",
+  ts:
+    "32 time-slot checkboxes (TS[0]–TS[31]).\n" +
+    "Check All toggles all slots. Stored in local table state. Default: all checked.",
+};

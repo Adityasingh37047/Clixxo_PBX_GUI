@@ -45,3 +45,23 @@ export const IP_CALL_IN_CALLERID_INITIAL_FORM = {
   suffix_to_add: '',
   description: '',
 };
+
+/** IP Call In CallerID (manipulation_type: ip_in_callerid) */
+export const IP_CALL_IN_CALLERID_FIELD_TOOLTIPS = {
+  call_initiator:
+    "Saved as call_initiator. manipulation_type: ip_in_callerid.\n" +
+    "Select a SIP trunk group from the loaded list. Required.",
+  callerid_prefix: `Saved as callerid_prefix. Required text field. Default: *.`,
+  calleeid_prefix: `Saved as calleeid_prefix. Required text field. Default: *.`,
+  with_original_calleeid:
+    "Saved as with_original_calleeid. Required.\nOptions: Yes, No. Default: No.",
+  stripped_digits_from_left:
+    "Saved as stripped_digits_from_left.\nEmpty value is saved as 0. Default: 0.",
+  stripped_digits_from_right:
+    "Saved as stripped_digits_from_right.\nEmpty value is saved as 0. Default: 0.",
+  reserved_digits_from_right:
+    "Saved as reserved_digits_from_right.\nEmpty value is saved as 0. Default: 20.",
+  prefix_to_add: "Saved as prefix_to_add. Free-text field. Default: empty.",
+  suffix_to_add: "Saved as suffix_to_add. Free-text field. Default: empty.",
+  description: "Saved as description. Free-text field. Default: empty.",
+};

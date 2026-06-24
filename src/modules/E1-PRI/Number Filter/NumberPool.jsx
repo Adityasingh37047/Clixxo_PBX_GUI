@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   NUMBER_POOL_COLUMNS,
   NUMBER_POOL_GROUPS,
+  NUMBER_POOL_FIELD_TOOLTIPS,
 } from "../../../constants/NumberPoolConstants";
 import {
   Button,
@@ -14,6 +15,7 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import {
   listNumberPool,
@@ -21,11 +23,70 @@ import {
   updateNumberPool,
   deleteNumberPool,
 } from "../../../api/apiService";
-import { NUMBER_POOL_FIELD_TOOLTIPS } from "../../../constants/E1PriNumberFilterTooltipConstants";
-import { E1PriRouteFieldLabel } from "../Route/e1PriRouteTooltipUi";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Checkbox } from "@mui/material";
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 // ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -938,7 +999,7 @@ const NumberPool = () => {
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
             <div style={numberPoolFieldRowStyle}>
-              <E1PriRouteFieldLabel
+              <E1PriFieldLabel
                 tooltipKey="groupNo"
                 tooltips={NUMBER_POOL_FIELD_TOOLTIPS}
                 style={{
@@ -947,7 +1008,7 @@ const NumberPool = () => {
                 }}
               >
                 Group No.:
-              </E1PriRouteFieldLabel>
+              </E1PriFieldLabel>
               <div style={numberPoolFieldControlStyle}>
                 <MuiSelect
                   name="groupNo"
@@ -967,7 +1028,7 @@ const NumberPool = () => {
             </div>
 
             <div style={numberPoolFieldRowStyle}>
-              <E1PriRouteFieldLabel
+              <E1PriFieldLabel
                 tooltipKey="range"
                 tooltips={NUMBER_POOL_FIELD_TOOLTIPS}
                 style={{
@@ -976,7 +1037,7 @@ const NumberPool = () => {
                 }}
               >
                 Range:
-              </E1PriRouteFieldLabel>
+              </E1PriFieldLabel>
               <div
                 style={{
                   ...numberPoolFieldControlStyle,

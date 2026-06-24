@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { CALLERID_RESERVE_POOL_FIELDS, CALLERID_RESERVE_POOL_TABLE_COLUMNS, CALLERID_RESERVE_POOL_INITIAL_FORM } from '../../../constants/CallerIDReservePoolConstants';
+import { CALLERID_RESERVE_POOL_FIELDS, CALLERID_RESERVE_POOL_TABLE_COLUMNS, CALLERID_RESERVE_POOL_INITIAL_FORM, CALLERID_RESERVE_POOL_FIELD_TOOLTIPS } from '../../../constants/CallerIDReservePoolConstants';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tooltip } from '@mui/material';
 
 const grayButtonSx = {
   background: 'linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)',
@@ -38,6 +38,67 @@ const blueButtonSx = {
     background: 'linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)',
     color: '#fff',
   },
+};
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
 };
 
 const CallerIDReservePool = () => {
@@ -225,9 +286,20 @@ const CallerIDReservePool = () => {
                 className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
                 style={{ minHeight: 28 }}
               >
-                <label className="text-[12px] text-gray-600 font-medium whitespace-nowrap text-left" style={{width:80, marginRight:8}}>
-                  {field.label}:
-                </label>
+                <E1PriFieldLabel
+                  tooltipKey={field.name}
+                  tooltips={CALLERID_RESERVE_POOL_FIELD_TOOLTIPS}
+                  style={{
+                    fontSize: 12,
+                    width: 80,
+                    marginRight: 8,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                    display: "inline-block",
+                  }}
+                >
+                  {field.label}
+                </E1PriFieldLabel>
                 <div className="flex-1">
                   <TextField
                     type={field.type || 'text'}

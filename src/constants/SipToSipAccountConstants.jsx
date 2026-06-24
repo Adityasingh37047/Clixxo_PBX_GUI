@@ -1,3 +1,15 @@
+export const CODEC_OPTIONS = [
+  { value: "ulaw", label: "ulaw" },
+  { value: "alaw", label: "alaw" },
+  { value: "gsm", label: "gsm" },
+  { value: "g726", label: "g726" },
+  { value: "g722", label: "g722" },
+  { value: "g729", label: "g729" },
+  { value: "h264", label: "h264" },
+  { value: "vp8", label: "vp8" },
+  { value: "vp9", label: "vp9" },
+];
+
 export const SIP_TO_SIP_FIELDS = [
   { name: "extension", label: "Extension", type: "text", defaultValue: "" },
   { name: "context", label: "Context", type: "text", defaultValue: "" },
@@ -52,3 +64,20 @@ export const SIP_TO_SIP_FORM_LAYOUT = [
   ["contact_user"],
   ["outbound_proxy"],
 ];
+
+/** SIP To SIP Account (SipToSipAccountPage) — create/update SipIpTrunkAccount */
+export const SIP_TO_SIP_FIELD_TOOLTIPS = {
+  extension:
+    "Saved as extension. Required. Duplicate extension in SIP Account is blocked.",
+  context: "Saved as context. Required.",
+  allow_codecs:
+    "Saved as allow_codecs. Required comma-separated codec list (dual-list UI).",
+  contact:
+    "Saved as contact. Required.\n" +
+    "UI validates IPv4 like 10.150.18.10 or sip:10.150.18.10.\n" +
+    "Saved with sip: prefix if missing.",
+  password: "Saved as password. Required.",
+  from_domain: "Saved as from_domain. Required.",
+  contact_user: "Saved as contact_user. Required.",
+  outbound_proxy: "Saved as outbound_proxy. Required.",
+};

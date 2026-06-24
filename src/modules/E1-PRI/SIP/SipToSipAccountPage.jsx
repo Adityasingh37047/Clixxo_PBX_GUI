@@ -14,16 +14,18 @@ import {
   FormControl,
   Select as MuiSelect,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import { CODEC_OPTIONS } from "../../../constants/SipAccountConstants";
 import {
+  CODEC_OPTIONS,
   SIP_TO_SIP_FIELDS,
   SIP_TO_SIP_TABLE_COLUMNS,
   SIP_TO_SIP_INITIAL_FORM,
   SIP_TO_SIP_FORM_LAYOUT,
+  SIP_TO_SIP_FIELD_TOOLTIPS,
 } from "../../../constants/SipToSipAccountConstants";
 import { fetchSipAccounts } from "../../../api/apiService";
 import {
@@ -35,6 +37,67 @@ import {
 } from "../../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 // ── Local page UI (inlined from e1PriSharedUi)
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -474,7 +537,7 @@ const pbxDualListSelectStyle = {
 const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
 const SIP_TO_SIP_SECTION_HEADING_FONT_SIZE = 14;
 
-const SipToSipSectionHeading = ({ title, required = false }) => (
+const SipToSipSectionHeading = ({ title, required = false, tooltipKey, tooltips }) => (
   <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
@@ -489,8 +552,21 @@ const SipToSipSectionHeading = ({ title, required = false }) => (
         color: CODEC_PRIORITY_HEADING_COLOR,
       }}
     >
-      {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
+      {tooltipKey && tooltips ? (
+        <E1PriFieldLabel
+          tooltipKey={tooltipKey}
+          tooltips={tooltips}
+          style={{ fontSize: SIP_TO_SIP_SECTION_HEADING_FONT_SIZE, color: CODEC_PRIORITY_HEADING_COLOR }}
+        >
+          {title}
+          {required && <span style={{ color: C.errorRed }}> *</span>}
+        </E1PriFieldLabel>
+      ) : (
+        <>
+          {title}
+          {required && <span style={{ color: C.errorRed }}> *</span>}
+        </>
+      )}
     </span>
   </div>
 );
@@ -1105,7 +1181,12 @@ const SipToSipAccountPage = () => {
 
   const renderAllowCodecsSection = () => (
     <div style={{ width: "100%" }}>
-      <SipToSipSectionHeading title="Allow Codecs" required />
+      <SipToSipSectionHeading
+        title="Allow Codecs"
+        required
+        tooltipKey="allow_codecs"
+        tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+      />
       <div
         style={{
           display: "grid",
@@ -1392,7 +1473,14 @@ const SipToSipAccountPage = () => {
       }}
     >
       <label style={formFieldLabelStyle}>
-        {field.label} <span style={{ color: C.errorRed }}>*</span>
+        <E1PriFieldLabel
+          tooltipKey={field.name}
+          tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+          style={{ fontSize: 13, display: "inline" }}
+        >
+          {field.label}
+        </E1PriFieldLabel>{" "}
+        <span style={{ color: C.errorRed }}>*</span>
       </label>
       <div style={{ width: "100%", minWidth: 0 }}>
         {renderFormFieldControl(field)}

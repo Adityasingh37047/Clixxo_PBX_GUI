@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Alert, Checkbox } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ROUTE_PATHS } from "../../../constants/routeConstatns";
+import { ROUTE_PATHS } from "../../../constants/routeConstants";
 import {
   PORT_FXS_BATCH_MODIFY_FIELDS,
   PORT_FXS_BATCH_MODIFY_NOTE,

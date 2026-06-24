@@ -2,13 +2,75 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
+  SIP_SETTINGS_FIELD_TOOLTIPS,
 } from "../../../constants/SipSipConstants";
-import { Select, MenuItem, FormControl, Checkbox } from "@mui/material";
+import { Select, MenuItem, FormControl, Checkbox, Tooltip } from "@mui/material";
 import { listSipSettings, updateSipSettings } from "../../../api/apiService";
 import { Alert, CircularProgress } from "@mui/material";
 
 
 // ── Local page UI (inlined from e1PriSharedUi) ──
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -719,11 +781,15 @@ const SipSipPage = () => {
 
                     return (
                       <div key={field.key} className={SIP_PCM_FORM_ROW_CLASS}>
-                        <label style={getSipPcmFormLabelStyle(field.key)}>
+                        <E1PriFieldLabel
+                          tooltipKey={field.key}
+                          tooltips={SIP_SETTINGS_FIELD_TOOLTIPS}
+                          style={getSipPcmFormLabelStyle(field.key)}
+                        >
                           {field.key === "externalBound"
                             ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
                             : field.label}
-                        </label>
+                        </E1PriFieldLabel>
 
                         <div style={sipPcmFormControlWrapStyle}>
                           {field.type === "text" && (

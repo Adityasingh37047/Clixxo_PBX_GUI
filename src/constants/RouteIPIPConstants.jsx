@@ -47,3 +47,34 @@ export const ROUTE_IP_IP_TABLE_COLUMNS = [
   // { key: "numberFilter", label: "Number Filter" },
   // { key: "description", label: "Description" },
 ];
+
+const PREFIX_RULES =
+  "Only digits (0-9) and * are allowed. Default: *.";
+
+/** IP to IP (route_type: ip_to_ip) */
+export const ROUTE_IP_IP_FIELD_TOOLTIPS = {
+  index:
+    "Table ID column shows the row number.\n" +
+    "This form field is not sent when the route is saved.",
+
+  callSource:
+    "Saved as call_source.\n" +
+    "SIP trunk group from the loaded list. Cannot be the same as Call Destination.",
+
+  callerIdPrefix:
+    "Saved as caller_id_prefix.\n" + PREFIX_RULES,
+
+  calleeIdPrefix:
+    "Saved as callee_id_prefix.\n" + PREFIX_RULES,
+
+  callDestination:
+    "Saved as call_destination.\n" +
+    "SIP trunk group from the loaded list. Cannot be the same as Call Source.",
+
+  numberFilter:
+    "Saved as number_filter.\n" +
+    "Only option shown in this UI: No. Default: No.",
+
+  description:
+    "Saved as description. Free-text field. Default: default.",
+};

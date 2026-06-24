@@ -2,7 +2,7 @@
 import Storage from "./modules/System/System Settings/Storage";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
-import { ROUTE_PATHS } from "./constants/routeConstatns";
+import { ROUTE_PATHS } from "./constants/routeConstants";
 import SystemInfo from "./modules/status/System Status/SystemInfo";
 import PstnStatus from "./modules/status/System Status/PstnStatus";
 import PcmInfo from "./modules/status/System Status/PcmInfo";

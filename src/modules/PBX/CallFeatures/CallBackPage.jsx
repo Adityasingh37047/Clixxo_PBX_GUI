@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import Tooltip from "@mui/material/Tooltip";
 import {Alert,
   Button,
   Dialog,
@@ -283,6 +284,28 @@ const TableListEmptyState = ({
     ) : null}
   </div>
 );
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1134,17 +1157,23 @@ const CallBackPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 100,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Name <span style={{ color: C.labelText }}>:</span>
-                  </label>
+                   <Tooltip
+  title="User-defined name of a callback, which must be unique. It is null by default and must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_only."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 100,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Name <span style={{ color: C.labelText }}>:</span>
+  </label>
+</Tooltip>
                   <TextField
                     size="small"
                     fullWidth
@@ -1163,17 +1192,23 @@ const CallBackPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 100,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Strip :
-                  </label>
+                 <Tooltip
+  title="Set how many digits will be stripped from the call number before the callback is placed. It is null by default."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 100,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Strip :
+  </label>
+</Tooltip>
                   <TextField
                     size="small"
                     fullWidth
@@ -1193,17 +1228,23 @@ const CallBackPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 100,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Destination <span style={{ color: C.labelText }}>:</span>
-                  </label>
+                  <Tooltip
+  title="The destination which the callback will direct the call to. It is null by default and must be filled in; otherwise the configuration will fail to be saved."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 100,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Destination <span style={{ color: C.labelText }}>:</span>
+  </label>
+</Tooltip>
                   <FormControl size="small" fullWidth>
                     <MuiSelect
                       value={destination}
@@ -1239,7 +1280,11 @@ const CallBackPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
+                  <Tooltip
+  title="The3 delay time to call back after rejecting an incoming call. Default is 10s."
+  {...tooltipProps}
+>
+  <label
                     style={{
                       fontSize: 13,
                       fontWeight: 600,
@@ -1250,6 +1295,7 @@ const CallBackPage = () => {
                   >
                     Delay (s) <span style={{ color: C.labelText }}>:</span>
                   </label>
+</Tooltip>
                   <TextField
                     size="small"
                     fullWidth
@@ -1269,17 +1315,25 @@ const CallBackPage = () => {
                 <div
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 100,
-                      flexShrink: 0,
-                    }}
-                  >
-                    Prepend :
-                  </label>
+                
+                    <Tooltip
+  title="Set the digits to prefix the callback number before the callback is placed. It is null by default."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 100,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Prepend :
+  </label>
+</Tooltip>
+                  
                   <TextField
                     size="small"
                     fullWidth
@@ -1302,18 +1356,24 @@ const CallBackPage = () => {
                     gap: 12,
                   }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 100,
-                      flexShrink: 0,
-                      marginTop: 4,
-                    }}
-                  >
-                    Through :
-                  </label>
+                    <Tooltip
+  title="Select the callback through type. Auto: The system will choose the outgoing path from the outgoing one. From coming in: From which trunk call in, from which trunk call in, from which trunk call out. Select: You can select trunk call out manually."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 100,
+      flexShrink: 0,
+      marginTop: 4,
+      cursor: "help",
+    }}
+  >
+    Through :
+  </label>
+</Tooltip>
                   <RadioGroup
                     value={
                       throughSelect
