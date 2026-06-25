@@ -365,9 +365,10 @@ const nativeFieldSelectStyle = {
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
+  height: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "24px 28px",
+  padding: "8px 28px 16px",
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -378,12 +379,20 @@ const advancedPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 0,
 };
 
 const advancedTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 0,
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
@@ -403,6 +412,7 @@ const advancedFormInlineFooterStyle = {
   borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const advancedFormBtnStyle = {
@@ -419,7 +429,10 @@ const dashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
+  flex: 1,
+  minHeight: 0,
   alignItems: "stretch",
+  overflow: "auto",
 };
 
 const dashboardColumnStyle = {
@@ -427,7 +440,8 @@ const dashboardColumnStyle = {
   flexDirection: "column",
   gap: 12,
   minWidth: 0,
-  padding: "24px 36px",
+  minHeight: "100%",
+  padding: "16px 36px 24px",
 };
 
 const dashboardColumnLeftStyle = {
@@ -444,6 +458,7 @@ const dashboardDividerStyle = {
   background: C.divider,
   width: 1,
   alignSelf: "stretch",
+  margin: "14px 0",
 };
 
 const dashboardSectionTitleStyle = {
@@ -459,6 +474,7 @@ const pageTitleStyle = {
   color: C.strongText,
   margin: "0 0 6px 0",
   letterSpacing: "-0.02em",
+  flexShrink: 0,
 };
 
 const VoipBreadcrumb = ({ current }) => (
@@ -466,12 +482,13 @@ const VoipBreadcrumb = ({ current }) => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 20,
+      marginBottom: 12,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
+      flexShrink: 0,
     }}
   >
     <span>FXS</span>
