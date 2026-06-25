@@ -23,42 +23,26 @@ import {
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+const FIELD_LABEL_COLOR = "#374151";
 
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// ── Color palette (aligned with FxsVoipMediaPage enterprise tokens) ───────────
 const C = {
   pageBg: "var(--bg-main)",
   cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
+  cardBorder: "#d8dde5",
+  cardShadow: "0 2px 10px rgba(15, 23, 42, 0.07)",
+  divider: "#e2e6ec",
   labelText: "var(--text-primary)",
   valueText: "var(--text-primary)",
   mutedText: "var(--text-muted)",
   strongText: "var(--text-primary)",
   accent: "var(--accent-brand)",
+  accentDark: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
-};
-
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[36px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
-
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  accent: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  dialogPrimary: BTN_DIALOG_PRIMARY,
-  dialogCancel: BTN_DIALOG_CANCEL,
-  danger: `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`,
-  outline: BTN_OUTLINE,
 };
 
 const Btn = ({
@@ -66,22 +50,152 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  className = "",
-  style,
+  style: extraStyle,
   type,
   title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: FIELD_LABEL_COLOR,
+      border: `1px solid ${C.cardBorder}`,
+    },
+    dialogPrimary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      minWidth: 100,
+      height: 36,
+      fontSize: 13,
+      padding: "0 28px",
+    },
+    dialogCancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+      minWidth: 100,
+      height: 33,
+      fontSize: 13,
+      padding: "0 14px",
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const isLarge =
+    variant === "primary" ||
+    variant === "cancel" ||
+    variant === "dialogPrimary" ||
+    variant === "dialogCancel";
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      dialogPrimary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      dialogCancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      dialogPrimary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      dialogCancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "dialogPrimary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel" || variant === "dialogCancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  return (
+    <button
+      type={type}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: isLarge ? "8px 20px" : "6px 14px",
+        borderRadius: 8,
+        fontSize: isLarge ? 13 : 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: isLarge ? (variant === "dialogPrimary" ? 36 : 34) : 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        userSelect: "none",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
+      }}
+    >
+      {children}
+    </button>
+  );
+};
 
 
 // ── Shared: Table Header ──────────────────────────────────────────────────────
@@ -89,16 +203,16 @@ const TH = ({ children, style: extra }) => (
   <th
     style={{
       background: "var(--table-header-bg)",
-      color: C.labelText,
+      color: FIELD_LABEL_COLOR,
       fontWeight: 700,
       fontSize: 11,
-      padding: "9px 14px",
+      padding: "10px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.14em",
+      letterSpacing: "0.08em",
       ...extra,
     }}
   >
@@ -107,54 +221,183 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "7px 14px",
+  padding: "9px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
   padding: "1px",
   color: "var(--text-primary)",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "&.Mui-checked": { color: "#3E5475" },
+  "&.MuiCheckbox-indeterminate": { color: "#3E5475" },
 };
 
-const BLOCKED_LIST_PAGE_WRAP =
-  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
-const BLOCKED_LIST_PAGE_INNER = "w-full max-w-full mx-auto";
-const BLOCKED_LIST_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const BLOCKED_LIST_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
-const BLOCKED_LIST_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
-const BLOCKED_LIST_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
-const BLOCKED_LIST_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const BLOCKED_LIST_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const BLOCKED_LIST_PAGE_BADGE =
-  "rounded-[6px] border-[0.5px] border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const BLOCKED_LIST_PAGINATION =
-  "flex items-center justify-between border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
+const blockedListPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "24px 28px",
+  boxSizing: "border-box",
+};
 
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+const blockedListCardStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+};
+
+const blockedListToolbarStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  minHeight: 52,
+  padding: "10px 16px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+};
+
+const blockedListPaginationStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  padding: "10px 16px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+};
+
+const blockedListModalPaperSx = {
+  width: 560,
+  maxWidth: "95vw",
+  borderRadius: `${CARD_RADIUS}px`,
+  overflow: "hidden",
+  boxShadow: "0 8px 30px rgba(15, 23, 42, 0.12)",
+};
+
+const blockedListFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    fontSize: 13,
+    backgroundColor: "var(--bg-surface)",
+    borderRadius: `${FIELD_RADIUS}px`,
+    "& fieldset": { borderColor: "#d1d5db" },
+    "&:hover fieldset": { borderColor: "#9ca3af" },
+    "&.Mui-focused fieldset": {
+      borderColor: "#3E5475",
+      borderWidth: "1px",
+    },
+    "&.Mui-focused": {
+      boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
+    },
+  },
+  "& .MuiSelect-select": {
+    padding: "6px 10px",
+    display: "flex",
+    alignItems: "center",
+  },
+};
+
+const pageTitleStyle = {
+  fontSize: 22,
+  fontWeight: 700,
+  color: C.strongText,
+  margin: "0 0 6px 0",
+  letterSpacing: "-0.02em",
+};
+
+const STATUS_CHIP_TONES = {
+  success: { bg: "#ecfdf5", color: "#16a34a", border: "#bbf7d0" },
+  brand: { bg: "#e0f2fe", color: "#3E5475", border: "#bae6fd" },
+  neutral: { bg: "#f1f5f9", color: "#475569", border: "#e2e8f0" },
+  info: { bg: "#f8fafc", color: "#374151", border: "#e2e8f0" },
+  warning: { bg: "#fffbeb", color: "#d97706", border: "#fde68a" },
+};
+
+const StatusChip = ({ tone = "neutral", children }) => {
+  const t = STATUS_CHIP_TONES[tone] || STATUS_CHIP_TONES.neutral;
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "3px 10px",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.02em",
+        background: t.bg,
+        color: t.color,
+        border: `1px solid ${t.border}`,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </span>
+  );
+};
+
+const getMatchModeTone = (mode) => {
+  if (mode === "Regex Match") return "brand";
+  if (mode === "Extension") return "warning";
+  return "info";
+};
+
+const getDirectionTone = (direction) => {
+  if (direction === "Inbound") return "success";
+  if (direction === "Outbound") return "brand";
+  return "neutral";
+};
+
+const PbxBreadcrumb = ({ section, current }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 20,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+      padding: "56px 24px",
+    }}
+  >
+    <CircularProgress size={28} sx={{ color: C.accentDark }} />
+    <span style={{ fontSize: 13, color: C.mutedText, fontWeight: 500 }}>
+      Loading blocked entries…
+    </span>
   </div>
 );
 
@@ -164,19 +407,45 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      minHeight: 260,
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "32px 24px",
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        background: "#f1f5f9",
+        border: `1px solid ${C.divider}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 22,
+        marginBottom: 14,
+      }}
+    >
+      🚫
+    </div>
+    <div
+      style={{
+        fontSize: 14,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
     {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
+      <Btn variant="primary" onClick={onAddNew}>
         {buttonLabel}
       </Btn>
     ) : null}
@@ -187,22 +456,40 @@ const BlockedListPagination = ({
   page,
   totalPages,
   recordCount,
+  totalCount,
   onPrev,
   onNext,
   disabled,
 }) => (
-  <div className={BLOCKED_LIST_PAGINATION}>
-    <span className="text-[11px] text-[#94a3b8]">
-      Showing {recordCount} record{recordCount !== 1 ? "s" : ""} on page {page}
+  <div style={blockedListPaginationStyle}>
+    <span style={{ fontSize: 12, color: C.mutedText, fontWeight: 500 }}>
+      Showing {recordCount} of {totalCount} record{totalCount !== 1 ? "s" : ""}{" "}
+      · Page {page} of {totalPages}
     </span>
-    <div className="flex items-center gap-[8px]">
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <Btn onClick={onPrev} disabled={disabled || page <= 1} variant="outline">
         ← Prev
       </Btn>
-      <span className={BLOCKED_LIST_PAGE_BADGE}>
-        Page {page} of {totalPages}
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          padding: "4px 12px",
+          borderRadius: 6,
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#3E5475",
+          background: "#e0f2fe",
+          border: `1px solid #bae6fd`,
+        }}
+      >
+        {page} / {totalPages}
       </span>
-      <Btn onClick={onNext} disabled={disabled || page >= totalPages} variant="outline">
+      <Btn
+        onClick={onNext}
+        disabled={disabled || page >= totalPages}
+        variant="outline"
+      >
         Next →
       </Btn>
     </div>
@@ -216,21 +503,95 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
+
+const BlockedListSearchBox = ({
+  value,
+  onChange,
+  onClear,
+  focused,
+  onFocus,
+  onBlur,
+  isCompact,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      flex: isCompact ? "1 1 100%" : "0 1 auto",
+      minWidth: isCompact ? 0 : 220,
+      background: "var(--bg-main)",
+      border: `1px solid ${focused ? "#3E5475" : C.cardBorder}`,
+      borderRadius: 8,
+      padding: "6px 12px",
+      boxShadow: focused ? "0 0 0 2px rgba(62, 84, 117, 0.12)" : "none",
+      transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+    }}
+  >
+    <span
+      style={{
+        fontSize: 13,
+        color: focused ? "#3E5475" : C.mutedText,
+        lineHeight: 1,
+      }}
+    >
+      🔍
+    </span>
+    <input
+      type="text"
+      value={value}
+      onChange={onChange}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      placeholder="Search by name, number, or match mode…"
+      style={{
+        border: "none",
+        background: "transparent",
+        fontSize: 12,
+        color: C.valueText,
+        outline: "none",
+        width: "100%",
+        minWidth: 0,
+        fontWeight: 500,
+      }}
+    />
+    {value ? (
+      <button
+        type="button"
+        onClick={onClear}
+        style={{
+          border: "none",
+          background: "#e2e8f0",
+          color: "#64748b",
+          borderRadius: 999,
+          width: 18,
+          height: 18,
+          fontSize: 10,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 0,
+          flexShrink: 0,
+        }}
+      >
+        ✕
+      </button>
+    ) : null}
+  </div>
+);
 
 const BlockedListPage = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -505,9 +866,13 @@ const BlockedListPage = () => {
   };
 
   return (
-    <div className={`${BLOCKED_LIST_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}>
-      <div className={BLOCKED_LIST_PAGE_INNER}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...blockedListPageWrapStyle,
+        padding: isCompact ? "12px 14px" : blockedListPageWrapStyle.padding,
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "100%", margin: 0 }}>
         {error.text && (
           <Alert
             severity={
@@ -524,28 +889,92 @@ const BlockedListPage = () => {
               right: 20,
               zIndex: 9999,
               minWidth: 300,
-              boxShadow: 3,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
             }}
           >
             {error.text}
           </Alert>
         )}
 
+        <h1 style={pageTitleStyle}>Blocked List</h1>
         <PbxBreadcrumb section="Call Features" current="Blocked List" />
 
-        <div className={BLOCKED_LIST_CARD}>
+        <div style={blockedListCardStyle}>
           <div
-            className={`${BLOCKED_LIST_TOOLBAR} ${isCompact ? BLOCKED_LIST_TOOLBAR_COMPACT : ""}`.trim()}
+            style={{
+              ...blockedListToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch" }
+                : {}),
+            }}
           >
-            <div className={BLOCKED_LIST_TOOLBAR_LEFT}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 10,
+                flex: "1 1 auto",
+                minWidth: 0,
+              }}
+            >
+              <BlockedListSearchBox
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                onClear={() => {
+                  setSearchQuery("");
+                  setPage(1);
+                }}
+                focused={searchFocused}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                isCompact={isCompact}
+              />
+              {!isInitialLoad && rows.length > 0 && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.mutedText,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {filteredRows.length} entr
+                  {filteredRows.length !== 1 ? "ies" : "y"}
+                </span>
+              )}
               {selected.length > 0 && (
-                <span className={BLOCKED_LIST_SELECTED_BADGE}>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    padding: "4px 12px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#3E5475",
+                    background: "#e0f2fe",
+                    border: "1px solid #bae6fd",
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
             </div>
 
-            <div className={BLOCKED_LIST_TOOLBAR_ACTIONS}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 8,
+                ...(isCompact ? { width: "100%" } : {}),
+              }}
+            >
               <Btn
                 onClick={handleDelete}
                 disabled={
@@ -553,7 +982,11 @@ const BlockedListPage = () => {
                 }
                 variant="cancel"
               >
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                {loading.delete ? (
+                  <CircularProgress size={12} sx={{ color: "#374151" }} />
+                ) : (
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                )}
                 Delete
               </Btn>
               <Btn
@@ -667,8 +1100,8 @@ const BlockedListPage = () => {
                     const rowBg = isSelected
                       ? "#e0f2fe"
                       : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                        ? "var(--row-alt)"
+                        : "var(--bg-surface)";
 
                     return (
                       <tr
@@ -706,6 +1139,8 @@ const BlockedListPage = () => {
                             ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
+                            fontWeight: 600,
+                            color: C.mutedText,
                           }}
                         >
                           {realIdx + 1}
@@ -715,6 +1150,8 @@ const BlockedListPage = () => {
                             ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
+                            fontWeight: 600,
+                            textAlign: "left",
                           }}
                         >
                           {row.name}
@@ -726,23 +1163,17 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span
-                            style={{
-                              color: C.valueText,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <StatusChip tone={getMatchModeTone(row.matchMode)}>
                             {row.matchMode}
-                          </span>
+                          </StatusChip>
                         </td>
                         <td
                           style={{
                             ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
+                            fontFamily: "ui-monospace, monospace",
+                            fontSize: 12,
                           }}
                         >
                           {row.blockedNumber}
@@ -754,22 +1185,9 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span
-                            style={{
-                              color:
-                                row.direction === "Inbound"
-                                  ? "#16a34a"
-                                  : row.direction === "Outbound"
-                                    ? C.accent
-                                    : "#475569",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <StatusChip tone={getDirectionTone(row.direction)}>
                             {row.direction}
-                          </span>
+                          </StatusChip>
                         </td>
                         <td
                           style={{
@@ -778,18 +1196,11 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span
-                            style={{
-                              color:
-                                row.enabled === "Yes" ? "#16a34a" : "#475569",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
+                          <StatusChip
+                            tone={row.enabled === "Yes" ? "success" : "neutral"}
                           >
                             {row.enabled}
-                          </span>
+                          </StatusChip>
                         </td>
                         <td
                           style={{
@@ -805,23 +1216,35 @@ const BlockedListPage = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <EditDocumentIcon
-                              titleAccess="Edit"
+                            <button
+                              type="button"
+                              title="Edit"
                               onClick={() => handleOpenEditModal(row)}
                               style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 32,
+                                height: 32,
+                                border: "none",
+                                borderRadius: 8,
+                                background: "transparent",
+                                color: "#3E5475",
                                 cursor: "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: 0.7,
-                                transition: "opacity 0.15s ease",
+                                transition:
+                                  "background 0.15s ease, color 0.15s ease",
                               }}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.style.opacity = "1")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.style.opacity = "0.7")
-                              }
-                            />
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "#e0f2fe";
+                                e.currentTarget.style.color = "#2563eb";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = "transparent";
+                                e.currentTarget.style.color = "#3E5475";
+                              }}
+                            >
+                              <EditDocumentIcon sx={{ fontSize: 20 }} />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -837,6 +1260,7 @@ const BlockedListPage = () => {
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
+              totalCount={filteredRows.length}
               onPrev={handlePrev}
               onNext={handleNext}
               disabled={loading.fetch}
@@ -850,31 +1274,38 @@ const BlockedListPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: blockedListModalPaperSx }}
       >
         <DialogTitle
-          style={{
+          sx={{
             background: "#1e2d42",
             color: "#fff",
             fontWeight: 700,
-            fontSize: 16,
+            fontSize: "16px !important",
+            lineHeight: "1.4 !important",
             textAlign: "center",
-            padding: "14px 24px",
+            padding: "14px 24px !important",
+            letterSpacing: "-0.01em",
           }}
         >
           {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
         </DialogTitle>
 
-        <DialogContent style={{ padding: "20px 24px", background: "var(--bg-surface)" }}>
+        <DialogContent
+          sx={{
+            padding: "24px !important",
+            background: "var(--bg-surface)",
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div
-  style={{
-    background: "#f5f7fa",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 6,
-    padding: 16,
-  }}
->
+            <div
+              style={{
+                background: "var(--bg-main)",
+                border: `1px solid ${C.divider}`,
+                borderRadius: FIELD_RADIUS,
+                padding: 20,
+              }}
+            >
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
@@ -889,7 +1320,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: C.labelText,
+      color: FIELD_LABEL_COLOR,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -903,13 +1334,7 @@ const BlockedListPage = () => {
                     fullWidth
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "var(--bg-surface)",
-                      },
-                    }}
+                    sx={blockedListFieldSx}
                   />
                 </div>
 
@@ -924,7 +1349,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: C.labelText,
+      color: FIELD_LABEL_COLOR,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -942,16 +1367,7 @@ const BlockedListPage = () => {
                         if (val === "Extension") setBlockedNumber("");
                         else setSelectedExtension("");
                       }}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "var(--bg-surface)",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
+                      sx={blockedListFieldSx}
                     >
                       <MenuItem
                         value="Exact Match"
@@ -983,7 +1399,7 @@ const BlockedListPage = () => {
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
-                        color: C.labelText,
+                        color: FIELD_LABEL_COLOR,
                         width: 160,
                         flexShrink: 0,
                       }}
@@ -995,7 +1411,7 @@ const BlockedListPage = () => {
                         value={selectedExtension}
                         onChange={(e) => setSelectedExtension(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13 }}
+                        sx={blockedListFieldSx}
                       >
                         <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                           <span style={{ color: C.mutedText }}>
@@ -1026,7 +1442,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: C.labelText,
+      color: FIELD_LABEL_COLOR,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1041,13 +1457,7 @@ const BlockedListPage = () => {
                       size="small"
                       value={blockedNumber}
                       onChange={(e) => setBlockedNumber(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "var(--bg-surface)",
-                        },
-                      }}
+                      sx={blockedListFieldSx}
                     />
                   </div>
                 )}
@@ -1063,7 +1473,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: C.labelText,
+      color: FIELD_LABEL_COLOR,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1077,16 +1487,7 @@ const BlockedListPage = () => {
                     <MuiSelect
                       value={direction}
                       onChange={(e) => setDirection(e.target.value)}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "var(--bg-surface)",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
+                      sx={blockedListFieldSx}
                     >
                       <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                         Inbound
@@ -1112,7 +1513,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: C.labelText,
+      color: FIELD_LABEL_COLOR,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1125,16 +1526,7 @@ const BlockedListPage = () => {
                     <MuiSelect
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "var(--bg-surface)",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
+                      sx={blockedListFieldSx}
                     >
                       <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                         Yes
@@ -1151,19 +1543,18 @@ const BlockedListPage = () => {
         </DialogContent>
 
         <DialogActions
-          style={{
-            padding: "16px 24px",
+          sx={{
+            padding: "16px 24px !important",
             background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
+            borderTop: `1px solid ${C.divider}`,
+            justifyContent: "center !important",
+            gap: "12px",
           }}
         >
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-            variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            variant="dialogPrimary"
           >
             {loading.save ? (
               <CircularProgress
