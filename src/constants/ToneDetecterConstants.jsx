@@ -42,4 +42,36 @@ export const TONE_DETECTER_INITIAL_FORM = {
   duration_error: '20',
 };
 
+const toneDetecterOpts = (field) => {
+  if (!field.options) return "";
+  return `Options: ${field.options.map((o) => o.label).join(", ")}.`;
+};
+
+const buildToneDetecterFieldTooltips = () => {
+  const tooltips = {};
+  TONE_DETECTER_FIELDS.forEach((field) => {
+    const parts = [];
+    if (field.type === "select") {
+      parts.push(toneDetecterOpts(field));
+      parts.push("Changing tone type auto-fills frequency and duration defaults.");
+    } else if (field.name === "index") {
+      parts.push("Tone detector profile index. Auto-incremented when adding.");
+    } else {
+      parts.push("Numeric parameter for tone detection.");
+    }
+    tooltips[field.name] = parts.join("\n");
+  });
+  tooltips.tone += "\nRequired. Dial Tone, Busy Tone, Ringback Tone, Fax F1, or Fax F2.";
+  tooltips.first_mid_frequency += "\nRequired. Primary mid-frequency (Hz). Default varies by tone type.";
+  tooltips.second_mid_frequency +=
+    "\nSecondary mid-frequency (Hz). Use 0 for single-frequency tones.";
+  tooltips.duration_on_state += "\nTone ON duration (ms).";
+  tooltips.duration_off_state += "\nTone OFF duration (ms).";
+  tooltips.period_count += "\nNumber of ON/OFF periods in detection window.";
+  tooltips.duration_error += "\nRequired. Allowed timing error at ON/OFF transitions (ms). Default: 20.";
+  return tooltips;
+};
+
+/** Tone detector modal (ToneDetecterPage) — localStorage table state */
+export const TONE_DETECTER_FIELD_TOOLTIPS = buildToneDetecterFieldTooltips();
 

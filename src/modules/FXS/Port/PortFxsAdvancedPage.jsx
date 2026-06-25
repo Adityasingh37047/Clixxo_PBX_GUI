@@ -7,6 +7,7 @@ import {
   PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES,
   PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE,
   WEEK_DAYS,
+  PORT_FXS_ADVANCED_FIELD_TOOLTIPS,
 } from "../../../constants/PortFxsAdvancedPageConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -16,7 +17,70 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
@@ -353,6 +417,7 @@ const PortBreadcrumb = ({ segments = [], current }) => (
 
 const FieldRow = ({
   label,
+  tooltipKey,
   children,
   required,
   align = "center",
@@ -378,7 +443,12 @@ const FieldRow = ({
         paddingTop: align === "flex-start" ? 8 : 0,
       }}
     >
-      {label}
+      <FxsFieldLabel
+        tooltipKey={tooltipKey}
+        tooltips={PORT_FXS_ADVANCED_FIELD_TOOLTIPS}
+      >
+        {label}
+      </FxsFieldLabel>
       {required && <span style={{ color: "#dc2626" }}> *</span>}
     </label>
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
@@ -567,7 +637,7 @@ const PortFxsAdvancedPage = () => {
           <div style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}>
             Time Period {i}
           </div>
-          <FieldRow label="Period 1 (hh:mm:ss):">
+          <FieldRow label="Period 1 (hh:mm:ss):" tooltipKey="periodStart">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="text"
@@ -594,7 +664,7 @@ const PortFxsAdvancedPage = () => {
               />
             </div>
           </FieldRow>
-          <FieldRow label="Period 2 (hh:mm:ss):">
+          <FieldRow label="Period 2 (hh:mm:ss):" tooltipKey="periodStart">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="text"
@@ -621,7 +691,7 @@ const PortFxsAdvancedPage = () => {
               />
             </div>
           </FieldRow>
-          <FieldRow label="Period 3 (hh:mm:ss):">
+          <FieldRow label="Period 3 (hh:mm:ss):" tooltipKey="periodStart">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="text"
@@ -648,7 +718,7 @@ const PortFxsAdvancedPage = () => {
               />
             </div>
           </FieldRow>
-          <FieldRow label="Week:">
+          <FieldRow label="Week:" tooltipKey="periodWeek">
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
               {WEEK_DAYS.map((day, idx) => (
                 <label
@@ -687,7 +757,7 @@ const PortFxsAdvancedPage = () => {
   const renderModalForm = () => (
     <form onSubmit={handleSave}>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <FieldRow label="Port:">
+        <FieldRow label="Port:" tooltipKey="port">
           <select
             value={batchForm.port}
             onChange={(e) => handleFormChange("port", e.target.value)}
@@ -702,7 +772,7 @@ const PortFxsAdvancedPage = () => {
           </select>
         </FieldRow>
 
-        <FieldRow label="Type:">
+        <FieldRow label="Type:" tooltipKey="type">
           <input
             type="text"
             value={batchForm.type || "FXS"}
@@ -713,7 +783,7 @@ const PortFxsAdvancedPage = () => {
           />
         </FieldRow>
 
-        <FieldRow label="Forbid Outgoing Call:">
+        <FieldRow label="Forbid Outgoing Call:" tooltipKey="forbidOutgoingCall">
           <label
             style={{
               display: "flex",
@@ -734,7 +804,7 @@ const PortFxsAdvancedPage = () => {
         </FieldRow>
 
         {shouldShowField({ conditional: "forbidOutgoingCall" }) && (
-          <FieldRow label="Way Of Forbid Outgoing Call:">
+          <FieldRow label="Way Of Forbid Outgoing Call:" tooltipKey="wayOfForbidOutgoingCall">
             <select
               value={batchForm.wayOfForbidOutgoingCall}
               onChange={(e) =>
@@ -784,7 +854,7 @@ const PortFxsAdvancedPage = () => {
             </>
           )}
 
-        <FieldRow label="Blacklist of FXS Out Calls:" align="flex-start">
+        <FieldRow label="Blacklist of FXS Out Calls:" align="flex-start" tooltipKey="blacklistOfFxsOutCalls">
           <textarea
             value={batchForm.blacklistOfFxsOutCalls}
             onChange={(e) =>

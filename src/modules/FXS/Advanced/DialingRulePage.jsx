@@ -3,6 +3,7 @@ import {
   DIALING_RULE_TABLE_COLUMNS,
   DIALING_RULE_INITIAL_FORM,
   DIALING_RULE_INITIAL_DATA,
+  DIALING_RULE_FIELD_TOOLTIPS,
 } from "../../../constants/DialingRuleConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -16,8 +17,69 @@ import {
   MenuItem,
   FormControl,
   Alert,
+  Tooltip,
 } from "@mui/material";
 // ── Local page UI (inlined from fxsSharedUi) ──
+
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const C = {
   pageBg: "#f8fafc",
@@ -396,6 +458,7 @@ const wavFileNoteStyle = {
 
 const FieldRow = ({
   label,
+  tooltipKey,
   children,
   required,
   align = "center",
@@ -410,20 +473,36 @@ const FieldRow = ({
       minHeight: align === "flex-start" ? undefined : 32,
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
+    {tooltipKey ? (
+      <FxsFieldLabel
+        tooltipKey={tooltipKey}
+        tooltips={DIALING_RULE_FIELD_TOOLTIPS}
+        style={{
+          width: labelWidth,
+          flexShrink: 0,
+          textAlign: "left",
+          paddingTop: align === "flex-start" ? 8 : 0,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: "#dc2626" }}> *</span>}
+      </FxsFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: labelWidth,
+          flexShrink: 0,
+          textAlign: "left",
+          paddingTop: align === "flex-start" ? 8 : 0,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: "#dc2626" }}> *</span>}
+      </label>
+    )}
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
@@ -1081,7 +1160,7 @@ const DialingRulePage = () => {
         </DialogTitle>
         <DialogContent style={addHostModalContentStyle}>
           <div style={addHostFormPanelStyle}>
-            <FieldRow label="Index:">
+            <FieldRow label="Index:" tooltipKey="index">
               <FormControl size="small" fullWidth>
                 <MuiSelect
                   value={indexSelect || ""}
@@ -1100,7 +1179,7 @@ const DialingRulePage = () => {
                 </MuiSelect>
               </FormControl>
             </FieldRow>
-            <FieldRow label="Description:">
+            <FieldRow label="Description:" tooltipKey="description">
               <TextField
                 name="description"
                 value={formData.description || ""}
@@ -1114,7 +1193,7 @@ const DialingRulePage = () => {
                 }}
               />
             </FieldRow>
-            <FieldRow label="Dialing Rule:">
+            <FieldRow label="Dialing Rule:" tooltipKey="dialingRule">
               <TextField
                 name="dialingRule"
                 value={formData.dialingRule || ""}

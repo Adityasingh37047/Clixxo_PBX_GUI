@@ -4,6 +4,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
 import {
   PORT_FXS_TABLE_COLUMNS,
@@ -11,11 +12,94 @@ import {
   PORT_FXS_TOTAL_PORTS,
   PORT_FXS_BATCH_MODIFY_TITLE,
   PORT_FXS_MODIFY_DIALOG_WIDTH,
+  PORT_FXS_TABLE_COLUMN_TOOLTIPS,
 } from "../../../constants/PortFxsPageConstants";
 import { fetchFxsPorts } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import PortFxsBatchModifyPage from "./PortFxsBatchModifyPage";
 import PortFxsModifyPage from "./PortFxsModifyPage";
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const tableHeaderLabelStyle = {
+  fontSize: 10.5,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+};
+
+const renderTableColumnHeader = (col) => {
+  if (!PORT_FXS_TABLE_COLUMN_TOOLTIPS[col.key]) return col.label;
+  return (
+    <FxsFieldLabel
+      tooltipKey={col.key}
+      tooltips={PORT_FXS_TABLE_COLUMN_TOOLTIPS}
+      style={tableHeaderLabelStyle}
+    >
+      {col.label}
+    </FxsFieldLabel>
+  );
+};
+
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
@@ -593,13 +677,13 @@ const PortFxsPage = () => {
                             ...routeThExtra,
                           }}
                         >
-                          {col.label}
+                          {renderTableColumnHeader(col)}
                         </TH>
                       );
                     }
                     return (
                       <TH key={col.key} style={routeThExtra}>
-                        {col.label}
+                        {renderTableColumnHeader(col)}
                       </TH>
                     );
                   })}

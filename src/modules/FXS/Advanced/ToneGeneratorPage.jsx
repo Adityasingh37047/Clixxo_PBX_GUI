@@ -1,7 +1,70 @@
 import React, { useState } from "react";
-import { Alert, TextField } from "@mui/material";
-import { TONE_GENERATOR_INITIAL_FORM } from "../../../constants/ToneGeneratorConstants";
+import { Alert, TextField, Tooltip } from "@mui/material";
+import {
+  TONE_GENERATOR_INITIAL_FORM,
+  TONE_GENERATOR_FIELD_TOOLTIPS,
+} from "../../../constants/ToneGeneratorConstants";
 // ── Local page UI (inlined from fxsSharedUi) ──
+
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const C = {
   pageBg: "#f8fafc",
@@ -439,11 +502,20 @@ const labelStyle = {
   whiteSpace: "nowrap",
 };
 
-const ToneFieldRow = ({ label, id, value, onChange, onKeyPress }) => (
+const ToneFieldRow = ({ label, id, value, onChange, onKeyPress, tooltipKey }) => (
   <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
-    <label htmlFor={id} style={labelStyle}>
+    <FxsFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={TONE_GENERATOR_FIELD_TOOLTIPS}
+      style={{
+        width: 110,
+        marginRight: 12,
+        flexShrink: 0,
+        whiteSpace: "nowrap",
+      }}
+    >
       {label}
-    </label>
+    </FxsFieldLabel>
     <TextField
       id={id}
       fullWidth
@@ -549,6 +621,7 @@ const ToneGeneratorPage = () => {
               <ToneFieldRow
                 label="Dial Tone"
                 id="dialTone"
+                tooltipKey="dialTone"
                 value={formData.dialTone}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, dialTone: e.target.value }))
@@ -559,6 +632,7 @@ const ToneGeneratorPage = () => {
               <ToneFieldRow
                 label="Ringback Tone"
                 id="ringbackTone"
+                tooltipKey="ringbackTone"
                 value={formData.ringbackTone}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -572,6 +646,7 @@ const ToneGeneratorPage = () => {
               <ToneFieldRow
                 label="Busy Tone"
                 id="busyTone"
+                tooltipKey="busyTone"
                 value={formData.busyTone}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, busyTone: e.target.value }))

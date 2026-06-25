@@ -1,13 +1,74 @@
 import React, { useState } from "react";
-import { RINGING_SCHEME_INITIAL_FORM } from "../../../constants/RingingSchemeConstants";
+import { RINGING_SCHEME_INITIAL_FORM, RINGING_SCHEME_FIELD_TOOLTIPS } from "../../../constants/RingingSchemeConstants";
 import {
   Alert,
   TextField,
   Select as MuiSelect,
   MenuItem,
   FormControl,
+  Tooltip,
 } from "@mui/material";
 // ── Local page UI (inlined from fxsSharedUi) ──
+
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const C = {
   pageBg: "#f8fafc",
@@ -305,6 +366,7 @@ const wavFileNoteStyle = {
 
 const FieldRow = ({
   label,
+  tooltipKey,
   children,
   required,
   align = "center",
@@ -319,20 +381,36 @@ const FieldRow = ({
       minHeight: align === "flex-start" ? undefined : 32,
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
+    {tooltipKey ? (
+      <FxsFieldLabel
+        tooltipKey={tooltipKey}
+        tooltips={RINGING_SCHEME_FIELD_TOOLTIPS}
+        style={{
+          width: labelWidth,
+          flexShrink: 0,
+          textAlign: "left",
+          paddingTop: align === "flex-start" ? 8 : 0,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: "#dc2626" }}> *</span>}
+      </FxsFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: labelWidth,
+          flexShrink: 0,
+          textAlign: "left",
+          paddingTop: align === "flex-start" ? 8 : 0,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: "#dc2626" }}> *</span>}
+      </label>
+    )}
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
@@ -702,7 +780,10 @@ const RingingSchemePage = () => {
             gap: "16px 24px",
           }}
         >
-          <FieldRow label={isCallerId ? "CallerID" : "Alert-Info Value"}>
+          <FieldRow
+            label={isCallerId ? "CallerID" : "Alert-Info Value"}
+            tooltipKey={isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`}
+          >
             <TextField
               id={isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`}
               size="small"
@@ -726,7 +807,7 @@ const RingingSchemePage = () => {
               }}
             />
           </FieldRow>
-          <FieldRow label="Ringing Mode">
+          <FieldRow label="Ringing Mode" tooltipKey={`ringMode${n}`}>
             <TextField
               id={`ringMode${n}`}
               size="small"
@@ -801,7 +882,7 @@ const RingingSchemePage = () => {
                 marginBottom: 24,
               }}
             >
-              <FieldRow label="Matching Scheme">
+              <FieldRow label="Matching Scheme" tooltipKey="ringScheme">
                 <FormControl size="small" sx={{ width: "100%" }}>
                   <MuiSelect
                     value={formData.ringScheme}

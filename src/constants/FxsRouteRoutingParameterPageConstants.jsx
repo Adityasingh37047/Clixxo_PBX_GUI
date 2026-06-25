@@ -11,3 +11,18 @@ export const ROUTE_ROUTING_PARAMETER_INITIAL_FORM = {
   routeCheckPeriod: '0', // Route Detection Cycle
 };
 
+/** FXS Routing Parameters page */
+export const ROUTE_ROUTING_PARAMETER_TOOLTIPS = {
+  ipInRouteMode:
+    "Saved as ipInRouteMode. Controls IP->TEL route timing.\n" +
+    "0: Route after Number Manipulate. 1: Route before Number Manipulate. Default: 0.",
+
+  pstnToIPRouteMode:
+    "Saved as pstnToIPRouteMode. Controls TEL->IP route timing.\n" +
+    "0: Route after Number Manipulate. 1: Route before Number Manipulate. Default: 0.",
+
+  routeCheckPeriod:
+    "Saved as routeCheckPeriod. Route Detection Cycle in seconds.\n" +
+    "Digits only (0–9). Max length 31. Default: 0.",
+};
+

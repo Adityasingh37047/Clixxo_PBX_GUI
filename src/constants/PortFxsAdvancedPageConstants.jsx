@@ -76,3 +76,41 @@ export const PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE = 'FXS-Batch Modify';
 // Week days
 export const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+/** FXS Port Advanced batch modify modal — PortFxsAdvancedPage */
+export const PORT_FXS_ADVANCED_FIELD_TOOLTIPS = {
+  port:
+    "FXS port number to configure.\n" +
+    "Options: 1 to " + PORT_FXS_ADVANCED_TOTAL_PORTS + ".",
+
+  type:
+    "Port hardware type. Read-only FXS.",
+
+  forbidOutgoingCall:
+    "Block outgoing calls from this FXS port.\n" +
+    "When enabled, Way Of Forbid Outgoing Call is shown.",
+
+  wayOfForbidOutgoingCall:
+    "How outgoing calls are forbidden.\n" +
+    "Shown when Forbid Outgoing Call is enabled.\n" +
+    "Options: All time, Select time.\n" +
+    "When Select time, time period schedules are shown (up to 5 periods).",
+
+  periodStart:
+    "Period start time (hh:mm:ss).\n" +
+    "Required for each active time period when Way is Select time.\n" +
+    "Format validated: HH:MM:SS (00:00:00–23:59:59).",
+
+  periodEnd:
+    "Period end time (hh:mm:ss).\n" +
+    "Required for each active time period when Way is Select time.\n" +
+    "Format validated: HH:MM:SS (00:00:00–23:59:59).",
+
+  periodWeek:
+    "Days of week when this time period applies.\n" +
+    "Check Mon–Sun for each time period block.",
+
+  blacklistOfFxsOutCalls:
+    "Outbound call blacklist for this FXS port.\n" +
+    "Supports regular expressions and full numbers.\n" +
+    "Multiple rules separated by ';' (see page notes).",
+};

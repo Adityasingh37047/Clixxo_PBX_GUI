@@ -49,4 +49,66 @@ export const PORT_GROUP_MULTI_GROUP_OPTIONS = [
 export const PORT_GROUP_PAGE_TITLE = 'Port Group Settings';
 export const PORT_GROUP_ADD_TITLE = 'Port Group-Add';
 
+/** FXS Port Group modal form fields — PortGroupPage */
+export const PORT_GROUP_FIELD_TOOLTIPS = {
+  index:
+    "Port group ID.\n" +
+    "Options: 1 to 32.\n" +
+    "Default on add: 1.",
+
+  description:
+    "Port group description label.\n" +
+    "Required on save (validate on save).\n" +
+    "Max length: 23 characters.\n" +
+    "Default: default.",
+
+  registerPortGroup:
+    "Whether this port group registers with SIP.\n" +
+    "Options: NO (0), YES (1).\n" +
+    "When YES, SIP Account, Display Name, and Password fields are shown.",
+
+  sipAccount:
+    "SIP account for the port group.\n" +
+    "Shown only when Register Port Group is YES.",
+
+  displayName:
+    "SIP display name for the port group.\n" +
+    "Shown only when Register Port Group is YES.",
+
+  password:
+    "SIP authentication password.\n" +
+    "Shown only when Register Port Group is YES.",
+
+  registerSelectMode:
+    "Authentication/registration mode (Authentication Mode field).\n" +
+    "Options: Do Not Register (0), Register Gateway (1), Register Port Group (2), Register Port (3).",
+
+  portSelectMode:
+    "How incoming calls select a port within the group.\n" +
+    "Options: Increase, Decrease, Cyclic Increase, Cyclic Decrease, Group Ringing, Ringing by Turns.\n" +
+    "When Ringing by Turns (5), Rule and Timeout fields are shown.\n" +
+    "When not Group Ringing (4) or Ringing by Turns (5), Preemptive Answer Keyboard Shortcut is shown.",
+
+  enumRule:
+    "Rule for ringing by turns.\n" +
+    "Shown only when Port Select Mode is Ringing by Turns (5).",
+
+  ringExpire:
+    "Timeout for ringing by turns in seconds.\n" +
+    "Shown only when Port Select Mode is Ringing by Turns (5).\n" +
+    "Default: 20.",
+
+  robKey:
+    "Keyboard shortcut for preemptive answer.\n" +
+    "Hidden when Port Select Mode is Group Ringing (4) or Ringing by Turns (5).",
+
+  enablePortMultiGroup:
+    "Allow a port to belong to multiple port groups.\n" +
+    "Options: NO (0), YES (1).",
+
+  ports:
+    "FXS ports assigned to this group (1–32 checkboxes).\n" +
+    "At least one port must be selected on save (validate on save).\n" +
+    "Use Check All / Inverse to bulk-select.",
+};
 

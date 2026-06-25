@@ -45,4 +45,13 @@ export const DIALING_RULE_INITIAL_DATA = [
   // { id: 20, index: 99, dialingRule: '.', description: 'default' },
 ];
 
+/** Dialing rule modal (DialingRulePage) — local table state */
+export const DIALING_RULE_FIELD_TOOLTIPS = {
+  index:
+    "Rule ID (0–99). Required and must be unique.\nSelect from available indices when adding or editing.",
+  description:
+    "Short label for this rule. Required.\nCannot contain: % & ~ ! | ( ) ; \" ' = \\",
+  dialingRule:
+    "Dialing pattern matched against dialed digits. Required.\nAllowed: 0–9, A–Z, a–z, '.', '#', '*', '[', ']', ',', '-'.\nLength: 1–128 characters.",
+};
 

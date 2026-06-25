@@ -1,6 +1,113 @@
 import React, { useMemo, useState } from "react";
-import { Alert } from "@mui/material";
-import { MEDIA_PARAMETERS_NOTE } from "../../../constants/MediaParametersConstants";
+import { Alert, Tooltip } from "@mui/material";
+import {
+  MEDIA_PARAMETERS_NOTE,
+  FXS_MEDIA_FIELD_TOOLTIPS,
+} from "../../../constants/MediaParametersConstants";
+
+// ── Page-local field label tooltip UI (matches Extensions page pattern) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const MEDIA_FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatMediaTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const MediaTooltipLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = tooltipKey ? FXS_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip
+      title={formatMediaTooltipTitle(tooltip)}
+      {...MEDIA_FIELD_TOOLTIP_PROPS}
+    >
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const MediaFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
+  const tooltip = tooltipKey ? FXS_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        flex: "0 0 48%",
+        maxWidth: "48%",
+        paddingRight: 24,
+        textAlign: "left",
+        lineHeight: 1.35,
+        cursor: tooltip ? "help" : undefined,
+        ...labelStyle,
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  return (
+    <div className="flex flex-row items-start w-full">
+      {tooltip ? (
+        <Tooltip
+          title={formatMediaTooltipTitle(tooltip)}
+          {...MEDIA_FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      {children}
+    </div>
+  );
+};
 
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
@@ -363,7 +470,7 @@ const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
   </button>
 );
 
-const CodecPrioritySectionHeading = ({ title }) => (
+const CodecPrioritySectionHeading = ({ title, tooltipKey }) => (
   <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
@@ -378,7 +485,13 @@ const CodecPrioritySectionHeading = ({ title }) => (
         color: CODEC_PRIORITY_HEADING_COLOR,
       }}
     >
-      {title}
+      {tooltipKey ? (
+        <MediaTooltipLabel tooltipKey={tooltipKey}>
+          {title}
+        </MediaTooltipLabel>
+      ) : (
+        title
+      )}
     </span>
   </div>
 );
@@ -639,17 +752,6 @@ const FxsVoipMediaPage = () => {
   const getFieldInteraction = (disabled = false) =>
     getFxsNativeFieldInteraction(disabled);
 
-  const labelColStyle = {
-    fontSize: 13,
-    fontWeight: 600,
-    color: C.labelText,
-    flex: "0 0 48%",
-    maxWidth: "48%",
-    paddingRight: 24,
-    textAlign: "left",
-    lineHeight: 1.35,
-  };
-
   const valueColStyle = {
     flex: "1 1 52%",
     minWidth: 0,
@@ -753,11 +855,11 @@ const FxsVoipMediaPage = () => {
               }}
             >
               {mediaParameterRows.map((row) => (
-                <div
+                <MediaFieldRow
                   key={row.name}
-                  className="flex flex-row items-start w-full"
+                  label={row.label}
+                  tooltipKey={row.name}
                 >
-                  <label style={labelColStyle}>{row.label}</label>
                   <div style={valueColStyle}>
                     <div style={controlSlotStyle}>
                       {row.type === "select" ? (
@@ -790,13 +892,13 @@ const FxsVoipMediaPage = () => {
                       )}
                     </div>
                   </div>
-                </div>
+                </MediaFieldRow>
               ))}
             </div>
 
             {/* CODEC Priority — Available / Selected (Inbound Member Trunks style) */}
             <div style={{ width: "100%", marginTop: 16 }}>
-              <CodecPrioritySectionHeading title="CODEC Priority" />
+              <CodecPrioritySectionHeading title="CODEC Priority" tooltipKey="codecPriority" />
               <div
                 style={{
                   display: "grid",
