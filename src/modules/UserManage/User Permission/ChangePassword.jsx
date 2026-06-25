@@ -272,6 +272,35 @@ const labelStyle = {
   textAlign: "left",
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  username: "Current login username. Pre-filled from your session.",
+  newUsername: "New username to apply on save. Leave unchanged if you only update the password.",
+  password: "New password. Must meet the validation rules shown on save.",
+  confirmPassword: "Re-enter the new password to confirm it matches.",
+};
+
 const ChangePassword = () => {
   const [form, setForm] = useState(CHANGE_PASSWORD_INITIAL_FORM);
   const [loading, setLoading] = useState(false);

@@ -72,7 +72,7 @@ const extractAutoProvisionList = (res) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "var(--border-strong)",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",

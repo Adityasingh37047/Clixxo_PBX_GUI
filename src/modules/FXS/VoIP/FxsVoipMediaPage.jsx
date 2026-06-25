@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { Alert, Tooltip } from "@mui/material";
 import {
   MEDIA_PARAMETERS_NOTE,
@@ -116,22 +116,37 @@ const MediaFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  cardBorder: "#d8dde5",
+  cardShadow: "0 2px 10px rgba(15, 23, 42, 0.07)",
+  divider: "#e2e6ec",
+  labelText: "#374151",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecBoxSelectedBg: "#ffffff",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBg: "#d9dde3",
+  codecBtnBorder: "#c9d0d9",
   amber: "#dc2626",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
 
 const Btn = ({
   children,
   onClick,
   disabled,
-  variant = "formPrimary",
+  variant = "default",
+  style: extraStyle,
   type,
   form,
   component,
@@ -179,7 +194,33 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -192,24 +233,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: variant === "primary" || variant === "cancel" ? 8 : 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -217,9 +275,9 @@ const Btn = ({
   );
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
 const FOCUS_RING_SHADOW = (color) => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
@@ -241,7 +299,7 @@ const setFieldFocus = (el) => {
   el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
 };
 
-const FXS_VOIP_MEDIA_FIELD_INTERACTION = {
+const nativeFieldInteraction = {
   onFocus: (e) => {
     if (e.target.disabled) return;
     setFieldFocus(e.target);
@@ -266,37 +324,40 @@ const FXS_VOIP_MEDIA_FIELD_INTERACTION = {
   },
 };
 
-const getFxsVoipMediaFieldInteraction = (disabled) =>
-  disabled ? {} : FXS_VOIP_MEDIA_FIELD_INTERACTION;
+const getFxsNativeFieldInteraction = (disabled) =>
+  disabled ? {} : nativeFieldInteraction;
 
 const nativeFieldInputStyle = {
-  height: 28,
-  width: 200,
-  padding: "0 8px",
+  height: 32,
+  width: "100%",
+  maxWidth: 220,
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
 const nativeFieldSelectStyle = {
-  width: nativeFieldInputStyle.width,
+  width: "100%",
+  maxWidth: 220,
   minHeight: 32,
-  padding: "6px 28px 6px 8px",
+  height: 32,
+  padding: "4px 28px 4px 10px",
   fontSize: nativeFieldInputStyle.fontSize,
   lineHeight: 1.35,
-  border: FXS_VOIP_MEDIA_INPUT_STYLE.border,
-  borderRadius: FXS_VOIP_MEDIA_INPUT_STYLE.borderRadius,
-  outline: FXS_VOIP_MEDIA_INPUT_STYLE.outline,
-  backgroundColor: FXS_VOIP_MEDIA_INPUT_STYLE.backgroundColor,
-  color: FXS_VOIP_MEDIA_INPUT_STYLE.color,
-  boxSizing: FXS_VOIP_MEDIA_INPUT_STYLE.boxSizing,
-  transition: FXS_VOIP_MEDIA_INPUT_STYLE.transition,
+  border: nativeFieldInputStyle.border,
+  borderRadius: nativeFieldInputStyle.borderRadius,
+  outline: nativeFieldInputStyle.outline,
+  backgroundColor: nativeFieldInputStyle.backgroundColor,
+  color: nativeFieldInputStyle.color,
+  boxSizing: nativeFieldInputStyle.boxSizing,
+  transition: nativeFieldInputStyle.transition,
   appearance: "auto",
   cursor: "pointer",
 };
@@ -304,62 +365,43 @@ const nativeFieldSelectStyle = {
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
+  width: "100%",
+  maxWidth: "100%",
+  padding: "24px 28px",
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: "stretch",
   boxSizing: "border-box",
 };
 
 const advancedPageInnerStyle = {
   width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
+  maxWidth: "100%",
+  margin: 0,
 };
 
 const advancedTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  margin: 0,
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
-};
-
-const advancedBlueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
 };
 
 const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
 };
 
@@ -373,12 +415,58 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const dashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+};
+
+const dashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "24px 36px",
+};
+
+const dashboardColumnLeftStyle = {
+  ...dashboardColumnStyle,
+  background: C.cardBg,
+};
+
+const dashboardColumnRightStyle = {
+  ...dashboardColumnStyle,
+  background: C.cardBg,
+};
+
+const dashboardDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+};
+
+const dashboardSectionTitleStyle = {
+  fontSize: 14,
+  fontWeight: 700,
+  color: C.strongText,
+  marginBottom: 2,
+};
+
+const pageTitleStyle = {
+  fontSize: 22,
+  fontWeight: 700,
+  color: C.strongText,
+  margin: "0 0 6px 0",
+  letterSpacing: "-0.02em",
+};
+
 const VoipBreadcrumb = ({ current }) => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 16,
+      marginBottom: 20,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -390,20 +478,13 @@ const VoipBreadcrumb = ({ current }) => (
     <span>&gt;</span>
     <span>VoIP</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
+const AdvancedPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
+    <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
 
@@ -418,15 +499,21 @@ const CODEC_OPTIONS = [
 
 const DEFAULT_SELECTED_CODECS = ["6", "7", "131", "98", "96", "4"];
 
-const codecDualListSelectStyle = {
+const CODEC_LIST_BOX_HEIGHT = 188;
+const CODEC_BTN_COL_WIDTH = 40;
+const CODEC_BTN_GAP = 6;
+const CODEC_BTN_HEIGHT = (CODEC_LIST_BOX_HEIGHT - CODEC_BTN_GAP * 3) / 4;
+const CODEC_LIST_LABEL_OFFSET = 28;
+
+const getCodecListBoxStyle = (variant, isEmpty) => ({
   width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
+  minHeight: CODEC_LIST_BOX_HEIGHT,
+  height: CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background:
+    variant === "available" ? C.codecBoxAvailableBg : C.codecBoxSelectedBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
   boxSizing: "border-box",
   overflowY: "auto",
   overflowX: "hidden",
@@ -437,40 +524,84 @@ const codecDualListSelectStyle = {
   gap: 4,
 });
 
-const codecDualListBtnStyle = {
-  height: 36,
+const codecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const codecStripStyle = (isSelected) => ({
+  display: "block",
   width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const codecDualListBtnStyle = {
+  width: CODEC_BTN_COL_WIDTH,
+  height: CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
   color: "#111827",
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
   fontFamily: "inherit",
   lineHeight: 1,
   padding: 0,
   margin: 0,
   cursor: "pointer",
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   boxSizing: "border-box",
-  textAlign: "center",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease",
 };
 
 const codecDualListReorderBtnStyle = {
   ...codecDualListBtnStyle,
-  fontWeight: 400,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
 };
 
-const FxsVoipMediaDualListBtn = ({ onClick, title, children, reorder }) => (
+const codecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: CODEC_BTN_GAP,
+  height: CODEC_LIST_BOX_HEIGHT,
+  width: CODEC_BTN_COL_WIDTH,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
     style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
     onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.background = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.background = C.codecBtnBg;
     }}
   >
     {children}
@@ -786,26 +917,12 @@ const FxsVoipMediaPage = () => {
 
   const fieldStyle = {
     ...nativeFieldInputStyle,
-    width: 220,
+    width: "100%",
   };
 
   const fieldSelectStyle = {
     ...nativeFieldSelectStyle,
-    width: 220,
-  };
-
-  const getFieldInteraction = (disabled = false) =>
-    getFxsNativeFieldInteraction(disabled);
-
-  const labelColStyle = {
-    fontSize: 13,
-    fontWeight: 600,
-    color: C.labelText,
-    flex: "0 0 48%",
-    maxWidth: "48%",
-    paddingRight: 24,
-    textAlign: "left",
-    lineHeight: 1.35,
+    width: "100%",
   };
 
   const valueColStyle = {
@@ -878,7 +995,7 @@ const FxsVoipMediaPage = () => {
   ];
 
   return (
-    <FxsVoipMediaPageShell>
+    <AdvancedPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -896,21 +1013,14 @@ const FxsVoipMediaPage = () => {
           {toast.msg}
         </Alert>
       )}
+      <h1 style={pageTitleStyle}>Media Parameters</h1>
       <VoipBreadcrumb current="Media Parameters" />
-      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
-        <div style={advancedBlueBarStyle}>
-          <span>Media Parameters</span>
-        </div>
-        <div style={{ padding: "24px 32px 0" }}>
-          <div style={{ marginBottom: 12 }}>
-            <div
-              className="flex flex-col gap-3"
-              style={{
-                width: "100%",
-                maxWidth: 640,
-                margin: "0 auto",
-              }}
-            >
+      <div style={advancedTableContainerStyle}>
+        <div style={dashboardGridStyle}>
+          {/* Column 1 — System Settings */}
+          <div style={dashboardColumnLeftStyle}>
+            <div style={dashboardSectionTitleStyle}>System Settings</div>
+            <div className="flex flex-col gap-3" style={{ width: "100%" }}>
               {mediaParameterRows.map((row) => (
                 <MediaFieldRow
                   key={row.name}
@@ -925,7 +1035,7 @@ const FxsVoipMediaPage = () => {
                           value={formData[row.name]}
                           onChange={handleInputChange}
                           style={fieldSelectStyle}
-                          {...FXS_VOIP_MEDIA_FIELD_INTERACTION}
+                          {...nativeFieldInteraction}
                         >
                           {row.options.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -943,7 +1053,7 @@ const FxsVoipMediaPage = () => {
                             handleKeyPress(e, row.keyPress || "number")
                           }
                           style={fieldStyle}
-                          {...FXS_VOIP_MEDIA_FIELD_INTERACTION}
+                          {...nativeFieldInteraction}
                           maxLength="31"
                         />
                       )}
@@ -954,149 +1064,127 @@ const FxsVoipMediaPage = () => {
             </div>
           </div>
 
-            {/* CODEC Priority — Available / Selected (Inbound Member Trunks style) */}
-            <div style={{ width: "100%", marginTop: 16 }}>
-              <CodecPrioritySectionHeading title="CODEC Priority" />
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
-                }}
-              >
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#3E5475",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Available
-                    </div>
-                    <select
-                      multiple
-                      size={6}
-                      value={availableSelected}
-                      onChange={(e) =>
-                        setAvailableSelected(
-                          Array.from(
-                            e.target.selectedOptions,
-                            (opt) => opt.value,
-                          ),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {availableCodecList.length === 0 ? (
-                        <option disabled value="">
-                          No codecs
-                        </option>
-                      ) : (
-                        availableCodecList.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.label}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
-                    }}
-                  >
-                    <CodecDualListBtn onClick={addSelectedCodecs}>
-                      &gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={addAllCodecs}>
-                      &gt;&gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeSelectedCodecs}>
-                      &lt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeAllCodecs}>
-                      &lt;&lt;
-                    </CodecDualListBtn>
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#3E5475",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Selected
-                    </div>
-                    <select
-                      multiple
-                      size={6}
-                      value={chosenSelected}
-                      onChange={(e) =>
-                        setChosenSelected(
-                          Array.from(
-                            e.target.selectedOptions,
-                            (opt) => opt.value,
-                          ),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {selectedCodecs.length === 0 ? (
-                        <option disabled value="">
-                          No selected codecs
-                        </option>
-                      ) : (
-                        selectedCodecs.map((id) => (
-                          <option key={id} value={id}>
-                            {getCodecLabel(id)}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
-                    }}
-                  >
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      onClick={moveCodecToBottom}
-                    >
-                      vv
-                    </CodecDualListBtn>
-                    <CodecDualListBtn reorder title="Move up" onClick={moveCodecUp}>
-                      ^
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move down"
-                      onClick={moveCodecDown}
-                    >
-                      v
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveCodecToTop}
-                    >
-                      ^^
-                    </CodecDualListBtn>
-                  </div>
+          <div style={dashboardDividerStyle} aria-hidden="true" />
+
+          {/* Column 2 — CODEC Priority */}
+          <div style={dashboardColumnRightStyle}>
+            <SectionHeading title="CODEC Priority" tooltipKey="codecPriority" />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `1fr ${CODEC_BTN_COL_WIDTH}px 1fr ${CODEC_BTN_COL_WIDTH}px`,
+                gap: 10,
+                width: "100%",
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    textAlign: "center",
+                    marginBottom: 8,
+                  }}
+                >
+                  Available
                 </div>
+                <CodecListBox
+                  variant="available"
+                  items={availableCodecList}
+                  selectedIds={availableSelected}
+                  onToggle={toggleAvailableSelect}
+                  emptyText="Available codecs"
+                  getLabel={(id) => getCodecLabel(id)}
+                />
+              </div>
+              <div>
+                <div
+                  style={{ height: CODEC_LIST_LABEL_OFFSET }}
+                  aria-hidden="true"
+                />
+                <div style={codecBtnColumnStyle}>
+                  <CodecDualListBtn
+                    onClick={addSelectedCodecs}
+                    title="Add selected"
+                  >
+                    &gt;
+                  </CodecDualListBtn>
+                  <CodecDualListBtn onClick={addAllCodecs} title="Add all">
+                    &gt;&gt;
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    onClick={removeSelectedCodecs}
+                    title="Remove selected"
+                  >
+                    &lt;
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    onClick={removeAllCodecs}
+                    title="Remove all"
+                  >
+                    &lt;&lt;
+                  </CodecDualListBtn>
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    textAlign: "center",
+                    marginBottom: 8,
+                  }}
+                >
+                  Selected
+                </div>
+                <CodecListBox
+                  variant="selected"
+                  items={selectedCodecs}
+                  selectedIds={chosenSelected}
+                  onToggle={toggleChosenSelect}
+                  emptyText="No selected codecs"
+                  getLabel={(id) => getCodecLabel(id)}
+                />
+              </div>
+              <div>
+                <div
+                  style={{ height: CODEC_LIST_LABEL_OFFSET }}
+                  aria-hidden="true"
+                />
+                <div style={codecBtnColumnStyle}>
+                  <CodecDualListBtn
+                    reorder
+                    title="Move to top"
+                    onClick={moveCodecToTop}
+                  >
+                    ^^
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    reorder
+                    title="Move up"
+                    onClick={moveCodecUp}
+                  >
+                    ^
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    reorder
+                    title="Move down"
+                    onClick={moveCodecDown}
+                  >
+                    v
+                  </CodecDualListBtn>
+                  <CodecDualListBtn
+                    reorder
+                    title="Move to bottom"
+                    onClick={moveCodecToBottom}
+                  >
+                    vv
+                  </CodecDualListBtn>
+                </div>
+              </div>
             </div>
 
             <div style={{ marginTop: 12 }}>
@@ -1134,14 +1222,7 @@ const FxsVoipMediaPage = () => {
             </div>
           </div>
         </div>
-        <div
-          style={{
-            ...advancedFormInlineFooterStyle,
-            width: "100%",
-            marginLeft: 0,
-            marginRight: 0,
-          }}
-        >
+        <div style={advancedFormInlineFooterStyle}>
           <Btn
             type="button"
             onClick={handleSave}
@@ -1150,12 +1231,17 @@ const FxsVoipMediaPage = () => {
           >
             Save
           </Btn>
-          <Btn type="button" onClick={handleReset} variant="formCancel">
+          <Btn
+            type="button"
+            onClick={handleReset}
+            variant="cancel"
+            style={advancedFormBtnStyle}
+          >
             Reset
           </Btn>
         </div>
       </div>
-    </FxsVoipMediaPageShell>
+    </AdvancedPageShell>
   );
 };
 
