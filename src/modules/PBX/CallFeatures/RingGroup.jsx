@@ -3,6 +3,7 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import Tooltip from "@mui/material/Tooltip";
 import {Alert,
+  Button,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -56,66 +57,27 @@ const EMPTY_RING_BACK_OPTIONS = {
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
+// ── Color Palette (CDR Style) ─────────────────────────────────────────────────
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
   errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
+const CARD_RADIUS = 10;
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[36px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
-
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  accent: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  dialogPrimary: BTN_DIALOG_PRIMARY,
-  dialogCancel: BTN_DIALOG_CANCEL,
-  danger: `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`,
-  outline: BTN_OUTLINE,
-};
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  className = "",
-  style,
-  type,
-  title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
-
-const ringGroupDualListSelectStyle = {
+const codecDualListSelectStyle = {
   width: "100%",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-main)",
+  background: "#fff",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
@@ -124,19 +86,158 @@ const ringGroupDualListSelectStyle = {
   overflowY: "auto",
 };
 
-const RING_GROUP_DUAL_LIST_BTN =
-  "box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] font-semibold leading-none text-[#111827] hover:bg-[#c5cbd3]";
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
 
-const RingGroupDualListBtn = ({ onClick, title, children }) => (
-  <button type="button" title={title} onClick={onClick} className={RING_GROUP_DUAL_LIST_BTN}>
+const CodecDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
     {children}
   </button>
 );
 
+// ── Shared UI Components ──────────────────────────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  title,
+  type,
+  hoverBehavior = "background",
+}) => {
+  const variants = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+  };
+
+  const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = extraStyle?.background || s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -165,43 +266,56 @@ const tdStyle = {
 };
 const checkboxSx = {
   padding: "1px", 
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const RING_GROUP_PAGE_WRAP =
-  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
-const RING_GROUP_PAGE_INNER = "w-full max-w-full mx-auto";
-const RING_GROUP_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const RING_GROUP_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
-const RING_GROUP_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
-const RING_GROUP_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
-const RING_GROUP_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const RING_GROUP_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const RING_GROUP_PAGE_BADGE =
-  "rounded-[6px] border-[0.5px] border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const RING_GROUP_PAGINATION =
-  "flex items-center justify-between border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
+// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
 
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -211,10 +325,24 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
@@ -230,33 +358,14 @@ const TableListEmptyState = ({
   </div>
 );
 
-const RingGroupPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPrev,
-  onNext,
-  disabled,
+const FieldRow = ({
+  label,
+  children,
+  required,
+  align = "center",
+  tooltip,
 }) => (
-  <div className={RING_GROUP_PAGINATION}>
-    <span className="text-[11px] text-[#94a3b8]">
-      Showing {recordCount} record{recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div className="flex items-center gap-[8px]">
-      <Btn onClick={onPrev} disabled={disabled || page <= 1} variant="outline">
-        ← Prev
-      </Btn>
-      <span className={RING_GROUP_PAGE_BADGE}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn onClick={onNext} disabled={disabled || page >= totalPages} variant="outline">
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
-
-const FieldRow = ({ label, children, required, align = "center" }) => (  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
     <Tooltip
       title={tooltip || ""}
       {...tooltipProps}
@@ -827,8 +936,8 @@ const RingGroup = () => {
   );
 
   return (
-    <div className={`${RING_GROUP_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}>
-      <div className={RING_GROUP_PAGE_INNER}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={pbxPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
           <Alert
@@ -856,26 +965,77 @@ const RingGroup = () => {
         <PbxBreadcrumb section="Call Features" current="Ring Group" />
 
         {/* Main Card */}
-        <div className={RING_GROUP_CARD}>
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+          {/* Toolbar */}
           <div
-            className={`${RING_GROUP_TOOLBAR} ${isCompact ? RING_GROUP_TOOLBAR_COMPACT : ""}`.trim()}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
-            <div className={RING_GROUP_TOOLBAR_LEFT}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               {selected.length > 0 && (
-                <span className={RING_GROUP_SELECTED_BADGE}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
             </div>
 
-            <div className={RING_GROUP_TOOLBAR_ACTIONS}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
+                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -883,6 +1043,12 @@ const RingGroup = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
@@ -985,7 +1151,7 @@ const RingGroup = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1146,14 +1312,52 @@ const RingGroup = () => {
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <RingGroupPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              onPrev={handlePrev}
-              onNext={handleNext}
-              disabled={loading.list}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.list || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.list || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1179,7 +1383,7 @@ const RingGroup = () => {
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "var(--bg-surface)" }}
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
@@ -1212,7 +1416,7 @@ const RingGroup = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                         },
                       }}
                     />
@@ -1226,7 +1430,7 @@ const RingGroup = () => {
                           onChange={(e) => setRingStrategy(e.target.value)}
                           sx={{
                             fontSize: 13,
-                            backgroundColor: "var(--bg-surface)",
+                            backgroundColor: "#fff",
                             height: 32,
                             "& .MuiSelect-select": {
                               padding: "6px 8px",
@@ -1252,7 +1456,7 @@ const RingGroup = () => {
                         onChange={(e) => setRingTimeout(e.target.value)}
                         sx={{
                           fontSize: 13,
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                           height: 32,
                           "& .MuiSelect-select": {
                             padding: "6px 8px",
@@ -1281,7 +1485,7 @@ const RingGroup = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                         },
                       }}
                     />
@@ -1297,7 +1501,7 @@ const RingGroup = () => {
                         }
                         sx={{
                           fontSize: 13,
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                           height: 32,
                           "& .MuiSelect-select": {
                             padding: "6px 8px",
@@ -1332,7 +1536,7 @@ const RingGroup = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                         },
                       }}
                     />
@@ -1351,7 +1555,7 @@ const RingGroup = () => {
                           }}
                           sx={{
                             fontSize: 13,
-                            backgroundColor: "var(--bg-surface)",
+                            backgroundColor: "#fff",
                             height: 32,
                             "& .MuiSelect-select": {
                               padding: "6px 8px",
@@ -1369,7 +1573,7 @@ const RingGroup = () => {
                               value={opt.value}
                               sx={{
                                 fontSize: 13,
-                                backgroundColor: "var(--bg-surface)",
+                                backgroundColor: "#fff",
                                 height: 32,
                                 "& .MuiSelect-select": {
                                   padding: "6px 8px",
@@ -1394,7 +1598,7 @@ const RingGroup = () => {
                             }
                             sx={{
                               fontSize: 13,
-                              backgroundColor: "var(--bg-surface)",
+                              backgroundColor: "#fff",
                               height: 32,
                               "& .MuiSelect-select": {
                                 padding: "6px 8px",
@@ -1412,7 +1616,7 @@ const RingGroup = () => {
                                 value={opt.value}
                                 sx={{
                                   fontSize: 13,
-                                  backgroundColor: "var(--bg-surface)",
+                                  backgroundColor: "#fff",
                                   height: 32,
                                   "& .MuiSelect-select": {
                                     padding: "6px 8px",
@@ -1438,7 +1642,7 @@ const RingGroup = () => {
                         onChange={(e) => setEnabled(e.target.value)}
                         sx={{
                           fontSize: 13,
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                           height: 32,
                           "& .MuiSelect-select": {
                             padding: "6px 8px",
@@ -1465,7 +1669,7 @@ const RingGroup = () => {
                         MenuProps={RING_BACK_MENU_PROPS}
                         sx={{
                           fontSize: 13,
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                           height: 32,
                           "& .MuiSelect-select": {
                             padding: "6px 8px",
@@ -1557,7 +1761,7 @@ const RingGroup = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                         },
                       }}
                     />
@@ -1598,7 +1802,7 @@ const RingGroup = () => {
                           ),
                         )
                       }
-                      style={ringGroupDualListSelectStyle}
+                      style={codecDualListSelectStyle}
                     >
                       {loading.members ? (
                         <option disabled>Loading extensions...</option>
@@ -1621,18 +1825,18 @@ const RingGroup = () => {
                       paddingTop: 28,
                     }}
                   >
-                    <RingGroupDualListBtn onClick={addSelectedMembers}>
+                    <CodecDualListBtn onClick={addSelectedMembers}>
                       &gt;
-                    </RingGroupDualListBtn>
-                    <RingGroupDualListBtn onClick={addAllMembers}>
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={addAllMembers}>
                       &gt;&gt;
-                    </RingGroupDualListBtn>
-                    <RingGroupDualListBtn onClick={removeSelectedMembers}>
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeSelectedMembers}>
                       &lt;
-                    </RingGroupDualListBtn>
-                    <RingGroupDualListBtn onClick={removeAllMembers}>
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeAllMembers}>
                       &lt;&lt;
-                    </RingGroupDualListBtn>
+                    </CodecDualListBtn>
                   </div>
                   <div>
                     <div
@@ -1657,7 +1861,7 @@ const RingGroup = () => {
                           ),
                         )
                       }
-                      style={ringGroupDualListSelectStyle}
+                      style={codecDualListSelectStyle}
                     >
                       {memberExtensions.length === 0 ? (
                         <option disabled>No selected members</option>
@@ -1685,7 +1889,12 @@ const RingGroup = () => {
             gap: 12,
           }}
         >
-          <Btn variant="dialogPrimary" onClick={handleSave} disabled={loading.save}>
+          <Btn
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+          >
             {loading.save ? (
               <>
                 <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
@@ -1700,7 +1909,8 @@ const RingGroup = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-            variant="dialogCancel"
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
           >
             Cancel
           </Btn>

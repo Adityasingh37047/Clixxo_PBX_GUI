@@ -17,22 +17,22 @@ import {
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
 };
 
 const CARD_RADIUS = 10;
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0,0,0,0.23)";
+const OUTLINED_HOVER = "rgba(0,0,0,0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 // ── Interaction handlers for native inputs ────────────────────────────────────
 const nativeFieldInteraction = {
@@ -68,7 +68,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     primary: {
       background:
@@ -79,7 +79,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -134,7 +134,7 @@ const Btn = ({
 const TH = ({ children, align = "center", style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -208,7 +208,7 @@ const TableListEmptyState = ({ message }) => (
       textAlign: "center",
     }}
   >
-    <div style={{ color: "var(--text-primary)", fontSize: 13, fontWeight: 600 }}>
+    <div style={{ color: "#3E5475", fontSize: 13, fontWeight: 600 }}>
       {message}
     </div>
   </div>
@@ -229,7 +229,7 @@ const viewVoicemailPaginationStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
@@ -291,7 +291,7 @@ const NewBadge = () => (
 const ReadBadge = () => (
   <span
     style={{
-      background: "var(--bg-muted)",
+      background: "#f1f5f9",
       color: "#64748b",
       padding: "2px 7px",
       borderRadius: 999,
@@ -443,7 +443,7 @@ const ViewVoicemailPage = () => {
         <div
           style={{
             fontSize: 12,
-            color: "var(--text-muted)",
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -456,7 +456,7 @@ const ViewVoicemailPage = () => {
           <span>&gt;</span>
           <span>PBX Status</span>
           <span>&gt;</span>
-          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             View Voicemail
           </span>
         </div>
@@ -490,7 +490,7 @@ const ViewVoicemailPage = () => {
         {/* Filter bar */}
         <div
           style={{
-            background: "var(--bg-surface)",
+            background: "#ffffff",
             border: `1.5px solid ${C.cardBorder}`,
             borderRadius: CARD_RADIUS,
             boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
@@ -532,7 +532,7 @@ const ViewVoicemailPage = () => {
                   height: 30,
                   fontSize: 12,
                   color: C.valueText,
-                  background: "var(--bg-surface)",
+                  background: "#ffffff",
                   border: `1px solid ${OUTLINED_BORDER}`,
                   borderRadius: 10,
                   padding: "0 12px",
@@ -570,7 +570,7 @@ const ViewVoicemailPage = () => {
                   height: 30,
                   fontSize: 12,
                   color: C.valueText,
-                  background: "var(--bg-surface)",
+                  background: "#ffffff",
                   border: `1px solid ${OUTLINED_BORDER}`,
                   borderRadius: 10,
                   padding: "0 32px 0 12px",
@@ -637,7 +637,7 @@ const ViewVoicemailPage = () => {
         {/* Table card */}
         <div
           style={{
-            background: "var(--bg-surface)",
+            background: "#ffffff",
             borderRadius: CARD_RADIUS,
             overflow: "hidden",
             border: `1.5px solid ${C.cardBorder}`,
@@ -653,7 +653,7 @@ const ViewVoicemailPage = () => {
               minHeight: 44,
               padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "var(--bg-surface)",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 8,
               borderTopLeftRadius: CARD_RADIUS,
@@ -720,7 +720,7 @@ const ViewVoicemailPage = () => {
                   <tbody>
                     {rows.map((row, idx) => {
                       const isLast = idx === rows.length - 1;
-                      const rowBg = idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
+                      const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
                       const isPlaying = playingId === row.id;
                       const lastRowCellStyle = isLast
                         ? { borderBottom: "none" }
@@ -734,7 +734,7 @@ const ViewVoicemailPage = () => {
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = rowBg;
@@ -903,7 +903,7 @@ const ViewVoicemailPage = () => {
               alignItems: "center",
               gap: 12,
               marginTop: 16,
-              background: "var(--bg-surface)",
+              background: "#ffffff",
               border: `1.5px solid ${C.cardBorder}`,
               borderRadius: CARD_RADIUS,
               padding: "10px 16px",

@@ -15,7 +15,7 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "var(--border-strong)",
+  cardBorder: "#9CA3AF",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",

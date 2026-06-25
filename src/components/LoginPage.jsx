@@ -169,7 +169,7 @@ const LoginPage = () => {
       <div
         style={{
           width: 400,
-          background: "var(--bg-surface)",
+          background: "#ffffff",
           borderRadius: 8,
           boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
           overflow: "hidden",
@@ -268,7 +268,7 @@ const LoginPage = () => {
                   border: "1.5px solid #e2e8f0",
                   borderRadius: 6,
                   fontSize: 14,
-                  color: "var(--text-primary)",
+                  color: "#1e293b",
                   background:
                     isLoading || serverStatus === "offline"
                       ? "#f8fafc"
@@ -306,7 +306,7 @@ const LoginPage = () => {
                   border: "1.5px solid #e2e8f0",
                   borderRadius: 6,
                   fontSize: 14,
-                  color: "var(--text-primary)",
+                  color: "#1e293b",
                   background:
                     isLoading || serverStatus === "offline"
                       ? "#f8fafc"

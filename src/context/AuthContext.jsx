@@ -239,7 +239,7 @@ export const AuthProvider = ({ children }) => {
             <div style={{ fontWeight: 700, marginBottom: 2 }}>
               Read-Only Access
             </div>
-            <div style={{ fontSize: 12, fontWeight: 400, color: "var(--text-muted)" }}>
+            <div style={{ fontSize: 12, fontWeight: 400, color: "#94a3b8" }}>
               You do not have permission to make changes.
             </div>
           </div>
@@ -249,7 +249,7 @@ export const AuthProvider = ({ children }) => {
               marginLeft: "auto",
               background: "none",
               border: "none",
-              color: "var(--text-muted)",
+              color: "#94a3b8",
               cursor: "pointer",
               fontSize: 18,
               lineHeight: 1,

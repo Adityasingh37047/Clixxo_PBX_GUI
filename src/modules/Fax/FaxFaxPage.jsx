@@ -133,21 +133,21 @@ const FaxFaxPage = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-140px)] py-0 flex justify-center overflow-x-hidden" style={{ backgroundColor: "var(--bg-muted)" }}>
+    <div className="bg-gray-50 min-h-[calc(100vh-140px)] py-0 flex justify-center overflow-x-hidden" style={{ backgroundColor: "#dde0e4" }}>
       <div className="w-full max-w-[1000px] md:w-[1000px] px-2 md:px-0" style={{ margin: '0 auto' }}>
         {/* Header */}
-        <div className="w-full h-9 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-base md:text-xl text-[var(--text-secondary)] shadow mb-0">
+        <div className="w-full h-9 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-base md:text-xl text-gray-700 shadow mb-0">
           Fax Parameters
         </div>
 
         {/* Content */}
-        <div className="border border-[var(--border-subtle)] border-t-0 shadow-sm flex flex-col" style={{ backgroundColor: "var(--bg-muted)" }}>
+        <div className="border-2 border-gray-400 border-t-0 shadow-sm flex flex-col" style={{ backgroundColor: "#dde0e4" }}>
           <div className="flex-1 py-6 px-4 md:px-[55px]">
             <div className="space-y-4 max-w-[640px] mx-auto">
 
               {/* Fax Mode */}
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-[60px]">
-                <label className="text-base text-[var(--text-secondary)] font-medium text-left w-full md:w-[280px] flex-shrink-0">
+                <label className="text-base text-gray-700 font-medium text-left w-full md:w-[280px] flex-shrink-0">
                   Fax Mode:
                 </label>
                 <Select
@@ -159,9 +159,9 @@ const FaxFaxPage = () => {
                     width: { xs: '100%', md: '280px' },
                     fontSize: 16,
                     height: 32,
-                    backgroundColor: 'var(--bg-surface)',
+                    backgroundColor: '#ffffff',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'var(--border-subtle)',
+                      borderColor: '#999999',
                     },
                     '& .MuiSelect-select': {
                       padding: '4px 10px',
@@ -183,7 +183,7 @@ const FaxFaxPage = () => {
                     <div key={field.name} className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-[60px]">
                       {field.type === 'checkbox' ? (
                         <>
-                          <label className="text-base text-[var(--text-secondary)] font-medium text-left w-full md:w-[280px] flex-shrink-0">
+                          <label className="text-base text-gray-700 font-medium text-left w-full md:w-[280px] flex-shrink-0">
                             {field.label}:
                           </label>
                           <div className="flex items-center">
@@ -192,12 +192,12 @@ const FaxFaxPage = () => {
                               onChange={(e) => handleChange(field.name, e.target.checked)}
                               sx={{ p: 0.5 }}
                             />
-                            <span className="text-base text-[var(--text-secondary)] font-medium ml-2">Enable</span>
+                            <span className="text-base text-gray-700 font-medium ml-2">Enable</span>
                           </div>
                         </>
                       ) : (
                         <>
-                          <label className="text-base text-[var(--text-secondary)] font-medium text-left w-full md:w-[280px] flex-shrink-0">
+                          <label className="text-base text-gray-700 font-medium text-left w-full md:w-[280px] flex-shrink-0">
                             {field.label}:
                           </label>
                           <Select
@@ -209,9 +209,9 @@ const FaxFaxPage = () => {
                               width: { xs: '100%', md: '280px' },
                               fontSize: 16,
                               height: 32,
-                              backgroundColor: 'var(--bg-surface)',
+                              backgroundColor: '#ffffff',
                               '& .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'var(--border-subtle)',
+                                borderColor: '#999999',
                               },
                               '& .MuiSelect-select': {
                                 padding: '4px 10px',

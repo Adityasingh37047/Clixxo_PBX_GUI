@@ -25,7 +25,7 @@ const LOCAL_STORAGE_KEY = "sipAccessControlRows";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "var(--border-strong)",
+  cardBorder: "#9CA3AF",
   divider: "#9CA3AF",
   cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
   labelText: "#3E5475",

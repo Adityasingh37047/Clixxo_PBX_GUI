@@ -17,14 +17,14 @@ import {
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
@@ -45,7 +45,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     primary: {
       background:
@@ -59,7 +59,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -122,13 +122,13 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -150,7 +150,7 @@ const muiTextFieldSx = {
 const muiSelectInnerSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -163,7 +163,7 @@ const muiSelectInnerSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "var(--bg-surface)",
+  backgroundColor: "#fff",
   ...muiSelectInnerSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
@@ -384,7 +384,7 @@ const RouteRoutingParameterPage = () => {
         <div
           style={{
             fontSize: 12,
-            color: "var(--text-muted)",
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -397,7 +397,7 @@ const RouteRoutingParameterPage = () => {
           <span>&gt;</span>
           <span>Route</span>
           <span>&gt;</span>
-          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             Routing Parameters
           </span>
         </div>

@@ -14,14 +14,14 @@ import { CircularProgress, Tabs, Tab, useMediaQuery } from "@mui/material";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
@@ -41,7 +41,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     primary: {
       background:
@@ -55,7 +55,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -121,7 +121,7 @@ const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
       fontSize: 12,
-      color: "var(--text-muted)",
+      color: "#94a3b8",
       marginBottom: 16,
       fontWeight: 400,
       display: "flex",
@@ -137,7 +137,7 @@ const PageBreadcrumb = ({ segments, style }) => (
         <span
           style={
             index === segments.length - 1
-              ? { color: "var(--text-primary)", fontWeight: 600 }
+              ? { color: "#1e293b", fontWeight: 600 }
               : undefined
           }
         >
@@ -192,7 +192,7 @@ const TableListEmptyState = ({
   >
     <div
       style={{
-        color: "var(--text-primary)",
+        color: "#3E5475",
         fontSize: 13,
         fontWeight: 600,
         marginBottom: showButton && onAddNew ? 16 : 0,
@@ -235,9 +235,9 @@ const pbxHeaderTabsSx = {
   },
 };
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
 const PBX_TOOLBAR_SEARCH_WIDTH = 168;
 const PBX_SEARCH_ICON_SLOT = 18;
@@ -313,7 +313,7 @@ const PbxToolbarSearchBar = ({
         gap: 6,
         height: PBX_TOOLBAR_SEARCH_HEIGHT,
         boxSizing: "border-box",
-        background: "var(--bg-surface)",
+        background: "#ffffff",
         border: `1px solid ${OUTLINED_BORDER}`,
         borderRadius: 10,
         padding: `0 ${horizontalPadding}px`,
@@ -403,7 +403,7 @@ const SIP_PCM_TABLE_CARD_RADIUS = 10;
 const SIP_PCM_FORM_HEADER_RADIUS = 20;
 
 const sipPcmCardStyle = {
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -411,7 +411,7 @@ const sipPcmCardStyle = {
 };
 
 const sipPcmFormCardStyle = {
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -440,7 +440,7 @@ const sipPcmToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
@@ -450,7 +450,7 @@ const sipPcmToolbarStyle = {
 const sipPcmCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
-  color: "var(--text-secondary)",
+  color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
@@ -490,7 +490,7 @@ const statsFooterStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
   borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
@@ -551,7 +551,7 @@ const StatCard = ({ label, value, color }) => (
 const TH = ({ children, align = "center", style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -1017,7 +1017,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       />
                     ) : (
                       filteredAgents.map((row, i) => {
-                        const rowBg = i % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
+                        const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
                         const isLastRow = i === filteredAgents.length - 1;
                         const lastRowCellStyle = isLastRow
                           ? { borderBottom: "none" }
@@ -1031,7 +1031,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                               transition: "background 0.15s ease",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = "var(--row-alt)";
+                              e.currentTarget.style.background = "#f1f5f9";
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = rowBg;
@@ -1150,7 +1150,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       <EmptyRow cols={10} msg="No queue data available" />
                     ) : (
                       queueData.map((row, i) => {
-                        const rowBg = i % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
+                        const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
                         const isLastRow = i === queueData.length - 1;
                         const lastRowCellStyle = isLastRow
                           ? { borderBottom: "none" }
@@ -1164,7 +1164,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                               transition: "background 0.15s ease",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = "var(--row-alt)";
+                              e.currentTarget.style.background = "#f1f5f9";
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = rowBg;
@@ -1473,7 +1473,7 @@ const ActiveCallQueue = () => {
                           key={i}
                           onClick={() => setSelectedQueue(q)}
                           style={{
-                            background: isSelected ? "var(--row-selected)" : C.cardBg,
+                            background: isSelected ? "#f0f9ff" : C.cardBg,
                             border: `1px solid ${isSelected ? C.accent : C.cardBorder}`,
                             borderLeft: `3px solid ${isSelected ? C.accent : "transparent"}`,
                             borderRadius: CARD_RADIUS,
@@ -1487,7 +1487,7 @@ const ActiveCallQueue = () => {
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "var(--row-alt)";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)

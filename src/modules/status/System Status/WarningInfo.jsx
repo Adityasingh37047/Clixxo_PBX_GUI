@@ -134,7 +134,7 @@ const WarningInfo = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0.5 flex flex-col items-center" style={{backgroundColor: "var(--bg-muted)"}}>
+    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0.5 flex flex-col items-center" style={{backgroundColor: "#dde0e4"}}>
       {/* Message Display */}
       {error && (
         <Alert 
@@ -174,17 +174,17 @@ const WarningInfo = () => {
         <div style={blueBarStyle}>{WARNING_LOG_TITLE}</div>
         <div style={{ border: '1px solid #444444', borderTop: 'none', backgroundColor: '#dde0e4' }}>
           {loading ? (
-            <div className="flex items-center justify-center min-h-[400px] h-[400px] bg-[var(--bg-surface)]">
+            <div className="flex items-center justify-center min-h-[400px] h-[400px] bg-white">
               <div className="text-center">
                 <CircularProgress size={40} sx={{ color: '#0e8fd6' }} />
-                <div className="mt-3 text-[var(--text-secondary)]">Loading warning logs...</div>
+                <div className="mt-3 text-gray-600">Loading warning logs...</div>
               </div>
             </div>
           ) : (
             <textarea
               value={warningLogs}
               readOnly
-              className="w-full min-h-[400px] h-[400px] resize-vertical text-xs bg-[var(--bg-surface)] p-3 box-border outline-none font-mono"
+              className="w-full min-h-[400px] h-[400px] resize-vertical text-xs bg-white p-3 box-border outline-none font-mono"
               style={{
                 border: 'none',
                 margin: '0',

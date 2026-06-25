@@ -103,11 +103,19 @@ const HaPage = () => {
   const ipIsValid = isValidIPv4(virtualIp);
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] py-0 flex flex-col items-center" style={{backgroundColor: "var(--bg-muted)"}}>      <div className="w-full max-w-3xl mx-auto">
-        <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-[var(--text-secondary)] shadow mb-0">
+    <div
+      className="bg-gray-50 min-h-[calc(100vh-200px)] py-0 flex flex-col items-center"
+      style={{ backgroundColor: "#dde0e4" }}
+    >
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full h-8 bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] flex items-center justify-center font-semibold text-lg text-gray-600 shadow mb-0">
           HA
         </div>
-        <div className="border border-[var(--border-subtle)] border-t-0 shadow-sm flex flex-col" style={{backgroundColor: "var(--bg-muted)"}}>          <div className="flex-1 py-6 px-20">
+        <div
+          className="border-2 border-gray-400 border-t-0 shadow-sm flex flex-col"
+          style={{ backgroundColor: "#dde0e4" }}
+        >
+          <div className="flex-1 py-6 px-20">
             <div className="space-y-4">
               {/* HA Enable Row */}
               <div className="flex items-center justify-between">
@@ -117,14 +125,15 @@ const HaPage = () => {
                   style={{ fontSize: 16, display: "inline-block" }}
                 >
                   HA
-                </E1PriFieldLabel>                <div className="flex items-center w-60">
+                </E1PriFieldLabel>
+                <div className="flex items-center w-60">
                   <input
                     type="checkbox"
                     checked={enabled}
                     onChange={() => setEnabled((prev) => !prev)}
                     className="w-4 h-4 mr-2 accent-blue-600"
                   />
-                  <span className="text-base text-[var(--text-secondary)]">Enable</span>
+                  <span className="text-base text-gray-600">Enable</span>
                 </div>
               </div>
 
@@ -136,14 +145,16 @@ const HaPage = () => {
                   style={{ fontSize: 16, display: "inline-block" }}
                 >
                   Public Virtual IP
-                </E1PriFieldLabel>                <div className="flex flex-col items-end">
+                </E1PriFieldLabel>
+                <div className="flex flex-col items-end">
                   <input
                     type="text"
                     value={virtualIp}
                     onChange={(e) => setVirtualIp(e.target.value)}
                     onBlur={() => setIpTouched(true)}
-                    className={`w-60 text-base px-3 py-2 border ${!ipIsValid && ipTouched && enabled ? 'border-red-500' : 'border-[var(--border-subtle)]'} bg-[var(--bg-surface)]`}
-                    style={{ height: '32px' }}                    disabled={!enabled}
+                    className={`w-60 text-base px-3 py-2 border ${!ipIsValid && ipTouched && enabled ? "border-red-500" : "border-gray-400"} bg-white`}
+                    style={{ height: "32px" }}
+                    disabled={!enabled}
                     placeholder="e.g. 192.168.1.100"
                   />
                   {!ipIsValid && ipTouched && enabled && (
@@ -162,7 +173,8 @@ const HaPage = () => {
                   style={{ fontSize: 16, display: "inline-block" }}
                 >
                   Primary/Backup
-                </E1PriFieldLabel>                <FormControl size="small" className="w-60">
+                </E1PriFieldLabel>
+                <FormControl size="small" className="w-60">
                   <Select
                     value={primaryBackup}
                     onChange={(e) => setPrimaryBackup(e.target.value)}
@@ -171,27 +183,28 @@ const HaPage = () => {
                     sx={{
                       fontSize: 16,
                       height: 36,
-                      backgroundColor: 'var(--bg-surface)',
-                      '& .MuiOutlinedInput-root': { 
-                        backgroundColor: 'var(--bg-surface)',
+                      backgroundColor: "#ffffff",
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "#ffffff",
                         height: 36,
-                        '& fieldset': {
-                          borderColor: 'var(--border-subtle)',
+                        "& fieldset": {
+                          borderColor: "#999999",
                         },
-                        '&:hover fieldset': {
-                          borderColor: 'var(--border-subtle)',
+                        "&:hover fieldset": {
+                          borderColor: "#999999",
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'var(--border-subtle)',
-                        }
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#999999",
+                        },
                       },
-                      '& .MuiSelect-select': { 
-                        backgroundColor: 'var(--bg-surface)',
-                        padding: '6px 14px',
-                        height: 'auto',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }                    }}
+                      "& .MuiSelect-select": {
+                        backgroundColor: "#ffffff",
+                        padding: "6px 14px",
+                        height: "auto",
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                    }}
                   >
                     {HA_PRIMARY_BACKUP_OPTIONS.map((opt) => (
                       <MenuItem key={opt} value={opt}>
@@ -210,7 +223,8 @@ const HaPage = () => {
                   style={{ fontSize: 16, display: "inline-block" }}
                 >
                   HA Eth
-                </E1PriFieldLabel>                <FormControl size="small" className="w-60">
+                </E1PriFieldLabel>
+                <FormControl size="small" className="w-60">
                   <Select
                     value={haEth}
                     onChange={(e) => setHaEth(e.target.value)}
@@ -219,27 +233,28 @@ const HaPage = () => {
                     sx={{
                       fontSize: 16,
                       height: 36,
-                      backgroundColor: 'var(--bg-surface)',
-                      '& .MuiOutlinedInput-root': { 
-                        backgroundColor: 'var(--bg-surface)',
+                      backgroundColor: "#ffffff",
+                      "& .MuiOutlinedInput-root": {
+                        backgroundColor: "#ffffff",
                         height: 36,
-                        '& fieldset': {
-                          borderColor: 'var(--border-subtle)',
+                        "& fieldset": {
+                          borderColor: "#999999",
                         },
-                        '&:hover fieldset': {
-                          borderColor: 'var(--border-subtle)',
+                        "&:hover fieldset": {
+                          borderColor: "#999999",
                         },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'var(--border-subtle)',
-                        }
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#999999",
+                        },
                       },
-                      '& .MuiSelect-select': { 
-                        backgroundColor: 'var(--bg-surface)',
-                        padding: '6px 14px',
-                        height: 'auto',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }                    }}
+                      "& .MuiSelect-select": {
+                        backgroundColor: "#ffffff",
+                        padding: "6px 14px",
+                        height: "auto",
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                    }}
                   >
                     {HA_ETH_OPTIONS.map((opt) => (
                       <MenuItem key={opt} value={opt}>

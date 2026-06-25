@@ -1,178 +1,4 @@
-﻿@import "tailwindcss";
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* â”€â”€ Theme tokens (manual toggle via body.dark) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-:root {
-  --bg-main: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-muted: #eef2f7;
-  --bg-legacy-shell: #dde0e4;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --text-label: #3e5475;
-  --border-subtle: #e2e8f0;
-  --border-strong: #9ca3af;
-  --status-success: #16a34a;
-  --status-danger: #dc2626;
-  --status-primary: #2563eb;
-  --accent-brand: #3e5475;
-  --row-alt: #f8fafc;
-  --row-selected: #e0f2fe;
-  --navbar-bg: #1c2536;
-  --table-header-bg: #f8fafc;
-  --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
-}
-
-body.dark {
-  --bg-main: #0f172a;
-  --bg-surface: #1e293b;
-  --bg-muted: #111827;
-  --bg-legacy-shell: #0f172a;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-label: #cbd5e1;
-  --border-subtle: #334155;
-  --border-strong: #475569;
-  --row-alt: #1e293b;
-  --row-selected: #1e3a5f;
-  --table-header-bg: #1e293b;
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
-  color-scheme: dark;
-}
-
-html,
-body {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease;
-}
-
-/* Semantic layout helpers */
-.theme-page-bg {
-  background-color: var(--bg-main) !important;
-  color: var(--text-primary);
-}
-
-.theme-surface {
-  background-color: var(--bg-surface) !important;
-  color: var(--text-primary);
-}
-
-.theme-muted-bg {
-  background-color: var(--bg-muted) !important;
-}
-
-.theme-border {
-  border-color: var(--border-strong) !important;
-}
-
-.theme-text-secondary {
-  color: var(--text-secondary) !important;
-}
-
-.theme-text-label {
-  color: var(--text-label) !important;
-}
-
-/* â”€â”€ Unified page + card containers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.clixxo-page,
-.clixxo-page-body {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-}
-
-.clixxo-card,
-.clixxo-panel,
-.clixxo-form-block {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-soft);
-  color: var(--text-primary);
-  border-radius: 10px;
-}
-
-.clixxo-breadcrumb {
-  font-size: 12px;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-  line-height: 1.5;
-}
-
-.clixxo-breadcrumb__active {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-/* Preserve intentional status metric colors (PBX monitor, system info) */
-.clixxo-metric-success,
-.text-status-success {
-  color: var(--status-success) !important;
-}
-
-.clixxo-metric-danger,
-.text-status-danger {
-  color: var(--status-danger) !important;
-}
-
-.clixxo-metric-primary,
-.text-status-primary {
-  color: var(--status-primary) !important;
-}
-
-/* System Settings module â€” consistent dark/light surfaces */
-.clixxo-system-settings {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-}
-
-.clixxo-system-settings table th,
-.clixxo-system-settings thead th {
-  background-color: var(--table-header-bg) !important;
-  color: var(--text-label) !important;
-  border-color: var(--border-subtle) !important;
-}
-
-.clixxo-system-settings table td {
-  color: var(--text-primary) !important;
-  border-color: var(--border-subtle) !important;
-}
-
-.clixxo-system-settings input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]),
-.clixxo-system-settings select,
-.clixxo-system-settings textarea {
-  background-color: var(--bg-main) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-subtle) !important;
-}
-
-.clixxo-system-settings input:disabled,
-.clixxo-system-settings select:disabled,
-.clixxo-system-settings textarea:disabled {
-  background-color: var(--bg-muted) !important;
-  color: var(--text-muted) !important;
-}
-
-.clixxo-system-settings label {
-  color: var(--text-primary) !important;
-}
-
-.clixxo-system-settings .MuiOutlinedInput-root,
-.clixxo-system-settings .MuiSelect-select {
-  background-color: var(--bg-main) !important;
-  color: var(--text-primary) !important;
-}
-
-.clixxo-system-settings .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border-subtle) !important;
-}
+@import "tailwindcss";
 
 /* Custom utility classes for responsive content containers */
 .content-container {
@@ -181,6 +7,7 @@ body {
   margin: 0 auto;
 }
 
+/* Responsive breakpoints for better content utilization */
 @media (min-width: 1024px) {
   .content-container {
     padding-left: 1rem;
@@ -201,13 +28,13 @@ body {
     padding-right: 3rem;
   }
 }
+/* body, * {
+  font: 12px/1.5 arial, \5b8b\4f53, arial, \5FAE\8F6F\96C5\9ED1, tahoma, sans-serif ;
+} */
 
-/* Legacy shell + page wrappers */
-.main-container,
-.page-container,
-.content-wrapper,
-.clixxo-bg {
-  background-color: var(--bg-main) !important;
+/* Global background color for all pages */
+body, html {
+  background-color: #dde0e4 !important;
 }
 
 /* App-wide smooth scroll (anchors, keyboard, programmatic scroll).
@@ -224,96 +51,38 @@ body,
 
 /* VoIP settings pages — outer layout #eef2f7 + inner page shell #f8fafc (matches Media Parameters) */
 .fxs-voip-media-page {
-  background: var(--bg-main);
+  background: #f8fafc;
   min-height: calc(100vh - 80px);
   padding: 20px 24px 32px;
   box-sizing: border-box;
 }
 
-.bg-gray-50,
-.bg-gray-100 {
-  background-color: var(--bg-main) !important;
+/* Ensure all main containers use the same background */
+.main-container, .page-container, .content-wrapper {
+  background-color: #dde0e4 !important;
 }
 
+/* Override common white/gray backgrounds with our custom color */
+.bg-gray-50, .bg-gray-100 {
+  background-color: #dde0e4 !important;
+}
+
+/* Keep white backgrounds for table cells and specific elements */
 .bg-white {
-  background-color: var(--bg-surface) !important;
-  color: var(--text-primary);
+  background-color: white !important;
 }
 
-/* Preserve blue gradient backgrounds (login / branded areas) */
+/* Preserve blue gradient backgrounds */
 .bg-gradient-to-b {
-  background: linear-gradient(
-    to bottom,
-    #b3e0ff 0%,
-    #6ec1f7 50%,
-    #3b8fd6 100%
-  ) !important;
+  background: linear-gradient(to bottom, #b3e0ff 0%, #6ec1f7 50%, #3b8fd6 100%) !important;
 }
 
-/* Complex configuration forms â€” input contrast on surface panels */
-.clixxo-form-panel,
-.sip-reg {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
+/* Custom utility class for consistent background */
+.clixxo-bg {
+  background-color: #dde0e4 !important;
 }
 
-.clixxo-form-panel .MuiOutlinedInput-root,
-.sip-reg .MuiOutlinedInput-root,
-.clixxo-form-panel .MuiSelect-select,
-.sip-reg .MuiSelect-select,
-.clixxo-form-panel input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
-.sip-reg input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
-.clixxo-form-panel select,
-.sip-reg select,
-.clixxo-form-panel textarea,
-.sip-reg textarea {
-  background-color: var(--bg-main) !important;
-  color: var(--text-primary) !important;
-}
-
-.clixxo-form-panel .MuiOutlinedInput-input::placeholder,
-.sip-reg .MuiOutlinedInput-input::placeholder,
-.clixxo-form-panel input::placeholder,
-.sip-reg input::placeholder,
-.clixxo-form-panel textarea::placeholder,
-.sip-reg textarea::placeholder {
-  color: var(--text-secondary) !important;
-  opacity: 1 !important;
-}
-
-.clixxo-form-panel label,
-.sip-reg label,
-.clixxo-form-panel .MuiFormControlLabel-label,
-.sip-reg .MuiFormControlLabel-label {
-  color: var(--text-primary) !important;
-}
-
-.clixxo-form-panel .MuiRadio-root,
-.sip-reg .MuiRadio-root,
-.clixxo-form-panel .MuiCheckbox-root,
-.sip-reg .MuiCheckbox-root {
-  color: var(--border-strong);
-}
-
-.clixxo-form-panel .MuiRadio-root.Mui-checked,
-.sip-reg .MuiRadio-root.Mui-checked,
-.clixxo-form-panel .MuiCheckbox-root.Mui-checked,
-.sip-reg .MuiCheckbox-root.Mui-checked {
-  color: var(--status-primary);
-}
-
-.clixxo-form-panel .MuiMenuItem-root,
-.sip-reg .MuiMenuItem-root {
-  background-color: var(--bg-surface);
-  color: var(--text-primary);
-}
-
-.clixxo-form-panel .MuiMenuItem-root:hover,
-.sip-reg .MuiMenuItem-root:hover {
-  background-color: var(--row-alt);
-}
-
+/* Card table header — same button vertical gap as Hosts (7px + 30px btn ≈ 44px bar) */
 .clixxo-card-toolbar {
   min-height: 44px;
   display: flex;
@@ -322,15 +91,14 @@ body,
   align-items: center;
   justify-content: space-between;
   padding: 7px 14px;
-  border-bottom: 1px solid var(--border-strong);
-  background: var(--bg-surface);
-  color: var(--text-primary);
+  border-bottom: 1px solid #9ca3af;
+  background: #ffffff;
 }
 
 .clixxo-card-toolbar__title {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-label);
+  color: #3e5475;
   letter-spacing: 0.02em;
 }
 
@@ -341,148 +109,16 @@ body,
   flex-wrap: wrap;
 }
 
-/* Material UI â€” theme-aware surfaces */
-.MuiPaper-root,
-.MuiDialog-paper,
-.MuiMenu-paper,
-.MuiPopover-paper {
-  background-color: var(--bg-surface) !important;
-  color: var(--text-primary) !important;
+/* Override Material-UI Paper components */
+.MuiPaper-root {
+  background-color: #dde0e4 !important;
 }
 
-.MuiDialogTitle-root {
-  color: inherit;
-}
-
-.MuiOutlinedInput-root {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-}
-
-.MuiInputLabel-root,
-.MuiFormLabel-root {
-  color: var(--text-primary);
-}
-
-.MuiTableCell-root {
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
-}
-
-.MuiTableHead-root .MuiTableCell-root {
-  background-color: var(--table-header-bg);
-  color: var(--text-label);
-}
-
-/* Tables â€” all modes */
-table th,
-thead th {
-  background-color: var(--table-header-bg);
-  color: var(--text-label);
-  border-color: var(--border-subtle);
-}
-
-table td {
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
-}
-
-/* Tables inside themed pages */
-body.dark table {
-  color: var(--text-primary);
-}
-
-body.dark table th {
-  background-color: var(--table-header-bg);
-  color: var(--text-label);
-}
-
-body.dark table td {
-  border-color: var(--border-subtle);
-}
-
-body.dark .text-gray-700,
-body.dark .text-gray-600,
-body.dark .text-gray-500,
-body.dark .text-gray-800,
-body.dark .text-gray-900,
-body.dark .text-slate-900,
-body.dark .text-slate-800,
-body.dark .text-black {
-  color: var(--text-primary) !important;
-}
-
-body.dark .text-gray-500 {
-  color: var(--text-muted) !important;
-}
-
-body.dark .text-gray-600,
-body.dark .text-gray-700 {
-  color: var(--text-secondary) !important;
-}
-
-body.dark .border-gray-400,
-body.dark .border-gray-300,
-body.dark .border-gray-500 {
-  border-color: var(--border-subtle) !important;
-}
-
-/* MUI outlined fields â€” theme-aware borders */
-.MuiOutlinedInput-notchedOutline {
-  border-color: var(--border-subtle) !important;
-}
-
-.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border-strong) !important;
-}
-
-.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: var(--status-primary) !important;
-}
-
-.MuiOutlinedInput-root.Mui-disabled {
-  background-color: var(--bg-muted) !important;
-}
-
-.MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border-subtle) !important;
-}
-
-.MuiInputBase-input::placeholder {
-  color: var(--text-muted);
-  opacity: 1;
-}
-
-.MuiInputBase-input.Mui-disabled {
-  -webkit-text-fill-color: var(--text-muted);
-  color: var(--text-muted);
-}
-
-.MuiSelect-icon {
-  color: var(--text-secondary);
-}
-
-.clixxo-theme-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.06);
-  color: #f8fafc;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clixxo-theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.45);
-}
-
-.clixxo-theme-toggle:active {
-  transform: scale(0.96);
+/* Override any div containers that might have white backgrounds, but allow table cells */
+div[style*="background-color: white"]:not(td):not(th):not(.table-cell),
+div[style*="background-color: #fff"]:not(td):not(th):not(.table-cell),
+div[style*="background-color: #ffffff"]:not(td):not(th):not(.table-cell) {
+  background-color: #dde0e4 !important;
 }
 
 /* Fade in up animation for alert messages */
@@ -498,7 +134,7 @@ body.dark .border-gray-500 {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fade-in-up 0.4s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* Hide scrollbars but allow scrolling */
@@ -511,133 +147,12 @@ body.dark .border-gray-500 {
   scrollbar-width: none;
 }
 
+/* Trunk / CDR — 1px separator left of vertical scrollbar (native scrollbar unchanged) */
 .trunk-table-scroll::-webkit-scrollbar-track:vertical {
-  border-left: 1px solid var(--border-strong);
+  border-left: 1px solid #9ca3af;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   GLOBAL THEME ENFORCEMENT â€” all authenticated app pages (clixxo-app-shell)
-   Overrides legacy inline whites/blacks without touching component logic.
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-.clixxo-app-shell {
-  color: var(--text-primary);
-}
-
-.clixxo-app-shell table {
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
-}
-
-.clixxo-app-shell table th,
-.clixxo-app-shell thead th,
-.clixxo-app-shell thead tr {
-  background-color: var(--table-header-bg) !important;
-  color: var(--text-label) !important;
-  border-color: var(--border-subtle) !important;
-}
-
-.clixxo-app-shell table td {
-  color: var(--text-primary) !important;
-  border-color: var(--border-subtle) !important;
-}
-
-.clixxo-app-shell table tbody tr {
-  background-color: var(--bg-surface);
-}
-
-.clixxo-app-shell label,
-.clixxo-app-shell .field-label,
-.clixxo-app-shell h1,
-.clixxo-app-shell h2,
-.clixxo-app-shell h3,
-.clixxo-app-shell h4 {
-  color: var(--text-primary);
-}
-
-.clixxo-app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
-.clixxo-app-shell select,
-.clixxo-app-shell textarea {
-  background-color: var(--bg-main) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-subtle) !important;
-}
-
-.clixxo-app-shell input::placeholder,
-.clixxo-app-shell textarea::placeholder {
-  color: var(--text-secondary) !important;
-  opacity: 1 !important;
-}
-
-.clixxo-app-shell input:disabled,
-.clixxo-app-shell select:disabled,
-.clixxo-app-shell textarea:disabled {
-  background-color: var(--bg-muted) !important;
-  color: var(--text-muted) !important;
-  border-color: var(--border-subtle) !important;
-}
-
-/* Preserve telecom / registration status colors */
-.clixxo-app-shell .text-status-success,
-.clixxo-app-shell .clixxo-metric-success,
-.clixxo-app-shell [data-theme-status="success"] {
-  color: var(--status-success) !important;
-}
-
-.clixxo-app-shell .text-status-danger,
-.clixxo-app-shell .clixxo-metric-danger,
-.clixxo-app-shell [data-theme-status="danger"] {
-  color: var(--status-danger) !important;
-}
-
-.clixxo-app-shell .text-red-500,
-.clixxo-app-shell .text-red-600 {
-  color: var(--status-danger) !important;
-}
-
-.clixxo-app-shell .text-green-500,
-.clixxo-app-shell .text-green-600 {
-  color: var(--status-success) !important;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="password"],
-input[type="email"],
-input[type="search"],
-input[type="tel"],
-input[type="url"],
-input[type="date"],
-input[type="time"],
-input[type="datetime-local"],
-textarea,
-select {
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-}
-
-input[type="text"]::placeholder,
-input[type="number"]::placeholder,
-input[type="password"]::placeholder,
-input[type="email"]::placeholder,
-input[type="search"]::placeholder,
-textarea::placeholder {
-  color: var(--text-muted);
-  opacity: 1;
-}
-
-input:disabled,
-select:disabled,
-textarea:disabled {
-  background-color: var(--bg-muted);
-  color: var(--text-muted);
-  border-color: var(--border-subtle);
-  opacity: 0.92;
-  cursor: not-allowed;
-}
-
+/* Match fill-box corner curve with Authorization page */
 input[type="text"],
 input[type="number"],
 input[type="password"],
@@ -654,21 +169,19 @@ select,
 }
 
 .management-system-time-input::-webkit-calendar-picker-indicator {
-  border-left: 1px solid var(--border-strong);
+  border-left: 1px solid #9CA3AF;
   padding-left: 8px;
   margin-left: 4px;
   cursor: pointer;
 }
 
+/* System Settings native fill boxes — match input[type="text"] 4px radius (same specificity) */
 input.system-settings-native-field,
 select.system-settings-native-field,
 textarea.system-settings-native-field {
   border-radius: 4px !important;
   min-height: 34px !important;
   box-sizing: border-box !important;
-  background-color: var(--bg-main);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
 }
 
 select.system-settings-native-field {
@@ -683,3 +196,4 @@ select.system-settings-native-field {
   max-width: 280px !important;
   overflow: hidden;
 }
+ 

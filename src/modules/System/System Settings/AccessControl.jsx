@@ -17,35 +17,26 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import { postLinuxCmd } from "../../../api/apiService";
 import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-subtle)",
-  divider: "var(--border-subtle)",
-  cardShadow: "var(--shadow-soft)",
-  gridHeaderBg: "var(--table-header-bg)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  strongText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  gridHeaderBg: "#F8FAFC",
+  labelText: "#3E5475",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
-  footerBg: "var(--bg-surface)",
-};
-
-const SYS_TOAST_SX = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
+  footerBg: "#ffffff",
 };
 // ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -74,8 +65,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-main)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -115,7 +106,7 @@ const systemModalFieldInputStyle = {
   width: "100%",
   padding: "0 10px",
   lineHeight: 1.35,
-  color: "var(--text-primary)",
+  color: "#1e293b",
 };
 
 
@@ -152,14 +143,14 @@ const tooltips = {
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid var(--border-subtle)`,
-      borderRight: `1px solid var(--border-subtle)`,
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -175,53 +166,132 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid var(--border-subtle)`,
-  borderRight: `1px solid var(--border-subtle)`,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
-const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
-const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-const BTN_DANGER = `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`;
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    delete: {
+      background: "#fee2e2",
+      color: "#991b1b",
+      border: "1px solid #fecaca",
+    },
+    edit: {
+      background: "#dcfce7",
+      color: "#166534",
+      border: "1px solid #bbf7d0",
+    },
+    error: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `1px solid ${C.errorRed}`,
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
 
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  error: BTN_ERROR,
-  delete: BTN_DELETE,
-  edit: BTN_EDIT,
-  danger: BTN_DANGER,
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "error":
+        return "#b91c1c";
+      case "delete":
+        return "#fecaca";
+      case "edit":
+        return "#bbf7d0";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+        return "#e2e8f0";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+
+
+
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {startIcon && (
+        <span style={{ display: "flex", alignItems: "center" }}>
+          {startIcon}
+        </span>
+      )}
+      {children}
+    </button>
+  );
 };
-
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, startIcon }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {startIcon && <span className="flex items-center">{startIcon}</span>}
-    {children}
-  </button>
-);
 
 const AccessControl = () => {
   // State
@@ -616,7 +686,7 @@ const AccessControl = () => {
 
   return (
     <div
-      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       {/* ── Alerts ── */}
@@ -624,7 +694,14 @@ const AccessControl = () => {
         <Alert
           severity={toast.type}
           onClose={() => setToast({ msg: "", type: "success" })}
-          sx={SYS_TOAST_SX}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
         >
           {toast.msg}
         </Alert>
@@ -663,7 +740,7 @@ const AccessControl = () => {
           overflow: "hidden",
           boxShadow: C.cardShadow,
           marginBottom: 24,
-          border: `1px solid var(--border-subtle)`,
+          border: `1.5px solid ${C.cardBorder}`,
         }}
       >
         {/* ── Toolbar ── */}
@@ -676,8 +753,8 @@ const AccessControl = () => {
             justifyContent: "space-between",
             minHeight: 44,
             padding: "7px 14px",
-            borderBottom: `1px solid var(--border-subtle)`,
-            background: "var(--bg-surface)",
+            borderBottom: `1px solid ${C.cardBorder}`,
+            background: "#ffffff",
             borderTopLeftRadius: CARD_RADIUS,
             borderTopRightRadius: CARD_RADIUS,
           }}
@@ -686,7 +763,7 @@ const AccessControl = () => {
             {selected.length > 0 && (
               <span
                 style={{
-                  background: "var(--row-selected)",
+                  background: "#eff6ff",
                   color: C.accent,
                   fontSize: 11,
                   fontWeight: 700,
@@ -783,7 +860,7 @@ const AccessControl = () => {
             <>
               <div
                 style={{
-                  color: "var(--text-primary)",
+                  color: "#3E5475",
                   fontSize: 13,
                   fontWeight: 600,
                   marginBottom: 16,
@@ -859,10 +936,10 @@ const AccessControl = () => {
                   const isLastRow = pageIdx === pagedCommands.length - 1;
                   const isSelected = selected.includes(rowIdx);
                   const rowBg = isSelected
-                    ? "var(--row-selected)"
+                    ? "#f0f9ff"
                     : pageIdx % 2 === 1
-                      ? "var(--row-alt)"
-                      : "var(--bg-surface)";
+                      ? "#f8fafc"
+                      : "#ffffff";
                   const lastRowCellStyle = isLastRow
                     ? { borderBottom: "none" }
                     : {};
@@ -876,7 +953,7 @@ const AccessControl = () => {
                       }}
                       onMouseEnter={(e) => {
                         if (!isSelected)
-                          e.currentTarget.style.background = "var(--row-alt)";
+                          e.currentTarget.style.background = "#f1f5f9";
                       }}
                       onMouseLeave={(e) => {
                         if (!isSelected)
@@ -982,7 +1059,7 @@ const AccessControl = () => {
             justifyContent: "space-between",
             padding: "7px 14px",
             background: C.footerBg,
-            borderTop: `1px solid var(--border-subtle)`,
+            borderTop: `1px solid ${C.cardBorder}`,
             borderBottomLeftRadius: CARD_RADIUS,
             borderBottomRightRadius: CARD_RADIUS,
             overflow: "hidden",
@@ -1041,15 +1118,15 @@ const AccessControl = () => {
 
       {/* Iptables Info Log Field */}
       <div className="w-full max-w-[900px] mx-auto mt-4 flex flex-col items-center">
-        <div className="text-[var(--text-secondary)] text-sm font-semibold mb-2 text-center">
+        <div className="text-gray-600 text-sm font-semibold mb-2 text-center">
           Iptables Info
         </div>
         <div
-          className="w-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-md shadow-sm overflow-y-auto p-3 resize-y"
+          className="w-full bg-white border-2 border-gray-400 rounded-md shadow-sm overflow-y-auto p-3 resize-y"
           style={{ minHeight: 140, maxHeight: 320 }}
         >
           <pre
-            className="w-full h-full bg-[var(--bg-surface)] text-[var(--text-primary)] text-xs font-mono whitespace-pre-wrap m-0 p-0"
+            className="w-full h-full bg-white text-gray-800 text-xs font-mono whitespace-pre-wrap m-0 p-0"
             style={{ minHeight: 120, maxHeight: 260, fontSize: "11px" }}
           >
             {executionLogs}
@@ -1093,7 +1170,7 @@ const AccessControl = () => {
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
             backgroundImage: "none",
           },
         }}
@@ -1119,7 +1196,7 @@ const AccessControl = () => {
         <DialogContent
           sx={{
             p: "24px",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
           }}
         >
           <div
@@ -1127,8 +1204,8 @@ const AccessControl = () => {
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "var(--row-alt)",
-              border: `1px solid var(--border-subtle)`,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
               marginTop: 22,
@@ -1175,8 +1252,8 @@ const AccessControl = () => {
                   placeholder="Auto-generated"
                   style={{
                     ...systemModalFieldInputStyle,
-                    background: editIndex !== null ? "var(--bg-muted)" : "var(--bg-main)",
-                    color: editIndex !== null ? "var(--text-muted)" : "var(--text-primary)",
+                    background: editIndex !== null ? "#f1f5f9" : "#ffffff",
+                    color: editIndex !== null ? "#94a3b8" : "#1e293b",
                     cursor: editIndex !== null ? "not-allowed" : "text",
                   }}
                   {...(editIndex === null ? inputInteraction : {})}
@@ -1236,7 +1313,7 @@ const AccessControl = () => {
             py: "10px",
             px: "16px",
             borderTop: `1px solid ${C.divider}`,
-            backgroundColor: "var(--row-alt)",
+            backgroundColor: "#f8fafc",
           }}
         >
           <Btn

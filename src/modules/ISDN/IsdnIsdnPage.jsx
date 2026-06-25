@@ -121,7 +121,7 @@ const IsdnIsdnPage = () => {
   };
 
   return (
-    <div className="w-full py-6" style={{backgroundColor: "var(--bg-muted)"}}>
+    <div className="w-full py-6" style={{backgroundColor: "#dde0e4"}}>
       {/* Main Container with Dark Gray Border */}
       <div style={{ width: '1400px', margin: '0 auto' }}>
         {/* Header (blue bar) - extends to full width */}
@@ -153,42 +153,42 @@ const IsdnIsdnPage = () => {
           <table className="w-full border-collapse mb-2">
             <tbody>
               <tr style={{ padding: '1px 0' }}>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[100px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[100px]">
                   Link No.<br />
                   <span className="text-xs">User Side: 0</span>
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[100px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[100px]">
                   Logical PCM No.<br />
                   <span className="text-xs">0</span>
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[80px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[80px]">
                   TEI
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[140px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[140px]">
                   Ch Identification
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[160px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[160px]">
                   Default Callee Type
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[160px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[160px]">
                   Default Caller Type
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[100px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[100px]">
                   CODEC
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[140px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[140px]">
                   Auto Link Building
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[100px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[100px]">
                   CRC Check
                 </td>
               </tr>
               <tr style={{ padding: '1px 0' }}>
                 <td className="text-center px-3 py-1">
-                  <span className="text-xs text-[var(--text-secondary)]"> </span>
+                  <span className="text-xs text-gray-600"> </span>
                 </td>
                 <td className="text-center px-3 py-1">
-                  <span className="text-xs text-[var(--text-secondary)]"></span>
+                  <span className="text-xs text-gray-600"></span>
                 </td>
                 <td className="text-center px-3 py-1">
               <TextField
@@ -298,33 +298,33 @@ const IsdnIsdnPage = () => {
           <table className="w-full border-collapse mb-2">
             <tbody>
               <tr style={{ padding: '1px 0' }}>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[100px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[100px]">
                   Link No.<br />
                   <span className="text-xs">User Side: 0</span>
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[100px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[100px]">
                   Logical PCM No.<br />
                   <span className="text-xs">0</span>
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[220px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[220px]">
                   Set Caller/Callee Type in case of Redirecting Num
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[200px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[200px]">
                   Callee Type (with Redirecting Num)
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[200px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[200px]">
                   Caller Type (with Redirecting Num)
                 </td>
-                <td className="text-center px-3 py-1 text-xs font-medium text-[var(--text-secondary)] min-w-[180px]">
+                <td className="text-center px-3 py-1 text-xs font-medium text-gray-700 min-w-[180px]">
                   Synchronize Modification
                 </td>
               </tr>
               <tr style={{ padding: '1px 0' }}>
                 <td className="text-center px-3 py-1">
-                  <span className="text-xs text-[var(--text-secondary)]"> </span>
+                  <span className="text-xs text-gray-600"> </span>
                 </td>
                 <td className="text-center px-3 py-1">
-                  <span className="text-xs text-[var(--text-secondary)]"></span>
+                  <span className="text-xs text-gray-600"></span>
                 </td>
                 <td className="text-center px-3 py-1">
               <Checkbox
@@ -381,12 +381,12 @@ const IsdnIsdnPage = () => {
           </table>
 
         {/* ISDN Global Settings */}
-          <div className="text-[var(--text-secondary)] font-semibold text-sm mb-2 mt-3 px-3">ISDN Global Settings</div>
+          <div className="text-gray-700 font-semibold text-sm mb-2 mt-3 px-3">ISDN Global Settings</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 w-full max-w-full px-3">
           {/* Left column: labels and checkboxes */}
           <div className="flex flex-col flex-1 w-full">
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Transfer Capability</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Transfer Capability</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
                 <Checkbox
@@ -394,7 +394,7 @@ const IsdnIsdnPage = () => {
                   onChange={() => handleChange('enterAutoAlertCallProceeding', !form.enterAutoAlertCallProceeding, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
                 />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Enter Auto Alert State upon Reception of 'CALL PROCEEDING' Message</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Enter Auto Alert State upon Reception of 'CALL PROCEEDING' Message</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
                 <Checkbox
@@ -402,7 +402,7 @@ const IsdnIsdnPage = () => {
                   onChange={() => handleChange('enterAutoAlertProgress', !form.enterAutoAlertProgress, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
                 />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Enter Auto Alert State upon Reception of 'PROGRESS' Message</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Enter Auto Alert State upon Reception of 'PROGRESS' Message</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
                     <Checkbox
@@ -410,25 +410,25 @@ const IsdnIsdnPage = () => {
                   onChange={() => handleChange('decodeIsdnDebug', !form.decodeIsdnDebug, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
                 />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Decode ISDN Debugging Message before Outputting</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Decode ISDN Debugging Message before Outputting</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Maximum Wait Time for Called Party's Pick up(s)</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Maximum Wait Time for Called Party's Pick up(s)</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Minimum Length of the CalledID of an Incoming Call</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Minimum Length of the CalledID of an Incoming Call</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Calling Party Property Present Indicator</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Calling Party Property Present Indicator</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Calling Party Property Shielding Indicator</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Calling Party Property Shielding Indicator</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Default Redirecting Number Type</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Default Redirecting Number Type</span>
               </div>
               <div className="flex items-center min-h-[28px] mb-1 w-full">
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Collect Call</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Collect Call</span>
               </div>
             </div>
             {/* Right column: input/select fields */}
@@ -547,7 +547,7 @@ const IsdnIsdnPage = () => {
         </div>
 
         {/* ISDN User Side */}
-          <div className="text-[var(--text-secondary)] font-semibold text-sm mb-2 mt-3 px-3">ISDN User Side</div>
+          <div className="text-gray-700 font-semibold text-sm mb-2 mt-3 px-3">ISDN User Side</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4 mb-8 items-start w-full max-w-full px-3">
           {/* Column 1: Two checkboxes stacked vertically */}
           <div className="flex flex-col min-w-0 gap-2 w-full">
@@ -557,7 +557,7 @@ const IsdnIsdnPage = () => {
                 onChange={() => handleChange('userSendCalledPartyNumberComplete', !form.userSendCalledPartyNumberComplete, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
               />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Send the 'Called Party Number Complete' Parameter</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Send the 'Called Party Number Complete' Parameter</span>
             </div>
             <div className="flex items-center">
               <Checkbox
@@ -565,13 +565,13 @@ const IsdnIsdnPage = () => {
                 onChange={() => handleChange('userSendChannelIdentification', !form.userSendChannelIdentification, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
               />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Send Channel Identification Message</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Send Channel Identification Message</span>
             </div>
           </div>
           {/* Column 2: Wait Confirm Time (T310) (s) and Set Cause Value Length to 2 bytes */}
           <div className="flex flex-col min-w-0 gap-2 w-full">
             <div className="flex items-center">
-                <span className="text-xs text-[var(--text-secondary)] mr-2 break-words whitespace-normal">Wait Confirm Time (T310) (s)</span>
+                <span className="text-xs text-gray-700 mr-2 break-words whitespace-normal">Wait Confirm Time (T310) (s)</span>
               <TextField
                 size="small"
                 value={form.userWaitConfirmTime}
@@ -588,7 +588,7 @@ const IsdnIsdnPage = () => {
                 onChange={() => handleChange('userSetCauseValueLength', !form.userSetCauseValueLength, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
               />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Set Cause Value Length to 2 bytes</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Set Cause Value Length to 2 bytes</span>
             </div>
           </div>
           {/* Column 3: Allow the Preferential Channel Selection, vertically centered */}
@@ -598,12 +598,12 @@ const IsdnIsdnPage = () => {
               onChange={() => handleChange('userAllowPreferentialChannel', !form.userAllowPreferentialChannel, 'checkbox')}
                 sx={{ p: 0.2, mr: 0.5 }}
             />
-              <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Allow the Preferential Channel Selection</span>
+              <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Allow the Preferential Channel Selection</span>
           </div>
         </div>
 
         {/* ISDN Network Side */}
-          <div className="text-[var(--text-secondary)] font-semibold text-sm mb-2 mt-3 px-3">ISDN Network Side</div>
+          <div className="text-gray-700 font-semibold text-sm mb-2 mt-3 px-3">ISDN Network Side</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-4 mb-4 items-center w-full max-w-full px-3">
           {/* Row 1 */}
           <div className="flex items-center min-w-0 w-full">
@@ -612,10 +612,10 @@ const IsdnIsdnPage = () => {
               onChange={() => handleChange('networkSendCalledPartyNumberComplete', !form.networkSendCalledPartyNumberComplete, 'checkbox')}
                 sx={{ p: 0.2, mr: 0.5 }}
             />
-              <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Send the 'Called Party Number Complete' Parameter</span>
+              <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Send the 'Called Party Number Complete' Parameter</span>
           </div>
           <div className="flex items-center min-w-0 w-full">
-              <span className="text-xs text-[var(--text-secondary)] mr-2 break-words whitespace-normal">Wait Confirm Time (T310) (s)</span>
+              <span className="text-xs text-gray-700 mr-2 break-words whitespace-normal">Wait Confirm Time (T310) (s)</span>
             <TextField
               size="small"
               value={form.networkWaitConfirmTime}
@@ -633,7 +633,7 @@ const IsdnIsdnPage = () => {
                 onChange={() => handleChange('networkAllowPreferentialChannel', !form.networkAllowPreferentialChannel, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
               />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Allow the Preferential Channel Selection</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Allow the Preferential Channel Selection</span>
             </div>
             <div className="flex items-center mt-3">
               <Checkbox
@@ -641,7 +641,7 @@ const IsdnIsdnPage = () => {
                 onChange={() => handleChange('networkEnable', !form.networkEnable, 'checkbox')}
                   sx={{ p: 0.2, mr: 0.5 }}
               />
-                <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Enable</span>
+                <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Enable</span>
             </div>
           </div>
           {/* Row 2 */}
@@ -651,7 +651,7 @@ const IsdnIsdnPage = () => {
               onChange={() => handleChange('networkSendChannelIdentification', !form.networkSendChannelIdentification, 'checkbox')}
                 sx={{ p: 0.2, mr: 0.5 }}
             />
-              <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Send Channel Identification Message</span>
+              <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Send Channel Identification Message</span>
           </div>
           <div className="flex items-center min-w-0 w-full">
             <Checkbox
@@ -659,13 +659,13 @@ const IsdnIsdnPage = () => {
               onChange={() => handleChange('networkSetCauseValueLength', !form.networkSetCauseValueLength, 'checkbox')}
                 sx={{ p: 0.2, mr: 0.5 }}
               />
-              <span className="text-xs text-[var(--text-secondary)] break-words whitespace-normal w-full">Set Cause Value Length to 2 bytes</span>
+              <span className="text-xs text-gray-700 break-words whitespace-normal w-full">Set Cause Value Length to 2 bytes</span>
             </div>
             <div /> {/* Empty cell */}
           </div>
 
           {/* Send ISDN Redirecting Number */}
-          <div className="text-[var(--text-secondary)] text-xs mb-2 px-3">
+          <div className="text-gray-700 text-xs mb-2 px-3">
             Send ISDN Redirecting Number &nbsp;
             <Checkbox
               checked={form.networkEnable || false}

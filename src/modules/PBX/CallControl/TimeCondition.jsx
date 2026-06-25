@@ -35,34 +35,19 @@ import {
 } from "../../../api/apiService";
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
+// ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
-};
-
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
-
-const btnVariantCls = {
-  default: BTN_OUTLINE,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  dialogPrimary: BTN_DIALOG_PRIMARY,
-  dialogCancel: BTN_DIALOG_CANCEL,
-  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
-  outline: `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`,
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -70,27 +55,93 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  className = "",
-  style,
+  style: extraStyle,
   type,
+  form,
+  component,
   title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -123,26 +174,64 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -152,10 +241,24 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
@@ -171,34 +274,91 @@ const TableListEmptyState = ({
   </div>
 );
 
-const TIME_CONDITION_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const TIME_CONDITION_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
-const TIME_CONDITION_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
-const TIME_CONDITION_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
-const TIME_CONDITION_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const TIME_CONDITION_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const TIME_CONDITION_PAGE_BADGE =
-  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const TIME_CONDITION_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
 
-const TimeConditionPagination = ({
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
   page,
   totalPages,
   recordCount,
   onPageChange,
   recordLabel = "record",
-  className = "",
+  style,
 }) => (
-  <div className={`${TIME_CONDITION_PAGINATION} ${className}`.trim()}>
-    <span className="text-[11px] text-[#94a3b8]">
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div className="flex items-center gap-[8px]">
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
@@ -206,7 +366,7 @@ const TimeConditionPagination = ({
       >
         ← Prev
       </Btn>
-      <span className={TIME_CONDITION_PAGE_BADGE}>
+      <span style={sipPcmPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -220,23 +380,13 @@ const TimeConditionPagination = ({
   </div>
 );
 
-const timeConditionModalPaperSx = {
-  width: "max-content",
-  maxWidth: "96vw",
-  mx: "auto",
-  borderRadius: "8px",
-  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-  backgroundColor: "var(--bg-surface)",
-  backgroundImage: "none",
-};
-
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -268,7 +418,7 @@ const modalTextFieldFullSx = {
     padding: "7px 10px",
     fontSize: 13,
     boxSizing: "border-box",
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
 };
 
@@ -332,8 +482,8 @@ const timeSelectStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-surface)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -498,7 +648,7 @@ const FieldRow = ({ label, tooltipKey, required, children, fitContent }) => (
           flexShrink: 0,
           fontSize: 13,
           fontWeight: 600,
-          color: "var(--text-primary)",
+          color: "#30415A",
           paddingTop: 4,
         }}
       >
@@ -515,7 +665,7 @@ const modalCheckboxLabelSx = {
   whiteSpace: "nowrap",
   "& .MuiFormControlLabel-label": {
     fontSize: 13,
-    color: "var(--text-primary)",
+    color: "#30415A",
     lineHeight: 1.2,
   },
 };
@@ -595,7 +745,7 @@ const TIME_COL_LABEL_STYLE = {
 const TIME_ROW_LABEL_STYLE = {
   fontSize: 12,
   fontWeight: 600,
-  color: "var(--text-primary)",
+  color: "#30415A",
   flexShrink: 0,
   paddingBottom: 2,
 };
@@ -938,10 +1088,8 @@ const TimeCondition = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div
-      className={`box-border min-h-[calc(100vh-80px)] bg-[var(--bg-main)] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
-    >
-      <div className="mx-auto w-full max-w-full">
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={pbxPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type === "error" ? "error" : "success"}
@@ -961,25 +1109,45 @@ const TimeCondition = () => {
 
         <PbxBreadcrumb section="Call Control" current={TC_TITLE} />
 
-        <div className={TIME_CONDITION_CARD}>
+        <div style={sipPcmCardStyle}>
           <div
-            className={`${TIME_CONDITION_TOOLBAR} ${isCompact ? TIME_CONDITION_TOOLBAR_COMPACT : ""}`.trim()}
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
-            <div className={TIME_CONDITION_TOOLBAR_LEFT}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               {selected.length > 0 && (
-                <span className={TIME_CONDITION_SELECTED_BADGE}>
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
 
-            <div className={TIME_CONDITION_TOOLBAR_ACTIONS}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} />
@@ -992,6 +1160,7 @@ const TimeCondition = () => {
                 onClick={openAdd}
                 disabled={loading.save || loading.fetch}
                 variant="primary"
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1105,7 +1274,7 @@ const TimeCondition = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1217,7 +1386,7 @@ const TimeCondition = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <TimeConditionPagination
+            <SipPcmPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1246,7 +1415,14 @@ const TimeCondition = () => {
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
-        PaperProps={{ sx: timeConditionModalPaperSx }}
+        PaperProps={{
+          sx: {
+            width: "fit-content",
+            minWidth: 650,
+            maxWidth: "90vw",
+            borderRadius: "8px",
+          },
+        }}
         disableRestoreFocus
       >
         <DialogTitle
@@ -1266,13 +1442,13 @@ const TimeCondition = () => {
           {editId !== null ? "Edit Time Condition" : "Add Time Condition"}
         </DialogTitle>
 
-        <DialogContent sx={{ p: "24px", backgroundColor: "var(--bg-surface)" }}>
+        <DialogContent sx={{ p: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "var(--row-alt)",
+              background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
@@ -1493,13 +1669,14 @@ const TimeCondition = () => {
             py: "10px",
             px: "16px",
             borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "var(--row-alt)",
+            backgroundColor: "#f8fafc",
           }}
         >
           <Btn
-            variant="dialogPrimary"
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1511,9 +1688,10 @@ const TimeCondition = () => {
             )}
           </Btn>
           <Btn
-            variant="dialogCancel"
+            variant="cancel"
             onClick={closeModal}
             disabled={loading.save}
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

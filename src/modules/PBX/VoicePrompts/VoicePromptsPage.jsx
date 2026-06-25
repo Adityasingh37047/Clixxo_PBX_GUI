@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {Alert,
+import {Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,6 +11,7 @@ import {Alert,
   Tooltip,
   TextField,
   Checkbox,
+  Alert,
   Tabs,
   Tab,
   CircularProgress, useMediaQuery } from "@mui/material";
@@ -39,80 +40,153 @@ const PBX_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
   errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
+const CARD_RADIUS = 10;
 
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
-  formPrimary:
-    "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60",
-  formCancel:
-    "inline-flex items-center justify-center box-border min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60",
-  chooseFile:
-    "inline-flex items-center justify-center box-border m-0 min-w-0 h-[34px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60",
-};
-
+// ── Local page UI (inlined from pbxSharedUi) ──
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
-  className = "",
-  style,
+  style: extraStyle,
   type,
+  form,
+  component,
   title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
-const VOICE_PROMPT_PAGE_WRAP =
-  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
-const VOICE_PROMPT_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
-const VOICE_PROMPT_FORM_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const VOICE_PROMPT_FORM_HEADER =
-  "flex w-full min-h-[44px] items-center border-b border-[var(--border-strong)] bg-[var(--bg-surface)] py-0 pl-[6px] pr-[8px] text-[13px] font-bold text-[var(--text-label)] rounded-t-[10px]";
-const VOICE_PROMPT_FORM_HEADER_COMPACT = "flex-col items-stretch";
+const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
 
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 
 const tooltipProps = {
   arrow: true,
@@ -137,8 +211,15 @@ const tooltipProps = {
 };
 
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -148,10 +229,24 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
@@ -190,7 +285,52 @@ const pbxHeaderTabsSx = {
   },
 };
 
-const VoicePromptSectionHeading = ({ title, isFirst = false }) => (
+const sipPcmFormPageWrapStyle = {
+  ...pbxPageWrapStyle,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+};
+
+const sipPcmFormPageInnerStyle = {
+  ...pbxPageInnerStyle,
+  maxWidth: 1000,
+};
+
+const sipPcmFormCardStyle = {
+  background: "#ffffff",
+  borderRadius: 10,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmFormHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: "7px 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
+};
+
+const sipPcmAuthFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const SipPcmSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
       margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
@@ -208,13 +348,26 @@ const VoicePromptSectionHeading = ({ title, isFirst = false }) => (
         paddingRight: 8,
         fontSize: 13,
         fontWeight: 600,
-        color: "var(--text-primary)",
+        color: "#30415A",
       }}
     >
       {title}
     </span>
   </div>
 );
+
+const voicePromptPrimaryBtnStyle = sipPcmAuthFormBtnStyle;
+
+const voicePromptCancelBtnStyle = {
+  ...pbxModalCancelBtnStyle,
+  boxShadow: "none",
+};
+
+const voicePromptChooseFileBtnStyle = {
+  ...sipPcmAuthFormBtnStyle,
+  minWidth: "auto",
+  boxShadow: "none",
+};
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
@@ -659,8 +812,8 @@ const VoicePromptsPage = () => {
   }, [mohAudioUrl, customAudioUrl]);
 
   return (
-    <div className={`${VOICE_PROMPT_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}>
-      <div className={VOICE_PROMPT_PAGE_INNER}>
+    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={sipPcmFormPageInnerStyle}>
         {/* Error / Success Banner */}
         {message.text && (
           <Alert
@@ -681,10 +834,16 @@ const VoicePromptsPage = () => {
 
         <PbxBreadcrumb section="Voice Prompts" current="Voice Prompts" />
 
-        <div className={VOICE_PROMPT_FORM_CARD}>
-          <div
-            className={`${VOICE_PROMPT_FORM_HEADER} ${isCompact ? VOICE_PROMPT_FORM_HEADER_COMPACT : ""}`.trim()}
-          >
+        <div style={sipPcmFormCardStyle}>
+         <div
+  style={{
+    ...sipPcmFormHeaderStyle,
+    padding: "0",
+    ...(isCompact
+      ? { flexDirection: "column", alignItems: "stretch" }
+      : {}),
+  }}
+>
             <Tabs
               value={activeTab}
               onChange={(_, id) => {
@@ -711,13 +870,13 @@ const VoicePromptsPage = () => {
             {/* ── TAB 1: PROMPT PREFERENCE ── */}
             {activeTab === "promptPreference" && (
               <div>
-                <VoicePromptSectionHeading title="General Preferences" isFirst />
+                <SipPcmSectionHeading title="General Preferences" isFirst />
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr",
                     gap: 16,
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     padding: 16,
                     borderRadius: 6,
                     border: `1px solid #e2e8f0`,
@@ -740,7 +899,7 @@ const VoicePromptsPage = () => {
                         value={promptMohCategory}
                         onChange={(e) => setPromptMohCategory(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13, background: "var(--bg-main)" }}
+                        sx={{ fontSize: 13, background: "#fff" }}
                       >
                         {categories.length === 0 ? (
                           promptMohCategory ? (
@@ -795,7 +954,7 @@ const VoicePromptsPage = () => {
   size="small"
   sx={{
     padding: "1px",
-    color: "var(--text-primary)",
+    color: "#3E5475",
     "&.Mui-checked": { color: "#0284c7" },
     "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
     alignSelf: "flex-start",
@@ -812,7 +971,8 @@ const VoicePromptsPage = () => {
                   <Btn
                     onClick={handleSavePreferences}
                     disabled={savingPrefs}
-                    variant="formPrimary"
+                    variant="primary"
+                    style={voicePromptPrimaryBtnStyle}
                   >
                     {savingPrefs ? "Saving..." : "SAVE"}
                   </Btn>
@@ -823,14 +983,14 @@ const VoicePromptsPage = () => {
             {/* ── TAB 2: MUSIC ON HOLD ── */}
             {activeTab === "musicOnHold" && (
               <div>
-                <VoicePromptSectionHeading title="Upload New MOH File" isFirst />
+                <SipPcmSectionHeading title="Upload New MOH File" isFirst />
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 16,
                     flexWrap: "wrap",
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     padding: 16,
                     borderRadius: 6,
                     border: `1px solid #e2e8f0`,
@@ -863,7 +1023,7 @@ const VoicePromptsPage = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          background: "var(--bg-main)",
+                          background: "#fff",
                           width: 200,
                         },
                       }}
@@ -890,7 +1050,8 @@ const VoicePromptsPage = () => {
                     />
                     <Btn
                       onClick={() => mohFileInputRef.current?.click()}
-                      variant="chooseFile"
+                      variant="cancel"
+                      style={voicePromptChooseFileBtnStyle}
                     >
                       Choose File
                     </Btn>
@@ -910,8 +1071,11 @@ const VoicePromptsPage = () => {
 
                   <Btn
                     onClick={handleUploadMoh}
-                    variant="formPrimary"
-                    className="ml-auto"
+                    variant="primary"
+                    style={{
+                      ...voicePromptPrimaryBtnStyle,
+                      marginLeft: "auto",
+                    }}
                   >
                     UPLOAD
                   </Btn>
@@ -923,7 +1087,7 @@ const VoicePromptsPage = () => {
                   8000Hz sampling rate, mono wav, MP3 files.
                 </div>
 
-                <VoicePromptSectionHeading title="All Uploaded MOH Files" />
+                <SipPcmSectionHeading title="All Uploaded MOH Files" />
                 <div
                   style={{
                     overflowX: "auto",
@@ -961,7 +1125,7 @@ const VoicePromptsPage = () => {
                             key={item.id}
                             style={{
                               borderBottom: "1px solid #e2e8f0",
-                              background: idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)",
+                              background: idx % 2 === 1 ? "#f8fafc" : "#fff",
                             }}
                           >
                             <td
@@ -1180,19 +1344,23 @@ const VoicePromptsPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  <Btn onClick={openRecordModal} variant="formPrimary">
+                  <Btn
+                    onClick={openRecordModal}
+                    variant="primary"
+                    style={voicePromptPrimaryBtnStyle}
+                  >
                     + RECORD NEW
                   </Btn>
                 </div>
 
-                <VoicePromptSectionHeading title="Upload Custom Prompt" isFirst />
+                <SipPcmSectionHeading title="Upload Custom Prompt" isFirst />
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 16,
                     flexWrap: "wrap",
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     padding: 16,
                     borderRadius: 6,
                     border: `1px solid #e2e8f0`,
@@ -1221,7 +1389,8 @@ const VoicePromptsPage = () => {
                     />
                     <Btn
                       onClick={() => customFileInputRef.current?.click()}
-                      variant="chooseFile"
+                      variant="cancel"
+                      style={voicePromptChooseFileBtnStyle}
                     >
                       Choose File
                     </Btn>
@@ -1240,8 +1409,11 @@ const VoicePromptsPage = () => {
                   </div>
                   <Btn
                     onClick={handleUploadCustomPrompt}
-                    variant="formPrimary"
-                    className="ml-auto"
+                    variant="primary"
+                    style={{
+                      ...voicePromptPrimaryBtnStyle,
+                      marginLeft: "auto",
+                    }}
                   >
                     UPLOAD
                   </Btn>
@@ -1252,7 +1424,7 @@ const VoicePromptsPage = () => {
                   Note: supports uploading .wav, .mp3, .gsm files.
                 </div>
 
-                <VoicePromptSectionHeading title="Recordings" />
+                <SipPcmSectionHeading title="Recordings" />
                 <div
                   style={{
                     overflowX: "auto",
@@ -1290,7 +1462,7 @@ const VoicePromptsPage = () => {
                             key={item.id}
                             style={{
                               borderBottom: "1px solid #e2e8f0",
-                              background: idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)",
+                              background: idx % 2 === 1 ? "#f8fafc" : "#fff",
                             }}
                           >
                             <td
@@ -1518,7 +1690,7 @@ const VoicePromptsPage = () => {
               display: "flex",
               flexDirection: "column",
               gap: 16,
-              background: "var(--bg-main)",
+              background: "#fff",
               padding: 20,
               borderRadius: 6,
               border: `1px solid ${C.cardBorder}`,
@@ -1563,12 +1735,17 @@ const VoicePromptsPage = () => {
             gap: 12,
           }}
         >
-          <Btn onClick={handleSaveRecordedPrompt} variant="formPrimary">
+          <Btn
+            onClick={handleSaveRecordedPrompt}
+            variant="primary"
+            style={voicePromptPrimaryBtnStyle}
+          >
             RECORD
           </Btn>
           <Btn
             onClick={() => setRecordModalOpen(false)}
-            variant="formCancel"
+            variant="cancel"
+            style={voicePromptCancelBtnStyle}
           >
             CANCEL
           </Btn>

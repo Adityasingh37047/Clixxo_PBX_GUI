@@ -83,14 +83,14 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
@@ -111,7 +111,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     primary: {
       background:
@@ -125,7 +125,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -188,9 +188,9 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
@@ -246,8 +246,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-surface)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -617,7 +617,7 @@ const PortFxsModifyPage = forwardRef(
       : { ...dialogFieldStyle, ...legacyFieldStyle, width: "200px" };
     const fieldClassName = inDialog
       ? undefined
-      : "border border-[var(--border-subtle)] rounded-sm px-1 bg-[var(--bg-surface)]";
+      : "border border-gray-400 rounded-sm px-1 bg-white";
 
     const formBody = (
       <>
@@ -664,7 +664,7 @@ const PortFxsModifyPage = forwardRef(
                       display: "flex",
                       flexDirection: "column",
                       gap: 14,
-                      background: "var(--row-alt)",
+                      background: "#f8fafc",
                       border: `1px solid ${C.cardBorder}`,
                       borderRadius: 8,
                       padding: 20,
@@ -676,7 +676,7 @@ const PortFxsModifyPage = forwardRef(
               className={
                 inDialog
                   ? undefined
-                  : "bg-[#dde0e4] border-2 rounded-b-lg border-[var(--border-subtle)] border-t-0 shadow-sm py-2 text-xs w-full"
+                  : "bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs w-full"
               }
             >
               <div
@@ -921,7 +921,7 @@ const PortFxsModifyPage = forwardRef(
     return (
       <div
         className="bg-gray-50 min-h-[calc(100vh-128px)] py-1"
-        style={{ backgroundColor: "var(--bg-muted)" }}
+        style={{ backgroundColor: "#dde0e4" }}
       >
         <div className="flex justify-center" style={{ padding: "0 16px" }}>
           <div

@@ -10,8 +10,8 @@ import { Button, TextField, Dialog, DialogTitle, DialogContent, DialogActions } 
 const localStorageKey = 'vpnAccounts';
 
 const grayButtonSx = {
-  backgroundColor: 'var(--border-subtle)',
-  color: 'var(--text-primary)',
+  background: 'linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)',
+  color: '#222',
   fontWeight: 600,
   fontSize: 15,
   borderRadius: 1.5,
@@ -21,10 +21,10 @@ const grayButtonSx = {
   px: 2.25,
   py: 1,
   padding: '4px 18px',
-  border: '1px solid var(--border-subtle)',
+  border: '1px solid #bbb',
   '&:hover': {
-    backgroundColor: 'var(--row-alt)',
-    color: 'var(--text-primary)',
+    background: 'linear-gradient(to bottom, #bfc6d1 0%, #e3e7ef 100%)',
+    color: '#222',
   },
 };
 const blueButtonSx = {
@@ -142,10 +142,10 @@ const VpnAccount = () => {
   };
 
   return (
-    <div className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] py-10 flex flex-col items-center">
+    <div className="bg-gray-50 min-h-[calc(100vh-80px)] py-10 flex flex-col items-center">
       {accounts.length === 0 ? (
         <>
-          <div className="text-[var(--text-primary)] font-semibold text-2xl mt-8 mb-4">No Available Information!</div>
+          <div className="text-gray-800 font-semibold text-2xl mt-8 mb-4">No Available Information!</div>
           <Button
             variant="contained"
             sx={blueButtonSx}
@@ -156,24 +156,24 @@ const VpnAccount = () => {
         </>
       ) : (
         <div className="w-full max-w-4xl mx-auto">
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-t-xl shadow">
-            <div className="w-full bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] h-10 flex items-center justify-center font-semibold text-lg text-[var(--text-primary)] shadow mb-0 border-b-2 border-[#b3e0ff] rounded-t-xl">
+          <div className="bg-white border-2 border-gray-400 rounded-t-xl shadow">
+            <div className="w-full bg-gradient-to-b from-[#b3e0ff] via-[#6ec1f7] to-[#3b8fd6] h-10 flex items-center justify-center font-semibold text-lg text-black shadow mb-0 border-b-2 border-[#b3e0ff] rounded-t-xl">
               VPN Account
             </div>
             <div className="w-full overflow-x-auto">
               <table className="min-w-full border-collapse table-auto">
                 <thead>
                   <tr>
-                    <th className="bg-[var(--table-header-bg)] text-[var(--text-label)] font-semibold text-sm border border-[var(--border-subtle)] px-2 py-1 whitespace-nowrap text-center">Check</th>
+                    <th className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-2 py-1 whitespace-nowrap text-center">Check</th>
                     {VPN_ACCOUNT_TABLE_COLUMNS.map((col) => (
-                      <th key={col.key} className="bg-[var(--table-header-bg)] text-[var(--text-label)] font-semibold text-sm border border-[var(--border-subtle)] px-2 py-1 whitespace-nowrap text-center">{col.label}</th>
+                      <th key={col.key} className="bg-white text-gray-800 font-semibold text-sm border border-gray-300 px-2 py-1 whitespace-nowrap text-center">{col.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {accounts.map((row, idx) => (
                     <tr key={idx}>
-                      <td className="border border-[var(--border-subtle)] px-2 py-1 text-center">
+                      <td className="border border-gray-300 px-2 py-1 text-center">
                         <input
                           type="checkbox"
                           className="w-5 h-5"
@@ -183,9 +183,9 @@ const VpnAccount = () => {
                       </td>
                       {VPN_ACCOUNT_TABLE_COLUMNS.map((col) => (
                         col.key === 'modify' ? (
-                          <td key={col.key} className="border border-[var(--border-subtle)] px-2 py-1 text-center"><EditDocumentIcon style={{ cursor: 'pointer', color: 'var(--status-primary)', display: 'block', margin: '0 auto' }} onClick={() => handleEdit(idx)} /></td>
+                          <td key={col.key} className="border border-gray-300 px-2 py-1 text-center"><EditDocumentIcon style={{ cursor: 'pointer', color: '#0e8fd6', display: 'block', margin: '0 auto' }} onClick={() => handleEdit(idx)} /></td>
                         ) : (
-                          <td key={col.key} className="border border-[var(--border-subtle)] px-2 py-1 text-center text-[var(--text-primary)]">{row[col.key]}</td>
+                          <td key={col.key} className="border border-gray-300 px-2 py-1 text-center">{row[col.key]}</td>
                         )
                       ))}
                     </tr>
@@ -194,7 +194,7 @@ const VpnAccount = () => {
               </table>
             </div>
           </div>
-          <div className="bg-[var(--bg-muted)] rounded-b-xl flex flex-col sm:flex-row justify-between items-center gap-2 mt-0 px-2 py-4" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+          <div className="bg-[#e3e7ef] rounded-b-xl flex flex-col sm:flex-row justify-between items-center gap-2 mt-0 px-2 py-4" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
             <div className="flex flex-wrap gap-2 mb-2 sm:mb-0">
               <Button variant="contained" sx={grayButtonSx} onClick={handleCheckAll}>Check All</Button>
               <Button variant="contained" sx={grayButtonSx} onClick={handleUncheckAll}>Uncheck All</Button>
@@ -214,10 +214,10 @@ const VpnAccount = () => {
       )}
       <Dialog open={showModal} onClose={handleModalClose} maxWidth="xs" fullWidth>
         <DialogTitle className="bg-gradient-to-b from-gray-800 to-gray-600 text-white text-center font-semibold p-3 text-base">VPN Account</DialogTitle>
-        <DialogContent className="bg-[var(--bg-surface)] flex flex-col gap-2 py-4">
+        <DialogContent className="bg-[#e6eaf0] flex flex-col gap-2 py-4">
           {VPN_ACCOUNT_FIELDS.map((field, i) => (
             <div key={field.name} className={`flex flex-col sm:flex-row items-center gap-2 mb-2 w-full max-w-xs mx-auto${i === 0 ? ' mt-4' : ''}`}>
-              <div className="font-medium text-base text-[var(--text-primary)] w-full sm:w-1/2 text-right sm:pr-4">{field.label}</div>
+              <div className="font-medium text-base text-gray-800 w-full sm:w-1/2 text-right sm:pr-4">{field.label}</div>
               <div className="w-full">
                 <TextField
                   type={field.type}

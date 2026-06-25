@@ -17,24 +17,23 @@ const changeRouting = async (payload) => {
 };
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-subtle)",
-  divider: "var(--border-subtle)",
-  cardShadow: "var(--shadow-soft)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  strongText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  errorRed: "var(--status-danger)",
-  primary: "var(--status-primary)",
-  gridHeaderBg: "var(--table-header-bg)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#30415A",
+  errorRed: "#dc2626",
+  primary: "#2563eb",
+  gridHeaderBg: "#F8FAFC",
 };
-
 // ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -63,8 +62,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-main)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -102,12 +101,10 @@ const systemFieldInputStyleNarrow = {
   width: "100%",
   padding: "6px 10px",
   borderRadius: 10,
-  background: "var(--bg-main)",
-  color: "var(--text-primary)",
+  background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
   maxWidth: "280px",
-  border: `1px solid ${OUTLINED_BORDER}`,
 };
 
 const inputStyle = systemFieldInputStyleNarrow;
@@ -124,8 +121,7 @@ const advancedFormInlineFooterStyle = {
   marginTop: 0,
   marginBottom: 0,
   padding: "10px 20px 10px",
-  borderTop: `1px solid var(--border-subtle)`,
-  background: "var(--bg-surface)",
+  borderTop: `1px solid ${C.cardBorder}`,
   boxSizing: "border-box",
 };
 
@@ -142,41 +138,77 @@ const advancedFormBtnStyle = {
 const SYSTEM_SETTINGS_NATIVE_FIELD_CLASS = "system-settings-native-field";
 
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
-const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
-const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-const BTN_DANGER = `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`;
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    variant === "primary"
+      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
+      : variant === "cancel"
+        ? "#b6c2d3"
+        : "#e2e8f0";
+  const baseBg = s.background;
 
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  error: BTN_ERROR,
-  delete: BTN_DELETE,
-  edit: BTN_EDIT,
-  danger: BTN_DANGER,
+  return (
+    <button
+      type={type}
+      form={form}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
 };
-
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, form }) => (
-  <button
-    type={type}
-    form={form}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
 
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
@@ -185,7 +217,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       position: "relative",
     }}
   >
-    <div style={{ borderTop: `1px solid var(--border-subtle)` }} />
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
         position: "absolute",
@@ -205,13 +237,13 @@ const SectionHeading = ({ title, isFirst = false }) => (
 
 const ROUTES_TABLE_RADIUS = 2;
 
-/** Read-only / disabled — theme-aware */
+/** Read-only / disabled — same as Network page */
 const disabledInputStyle = {
   ...inputStyle,
-  background: "var(--bg-muted)",
-  color: "var(--text-muted)",
+  background: "#f1f5f9",
+  color: "#94a3b8",
   cursor: "not-allowed",
-  borderColor: "var(--border-subtle)",
+  borderColor: "#e2e8f0",
 };
 
 /** Select — same box as Gateway IP; appearance:none so border-radius renders on native select */
@@ -231,7 +263,7 @@ const actionBtnStyle = {
 };
 
 const routesTableShellStyle = {
-  border: `1px solid var(--border-subtle)`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: ROUTES_TABLE_RADIUS,
   overflow: "hidden",
   background: C.cardBg,
@@ -297,13 +329,13 @@ const TH = ({ children, isLast = false }) => (
   <th
     style={{
       background: C.gridHeaderBg,
-      color: "var(--text-label)",
+      color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid var(--border-subtle)`,
-      borderRight: isLast ? "none" : `1px solid var(--border-subtle)`,
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: isLast ? "none" : `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.12em",
@@ -318,11 +350,11 @@ const TD = ({ children, highlight, isLastCol = false, isLastRow = false }) => (
     style={{
       padding: "8px 14px",
       fontSize: 12,
-      color: highlight ? "var(--status-primary)" : "var(--text-primary)",
+      color: highlight ? C.primary : C.valueText,
       fontWeight: highlight ? 700 : 400,
       textAlign: "center",
-      borderBottom: isLastRow ? "none" : `1px solid var(--border-subtle)`,
-      borderRight: isLastCol ? "none" : `1px solid var(--border-subtle)`,
+      borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
+      borderRight: isLastCol ? "none" : `1px solid ${C.cardBorder}`,
     }}
   >
     {children}
@@ -462,7 +494,7 @@ const RoutingInterface = () => {
 
   return (
     <div
-      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       <div className="w-full" style={{ maxWidth: 1000 }}>
@@ -507,7 +539,7 @@ const RoutingInterface = () => {
         <div
           style={{
             fontSize: 12,
-            color: "var(--text-muted)",
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -532,7 +564,7 @@ const RoutingInterface = () => {
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1px solid var(--border-subtle)`,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           {/* Card Header */}
@@ -679,11 +711,7 @@ const RoutingInterface = () => {
                               <tr
                                 key={idx}
                                 style={{
-                                  background: isActive
-                                    ? "var(--row-selected)"
-                                    : idx % 2 === 1
-                                      ? "var(--row-alt)"
-                                      : "var(--bg-surface)",
+                                  background: isActive ? "#f0f7ff" : C.cardBg,
                                 }}
                               >
                                 <TD highlight={isActive} isLastRow={isLastRow}>
@@ -698,8 +726,8 @@ const RoutingInterface = () => {
                                         display: "inline-block",
                                         padding: "2px 8px",
                                         borderRadius: 6,
-                                        background: "color-mix(in srgb, var(--status-success) 18%, transparent)",
-                                        color: "var(--status-success)",
+                                        background: "#dcfce7",
+                                        color: "#16a34a",
                                         fontSize: 11,
                                         fontWeight: 700,
                                       }}
@@ -712,8 +740,8 @@ const RoutingInterface = () => {
                                         display: "inline-block",
                                         padding: "2px 8px",
                                         borderRadius: 6,
-                                        background: "var(--bg-muted)",
-                                        color: "var(--text-muted)",
+                                        background: "#f1f5f9",
+                                        color: "#94a3b8",
                                         fontSize: 11,
                                         fontWeight: 600,
                                       }}

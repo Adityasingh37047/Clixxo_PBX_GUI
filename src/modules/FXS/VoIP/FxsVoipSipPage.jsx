@@ -75,44 +75,113 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
-const FXS_VOIP_SIP_PAGE_WRAP =
-  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
-const FXS_VOIP_SIP_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
-const FXS_VOIP_SIP_TABLE_CONTAINER =
-  "w-full max-w-full mx-auto overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_4px_20px_rgba(15,23,42,0.06)]";
-const FXS_VOIP_SIP_BLUE_BAR =
-  "flex w-full min-h-[44px] flex-wrap items-center justify-start gap-[12px] rounded-t-[10px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] text-[13px] font-bold text-[var(--text-label)]";
-const FXS_VOIP_SIP_FORM_FOOTER =
-  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[var(--border-strong)] box-border px-[20px] py-[10px]";
+const CARD_RADIUS = 10;
 
-const BTN_FORM_PRIMARY =
-  "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
-const BTN_FORM_CANCEL =
-  "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
-
-const Btn = ({ children, onClick, disabled, variant = "formPrimary", type }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    className={variant === "formCancel" ? BTN_FORM_CANCEL : BTN_FORM_PRIMARY}
-  >
-    {children}
-  </button>
-);
-
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
@@ -134,7 +203,7 @@ const setFieldFocus = (el) => {
   el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
 };
 
-const FXS_VOIP_SIP_FIELD_INTERACTION = {
+const nativeFieldInteraction = {
   onFocus: (e) => {
     if (e.target.disabled) return;
     setFieldFocus(e.target);
@@ -160,9 +229,9 @@ const FXS_VOIP_SIP_FIELD_INTERACTION = {
 };
 
 const getFxsNativeFieldInteraction = (disabled) =>
-  disabled ? {} : FXS_VOIP_SIP_FIELD_INTERACTION;
+  disabled ? {} : nativeFieldInteraction;
 
-const FXS_VOIP_SIP_INPUT_STYLE = {
+const nativeFieldInputStyle = {
   height: 28,
   width: 200,
   padding: "0 8px",
@@ -170,26 +239,130 @@ const FXS_VOIP_SIP_INPUT_STYLE = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-surface)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const FxsVoipSipBreadcrumb = ({ current }) => (
-  <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">
+const nativeFieldSelectStyle = {
+  width: nativeFieldInputStyle.width,
+  minHeight: 32,
+  padding: "6px 28px 6px 8px",
+  fontSize: nativeFieldInputStyle.fontSize,
+  lineHeight: 1.35,
+  border: nativeFieldInputStyle.border,
+  borderRadius: nativeFieldInputStyle.borderRadius,
+  outline: nativeFieldInputStyle.outline,
+  backgroundColor: nativeFieldInputStyle.backgroundColor,
+  color: nativeFieldInputStyle.color,
+  boxSizing: nativeFieldInputStyle.boxSizing,
+  transition: nativeFieldInputStyle.transition,
+  appearance: "auto",
+};
+
+const advancedPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  boxSizing: "border-box",
+};
+
+const advancedPageInnerStyle = {
+  width: "100%",
+  maxWidth: 1000,
+  margin: "0 auto",
+};
+
+const advancedTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  overflow: "hidden",
+  marginBottom: 24,
+};
+
+const advancedBlueBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
+};
+
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const VoipBreadcrumb = ({ current }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
     <span>FXS</span>
     <span>&gt;</span>
     <span>VoIP</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
-const FxsVoipSipPageShell = ({ children, fullWidth = false }) => (
-  <div className={FXS_VOIP_SIP_PAGE_WRAP}>
-    <div className={fullWidth ? "w-full max-w-full mx-auto" : FXS_VOIP_SIP_PAGE_INNER}>
+const AdvancedPageShell = ({ children, fullWidth = false }) => (
+  <div style={advancedPageWrapStyle}>
+    <div
+      style={{
+        ...advancedPageInnerStyle,
+        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
+      }}
+    >
       {children}
     </div>
   </div>
@@ -412,7 +585,7 @@ const FxsVoipSipPage = () => {
   };
 
   const fieldInputStyle = {
-    ...FXS_VOIP_SIP_INPUT_STYLE,
+    ...nativeFieldInputStyle,
     width: CONTROL_FIELD_WIDTH,
     maxWidth: "100%",
   };
@@ -459,7 +632,7 @@ const FxsVoipSipPage = () => {
   };
 
   return (
-    <FxsVoipSipPageShell>
+    <AdvancedPageShell>
       {message.text && (
         <Alert
           severity={
@@ -484,7 +657,7 @@ const FxsVoipSipPage = () => {
         </Alert>
       )}
 
-      <FxsVoipSipBreadcrumb current="SIP Settings" />
+      <VoipBreadcrumb current="SIP Settings" />
 
       {registrationMode === "local" && localModeMsg && (
         <div
@@ -506,8 +679,8 @@ const FxsVoipSipPage = () => {
         </div>
       )}
 
-      <div className={FXS_VOIP_SIP_TABLE_CONTAINER} style={{ marginBottom: 0 }}>
-        <div className={FXS_VOIP_SIP_BLUE_BAR}>
+      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
+        <div style={advancedBlueBarStyle}>
           <span>SIP Settings</span>
         </div>
 
@@ -667,12 +840,20 @@ const FxsVoipSipPage = () => {
         )}
 
         {!loadingPage && (
-          <div className={FXS_VOIP_SIP_FORM_FOOTER}>
+          <div
+            style={{
+              ...advancedFormInlineFooterStyle,
+              width: "100%",
+              marginLeft: 0,
+              marginRight: 0,
+            }}
+          >
             <Btn
               type="button"
               onClick={handleSave}
-              variant="formPrimary"
+              variant="primary"
               disabled={saving || loadingPage}
+              style={advancedFormBtnStyle}
             >
               {saving ? (
                 <>
@@ -686,15 +867,16 @@ const FxsVoipSipPage = () => {
             <Btn
               type="button"
               onClick={handleReset}
-              variant="formCancel"
+              variant="cancel"
               disabled={saving || loadingPage}
+              style={advancedFormBtnStyle}
             >
               Reset
             </Btn>
           </div>
         )}
       </div>
-    </FxsVoipSipPageShell>
+    </AdvancedPageShell>
   );
 };
 

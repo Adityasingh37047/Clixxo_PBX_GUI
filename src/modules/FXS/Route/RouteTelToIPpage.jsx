@@ -23,14 +23,14 @@ import {
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
@@ -51,7 +51,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     primary: {
       background:
@@ -65,7 +65,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -128,13 +128,13 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -156,7 +156,7 @@ const muiTextFieldSx = {
 const muiSelectInnerSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -169,7 +169,7 @@ const muiSelectInnerSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "var(--bg-surface)",
+  backgroundColor: "#fff",
   ...muiSelectInnerSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
@@ -186,17 +186,18 @@ const muiSelectSx = {
 
 
 const checkboxSx = {
-  padding: "1px",
-  color: "var(--text-primary)",
+  padding: "4px",
+  color: "#64748b",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -225,12 +226,10 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
 };
 
 const numManipulateCardStyle = {
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderRadius: CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -244,7 +243,7 @@ const numManipulateToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: CARD_RADIUS,
@@ -256,7 +255,7 @@ const numManipulatePaginationStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
@@ -279,9 +278,17 @@ const routeTableMinWidthForZoom = (widePx) => {
   return zoomPct >= 130 ? widePx : "100%";
 };
 
-const routeTdStyle = tdStyle;
+const routeTdStyle = {
+  ...tdStyle,
+  fontSize: 12,
+  padding: "7px 8px",
+};
 
-const routeThExtra = {};
+const routeThExtra = {
+  fontSize: 10.5,
+  padding: "9px 8px",
+  letterSpacing: "0.04em",
+};
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -715,7 +722,7 @@ const RoutePstnToIPPage = () => {
         <div
           style={{
             fontSize: 12,
-            color: "var(--text-muted)",
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -728,7 +735,7 @@ const RoutePstnToIPPage = () => {
           <span>&gt;</span>
           <span>Route</span>
           <span>&gt;</span>
-          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             Tel-&gt;IP Routing Rule
           </span>
         </div>
@@ -815,7 +822,7 @@ const RoutePstnToIPPage = () => {
               >
                 <div
                   style={{
-                    color: "var(--text-primary)",
+                    color: "#3E5475",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -904,7 +911,7 @@ const RoutePstnToIPPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f1f5f9";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1054,13 +1061,13 @@ const RoutePstnToIPPage = () => {
             ? "Edit Tel->IP Routing Rule"
             : "Add Tel->IP Routing Rule"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "var(--bg-surface)" }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "var(--row-alt)",
+              background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
@@ -1219,7 +1226,7 @@ const RoutePstnToIPPage = () => {
         <DialogActions
           style={{
             padding: "16px 24px",
-            background: "var(--row-alt)",
+            background: "#f8fafc",
             borderTop: `1px solid ${C.cardBorder}`,
             justifyContent: "center",
             gap: 12,

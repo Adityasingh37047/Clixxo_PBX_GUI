@@ -13,15 +13,15 @@ const TICK_MS = 1000;
 
 /** Align with IP→PSTN Routing Rule / PbxMonitor palette */
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
   cardBorderSoft: "#f1f5f9",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  strongText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   errorRed: "#ef4444",
 };
 
@@ -32,7 +32,7 @@ const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
       fontSize: 12,
-      color: "var(--text-muted)",
+      color: "#94a3b8",
       marginBottom: 16,
       fontWeight: 400,
       display: "flex",
@@ -50,7 +50,7 @@ const PageBreadcrumb = ({ segments, style }) => (
         <span
           style={
             index === segments.length - 1
-              ? { color: "var(--text-primary)", fontWeight: 600 }
+              ? { color: "#1e293b", fontWeight: 600 }
               : undefined
           }
         >
@@ -73,11 +73,11 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
@@ -559,7 +559,7 @@ const ActiveCallsPage = () => {
               minHeight: 44,
               padding: "7px 14px",
               borderBottom: `1px solid ${C.cardBorder}`,
-              background: "var(--bg-surface)",
+              background: "#ffffff",
               flexWrap: "wrap",
               gap: 12,
               borderTopLeftRadius: CARD_RADIUS,

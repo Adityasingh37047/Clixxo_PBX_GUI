@@ -40,34 +40,18 @@ const DEFAULT_DIAL_PATTERN = {
 const DEFAULT_CALLER_CONVERSION = { strip: "", front: "", suffix: "" };
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
-};
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  accent: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  dialogPrimary: BTN_DIALOG_PRIMARY,
-  dialogCancel: BTN_DIALOG_CANCEL,
-  danger: `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`,
-  outline: BTN_OUTLINE,
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
 };
 
 const Btn = ({
@@ -75,27 +59,117 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  className = "",
-  style,
-  type,
+  style: extraStyle,
   title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
+  type,
+  hoverBehavior = "background",
+}) => {
+  const variants = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+  };
+
+  const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = extraStyle?.background || s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+};
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -125,28 +199,67 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+// ── Local page UI (inlined from pbxSharedUi) ──
+const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -156,10 +269,24 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
@@ -197,7 +324,7 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const PBX_MODAL_SECTION_BG = "var(--bg-main)";
+const PBX_MODAL_SECTION_BG = "#f8fafc";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const OUTBOUND_ROUTE_TOOLTIP_PROPS = {
@@ -304,19 +431,19 @@ const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   );
 };
 
-const outboundRouteDualListLabelStyle = {
+const pbxDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "var(--text-primary)",
+  color: "#3E5475",
   textAlign: "center",
   marginBottom: 8,
 };
 
-const outboundRouteDualListSelectStyle = {
+const pbxDualListSelectStyle = {
   width: "100%",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-main)",
+  background: "#fff",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
@@ -325,27 +452,48 @@ const outboundRouteDualListSelectStyle = {
   overflowY: "auto",
 };
 
-const OUTBOUND_ROUTE_DUAL_LIST_BTN =
-  "box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] leading-none text-[#111827] hover:bg-[#c5cbd3]";
+const pbxDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
 
-const OutboundRouteDualListBtn = ({ onClick, title, children, reorder = false }) => (
+const PbxDualListBtn = ({ onClick, title, children }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    className={`${OUTBOUND_ROUTE_DUAL_LIST_BTN} ${reorder ? "font-normal" : "font-semibold"}`}
+    style={pbxDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
   >
     {children}
   </button>
 );
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -367,7 +515,7 @@ const muiTextFieldSx = {
 const muiSelectInnerSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -380,7 +528,7 @@ const muiSelectInnerSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "var(--bg-surface)",
+  backgroundColor: "#fff",
   ...muiSelectInnerSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
@@ -408,7 +556,7 @@ const modalTextFieldFullSx = {
     padding: "7px 10px",
     fontSize: 13,
     boxSizing: "border-box",
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
 };
 
@@ -418,7 +566,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
 };
 
@@ -430,8 +578,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-surface)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -485,7 +633,7 @@ const nativeFieldInteraction = {
 const getNativeFieldInteraction = (disabled) =>
   disabled ? {} : nativeFieldInteraction;
 
-const outboundRouteModalPaperSx = {
+const trunkModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
@@ -496,43 +644,102 @@ const outboundRouteModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const DIALOG_TITLE =
-  "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
+const trunkModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
 
-const outboundRouteModalActionsCls =
-  "!flex !justify-center !gap-[16px] ![padding:16px_24px] bg-[var(--bg-main)] border-t border-[var(--border-strong)] rounded-b-[8px]";
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
 
-const OUTBOUND_ROUTE_MENU_ITEM_SX = { fontSize: 13 };
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
 
-const OUTBOUND_ROUTE_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const OUTBOUND_ROUTE_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
-const OUTBOUND_ROUTE_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
-const OUTBOUND_ROUTE_TOOLBAR_LEFT =
-  "flex min-w-0 flex-1 items-center gap-[8px]";
-const OUTBOUND_ROUTE_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const OUTBOUND_ROUTE_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const OUTBOUND_ROUTE_PAGE_BADGE =
-  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const OUTBOUND_ROUTE_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
 
-const OutboundRoutePagination = ({
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const SipPcmPagination = ({
   page,
   totalPages,
   recordCount,
   onPageChange,
   recordLabel = "record",
-  className = "",
+  style,
 }) => (
-  <div className={`${OUTBOUND_ROUTE_PAGINATION} ${className}`.trim()}>
-    <span className="text-[11px] text-[#94a3b8]">
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div className="flex items-center gap-[8px]">
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
@@ -540,7 +747,7 @@ const OutboundRoutePagination = ({
       >
         ← Prev
       </Btn>
-      <span className={OUTBOUND_ROUTE_PAGE_BADGE}>
+      <span style={sipPcmPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -1369,10 +1576,8 @@ const OutboundRoutesPage = () => {
     rows.some((_, index) => selected.includes(index)) && !allRowsSelected;
 
   return (
-    <div
-      className={`box-border min-h-[calc(100vh-80px)] bg-[var(--bg-main)] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
-    >
-      <div className="mx-auto w-full max-w-full">
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={pbxPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
@@ -1392,21 +1597,43 @@ const OutboundRoutesPage = () => {
 
         <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
 
-        <div className={OUTBOUND_ROUTE_CARD}>
+        <div style={sipPcmCardStyle}>
           <div
-            className={`${OUTBOUND_ROUTE_TOOLBAR} ${isCompact ? OUTBOUND_ROUTE_TOOLBAR_COMPACT : ""}`.trim()}
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
-            <div className={OUTBOUND_ROUTE_TOOLBAR_LEFT}>              {selected.length > 0 && (
-                <span className={OUTBOUND_ROUTE_SELECTED_BADGE}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              {selected.length > 0 && (
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div className={OUTBOUND_ROUTE_TOOLBAR_ACTIONS}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
                 variant="cancel"
+                style={sipPcmCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1415,6 +1642,7 @@ const OutboundRoutesPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save || loading.list}
                 variant="primary"
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1533,7 +1761,7 @@ const OutboundRoutesPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1723,7 +1951,7 @@ const OutboundRoutesPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <OutboundRoutePagination
+            <SipPcmPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1740,14 +1968,14 @@ const OutboundRoutesPage = () => {
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
-        PaperProps={{ sx: outboundRouteModalPaperSx }}
+        PaperProps={{ sx: trunkModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle className={DIALOG_TITLE}>
+        <DialogTitle style={trunkModalTitleStyle}>
           {editId != null ? "Edit Outbound Route" : "Add Outbound Route"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "var(--bg-surface)" }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
@@ -1757,7 +1985,7 @@ const OutboundRoutesPage = () => {
               maxWidth: "100%",
               boxSizing: "border-box",
               overflow: "hidden",
-              background: "var(--row-alt)",
+              background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
@@ -1821,7 +2049,7 @@ const OutboundRoutesPage = () => {
                         sx={modalSelectSx}
                       >
                         {REMEMORY_HUNT_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={OUTBOUND_ROUTE_MENU_ITEM_SX}>
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                             {opt}
                           </MenuItem>
                         ))}
@@ -1848,7 +2076,7 @@ const OutboundRoutesPage = () => {
                       sx={modalSelectSx}
                     >
                       {ENABLE_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={OUTBOUND_ROUTE_MENU_ITEM_SX}>
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
                       ))}
@@ -1866,7 +2094,7 @@ const OutboundRoutesPage = () => {
                       sx={modalSelectSx}
                     >
                       {PASSWORD_OPTIONS.map((opt) => (
-                        <MenuItem key={opt} value={opt} sx={OUTBOUND_ROUTE_MENU_ITEM_SX}>
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
                       ))}
@@ -2072,7 +2300,7 @@ const OutboundRoutesPage = () => {
                 }}
               >
                 <div>
-                  <div style={outboundRouteDualListLabelStyle}>Available</div>
+                  <div style={pbxDualListLabelStyle}>Available</div>
                   <select
                     multiple
                     size={6}
@@ -2085,7 +2313,7 @@ const OutboundRoutesPage = () => {
                         ),
                       )
                     }
-                    style={outboundRouteDualListSelectStyle}
+                    style={pbxDualListSelectStyle}
                   >
                     {loading.members ? (
                       <option>Loading extensions...</option>
@@ -2108,21 +2336,21 @@ const OutboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <OutboundRouteDualListBtn onClick={addSelectedExtensions}>
+                  <PbxDualListBtn onClick={addSelectedExtensions}>
                     &gt;
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn onClick={addAllExtensions}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllExtensions}>
                     &gt;&gt;
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn onClick={removeSelectedExtensions}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeSelectedExtensions}>
                     &lt;
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn onClick={removeAllExtensions}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeAllExtensions}>
                     &lt;&lt;
-                  </OutboundRouteDualListBtn>
+                  </PbxDualListBtn>
                 </div>
                 <div>
-                  <div style={outboundRouteDualListLabelStyle}>Selected</div>
+                  <div style={pbxDualListLabelStyle}>Selected</div>
                   <select
                     multiple
                     size={6}
@@ -2135,7 +2363,7 @@ const OutboundRoutesPage = () => {
                         ),
                       )
                     }
-                    style={outboundRouteDualListSelectStyle}
+                    style={pbxDualListSelectStyle}
                   >
                     {memberExtensions.length === 0 ? (
                       <option disabled>No selected extensions</option>
@@ -2156,30 +2384,30 @@ const OutboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <OutboundRouteDualListBtn
+                  <PbxDualListBtn
                     reorder
                     title="Move to bottom"
                     onClick={moveExtToBottom}
                   >
                     vv
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn reorder title="Move up" onClick={moveExtUp}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move up" onClick={moveExtUp}>
                     ^
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
                     reorder
                     title="Move down"
                     onClick={moveExtDown}
                   >
                     v
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
                     reorder
                     title="Move to top"
                     onClick={moveExtToTop}
                   >
                     ^^
-                  </OutboundRouteDualListBtn>
+                  </PbxDualListBtn>
                 </div>
               </div>
             </SectionCard>
@@ -2193,7 +2421,7 @@ const OutboundRoutesPage = () => {
                 }}
               >
                 <div>
-                  <div style={outboundRouteDualListLabelStyle}>Available</div>
+                  <div style={pbxDualListLabelStyle}>Available</div>
                   <select
                     multiple
                     size={6}
@@ -2206,7 +2434,7 @@ const OutboundRoutesPage = () => {
                         ),
                       )
                     }
-                    style={outboundRouteDualListSelectStyle}
+                    style={pbxDualListSelectStyle}
                   >
                     {loading.trunks ? (
                       <option>Loading trunks...</option>
@@ -2229,21 +2457,21 @@ const OutboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <OutboundRouteDualListBtn onClick={addSelectedTrunks}>
+                  <PbxDualListBtn onClick={addSelectedTrunks}>
                     &gt;
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn onClick={addAllTrunks}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={addAllTrunks}>
                     &gt;&gt;
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn onClick={removeSelectedTrunks}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeSelectedTrunks}>
                     &lt;
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn onClick={removeAllTrunks}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn onClick={removeAllTrunks}>
                     &lt;&lt;
-                  </OutboundRouteDualListBtn>
+                  </PbxDualListBtn>
                 </div>
                 <div>
-                  <div style={outboundRouteDualListLabelStyle}>Selected</div>
+                  <div style={pbxDualListLabelStyle}>Selected</div>
                   <select
                     multiple
                     size={6}
@@ -2256,7 +2484,7 @@ const OutboundRoutesPage = () => {
                         ),
                       )
                     }
-                    style={outboundRouteDualListSelectStyle}
+                    style={pbxDualListSelectStyle}
                   >
                     {memberTrunks.length === 0 ? (
                       <option disabled>No selected trunks</option>
@@ -2277,48 +2505,61 @@ const OutboundRoutesPage = () => {
                     paddingTop: 28,
                   }}
                 >
-                  <OutboundRouteDualListBtn
+                  <PbxDualListBtn
                     reorder
                     title="Move to bottom"
                     onClick={moveTrunkToBottom}
                   >
                     vv
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn reorder title="Move up" onClick={moveTrunkUp}>
+                  </PbxDualListBtn>
+                  <PbxDualListBtn reorder title="Move up" onClick={moveTrunkUp}>
                     ^
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
                     reorder
                     title="Move down"
                     onClick={moveTrunkDown}
                   >
                     v
-                  </OutboundRouteDualListBtn>
-                  <OutboundRouteDualListBtn
+                  </PbxDualListBtn>
+                  <PbxDualListBtn
                     reorder
                     title="Move to top"
                     onClick={moveTrunkToTop}
                   >
                     ^^
-                  </OutboundRouteDualListBtn>
+                  </PbxDualListBtn>
                 </div>
               </div>
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions className={outboundRouteModalActionsCls}>
+        <DialogActions
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
+          }}
+        >
           <Btn
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            variant="dialogPrimary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save && <CircularProgress size={20} color="inherit" />}
             {loading.save ? "Saving..." : "Save"}
           </Btn>
           <Btn
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            variant="dialogCancel"
+            style={pbxModalCancelBtnStyle}
           >
             Close
           </Btn>

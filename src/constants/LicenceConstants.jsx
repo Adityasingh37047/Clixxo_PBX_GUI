@@ -36,7 +36,7 @@ export const LICENSE_STATUS_DISPLAY = {
     label: 'Unknown',
     color: 'default',
     bgColor: 'bg-gray-100',
-    textColor: 'text-[var(--text-secondary)]'
+    textColor: 'text-gray-700'
   }
 };
 

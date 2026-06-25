@@ -135,7 +135,7 @@ const Layout = () => {
   const contentWidth = isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`;
 
   return (
-    <div className="min-h-screen theme-page-bg" style={{ overflow: "hidden" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#eef2f7", overflow: "hidden" }}>
       <Navbar
         isMobile={isMobile}
         sidebarOpen={sidebarOpen}
@@ -159,15 +159,16 @@ const Layout = () => {
           marginTop: NAVBAR_HEIGHT,
           height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
           overflowY: "auto",
-          backgroundColor: "var(--bg-main)",
+          backgroundColor: "#eef2f7",
           width: contentWidth,
           boxSizing: "border-box",
-          transition: "margin-left 0.2s ease, width 0.2s ease, background-color 0.25s ease",
+          transition: "margin-left 0.2s ease, width 0.2s ease",
         }}
       >
         <div
-          className="w-full theme-page-bg clixxo-app-shell"
+          className="w-full"
           style={{
+            backgroundColor: "#eef2f7",
             padding: isMobile ? "8px" : "16px",
             boxSizing: "border-box",
           }}

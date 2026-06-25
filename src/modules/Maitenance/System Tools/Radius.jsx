@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material";
 import {
@@ -14,35 +14,26 @@ import {
   FormControlLabel,
   Alert,
 } from "@mui/material";
-// ΓöÇΓöÇ Color palette (same as AccountManage) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── Color palette (same as AccountManage) ────────────────────────────────────
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  divider: "var(--border-subtle)",
-  cardShadow: "var(--shadow-soft)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  strongText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
   accent: "#0284c7",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
-
-const SYS_TOAST_SX = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
-};
-// ΓöÇΓöÇ Local field UI (inlined from maitenanceSharedUi) ΓöÇΓöÇ
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+// ── Local field UI (inlined from maitenanceSharedUi) ──
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -128,20 +119,20 @@ const systemToolsFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   fontSize: 14,
   width: "100%",
-  backgroundColor: "var(--row-alt)",
+  backgroundColor: "#f8fafc",
   outline: "none",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   boxShadow: "none",
 };
 
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "var(--bg-main)";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "var(--bg-muted)";
+const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
+const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-main)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -160,10 +151,10 @@ const muiTextFieldSx = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "var(--bg-main)",
+  backgroundColor: "#fff",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "var(--bg-main)",
+    backgroundColor: "#fff",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -264,41 +255,88 @@ const tooltips = {
   transmitInterval: "Specifies the transmit interval of charge alive package(s).",
   callType: "Specifies the call type.",
 };
-// ΓöÇΓöÇ Button Component (same as AccountManage) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
-const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
-const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
+// ── Button Component (same as AccountManage) ─────────────────────────────────
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+  component,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
 
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  error: BTN_ERROR,
-  delete: BTN_DELETE,
-  edit: BTN_EDIT,
-  danger: BTN_ERROR,
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  const Component = component || "button";
+
+  return (
+    <Component
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 36,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
+      {children}
+    </Component>
+  );
 };
-
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, startIcon }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {startIcon && <span className="inline-flex items-center">{startIcon}</span>}
-    {children}
-  </button>
-);
 
 const tableContainerStyle = {
   width: "100%",
@@ -326,14 +364,14 @@ const blueBarStyle = {
   gap: 12,
   fontWeight: 700,
   fontSize: 13,
-  color: "var(--text-primary)",
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
 
 const callTypeCheckboxSx = {
   padding: "6px 8px",
   "& .MuiSvgIcon-root": { fontSize: 20 },
-  color: "var(--text-muted)",
+  color: "#64748b",
   "&.Mui-checked": { color: C.accent },
 };
 
@@ -415,21 +453,28 @@ const Radius = () => {
 
   return (
     <div
-      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
-      {/* ΓöÇΓöÇ Alerts ΓöÇΓöÇ */}
+      {/* ── Alerts ── */}
       {toast.msg && (
         <Alert
           severity={toast.type}
           onClose={() => setToast({ msg: "", type: "success" })}
-          sx={SYS_TOAST_SX}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
         >
           {toast.msg}
         </Alert>
       )}
 
-      {/* ΓöÇΓöÇ Breadcrumb ΓöÇΓöÇ */}
+      {/* ── Breadcrumb ── */}
       <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
           style={{
@@ -463,14 +508,14 @@ const Radius = () => {
               >
                 {/* Form Fields Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {/* Enable checkboxes ΓÇö same spacing as Call Type list, tighter rows only */}
+                  {/* Enable checkboxes — same spacing as Call Type list, tighter rows only */}
                   <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
                     {ENABLE_CHECKBOX_FIELDS.map((field) => (
                       <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words">
+                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
                           <Tooltip title={tooltips[field.name]} {...tooltipProps}>
                             <span style={{ color: C.labelText }}>
-                              {field.label}
+                            {field.label}
                             </span>
                           </Tooltip>
                         </div>
@@ -489,10 +534,10 @@ const Radius = () => {
                   {RADIUS_FORM_FIELDS.map((field) =>
                     field.type === "checkboxGroup" ? (
                       <React.Fragment key={field.name || "callTypeGroup"}>
-                        <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words">
+                        <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
                           <Tooltip title={tooltips[field.name]} {...tooltipProps}>
                             <span style={{ color: C.labelText }}>
-                              {field.label}
+                            {field.label}
                             </span>
                           </Tooltip>
                         </div>
@@ -511,10 +556,10 @@ const Radius = () => {
                       </React.Fragment>
                     ) : (
                       <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words min-h-[34px]">
+                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[34px]">
                           <Tooltip title={tooltips[field.name]} {...tooltipProps}>
                             <span style={{ color: C.labelText }}>
-                              {field.label}
+                            {field.label}
                             </span>
                           </Tooltip>
                         </div>

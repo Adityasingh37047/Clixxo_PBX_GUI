@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   sipRegisterFields,
   SIP_REGISTER_INITIAL_FORM,
@@ -11,6 +11,7 @@ import {
   SIP_REGISTER_HEADER_ID_OPTIONS,
   SIP_REGISTER_CONTACT_OPTIONS,
   SIP_REGISTER_DTMF_OPTIONS,
+  SIP_REGISTER_TOOLTIPS,
 } from "../../../constants/SipRegisterConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +29,7 @@ import {
   MenuItem,
   FormControl,
   Alert,
+  Tooltip,
   CircularProgress,
   IconButton,
   InputAdornment,
@@ -50,35 +52,19 @@ import {
 } from "../../../api/apiService";
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
+// ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
-};
-
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_EMPTY_ADD = `${BTN_CANCEL} px-[24px] py-[8px] text-[12px] rounded-[6px]`;
-
-const btnVariantCls = {
-  default: BTN_OUTLINE,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  dialogPrimary: BTN_DIALOG_PRIMARY,
-  dialogCancel: BTN_DIALOG_CANCEL,
-  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
-  outline: `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`,
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -86,27 +72,93 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  className = "",
-  style,
+  style: extraStyle,
   type,
+  form,
+  component,
   title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -139,19 +191,25 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--border-strong)",
-  "&.Mui-checked": { color: "var(--status-primary)" },
-  "&.MuiCheckbox-indeterminate": { color: "var(--status-primary)" },
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const trunkFormCheckboxLabelSx = {
+  margin: 0,
+  marginLeft: 0,
+  marginRight: 0,
+  alignItems: "center",
+};
+
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-main)",
-    color: "var(--text-primary)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -167,44 +225,6 @@ const muiTextFieldSx = {
       borderColor: OUTLINED_FOCUS,
       borderWidth: 2,
     },
-    "&.Mui-disabled": {
-      backgroundColor: "var(--bg-muted)",
-      "& fieldset": { borderColor: OUTLINED_BORDER },
-    },
-  },
-  "& .MuiOutlinedInput-input": {
-    color: "var(--text-primary)",
-    "&::placeholder": {
-      color: "var(--text-secondary)",
-      opacity: 1,
-    },
-  },
-  "& .MuiOutlinedInput-input.Mui-disabled": {
-    WebkitTextFillColor: "var(--text-muted)",
-    color: "var(--text-muted)",
-  },
-};
-
-const trunkSelectSx = {
-  fontSize: 13,
-  backgroundColor: "var(--bg-main)",
-  color: "var(--text-primary)",
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-  "& .MuiSelect-select": {
-    backgroundColor: "var(--bg-main)",
-    color: "var(--text-primary)",
-  },
-  "& .MuiSelect-icon": {
-    color: "var(--text-secondary)",
   },
 };
 
@@ -227,6 +247,97 @@ const setFieldFocus = (el) => {
   el.style.borderWidth = "1px";
   el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
 };
+
+// ── ToolTips ──────────────────────────────────────────────────────
+const EXTENSION_GROUP_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatGroupTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const TRUNK_FIELD_LABEL_CLASS =
+  "text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0";
+
+const GroupFieldLabel = ({ tooltipKey, children, style = {}, className }) => {
+  const tooltip = SIP_REGISTER_TOOLTIPS[tooltipKey] || "";
+  const LabelTag = className ? "label" : "span";
+
+  const label = (
+    <LabelTag
+      className={className}
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </LabelTag>
+  );
+
+  if (!tooltip) return label;
+
+  return (
+    <Tooltip
+      title={formatGroupTooltipTitle(tooltip)}
+      {...EXTENSION_GROUP_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const TrunkFieldLabel = ({
+  tooltipKey,
+  children,
+  className,
+  required,
+  style,
+}) => (
+  <GroupFieldLabel
+    tooltipKey={tooltipKey}
+    className={className || TRUNK_FIELD_LABEL_CLASS}
+    style={style}
+  >
+    {children}
+    {required ? <span className="text-red-500"> *</span> : null}
+  </GroupFieldLabel>
+);
 
 const nativeFieldInteraction = {
   onFocus: (e) => {
@@ -253,21 +364,50 @@ const nativeFieldInteraction = {
   },
 };
 
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[var(--text-muted)] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[var(--text-primary)]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -277,15 +417,33 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
     {showButton && onAddNew ? (
-      <Btn variant="cancel" onClick={onAddNew} className={BTN_EMPTY_ADD}>
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
         {buttonLabel}
       </Btn>
     ) : null}
@@ -293,12 +451,12 @@ const TableListEmptyState = ({
 );
 
 const PBX_MODAL_TAB_BAR_STYLE = {
-  borderBottom: "1px solid var(--border-subtle)",
-  background: "var(--bg-surface)",
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
 };
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "var(--text-primary)";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "var(--text-secondary)";
+const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
 
 const pbxModalTabsSx = {
   minHeight: 45,
@@ -333,8 +491,9 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const TRUNK_SECTION_HEADING_COLOR = "var(--text-primary)";
-const PBX_MODAL_SECTION_BG = "var(--bg-surface)";
+const TRUNK_SECTION_HEADING_COLOR = "#30415A";
+const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
+const PBX_MODAL_SECTION_BG = "#f8fafc";
 
 const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
   <div
@@ -361,6 +520,72 @@ const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
     </span>
   </div>
 );
+
+const codecDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const parseCodecList = (value) =>
+  (value || "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+
+const validateAllowCodecs = (allowCodecs) => {
+  if (!allowCodecs || allowCodecs.trim() === "") {
+    return "Allow Codecs is required";
+  }
+  return null;
+};
 
 const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
 
@@ -390,28 +615,57 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const DIALOG_TITLE =
-  "!m-0 !box-border !flex-[0_0_auto] bg-[#1e2d42] !text-[#ffffff] ![font-family:Roboto,Helvetica,Arial,sans-serif] ![font-size:16px] ![font-weight:600] ![line-height:1.6] ![letter-spacing:0.0075em] !text-center ![padding:16px_24px] ![border-top-left-radius:8px] ![border-top-right-radius:8px]";
+const trunkModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
 
 const trunkModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
   width: "100%",
-  background: "var(--bg-surface)",
-  border: "1px solid var(--border-subtle)",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   paddingTop: 0,
   paddingBottom: 0,
   boxSizing: "border-box",
-  boxShadow: "var(--shadow-soft)",
 };
 
-const trunkModalActionsCls =
-  "!flex !justify-end !items-center !gap-[12px] ![padding:16px_24px] bg-[var(--bg-surface)] border-t border-[var(--border-subtle)] rounded-b-[8px]";
+const trunkModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: C.pageBg,
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
 
-const MODAL_INPUT_13 = { style: { fontSize: 13 } };
-const MODAL_INPUT_14 = { style: { fontSize: 14 } };
+const trunkModalPrimaryBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  fontSize: 13,
+};
+
+const trunkModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const trunkAdaptRowGridColumns = "1fr 1fr 1fr 32px";
 
 const trunkAdaptTextFieldSx = {
   ...muiTextFieldSx,
@@ -437,7 +691,7 @@ const trunkAdaptRowActionBtnSx = {
   height: 32,
   padding: 0,
   backgroundColor: "#cbd5e1",
-  color: "var(--text-secondary)",
+  color: "#374151",
   "&:hover": {
     backgroundColor: "#b6c2d3",
   },
@@ -451,18 +705,25 @@ const trunkDodCompactInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 6,
   outline: "none",
-  backgroundColor: "var(--bg-main)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   cursor: "text",
 };
 
+const trunkDodToolbarBtnStyle = {
+  height: 30,
+  fontSize: 12,
+  padding: "6px 14px",
+  borderRadius: 10,
+};
+
 const pbxDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "var(--text-primary)",
+  color: "#3E5475",
   textAlign: "center",
   marginBottom: 8,
 };
@@ -470,9 +731,8 @@ const pbxDualListLabelStyle = {
 const pbxDualListSelectStyle = {
   width: "100%",
   height: 160,
-  border: "1px solid var(--border-subtle)",
-  background: "var(--bg-main)",
-  color: "var(--text-primary)",
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
@@ -481,29 +741,111 @@ const pbxDualListSelectStyle = {
   overflowY: "auto",
 };
 
+const pbxDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
 const PbxDualListBtn = ({ onClick, title, children }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    className="box-border m-0 block h-[36px] w-full cursor-pointer border border-[var(--border-subtle)] bg-[var(--bg-muted)] p-0 text-center text-[14px] font-semibold leading-none text-[var(--text-primary)] hover:opacity-90"
+    style={pbxDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
   >
     {children}
   </button>
 );
 
-const SIP_PCM_CARD =
-  "overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-[var(--shadow-soft)]";
-const SIP_PCM_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
-const SIP_PCM_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
-const SIP_PCM_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const SIP_PCM_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const SIP_PCM_PAGE_BADGE =
-  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const SIP_PCM_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
+const SIP_PCM_TABLE_CARD_RADIUS = 10;
+
+const sipPcmCardStyle = {
+  background: "#ffffff",
+  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+};
+
+const sipPcmToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+};
+
+const sipPcmPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const sipPcmSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const sipPcmCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const sipPcmPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const sipPcmPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
 
 const SipPcmPagination = ({
   page,
@@ -511,22 +853,22 @@ const SipPcmPagination = ({
   recordCount,
   onPageChange,
   recordLabel = "record",
-  className = "",
+  style,
 }) => (
-  <div className={`${SIP_PCM_PAGINATION} ${className}`.trim()}>
-    <span className="text-[11px] text-[#94a3b8]">
+  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
     </span>
-    <div className="flex items-center gap-[8px]">
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         variant="outline"
       >
-        ΓåÉ Prev
+        ← Prev
       </Btn>
-      <span className={SIP_PCM_PAGE_BADGE}>
+      <span style={sipPcmPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -534,7 +876,7 @@ const SipPcmPagination = ({
         disabled={page >= totalPages}
         variant="outline"
       >
-        Next ΓåÆ
+        Next →
       </Btn>
     </div>
   </div>
@@ -672,7 +1014,7 @@ const sipRegisterModifyCellStyle = {
   borderRight: "none",
 };
 
-/** 100% ΓÇö headers may use 2 lines; data stays single line */
+/** 100% — headers may use 2 lines; data stays single line */
 const sipRegisterHeaderCellStyle100 = {
   whiteSpace: "normal",
   overflow: "visible",
@@ -718,7 +1060,7 @@ const sipRegisterFieldColumnWidths = {
   identity_ip: 130,
 };
 
-/** 100% zoom ΓÇö fits headers + longest SIP value on one line, no horizontal scroll */
+/** 100% zoom — fits headers + longest SIP value on one line, no horizontal scroll */
 const sipRegisterFieldColumnPercents = {
   trunk_id: "7%",
   username: "10%",
@@ -758,7 +1100,7 @@ const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
 
 /** Locked at ~100% browser zoom. Do NOT refresh while Ctrl+/- shrinks innerWidth. */
 const sipRegisterZoomBaselineRef = { innerWidth: 0, dpr: 1 };
-/** Ctrl+/ΓêÆ steps from 100% (Chrome: 100ΓåÆ110ΓåÆ125ΓÇª; ΓëÑ2 Γëê 125%). */
+/** Ctrl+/− steps from 100% (Chrome: 100→110→125…; ≥2 ≈ 125%). */
 const sipRegisterZoomStepsRef = { current: 0 };
 
 const lockSipRegisterZoomBaseline = (force = false) => {
@@ -780,7 +1122,7 @@ const syncSipRegisterZoomBaselineIfWindowWidened = () => {
   }
 };
 
-/** Scroll at ΓëÑ115% (Ctrl+ ├ù2 Γëê 125%). Γëñ100% incl. 90%/80% = no scroll. */
+/** Scroll at ≥115% (Ctrl+ ×2 ≈ 125%). ≤100% incl. 90%/80% = no scroll. */
 const SIP_REGISTER_ZOOM_SCROLL_MIN = 1.14;
 const SIP_REGISTER_ZOOM_SCROLL_STEPS = 2;
 
@@ -916,6 +1258,8 @@ const SipRegisterPage = () => {
   const [dnisRows, setDnisRows] = useState([
     { dnisNumber: "", dnisName: "", replaceCid: "No" },
   ]);
+  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
+  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
   const [ethPortOptions, setEthPortOptions] = useState(
     SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
   );
@@ -958,6 +1302,121 @@ const SipRegisterPage = () => {
       window.visualViewport?.removeEventListener("resize", measureContainer);
     };
   }, [trunks.length, allowHorizontalScroll]);
+
+  const selectedCodecList = useMemo(
+    () => parseCodecList(form.allow_codecs),
+    [form.allow_codecs],
+  );
+
+  const availableCodecList = useMemo(
+    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    [selectedCodecList],
+  );
+
+  const getCodecLabel = (value) =>
+    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const updateCodecList = (newList) => {
+    const newCodecsString = newList.join(",");
+
+    if (validationErrors.allow_codecs) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.allow_codecs;
+        return newErrors;
+      });
+    }
+
+    const codecError = validateAllowCodecs(newCodecsString);
+    if (codecError) {
+      setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
+    }
+
+    setForm((prev) => ({ ...prev, allow_codecs: newCodecsString }));
+  };
+
+  const addSelectedCodecs = () => {
+    if (!codecAvailableSelected.length) return;
+    updateCodecList([
+      ...selectedCodecList,
+      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
+    ]);
+    setCodecAvailableSelected([]);
+  };
+
+  const addAllCodecs = () => {
+    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    setCodecAvailableSelected([]);
+  };
+
+  const removeSelectedCodecs = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
+    );
+    setCodecChosenSelected([]);
+  };
+
+  const removeAllCodecs = () => {
+    updateCodecList([]);
+    setCodecChosenSelected([]);
+  };
+
+  const moveCodecToBottom = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...rest, ...moving];
+      })(),
+    );
+  };
+
+  const moveCodecUp = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        codecChosenSelected.forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx > 0) {
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecDown = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        [...codecChosenSelected].reverse().forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx >= 0 && idx < next.length - 1) {
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecToTop = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...moving, ...rest];
+      })(),
+    );
+  };
 
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
     "None",
@@ -1399,7 +1858,7 @@ const SipRegisterPage = () => {
         : [{ matchMode: "", strip: "", prepend: "" }];
 
       const result = {
-        index: index.toString(),
+        index: (index + 1).toString(),
 
         // Table fields (legacy list rendering)
         trunk_id: trunkId,
@@ -1624,11 +2083,18 @@ const SipRegisterPage = () => {
     setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
     setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
     setValidationErrors({});
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
     if (row && idx !== null) {
       const uiReg =
         row.ui_register ??
         (String(row.expire_in_sec ?? "") === "0" ? "No" : "Yes");
-      setForm({ ...SIP_REGISTER_INITIAL_FORM, ...row, ui_register: uiReg });
+      setForm({
+        ...SIP_REGISTER_INITIAL_FORM,
+        ...row,
+        ui_register: uiReg,
+        allow_codecs: row.allow_codecs || "ulaw,alaw",
+      });
       setEditIndex(idx);
       setDodRows(Array.isArray(row.dodRows) ? row.dodRows : []);
       setAdaptRows(
@@ -1666,6 +2132,8 @@ const SipRegisterPage = () => {
     setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
     setShowPassword(false); // Reset password visibility when closing modal
     setValidationErrors({}); // Clear validation errors when closing modal
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
   };
   const handleChange = (key, value) => {
     setForm((prev) => {
@@ -1755,52 +2223,6 @@ const SipRegisterPage = () => {
     }
   };
 
-  const handleCodecChange = (codec, checked) => {
-    setForm((prev) => {
-      const currentCodecs = prev.allow_codecs
-        ? prev.allow_codecs.split(",").map((c) => c.trim())
-        : [];
-      let newCodecs;
-
-      if (checked) {
-        // Add codec if not already present
-        if (!currentCodecs.includes(codec)) {
-          newCodecs = [...currentCodecs, codec];
-        } else {
-          newCodecs = currentCodecs;
-        }
-      } else {
-        // Remove codec
-        newCodecs = currentCodecs.filter((c) => c !== codec);
-      }
-
-      const newCodecsString = newCodecs.join(",");
-
-      // Clear validation error for allow_codecs when user changes codecs
-      if (validationErrors.allow_codecs) {
-        setValidationErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.allow_codecs;
-          return newErrors;
-        });
-      }
-
-      // Real-time validation
-      const codecError = validateAllowCodecs(newCodecsString);
-      if (codecError) {
-        setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
-      }
-
-      return { ...prev, allow_codecs: newCodecsString };
-    });
-  };
-
-  const isCodecSelected = (codec) => {
-    if (!form.allow_codecs) return false;
-    const currentCodecs = form.allow_codecs.split(",").map((c) => c.trim());
-    return currentCodecs.includes(codec);
-  };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -1830,13 +2252,6 @@ const SipRegisterPage = () => {
   const validateContext = (context) => {
     if (!context || context.trim() === "") {
       return "Context is required";
-    }
-    return null;
-  };
-
-  const validateAllowCodecs = (allowCodecs) => {
-    if (!allowCodecs || allowCodecs.trim() === "") {
-      return "Allow Codecs is required";
     }
     return null;
   };
@@ -2265,10 +2680,8 @@ const SipRegisterPage = () => {
   };
 
   return (
-    <div
-      className={`box-border min-h-[calc(100vh-80px)] bg-[var(--bg-main)] ${isCompact ? "p-[8px]" : "p-[16px]"}`}
-    >
-      <div className="mx-auto w-full max-w-full">
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={pbxPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
@@ -2288,22 +2701,35 @@ const SipRegisterPage = () => {
 
         <PbxBreadcrumb section="Trunks" current="SIP Register" />
 
-        <div className={SIP_PCM_CARD}>
+        <div style={sipPcmCardStyle}>
           <div
-            className={`${SIP_PCM_TOOLBAR} ${isCompact ? SIP_PCM_TOOLBAR_COMPACT : ""}`.trim()}
+            style={{
+              ...sipPcmToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
-            <div className="flex items-center gap-[8px]">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
-                <span className={SIP_PCM_SELECTED_BADGE}>
+                <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div className={SIP_PCM_TOOLBAR_ACTIONS}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete}
+                style={sipPcmCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -2311,6 +2737,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || trunks.length === 0}
+                style={sipPcmCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -2318,6 +2745,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selectedIds.length === 0}
+                style={sipPcmCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -2332,6 +2760,7 @@ const SipRegisterPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch}
+                style={sipPcmPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -2501,10 +2930,10 @@ const SipRegisterPage = () => {
                             selectedIds.includes(trunk.trunk_id);
                           const isLastRow = idx === pagedRows.length - 1;
                           const rowBg = isSelected
-                            ? "var(--row-selected)"
+                            ? "#f0f9ff"
                             : idx % 2 === 1
-                              ? "var(--row-alt)"
-                              : "var(--bg-surface)";
+                              ? "#f8fafc"
+                              : "#ffffff";
                           const lastRowCellStyle = isLastRow
                             ? { borderBottom: "none" }
                             : {};
@@ -2519,7 +2948,7 @@ const SipRegisterPage = () => {
                               }}
                               onMouseEnter={(e) => {
                                 if (!isSelected)
-                                  e.currentTarget.style.background = "var(--row-alt)";
+                                  e.currentTarget.style.background = "#f1f5f9";
                               }}
                               onMouseLeave={(e) => {
                                 if (!isSelected)
@@ -2580,7 +3009,7 @@ const SipRegisterPage = () => {
                                       ? `sip:${value}`
                                       : hasValue
                                         ? value
-                                        : "ΓÇö";
+                                        : "—";
                                   return (
                                     <td
                                       key={field.name}
@@ -2588,9 +3017,6 @@ const SipRegisterPage = () => {
                                       style={{
                                         ...tdStyle,
                                         background: rowBg,
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
                                         fontWeight:
                                           field.name === "trunk_id" ? 600 : 400,
                                         ...getSipRegisterDataCellStyle(
@@ -2626,7 +3052,7 @@ const SipRegisterPage = () => {
                                     />
                                   ) : (
                                     <span style={{ color: C.mutedText }}>
-                                      ΓÇö
+                                      —
                                     </span>
                                   )}
                                 </div>
@@ -2707,7 +3133,7 @@ const SipRegisterPage = () => {
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle className={DIALOG_TITLE}>
+        <DialogTitle style={trunkModalTitleStyle}>
           {editIndex !== null ? "Edit SIP Register" : "Add SIP Register"}
         </DialogTitle>
 
@@ -2726,7 +3152,7 @@ const SipRegisterPage = () => {
         <DialogContent
           style={{
             padding: "20px",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
           }}
         >
           <style>
@@ -2735,13 +3161,13 @@ const SipRegisterPage = () => {
         .sip-reg .MuiSelect-root,
         .sip-reg .MuiSelect-select,
         .sip-reg .MuiInputBase-root input {
-          background: var(--bg-main) !important;
-          color: var(--text-primary) !important;
+          background: #ffffff !important;
           border-radius: 6px !important;
         }
 
         .sip-reg .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-          border: 1px solid ${OUTLINED_BORDER} !important;
+          border-color: ${OUTLINED_BORDER} !important;
+          border-width: 1px !important;
         }
 
         .sip-reg .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
@@ -2753,16 +3179,12 @@ const SipRegisterPage = () => {
           border-width: 2px !important;
         }
 
-        .sip-reg .MuiOutlinedInput-input::placeholder,
-        .sip-reg input::placeholder {
-          color: var(--text-secondary) !important;
-          opacity: 1 !important;
-        }
+        
 
         .sip-reg label,
         .sip-reg .MuiFormControlLabel-label,
         .sip-reg .MuiInputLabel-root {
-          color: var(--text-primary) !important;
+          color: ${TRUNK_FIELD_LABEL_COLOR} !important;
         }
 
         .sip-reg label {
@@ -2775,31 +3197,24 @@ const SipRegisterPage = () => {
           font-weight: 600 !important;
         }
 
-        .sip-reg .MuiRadio-root,
-        .sip-reg .MuiCheckbox-root {
-          color: var(--border-strong);
+        .sip-reg .MuiFormControlLabel-root {
+          margin: 0 !important;
+          margin-left: 0 !important;
+          align-items: center !important;
         }
 
-        .sip-reg .MuiRadio-root.Mui-checked,
-        .sip-reg .MuiCheckbox-root.Mui-checked {
-          color: var(--status-primary);
-        }
-
-        .sip-reg .MuiSelect-icon {
-          color: var(--text-secondary);
-        }
       `}
           </style>
 
-          <div className="sip-reg clixxo-form-panel" style={trunkModalFormPanelStyle}>
+          <div className="sip-reg" style={trunkModalFormPanelStyle}>
             {modalTab === "basic" && (
               <div className="p-3 sm:p-5">
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Trunk Type <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="trunk_type">
+                        Trunk Type
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <RadioGroup
                           row
@@ -2817,9 +3232,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Trunk Name <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="trunk_name" required>
+                        Trunk Name
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -2831,7 +3246,7 @@ const SipRegisterPage = () => {
                           error={!!validationErrors.trunk_id}
                           placeholder="Trunk Name"
                           disabled={editIndex !== null}
-                          inputProps={MODAL_INPUT_13}
+                          inputProps={{ style: { fontSize: 13 } }}
                         />
                         {validationErrors.trunk_id && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -2841,9 +3256,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Select Country <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="select_country" required>
+                        Select Country
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl
                           fullWidth
@@ -2855,7 +3270,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_country", e.target.value)
                             }
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -2872,9 +3287,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="transport">
                         Transport
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -2882,7 +3297,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_transport", e.target.value)
                             }
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -2894,10 +3309,10 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="enable_srtp">
                         Enable SRTP
-                      </label>
-                      <div className="flex-1 min-w-0">
+                      </TrunkFieldLabel>
+                      <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -2910,16 +3325,14 @@ const SipRegisterPage = () => {
                             />
                           }
                           label=""
-                          sx={{
-                            checkboxSx,
-                          }}
+                          sx={trunkFormCheckboxLabelSx}
                         />
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Register <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="register" required>
+                        Register
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -2927,7 +3340,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_register", e.target.value)
                             }
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -2941,7 +3354,7 @@ const SipRegisterPage = () => {
                     {form.ui_register === "Yes" && (
                       <>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                             Username <span className="text-red-500">*</span>
                           </label>
                           <div className="flex-1 min-w-0">
@@ -2954,7 +3367,7 @@ const SipRegisterPage = () => {
                               }
                               error={!!validationErrors.username}
                               placeholder="Username"
-                              inputProps={MODAL_INPUT_14}
+                              inputProps={{ style: { fontSize: 14 } }}
                             />
                             {validationErrors.username && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -2965,7 +3378,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                             Auth Username
                           </label>
                           <div className="flex-1 min-w-0">
@@ -2976,14 +3389,14 @@ const SipRegisterPage = () => {
                               onChange={(e) =>
                                 handleChange("auth_username", e.target.value)
                               }
-                              inputProps={MODAL_INPUT_14}
+                              inputProps={{ style: { fontSize: 14 } }}
                               placeholder="Auth Username"
                             />
                           </div>
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                             RegFail Retry{" "}
                             <span className="text-red-500">*</span>
                           </label>
@@ -3000,7 +3413,7 @@ const SipRegisterPage = () => {
                               }
                               error={!!validationErrors.ui_reg_fail_retry}
                               placeholder="30"
-                              inputProps={MODAL_INPUT_14}
+                              inputProps={{ style: { fontSize: 14 } }}
                             />
                             {validationErrors.ui_reg_fail_retry && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3012,9 +3425,9 @@ const SipRegisterPage = () => {
                       </>
                     )}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="outbound_cid_source">
                         Outbound CallerId Source
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3026,12 +3439,12 @@ const SipRegisterPage = () => {
                               )
                             }
                             displayEmpty
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
                               (c) => (
                                 <MenuItem key={c || "_empty"} value={c}>
-                                  {c || <em>ΓÇö</em>}
+                                  {c || <em>—</em>}
                                 </MenuItem>
                               ),
                             )}
@@ -3042,9 +3455,9 @@ const SipRegisterPage = () => {
                   </div>
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="record">
                         Record
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3052,7 +3465,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_record", e.target.value)
                             }
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3064,9 +3477,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Enabled <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="enabled" required>
+                        Enabled
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3074,7 +3487,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_enabled", e.target.value)
                             }
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3086,9 +3499,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Eth Port <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="eth_port" required>
+                        Eth Port
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3096,7 +3509,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_eth_port", e.target.value)
                             }
-                            sx={trunkSelectSx}
+                            sx={{ fontSize: 13 }}
                           >
                             {(ethPortOptions.length
                               ? ethPortOptions
@@ -3114,9 +3527,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Trunk IP/Domain <span className="text-red-500">*</span>
-                      </label>
+                      <TrunkFieldLabel tooltipKey="trunk_ip_domain" required>
+                        Trunk IP/Domain
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3127,7 +3540,7 @@ const SipRegisterPage = () => {
                           }
                           error={!!validationErrors.provider}
                           placeholder="host:port or domain"
-                          inputProps={MODAL_INPUT_13}
+                          inputProps={{ style: { fontSize: 13 } }}
                         />
                         {validationErrors.provider && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3136,56 +3549,58 @@ const SipRegisterPage = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        Show Outbound CallerID Name
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={!!form.ui_show_outbound_cid_name}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_show_outbound_cid_name",
-                                  e.target.checked,
-                                )
-                              }
-                              size="small"
-                              sx={checkboxSx}
-                            />
-                          }
-                          label=""
-                          sx={checkboxSx}
-                        />
-                      </div>
-                    </div>
-                    {form.ui_show_outbound_cid_name && (
+                    <div className="w-full">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                          Outbound CallerId Name
-                        </label>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form.ui_outbound_cid_name}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_outbound_cid_name",
-                                e.target.value,
-                              )
+                        <TrunkFieldLabel tooltipKey="show_outbound_cid_name">
+                          Show Outbound CallerID Name
+                        </TrunkFieldLabel>
+                        <div className="flex-1 min-w-0 flex items-center justify-start">
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={!!form.ui_show_outbound_cid_name}
+                                onChange={(e) =>
+                                  handleChange(
+                                    "ui_show_outbound_cid_name",
+                                    e.target.checked,
+                                  )
+                                }
+                                size="small"
+                                sx={checkboxSx}
+                              />
                             }
-                            inputProps={MODAL_INPUT_13}
+                            label=""
+                            sx={trunkFormCheckboxLabelSx}
                           />
                         </div>
                       </div>
-                    )}
+                      {form.ui_show_outbound_cid_name && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                          <TrunkFieldLabel tooltipKey="outbound_cid_name">
+                            Outbound CallerId Name
+                          </TrunkFieldLabel>
+                          <div className="flex-1 min-w-0">
+                            <TextField
+                              size="small"
+                              fullWidth
+                              value={form.ui_outbound_cid_name}
+                              onChange={(e) =>
+                                handleChange(
+                                  "ui_outbound_cid_name",
+                                  e.target.value,
+                                )
+                              }
+                              inputProps={{ style: { fontSize: 13 } }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="outbound_cid_number">
                         Outbound CallerId Number
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3197,7 +3612,7 @@ const SipRegisterPage = () => {
                               e.target.value,
                             )
                           }
-                          inputProps={MODAL_INPUT_13}
+                          inputProps={{ style: { fontSize: 13 } }}
                         />
                       </div>
                     </div>
@@ -3205,7 +3620,7 @@ const SipRegisterPage = () => {
                     {form.ui_register === "Yes" && (
                       <>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                             Password <span className="text-red-500">*</span>
                           </label>
                           <div className="flex-1 min-w-0">
@@ -3218,7 +3633,7 @@ const SipRegisterPage = () => {
                                 handleChange("password", e.target.value)
                               }
                               error={!!validationErrors.password}
-                              inputProps={MODAL_INPUT_14}
+                              inputProps={{ style: { fontSize: 14 } }}
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
@@ -3246,7 +3661,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                             Expire Seconds{" "}
                             <span className="text-red-500">*</span>
                           </label>
@@ -3259,7 +3674,7 @@ const SipRegisterPage = () => {
                                 handleChange("expire_in_sec", e.target.value)
                               }
                               error={!!validationErrors.expire_in_sec}
-                              inputProps={MODAL_INPUT_14}
+                              inputProps={{ style: { fontSize: 14 } }}
                             />
                             {validationErrors.expire_in_sec && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3270,7 +3685,7 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
                             Match Username{" "}
                             <span className="text-red-500">*</span>
                           </label>
@@ -3305,55 +3720,57 @@ const SipRegisterPage = () => {
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                            Enable Proxy
-                          </label>
-                          <div className="flex-1 min-w-0 flex items-center">
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={!!form.ui_enable_proxy}
-                                  onChange={(e) =>
-                                    handleChange(
-                                      "ui_enable_proxy",
-                                      e.target.checked,
-                                    )
-                                  }
-                                  size="small"
-                                  sx={checkboxSx}
-                                />
-                              }
-                              label=""
-                              sx={checkboxSx}
-                            />
-                          </div>
-                        </div>
-
-                        {form.ui_enable_proxy && (
+                        <div className="w-full">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                              Proxy IP <span className="text-red-500">*</span>
+                            <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                              Enable Proxy
                             </label>
-                            <div className="flex-1 min-w-0">
-                              <TextField
-                                size="small"
-                                fullWidth
-                                value={form.ui_proxy_ip || ""}
-                                onChange={(e) =>
-                                  handleChange("ui_proxy_ip", e.target.value)
+                            <div className="flex-1 min-w-0 flex items-center justify-start">
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={!!form.ui_enable_proxy}
+                                    onChange={(e) =>
+                                      handleChange(
+                                        "ui_enable_proxy",
+                                        e.target.checked,
+                                      )
+                                    }
+                                    size="small"
+                                    sx={checkboxSx}
+                                  />
                                 }
-                                error={!!validationErrors.ui_proxy_ip}
-                                inputProps={MODAL_INPUT_14}
+                                label=""
+                                sx={trunkFormCheckboxLabelSx}
                               />
-                              {validationErrors.ui_proxy_ip && (
-                                <div className="text-red-500 text-xs mt-0.5">
-                                  {validationErrors.ui_proxy_ip}
-                                </div>
-                              )}
                             </div>
                           </div>
-                        )}
+
+                          {form.ui_enable_proxy && (
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                              <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                                Proxy IP <span className="text-red-500">*</span>
+                              </label>
+                              <div className="flex-1 min-w-0">
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  value={form.ui_proxy_ip || ""}
+                                  onChange={(e) =>
+                                    handleChange("ui_proxy_ip", e.target.value)
+                                  }
+                                  error={!!validationErrors.ui_proxy_ip}
+                                  inputProps={{ style: { fontSize: 14 } }}
+                                />
+                                {validationErrors.ui_proxy_ip && (
+                                  <div className="text-red-500 text-xs mt-0.5">
+                                    {validationErrors.ui_proxy_ip}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
@@ -3362,46 +3779,158 @@ const SipRegisterPage = () => {
             )}
 
             {modalTab === "codec" && (
-              <div className="p-3 sm:p-5 flex flex-col items-center">
-                <p
-                  className="text-[13px] mb-3 text-center"
+              <div className="p-3 sm:p-5">
+                <TrunkModalSectionHeading title="CODEC Priority" isFirst />
+                <div
                   style={{
-                    color: TRUNK_SECTION_HEADING_COLOR,
-                    fontWeight: 600,
+                    display: "grid",
+                    gridTemplateColumns: isCompact
+                      ? "1fr"
+                      : "1fr 48px 1fr 48px",
+                    gap: 12,
+                    maxWidth: 720,
+                    margin: "0 auto",
                   }}
                 >
-                  Select codecs allowed on this trunk (required).
-                </p>
-                <FormGroup
-                  row
-                  sx={{ flexWrap: "wrap", gap: 1, justifyContent: "center" }}
-                >
-                  {CODEC_OPTIONS.map((codec) => (
-                    <FormControlLabel
-                      key={codec.value}
-                      control={
-                        <Checkbox
-                          checked={isCodecSelected(codec.value)}
-                          onChange={(e) =>
-                            handleCodecChange(codec.value, e.target.checked)
-                          }
-                          size="small"
-                          sx={checkboxSx}
-                        />
-                      }
-                      label={codec.label}
-                      sx={{
-                        "& .MuiFormControlLabel-label": {
-                          fontSize: 13,
-                          color: TRUNK_FIELD_LABEL_COLOR,
-                          fontWeight: 600,
-                        },
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: TRUNK_FIELD_LABEL_COLOR,
+                        textAlign: "center",
+                        marginBottom: 8,
                       }}
-                    />
-                  ))}
-                </FormGroup>
+                    >
+                      Available
+                    </div>
+                    <select
+                      multiple
+                      size={6}
+                      value={codecAvailableSelected}
+                      onChange={(e) =>
+                        setCodecAvailableSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {availableCodecList.length === 0 ? (
+                        <option disabled value="">
+                          No codecs
+                        </option>
+                      ) : (
+                        availableCodecList.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {c.label}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: isCompact ? 0 : 28,
+                    }}
+                  >
+                    <CodecDualListBtn onClick={addSelectedCodecs}>
+                      &gt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={addAllCodecs}>
+                      &gt;&gt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeSelectedCodecs}>
+                      &lt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeAllCodecs}>
+                      &lt;&lt;
+                    </CodecDualListBtn>
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: TRUNK_FIELD_LABEL_COLOR,
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Selected
+                    </div>
+                    <select
+                      multiple
+                      size={6}
+                      value={codecChosenSelected}
+                      onChange={(e) =>
+                        setCodecChosenSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {selectedCodecList.length === 0 ? (
+                        <option disabled value="">
+                          No selected codecs
+                        </option>
+                      ) : (
+                        selectedCodecList.map((id) => (
+                          <option key={id} value={id}>
+                            {getCodecLabel(id)}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: isCompact ? 0 : 28,
+                    }}
+                  >
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveCodecToBottom}
+                    >
+                      vv
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveCodecUp}
+                    >
+                      ^
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveCodecDown}
+                    >
+                      v
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveCodecToTop}
+                    >
+                      ^^
+                    </CodecDualListBtn>
+                  </div>
+                </div>
                 {validationErrors.allow_codecs && (
-                  <div className="text-red-500 text-xs mt-2 text-center">
+                  <div className="text-red-500 text-xs mt-3 text-center">
                     {validationErrors.allow_codecs}
                   </div>
                 )}
@@ -3411,12 +3940,12 @@ const SipRegisterPage = () => {
             {modalTab === "advance" && (
               <div className="p-3 sm:p-5 space-y-6">
                 <div className="hidden">
-                  <h3 className="text-base font-semibold text-[var(--text-primary)] mb-3 border-b border-gray-100 pb-1">
+                  <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
                     SIP registration
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         SIP Header
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3429,11 +3958,11 @@ const SipRegisterPage = () => {
                           }
                           error={!!validationErrors.sip_header}
                           placeholder="+91...@sip.domain"
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-[var(--text-secondary)]">
+                                <span className="text-sm text-gray-600">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3448,7 +3977,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Server Domain
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3460,11 +3989,11 @@ const SipRegisterPage = () => {
                             handleChange("server_domain", e.target.value)
                           }
                           error={!!validationErrors.server_domain}
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-[var(--text-secondary)]">
+                                <span className="text-sm text-gray-600">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3479,7 +4008,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Client Domain
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3491,11 +4020,11 @@ const SipRegisterPage = () => {
                             handleChange("client_domain", e.target.value)
                           }
                           error={!!validationErrors.client_domain}
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-[var(--text-secondary)]">
+                                <span className="text-sm text-gray-600">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3510,7 +4039,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Outbound Proxy
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3521,11 +4050,11 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("Outbound Proxy", e.target.value)
                           }
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span className="text-sm text-[var(--text-secondary)]">
+                                <span className="text-sm text-gray-600">
                                   sip:
                                 </span>
                               </InputAdornment>
@@ -3535,7 +4064,7 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
                         Identifier IP
                       </label>
                       <div className="flex-1 min-w-0">
@@ -3547,7 +4076,7 @@ const SipRegisterPage = () => {
                             handleChange("identity_ip", e.target.value)
                           }
                           error={!!validationErrors.identity_ip}
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                         />
                         {validationErrors.identity_ip && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3563,35 +4092,43 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="VoIP Settings" isFirst />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     {[
-                      ["Get CalledID Type", "ui_get_called_id_type"],
-                      ["OPTIONS Interval (s)", "ui_options_interval"],
-                      ["TX Volume", "ui_tx_volume"],
-                      ["RX Volume", "ui_rx_volume"],
-                      ["From User", "from_user"],
-                      ["From Domain", "Domain name"],
-                    ].map(([lbl, key]) => (
+                      [
+                        "Get CalledID Type",
+                        "ui_get_called_id_type",
+                        "get_called_id_type",
+                      ],
+                      [
+                        "OPTIONS Interval (s)",
+                        "ui_options_interval",
+                        "options_interval",
+                      ],
+                      ["TX Volume", "ui_tx_volume", "tx_volume"],
+                      ["RX Volume", "ui_rx_volume", "rx_volume"],
+                      ["From User", "from_user", "from_user"],
+                      ["From Domain", "Domain name", "from_domain"],
+                    ].map(([lbl, key, tooltipKey]) => (
                       <div
                         key={key}
                         className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
                       >
-                        <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                        <TrunkFieldLabel tooltipKey={tooltipKey}>
                           {lbl}
-                        </label>
+                        </TrunkFieldLabel>
                         <div className="flex-1 min-w-0">
                           <TextField
                             size="small"
                             fullWidth
                             value={form[key] || ""}
                             onChange={(e) => handleChange(key, e.target.value)}
-                            inputProps={MODAL_INPUT_14}
+                            inputProps={{ style: { fontSize: 14 } }}
                           />
                         </div>
                       </div>
                     ))}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="send_privacy_id">
                         Send Privacy ID
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3611,9 +4148,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="sip_force_contact">
                         Sip Force Contact
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3628,7 +4165,7 @@ const SipRegisterPage = () => {
                             sx={{ fontSize: 14 }}
                           >
                             <MenuItem value="">
-                              <em>ΓÇö</em>
+                              <em>—</em>
                             </MenuItem>
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3646,9 +4183,9 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="Outbound parameters" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="p_preferred_identity">
                         P-Preferred-Identity
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3672,9 +4209,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="remote_party_id">
                         Remote-Party-ID
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3695,9 +4232,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="p_asserted_identity">
                         P-Asserted-Identity
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3721,9 +4258,9 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="contact">
                         Contact
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3749,9 +4286,9 @@ const SipRegisterPage = () => {
                   <TrunkModalSectionHeading title="Other Settings" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="limit_max_calls">
                         Limit Max Calls
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3760,14 +4297,14 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_limit_max_calls", e.target.value)
                           }
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                         />
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="enable_early_session">
                         Enable Early Session
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3790,9 +4327,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="enable_early_media">
                         Enable Early Media
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3815,10 +4352,10 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="user_phone">
                         User Phone
-                      </label>
-                      <div className="flex-1 min-w-0 flex items-center">
+                      </TrunkFieldLabel>
+                      <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -3831,14 +4368,14 @@ const SipRegisterPage = () => {
                             />
                           }
                           label=""
-                          sx={checkboxSx}
+                          sx={trunkFormCheckboxLabelSx}
                         />
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="call_timeout">
                         Call Timeout(s)
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3847,14 +4384,14 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_call_timeout", e.target.value)
                           }
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                         />
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="dtmf_transmit">
                         DTMF Transmit Mode
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -3874,9 +4411,9 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
+                      <TrunkFieldLabel tooltipKey="max_call_duration">
                         Max Call Duration (s)
-                      </label>
+                      </TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <TextField
                           size="small"
@@ -3885,15 +4422,16 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_max_call_duration", e.target.value)
                           }
-                          inputProps={MODAL_INPUT_14}
+                          inputProps={{ style: { fontSize: 14 } }}
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div className="w-full">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <label className="text-[13px] font-semibold text-[var(--text-primary)] sm:w-[11rem] sm:text-right shrink-0">
-                        DNIS
-                      </label>
-                      <div className="flex-1 min-w-0 flex items-center">
+                      <TrunkFieldLabel tooltipKey="dnis">DNIS</TrunkFieldLabel>
+                      <div className="flex-1 min-w-0 flex items-center justify-start">
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -3906,133 +4444,136 @@ const SipRegisterPage = () => {
                             />
                           }
                           label=""
-                          sx={checkboxSx}
+                          sx={trunkFormCheckboxLabelSx}
                         />
                       </div>
                     </div>
-                  </div>
-                  {form.ui_dnis && (
-                    <div className="mt-3 bg-[var(--bg-surface)] border border-gray-200 rounded-md p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div
-                          className="font-semibold"
-                          style={{
-                            fontSize: 13,
-                            color: TRUNK_SECTION_HEADING_COLOR,
-                          }}
-                        >
-                          DNIS Settings
+                    {form.ui_dnis && (
+                      <div className="mt-2 bg-white border border-gray-200 rounded-md p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div
+                            className="font-semibold"
+                            style={{
+                              fontSize: 13,
+                              color: TRUNK_SECTION_HEADING_COLOR,
+                            }}
+                          >
+                            DNIS Settings
+                          </div>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setDnisRows((r) => [
+                                ...r,
+                                {
+                                  dnisNumber: "",
+                                  dnisName: "",
+                                  replaceCid: "No",
+                                },
+                              ])
+                            }
+                            sx={{ border: "1px solid #ccc", borderRadius: 1 }}
+                            aria-label="add dnis row"
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
                         </div>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            setDnisRows((r) => [
-                              ...r,
-                              {
-                                dnisNumber: "",
-                                dnisName: "",
-                                replaceCid: "No",
-                              },
-                            ])
-                          }
-                          sx={{ border: "1px solid #ccc", borderRadius: 1 }}
-                          aria-label="add dnis row"
-                        >
-                          <AddIcon fontSize="small" />
-                        </IconButton>
-                      </div>
 
-                      <div className="overflow-x-auto border border-gray-200 rounded">
-                        <table className="w-full min-w-[520px] text-sm">
-                          <thead>
-                            <tr className="bg-gray-50 text-[var(--text-secondary)] border-b border-gray-200">
-                              <th className="p-2 text-left font-medium">
-                                DNIS Number
-                              </th>
-                              <th className="p-2 text-left font-medium">
-                                DNIS Name
-                              </th>
-                              <th className="p-2 text-left font-medium">
-                                Replace CID
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {dnisRows.map((row, i) => (
-                              <tr key={i} className="border-b border-gray-100">
-                                <td className="p-1">
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={row.dnisNumber}
-                                    onChange={(e) =>
-                                      setDnisRows((prev) =>
-                                        prev.map((x, j) =>
-                                          j === i
-                                            ? {
-                                                ...x,
-                                                dnisNumber: e.target.value,
-                                              }
-                                            : x,
-                                        ),
-                                      )
-                                    }
-                                    inputProps={MODAL_INPUT_13}
-                                  />
-                                </td>
-                                <td className="p-1">
-                                  <TextField
-                                    size="small"
-                                    fullWidth
-                                    value={row.dnisName}
-                                    onChange={(e) =>
-                                      setDnisRows((prev) =>
-                                        prev.map((x, j) =>
-                                          j === i
-                                            ? {
-                                                ...x,
-                                                dnisName: e.target.value,
-                                              }
-                                            : x,
-                                        ),
-                                      )
-                                    }
-                                    inputProps={MODAL_INPUT_13}
-                                  />
-                                </td>
-                                <td className="p-1 w-[180px]">
-                                  <FormControl fullWidth size="small">
-                                    <MuiSelect
-                                      value={row.replaceCid || "No"}
+                        <div className="overflow-x-auto border border-gray-200 rounded">
+                          <table className="w-full min-w-[520px] text-sm">
+                            <thead>
+                              <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                                <th className="p-2 text-left font-medium">
+                                  DNIS Number
+                                </th>
+                                <th className="p-2 text-left font-medium">
+                                  DNIS Name
+                                </th>
+                                <th className="p-2 text-left font-medium">
+                                  Replace CID
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dnisRows.map((row, i) => (
+                                <tr
+                                  key={i}
+                                  className="border-b border-gray-100"
+                                >
+                                  <td className="p-1">
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      value={row.dnisNumber}
                                       onChange={(e) =>
                                         setDnisRows((prev) =>
                                           prev.map((x, j) =>
                                             j === i
                                               ? {
                                                   ...x,
-                                                  replaceCid: e.target.value,
+                                                  dnisNumber: e.target.value,
                                                 }
                                               : x,
                                           ),
                                         )
                                       }
-                                      sx={{ fontSize: 14 }}
-                                    >
-                                      {SIP_REGISTER_YES_NO.map((c) => (
-                                        <MenuItem key={c} value={c}>
-                                          {c}
-                                        </MenuItem>
-                                      ))}
-                                    </MuiSelect>
-                                  </FormControl>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                      inputProps={{ style: { fontSize: 13 } }}
+                                    />
+                                  </td>
+                                  <td className="p-1">
+                                    <TextField
+                                      size="small"
+                                      fullWidth
+                                      value={row.dnisName}
+                                      onChange={(e) =>
+                                        setDnisRows((prev) =>
+                                          prev.map((x, j) =>
+                                            j === i
+                                              ? {
+                                                  ...x,
+                                                  dnisName: e.target.value,
+                                                }
+                                              : x,
+                                          ),
+                                        )
+                                      }
+                                      inputProps={{ style: { fontSize: 13 } }}
+                                    />
+                                  </td>
+                                  <td className="p-1 w-[180px]">
+                                    <FormControl fullWidth size="small">
+                                      <MuiSelect
+                                        value={row.replaceCid || "No"}
+                                        onChange={(e) =>
+                                          setDnisRows((prev) =>
+                                            prev.map((x, j) =>
+                                              j === i
+                                                ? {
+                                                    ...x,
+                                                    replaceCid: e.target.value,
+                                                  }
+                                                : x,
+                                            ),
+                                          )
+                                        }
+                                        sx={{ fontSize: 14 }}
+                                      >
+                                        {SIP_REGISTER_YES_NO.map((c) => (
+                                          <MenuItem key={c} value={c}>
+                                            {c}
+                                          </MenuItem>
+                                        ))}
+                                      </MuiSelect>
+                                    </FormControl>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -4045,6 +4586,7 @@ const SipRegisterPage = () => {
                       key={lbl}
                       type="button"
                       variant="cancel"
+                      style={trunkDodToolbarBtnStyle}
                       onClick={() => {
                         if (lbl === "ADD") handleOpenDodAddModal();
                         else if (lbl === "DELETE") {
@@ -4069,15 +4611,17 @@ const SipRegisterPage = () => {
                 </div>
 
                 {showDodAddModal ? (
-                  <div className="mt-2 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-md p-3 sm:p-4 shadow-sm">
+                  <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-4 w-full">
                       <div className="flex items-center gap-8 min-w-0">
-                        <label
-                          className="text-[13px] font-semibold text-[var(--text-primary)] whitespace-nowrap shrink-0"
+                        <TrunkFieldLabel
+                          tooltipKey="dod_name"
+                          required
+                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
                         >
-                          DOD Name <span className="text-red-500">*</span>
-                        </label>
+                          DOD Name
+                        </TrunkFieldLabel>
                         <input
                           className="flex-1 min-w-0"
                           style={trunkDodCompactInputStyle}
@@ -4087,12 +4631,14 @@ const SipRegisterPage = () => {
                         />
                       </div>
                       <div className="flex items-center gap-8 min-w-0">
-                        <label
-                          className="text-[13px] font-semibold text-[var(--text-primary)] whitespace-nowrap shrink-0"
+                        <TrunkFieldLabel
+                          tooltipKey="dod_number"
+                          required
+                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
                           style={{ width: 110 }}
                         >
-                          DOD Number <span className="text-red-500">*</span>
-                        </label>
+                          DOD Number
+                        </TrunkFieldLabel>
                         <input
                           className="flex-1 min-w-0"
                           style={trunkDodCompactInputStyle}
@@ -4209,6 +4755,7 @@ const SipRegisterPage = () => {
                         type="button"
                         variant="primary"
                         onClick={handleConfirmDodAdd}
+                        style={trunkDodToolbarBtnStyle}
                       >
                         ENSURE
                       </Btn>
@@ -4219,6 +4766,7 @@ const SipRegisterPage = () => {
                           setShowDodAddModal(false);
                           resetDodAddForm();
                         }}
+                        style={trunkDodToolbarBtnStyle}
                       >
                         CANCEL
                       </Btn>
@@ -4228,7 +4776,7 @@ const SipRegisterPage = () => {
                   <div className="overflow-x-auto border border-gray-200 rounded">
                     <table className="w-full min-w-[480px] text-sm">
                       <thead>
-                        <tr className="bg-gray-50 text-[var(--text-secondary)] border-b border-gray-200">
+                        <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
                           <th className="p-2 w-10 text-left">
                             <input
                               type="checkbox"
@@ -4299,7 +4847,7 @@ const SipRegisterPage = () => {
                                     )
                                   }
                                   sx={muiTextFieldSx}
-                                  inputProps={MODAL_INPUT_13}
+                                  inputProps={{ style: { fontSize: 13 } }}
                                 />
                               </td>
                               <td className="p-1">
@@ -4317,7 +4865,7 @@ const SipRegisterPage = () => {
                                     )
                                   }
                                   sx={muiTextFieldSx}
-                                  inputProps={MODAL_INPUT_13}
+                                  inputProps={{ style: { fontSize: 13 } }}
                                 />
                               </td>
                               <td className="p-1">
@@ -4348,7 +4896,7 @@ const SipRegisterPage = () => {
                                     );
                                   }}
                                   sx={muiTextFieldSx}
-                                  inputProps={MODAL_INPUT_13}
+                                  inputProps={{ style: { fontSize: 13 } }}
                                 />
                               </td>
                             </tr>
@@ -4366,16 +4914,16 @@ const SipRegisterPage = () => {
                 <div
                   className="grid gap-2 items-center text-[12px] font-semibold border-b border-gray-200 pb-2 mb-3"
                   style={{
-                    gridTemplateColumns: "1fr 1fr 1fr 32px",
+                    gridTemplateColumns: trunkAdaptRowGridColumns,
                   }}
                 >
-                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>
+                  <GroupFieldLabel tooltipKey="match_mode">
                     Match Mode
-                  </span>
-                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>Strip</span>
-                  <span style={{ color: TRUNK_FIELD_LABEL_COLOR }}>
+                  </GroupFieldLabel>
+                  <GroupFieldLabel tooltipKey="strip">Strip</GroupFieldLabel>
+                  <GroupFieldLabel tooltipKey="prepend">
                     Prepend
-                  </span>
+                  </GroupFieldLabel>
                   <IconButton
                     size="small"
                     onClick={() =>
@@ -4396,10 +4944,7 @@ const SipRegisterPage = () => {
                       key={i}
                       className="grid gap-2 items-center"
                       style={{
-                        gridTemplateColumns:
-                          adaptRows.length > 1
-                            ? "1fr 1fr 1fr 32px"
-                            : "1fr 1fr 1fr",
+                        gridTemplateColumns: trunkAdaptRowGridColumns,
                       }}
                     >
                       <TextField
@@ -4441,7 +4986,7 @@ const SipRegisterPage = () => {
                         }
                         sx={trunkAdaptTextFieldSx}
                       />
-                      {adaptRows.length > 1 && (
+                      {adaptRows.length > 1 ? (
                         <IconButton
                           size="small"
                           onClick={() =>
@@ -4452,6 +4997,8 @@ const SipRegisterPage = () => {
                         >
                           <CloseIcon fontSize="small" />
                         </IconButton>
+                      ) : (
+                        <span aria-hidden="true" />
                       )}
                     </div>
                   ))}
@@ -4461,11 +5008,12 @@ const SipRegisterPage = () => {
           </div>
         </DialogContent>
 
-        <DialogActions className={trunkModalActionsCls}>
+        <DialogActions style={trunkModalActionsStyle}>
           <Btn
-            variant="dialogPrimary"
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
+            style={trunkModalPrimaryBtnStyle}
           >
             {loading.save ? (
               <>
@@ -4477,9 +5025,10 @@ const SipRegisterPage = () => {
             )}
           </Btn>
           <Btn
-            variant="dialogCancel"
+            variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
+            style={trunkModalCancelBtnStyle}
           >
             Close
           </Btn>

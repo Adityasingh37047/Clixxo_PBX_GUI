@@ -102,14 +102,14 @@ const ICONS = [
 
 // ── Color palette (matches PSTN Call In CallerID) ─────────────────────────────
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
   valueText: "#3E5475",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
 };
 
 const CARD_RADIUS = 10;
@@ -130,7 +130,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
@@ -181,7 +181,7 @@ const Btn = ({
 };
 
 const cardStyle = {
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderRadius: 10,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -202,7 +202,7 @@ const sectionHeaderStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
@@ -219,7 +219,7 @@ const actionBarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderTop: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   justifyContent: "center",
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
@@ -255,7 +255,7 @@ const tableCellStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
 };
@@ -273,7 +273,7 @@ const valueCellStyle = {
 };
 
 const channelThStyle = {
-  background: "var(--table-header-bg)",
+  background: "#F8FAFC",
   color: C.labelText,
   fontWeight: 700,
   fontSize: 10,
@@ -292,7 +292,7 @@ const channelTdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   fontSize: 12,
   color: C.valueText,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   overflow: "hidden",
 };
 
@@ -467,7 +467,7 @@ const tableStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
 };
 

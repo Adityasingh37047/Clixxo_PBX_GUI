@@ -94,50 +94,113 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 };
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   errorRed: "#ef4444",
   amber: "#dc2626",
 };
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
 };
-
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -168,106 +231,6 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const E1_PAGE = "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px]";
-const E1_INNER = "w-full max-w-full mx-auto";
-const E1_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const E1_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[20px]";
-const E1_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
-const E1_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const E1_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const E1_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[20px]";
-const E1_PAGE_BADGE =
-  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const E1_TOAST_SX = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
-};
-
-const modalInputProps = {
-  style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
-};
-
-const e1DialogTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-};
-
-const e1DialogContentStyle = { padding: "24px", backgroundColor: "var(--bg-surface)" };
-
-const e1DialogFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: "var(--row-alt)",
-  border: "1px solid var(--border-subtle)",
-  borderRadius: 8,
-  padding: 20,
-};
-
-const e1DialogFieldRowStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-};
-
-const e1DialogFieldLabelStyle = {
-  fontSize: 13,
-  color: "var(--text-primary)",
-  fontWeight: 600,
-  whiteSpace: "nowrap",
-  width: 170,
-  lineHeight: 1.2,
-  textAlign: "left",
-};
-
-const e1DialogFieldControlStyle = { width: "min(100%, 320px)" };
-
-const e1DialogActionsStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: "var(--row-alt)",
-  borderTop: "1px solid #9CA3AF",
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-};
-
-const e1DialogPaperSx = {
-  width: 600,
-  maxWidth: "95vw",
-  mx: "auto",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const E1Breadcrumb = ({ section, current }) => (
-  <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">
-    <span>E1-PRI</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
-  </div>
-);
-
 const checkboxSx = {
   padding: "4px",
   color: "#64748b",
@@ -276,17 +239,28 @@ const checkboxSx = {
   "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-surface)",
-    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
+    backgroundColor: "#fff",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
   },
 };
 
@@ -352,7 +326,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
-      color: "var(--text-muted)",
+      color: "#94a3b8",
       marginBottom: 16,
       fontWeight: 400,
       display: "flex",
@@ -366,7 +340,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 const TableListLoading = () => (
@@ -401,7 +375,7 @@ const TableListEmptyState = ({
   >
     <div
       style={{
-        color: "var(--text-primary)",
+        color: "#3E5475",
         fontSize: 13,
         fontWeight: 600,
         marginBottom: showButton && onAddNew ? 16 : 0,
@@ -424,7 +398,7 @@ const TableListEmptyState = ({
 const SIP_PCM_TABLE_CARD_RADIUS = 10;
 
 const sipPcmCardStyle = {
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -438,7 +412,7 @@ const sipPcmToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
@@ -450,7 +424,7 @@ const sipPcmPaginationStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
   borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
@@ -470,7 +444,7 @@ const sipPcmSelectedBadgeStyle = {
 const sipPcmCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
-  color: "var(--text-secondary)",
+  color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
@@ -529,7 +503,7 @@ const SipPcmPagination = ({
 
 const sipPcmCheckboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
@@ -545,7 +519,7 @@ const pbxModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
-  color: "var(--text-secondary)",
+  color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
@@ -1070,7 +1044,14 @@ const SipTrunkGroup = () => {
                 : "info"
           }
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={E1_TOAST_SX}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
         >
           {message.text}
         </Alert>
@@ -1081,14 +1062,14 @@ const SipTrunkGroup = () => {
 
         <div style={sipPcmCardStyle}>
           <div style={sipPcmToolbarStyle}>
-            <div className={E1_TOOLBAR_LEFT}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span style={sipPcmSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div className={E1_TOOLBAR_LEFT}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Btn
                 onClick={handleInverse}
                 disabled={loading.delete}
@@ -1154,7 +1135,7 @@ const SipTrunkGroup = () => {
               >
                 <div
                   style={{
-                    color: "var(--text-primary)",
+                    color: "#3E5475",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -1227,7 +1208,7 @@ const SipTrunkGroup = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSel)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSel) e.currentTarget.style.background = rowBg;
@@ -1323,7 +1304,7 @@ const SipTrunkGroup = () => {
           {editingRecordId != null ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
         </DialogTitle>
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "var(--bg-surface)" }}
+          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div
@@ -1367,7 +1348,7 @@ const SipTrunkGroup = () => {
                       variant="outlined"
                       sx={{
                         fontSize: 13,
-                        backgroundColor: "var(--bg-surface)",
+                        backgroundColor: "#fff",
                         "& .MuiOutlinedInput-root": {
                           height: "auto",
                           minHeight: "unset",
@@ -1441,7 +1422,7 @@ const SipTrunkGroup = () => {
                         style: {
                           fontSize: 13,
                           padding: "6px 8px",
-                          backgroundColor: "var(--bg-surface)",
+                          backgroundColor: "#fff",
                         },
                       }}
                     />
@@ -1464,7 +1445,7 @@ const SipTrunkGroup = () => {
             onClick={handleSave}
             variant="primary"
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13, padding: "6px 28px", textTransform: "none" }}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress

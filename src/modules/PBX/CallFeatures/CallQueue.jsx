@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import Tooltip from "@mui/material/Tooltip";
-import {Dialog,  DialogTitle,
+import {Dialog,
+  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -14,9 +15,7 @@ import {Dialog,  DialogTitle,
   Tabs,
   Tab,
   Checkbox,
-  ListSubheader,
-  useMediaQuery,
-} from "@mui/material";
+  ListSubheader, useMediaQuery } from "@mui/material";
 import {
   fetchCallQueues,
   createCallQueue,
@@ -33,71 +32,117 @@ import {
   ANNOUNCE_FREQ_OPTIONS,
   CALL_QUEUE_TABLE_COLUMNS,
 } from "../../../constants/CallQueueConstants";
-
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
+// ── Local page UI (pilot: inlined from pbxSharedUi) ──
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
 };
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_DIALOG_PRIMARY =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[28px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DIALOG_CANCEL =
-  "inline-flex items-center justify-center gap-[6px] min-w-[100px] h-[33px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
-
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  accent: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  dialogPrimary: BTN_DIALOG_PRIMARY,
-  dialogCancel: BTN_DIALOG_CANCEL,
-  danger: `${BTN_BASE} bg-[#dc2626] text-white border-[0.5px] border-[#dc2626] hover:bg-[#b91c1c]`,
-  outline: BTN_OUTLINE,
-};
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
-  className = "",
-  style,
+  style: extraStyle,
   type,
+  form,
+  component,
   title,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -130,31 +175,49 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const CALL_QUEUE_PAGE_WRAP =
-  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border";
-const CALL_QUEUE_PAGE_INNER = "w-full max-w-full mx-auto";
-const CALL_QUEUE_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const CALL_QUEUE_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[10px]";
-const CALL_QUEUE_TOOLBAR_COMPACT = "flex-col items-stretch gap-[10px]";
-const CALL_QUEUE_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
-const CALL_QUEUE_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const CALL_QUEUE_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#e0f2fe] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const CALL_QUEUE_PAGE_BADGE =
-  "rounded-[6px] border-[0.5px] border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const CALL_QUEUE_PAGINATION =
-  "flex items-center justify-between border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[10px]";
+const numManipulateCardStyle = {
+  background: "#ffffff",
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1.5px solid ${C.cardBorder}`,
+  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+};
+
+const numManipulateToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+};
+
+const pbxPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pbxPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
 
 const PBX_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
 };
 
 const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
@@ -193,7 +256,7 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const PBX_MODAL_SECTION_BG = "var(--bg-main)";
+const PBX_MODAL_SECTION_BG = "#f8fafc";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const PbxModalSectionHeading = ({ title, isFirst = false }) => (
@@ -221,21 +284,37 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
     </span>
   </div>
 );
-const PbxBreadcrumb = ({ section, current, className = "" }) => (
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
-    className={`mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8] ${className}`.trim()}
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
   >
     <span>PBX</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 const TableListLoading = () => (
-  <div className="flex items-center justify-center p-[48px]">
-    <CircularProgress size={28} sx={{ color: C.accent }} />
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -245,10 +324,24 @@ const TableListEmptyState = ({
   buttonLabel = "+ Add New",
   showButton = true,
 }) => (
-  <div className="flex min-h-[240px] flex-col items-center justify-center p-[24px] text-center">
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
     <div
-      className="text-[13px] font-semibold text-[var(--text-label)]"
-      style={{ marginBottom: showButton && onAddNew ? 16 : 0 }}
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
     >
       {message}
     </div>
@@ -264,41 +357,52 @@ const TableListEmptyState = ({
   </div>
 );
 
-const CallQueuePagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPrev,
-  onNext,
-  disabled,
-}) => (
-  <div className={CALL_QUEUE_PAGINATION}>
-    <span className="text-[11px] text-[#94a3b8]">
-      Showing {recordCount} record{recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div className="flex items-center gap-[8px]">
-      <Btn onClick={onPrev} disabled={disabled || page <= 1} variant="outline">
-        ← Prev
-      </Btn>
-      <span className={CALL_QUEUE_PAGE_BADGE}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn onClick={onNext} disabled={disabled || page >= totalPages} variant="outline">
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
+const LIST_CARD_RADIUS = 10;
+const listCardStyle = {
+  ...numManipulateCardStyle,
+  borderRadius: LIST_CARD_RADIUS,
+};
+const listToolbarStyle = {
+  ...numManipulateToolbarStyle,
+  borderTopLeftRadius: LIST_CARD_RADIUS,
+  borderTopRightRadius: LIST_CARD_RADIUS,
+};
 
-const CALL_QUEUE_DUAL_LIST_BTN =
-  "box-border m-0 block h-[36px] w-full cursor-pointer border border-[#6b7280] bg-[#d9dde3] p-0 text-center text-[14px] font-semibold leading-none text-[#111827] hover:bg-[#c5cbd3]";
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
 
-const CallQueueDualListBtn = ({ onClick, title, children, reorder }) => (
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
+
+const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    className={`${CALL_QUEUE_DUAL_LIST_BTN} ${reorder ? "font-normal" : ""}`.trim()}
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
   >
     {children}
   </button>
@@ -308,11 +412,11 @@ const selectSx = {
   "& .MuiOutlinedInput-input": {
     padding: "4px 6px",
     fontSize: 13,
-    background: "var(--bg-main)",
+    background: "#fff",
   },
 };
 const inputProps = {
-  style: { fontSize: 13, padding: "4px 6px", background: "var(--bg-main)" },
+  style: { fontSize: 13, padding: "4px 6px", background: "#fff" },
 };
 const LABEL_W = 175;
 
@@ -329,7 +433,7 @@ const FieldRow = ({ label, children, tooltip }) => (
       disableHoverListener={!tooltip}
     >
       <label
-        className="text-[13px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left"
+        className="text-[13px] text-gray-700 font-medium whitespace-nowrap text-left"
         style={{
           width: LABEL_W,
           flexShrink: 0,
@@ -784,7 +888,7 @@ const CallQueue = () => {
     RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
 
   return (
-    <div className={`${CALL_QUEUE_PAGE_WRAP} ${isCompact ? "p-[8px]" : ""}`.trim()}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
         {/* Modal */}
       <Dialog
         open={showModal}
@@ -813,7 +917,7 @@ const CallQueue = () => {
             overflow: "hidden",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
             backgroundImage: "none",
           },
         }}
@@ -846,7 +950,7 @@ const CallQueue = () => {
         <DialogContent
           sx={{
             p: "24px",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
           }}
         >
           <div
@@ -1311,7 +1415,7 @@ const CallQueue = () => {
                         </div>
                         <select
                           multiple
-                          className="w-full h-40 border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded px-2 py-1 text-[14px] outline-none"
+                          className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                           value={highlightAvail}
                           onChange={(e) =>
                             setHighlightAvail(
@@ -1339,20 +1443,20 @@ const CallQueue = () => {
                           paddingTop: 28,
                         }}
                       >
-                        <CallQueueDualListBtn onClick={() => moveToSelected(false)}>
+                        <CodecDualListBtn onClick={() => moveToSelected(false)}>
                           &gt;
-                        </CallQueueDualListBtn>
-                        <CallQueueDualListBtn onClick={() => moveToSelected(true)}>
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={() => moveToSelected(true)}>
                           &gt;&gt;
-                        </CallQueueDualListBtn>
-                        <CallQueueDualListBtn
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
                           onClick={() => moveToAvailable(false)}
                         >
                           &lt;
-                        </CallQueueDualListBtn>
-                        <CallQueueDualListBtn onClick={() => moveToAvailable(true)}>
+                        </CodecDualListBtn>
+                        <CodecDualListBtn onClick={() => moveToAvailable(true)}>
                           &lt;&lt;
-                        </CallQueueDualListBtn>
+                        </CodecDualListBtn>
                       </div>
 
                       {/* Selected */}
@@ -1362,7 +1466,7 @@ const CallQueue = () => {
                         </div>
                         <select
                           multiple
-                          className="w-full h-40 border border-[var(--border-subtle)] bg-[var(--bg-surface)] rounded px-2 py-1 text-[14px] outline-none"
+                          className="w-full h-40 border border-gray-300 bg-white rounded px-2 py-1 text-[14px] outline-none"
                           value={highlightSel}
                           onChange={(e) =>
                             setHighlightSel(
@@ -1395,34 +1499,34 @@ const CallQueue = () => {
                           paddingTop: 28,
                         }}
                       >
-                        <CallQueueDualListBtn
+                        <CodecDualListBtn
                           reorder
                           title="Move to bottom"
                           onClick={moveToBottom}
                         >
                           vv
-                        </CallQueueDualListBtn>
-                        <CallQueueDualListBtn
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
                           reorder
                           title="Move up"
                           onClick={moveUp}
                         >
                           ^
-                        </CallQueueDualListBtn>
-                        <CallQueueDualListBtn
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
                           reorder
                           title="Move down"
                           onClick={moveDown}
                         >
                           v
-                        </CallQueueDualListBtn>
-                        <CallQueueDualListBtn
+                        </CodecDualListBtn>
+                        <CodecDualListBtn
                           reorder
                           title="Move to top"
                           onClick={moveToTop}
                         >
                           ^^
-                        </CallQueueDualListBtn>
+                        </CodecDualListBtn>
                       </div>
                     </div>
                   </div>
@@ -1956,13 +2060,14 @@ const CallQueue = () => {
             py: "10px",
             px: "16px",
             borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "var(--row-alt)",
+            backgroundColor: "#f8fafc",
           }}
         >
           <Btn
-            variant="dialogPrimary"
+            variant="primary"
             onClick={handleSave}
             disabled={loading.save}
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1974,16 +2079,17 @@ const CallQueue = () => {
             )}
           </Btn>
           <Btn
-            variant="dialogCancel"
             onClick={handleCloseModal}
             disabled={loading.save}
+            variant="cancel"
+            style={{ minWidth: 100, height: 33 }}
           >
             Close
           </Btn>
         </DialogActions>
       </Dialog>
 
-      <div className={CALL_QUEUE_PAGE_INNER}>
+      <div style={pbxPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
@@ -2003,25 +2109,48 @@ const CallQueue = () => {
 
         <PbxBreadcrumb section="Call Features" current="Call Queue" />
 
-        <div className={CALL_QUEUE_CARD}>
-          <div
-            className={`${CALL_QUEUE_TOOLBAR} ${isCompact ? CALL_QUEUE_TOOLBAR_COMPACT : ""}`.trim()}
-          >
-            <div className={CALL_QUEUE_TOOLBAR_LEFT}>
+        <div style={listCardStyle}>
+          <div style={listToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               {selected.length > 0 && (
-                <span className={CALL_QUEUE_SELECTED_BADGE}>
+                <span
+                  style={{
+                    background: "#e0f2fe",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
                   {selected.length} selected
                 </span>
               )}
             </div>
 
-            <div className={CALL_QUEUE_TOOLBAR_ACTIONS}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={
                   loading.delete || loading.fetch || queues.length === 0
                 }
+                style={{ height: 30 }}
               >
                 Inverse
               </Btn>
@@ -2031,6 +2160,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
+                style={{ height: 30 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -2045,6 +2175,12 @@ const CallQueue = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
@@ -2116,7 +2252,7 @@ const CallQueue = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -2240,14 +2376,52 @@ const CallQueue = () => {
           </div>
 
           {!isInitialLoad && queues.length > 0 && (
-            <CallQueuePagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedQueues.length}
-              onPrev={handlePrev}
-              onNext={handleNext}
-              disabled={loading.fetch}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: LIST_CARD_RADIUS,
+                borderBottomRightRadius: LIST_CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedQueues.length} record
+                {pagedQueues.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>

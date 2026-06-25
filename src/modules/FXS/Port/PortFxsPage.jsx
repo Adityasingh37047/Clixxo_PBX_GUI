@@ -103,14 +103,14 @@ const renderTableColumnHeader = (col) => {
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
@@ -131,7 +131,7 @@ const Btn = ({
     default: {
       background: C.cardBg,
       color: C.valueText,
-      border: "1px solid var(--border-subtle)",
+      border: "1px solid #9ca3af",
     },
     primary: {
       background:
@@ -145,7 +145,7 @@ const Btn = ({
     },
     cancel: {
       background: "#cbd5e1",
-      color: "var(--text-secondary)",
+      color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
@@ -211,7 +211,7 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -240,12 +240,10 @@ const tdStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
 };
 
 const numManipulateCardStyle = {
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderRadius: CARD_RADIUS,
   overflow: "hidden",
   border: `1.5px solid ${C.cardBorder}`,
@@ -259,7 +257,7 @@ const numManipulateToolbarStyle = {
   minHeight: 44,
   padding: "7px 14px",
   borderBottom: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
   borderTopLeftRadius: CARD_RADIUS,
@@ -271,7 +269,7 @@ const numManipulatePaginationStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
@@ -294,9 +292,17 @@ const routeTableMinWidthForZoom = (widePx) => {
   return zoomPct >= 130 ? widePx : "100%";
 };
 
-const routeTdStyle = tdStyle;
+const routeTdStyle = {
+  ...tdStyle,
+  fontSize: 12,
+  padding: "7px 8px",
+};
 
-const routeThExtra = {};
+const routeThExtra = {
+  fontSize: 10.5,
+  padding: "9px 8px",
+  letterSpacing: "0.04em",
+};
 
 const FWD_TYPE_TO_UI = {
   no_reply: "No Reply",
@@ -329,7 +335,7 @@ const fxsDialogTitleStyle = {
 
 const fxsDialogActionsStyle = {
   padding: "16px 24px",
-  background: "var(--row-alt)",
+  background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
   justifyContent: "center",
   gap: 12,
@@ -485,7 +491,7 @@ const PortFxsPage = () => {
     >
       <div
         style={{
-          color: "var(--text-primary)",
+          color: "#3E5475",
           fontSize: 13,
           fontWeight: 600,
           marginBottom: 16,
@@ -685,7 +691,7 @@ const PortFxsPage = () => {
               </thead>
               <tbody>
                 {pagedPorts.map((port, idx) => {
-                  const rowBg = idx % 2 === 1 ? "var(--row-alt)" : "var(--bg-surface)";
+                  const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
                   const isLastRow = idx === pagedPorts.length - 1;
                   return (
                     <tr
@@ -695,7 +701,7 @@ const PortFxsPage = () => {
                         transition: "background 0.15s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "var(--row-alt)";
+                        e.currentTarget.style.background = "#f1f5f9";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = rowBg;
@@ -770,7 +776,7 @@ const PortFxsPage = () => {
         <div
           style={{
             fontSize: 12,
-            color: "var(--text-muted)",
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
@@ -783,7 +789,7 @@ const PortFxsPage = () => {
           <span>&gt;</span>
           <span>Port</span>
           <span>&gt;</span>
-          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             FXS Settings
           </span>
         </div>
@@ -791,20 +797,29 @@ const PortFxsPage = () => {
         {renderListCard()}
 
         <Dialog
-          open={showBatchModify}
-          onClose={() => setShowBatchModify(false)}
-          maxWidth={false}
-          PaperProps={{ sx: fxsDialogPaperSx }}
-          disableRestoreFocus
-          disableEnforceFocus
-        >
+  open={showBatchModify}
+  onClose={() => setShowBatchModify(false)}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+    },
+    "& .MuiDialog-paper": {
+      mt: "50px",
+      mb: "20px",
+    },
+  }}
+  PaperProps={{ sx: fxsDialogPaperSx }}
+  disableRestoreFocus
+  disableEnforceFocus
+>
           <DialogTitle style={fxsDialogTitleStyle}>
             {PORT_FXS_BATCH_MODIFY_TITLE}
           </DialogTitle>
           <DialogContent
             style={{
               padding: "24px",
-              backgroundColor: "var(--bg-surface)",
+              backgroundColor: "#ffffff",
               maxHeight: "75vh",
               overflowY: "auto",
             }}
@@ -842,23 +857,32 @@ const PortFxsPage = () => {
         </Dialog>
 
         <Dialog
-          open={showSingleModify && !!selectedPort}
-          onClose={() => {
-            setShowSingleModify(false);
-            setSelectedPort(null);
-            setModifyPortData(null);
-            setModifySaving(false);
-          }}
-          maxWidth={false}
-          PaperProps={{ sx: fxsDialogPaperSx }}
-          disableRestoreFocus
-          disableEnforceFocus
-        >
+  open={showSingleModify && !!selectedPort}
+  onClose={() => {
+    setShowSingleModify(false);
+    setSelectedPort(null);
+    setModifyPortData(null);
+    setModifySaving(false);
+  }}
+  maxWidth={false}
+  sx={{
+    "& .MuiDialog-container": {
+      alignItems: "flex-start",
+    },
+    "& .MuiDialog-paper": {
+      mt: "50px",
+      mb: "20px",
+    },
+  }}
+  PaperProps={{ sx: fxsDialogPaperSx }}
+  disableRestoreFocus
+  disableEnforceFocus
+>
           <DialogTitle style={fxsDialogTitleStyle}>FXS-Modify</DialogTitle>
           <DialogContent
             style={{
               padding: "24px",
-              backgroundColor: "var(--bg-surface)",
+              backgroundColor: "#ffffff",
               maxHeight: "75vh",
               overflowY: "auto",
             }}

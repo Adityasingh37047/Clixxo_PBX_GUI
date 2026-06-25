@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import Tooltip from "@mui/material/Tooltip";
 import {Alert,
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,38 +24,35 @@ import {
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 const PBX_COMPACT_MQ = "(max-width: 768px)";
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
-const FIELD_LABEL_COLOR = "#374151";
 
-// ── Color palette (aligned with FxsVoipMediaPage enterprise tokens) ───────────
+// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "#d8dde5",
-  cardShadow: "0 2px 10px rgba(15, 23, 42, 0.07)",
-  divider: "#e2e6ec",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
-  accentDark: "#3E5475",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
 };
 
+const CARD_RADIUS = 10;
+// ── Shared: Action Button ────────────────────────────────────────────────────
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
-  type,
   title,
+  type,
+  hoverBehavior = "background",
 }) => {
-  const styles = {
+  const variants = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -66,130 +64,89 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
     },
+    danger: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `0.5px solid ${C.errorRed}`,
+    },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
     outline: {
       background: C.cardBg,
-      color: FIELD_LABEL_COLOR,
-      border: `1px solid ${C.cardBorder}`,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
     },
-    dialogPrimary: {
+    accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-      minWidth: 100,
-      height: 36,
-      fontSize: 13,
-      padding: "0 28px",
-    },
-    dialogCancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-      minWidth: 100,
-      height: 33,
-      fontSize: 13,
-      padding: "0 14px",
     },
   };
-  const s = styles[variant] || styles.default;
-  const isLarge =
-    variant === "primary" ||
-    variant === "cancel" ||
-    variant === "dialogPrimary" ||
-    variant === "dialogCancel";
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      dialogPrimary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      dialogCancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      dialogPrimary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      dialogCancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
+  const s = variants[variant] || variants.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+      case "accent":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "danger":
+        return "#b91c1c";
+      case "cancel":
+        return "#b6c2d3";
+      case "outline":
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
 
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary" || variant === "dialogPrimary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel" || variant === "dialogCancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
+  const baseBg = extraStyle?.background || s.background;
 
   return (
     <button
       type={type}
-      title={title}
       onClick={onClick}
       disabled={disabled}
+      title={title}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: isLarge ? "8px 20px" : "6px 14px",
-        borderRadius: 8,
-        fontSize: isLarge ? 13 : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: isLarge ? (variant === "dialogPrimary" ? 36 : 34) : 30,
+        transition: "all 0.15s ease",
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
-        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "0.82";
+          } else {
+            e.currentTarget.style.background = hoverBg;
+          }
+        }
       }}
       onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
+        if (!disabled) {
+          if (hoverBehavior === "opacity") {
+            e.currentTarget.style.opacity = "1";
+          } else {
+            e.currentTarget.style.background = baseBg;
+          }
+        }
       }}
     >
       {children}
@@ -202,17 +159,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
-      color: FIELD_LABEL_COLOR,
+      background: "#F8FAFC",
+      color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "10px 14px",
+      padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -221,158 +178,55 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "9px 14px",
+  padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
-  "&.Mui-checked": { color: "#3E5475" },
-  "&.MuiCheckbox-indeterminate": { color: "#3E5475" },
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const blockedListPageWrapStyle = {
+// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
+const pbxPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "24px 28px",
+  padding: 16,
   boxSizing: "border-box",
 };
 
-const blockedListCardStyle = {
+const pbxPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
-  background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
+  margin: "0 auto",
 };
-
-const blockedListToolbarStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-  minHeight: 52,
-  padding: "10px 16px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
+ const pbxModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
-
-const blockedListPaginationStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
-  padding: "10px 16px",
-  borderTop: `1px solid ${C.divider}`,
-  background: C.cardBg,
-};
-
-const blockedListModalPaperSx = {
-  width: 560,
-  maxWidth: "95vw",
-  borderRadius: `${CARD_RADIUS}px`,
-  overflow: "hidden",
-  boxShadow: "0 8px 30px rgba(15, 23, 42, 0.12)",
-};
-
-const blockedListFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    fontSize: 13,
-    backgroundColor: "var(--bg-surface)",
-    borderRadius: `${FIELD_RADIUS}px`,
-    "& fieldset": { borderColor: "#d1d5db" },
-    "&:hover fieldset": { borderColor: "#9ca3af" },
-    "&.Mui-focused fieldset": {
-      borderColor: "#3E5475",
-      borderWidth: "1px",
-    },
-    "&.Mui-focused": {
-      boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
-    },
-  },
-  "& .MuiSelect-select": {
-    padding: "6px 10px",
-    display: "flex",
-    alignItems: "center",
-  },
-};
-
-const pageTitleStyle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.strongText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-};
-
-const STATUS_CHIP_TONES = {
-  success: { bg: "#ecfdf5", color: "#16a34a", border: "#bbf7d0" },
-  brand: { bg: "#e0f2fe", color: "#3E5475", border: "#bae6fd" },
-  neutral: { bg: "#f1f5f9", color: "#475569", border: "#e2e8f0" },
-  info: { bg: "#f8fafc", color: "#374151", border: "#e2e8f0" },
-  warning: { bg: "#fffbeb", color: "#d97706", border: "#fde68a" },
-};
-
-const StatusChip = ({ tone = "neutral", children }) => {
-  const t = STATUS_CHIP_TONES[tone] || STATUS_CHIP_TONES.neutral;
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "3px 10px",
-        borderRadius: 999,
-        fontSize: 11,
-        fontWeight: 600,
-        letterSpacing: "0.02em",
-        background: t.bg,
-        color: t.color,
-        border: `1px solid ${t.border}`,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {children}
-    </span>
-  );
-};
-
-const getMatchModeTone = (mode) => {
-  if (mode === "Regex Match") return "brand";
-  if (mode === "Extension") return "warning";
-  return "info";
-};
-
-const getDirectionTone = (direction) => {
-  if (direction === "Inbound") return "success";
-  if (direction === "Outbound") return "brand";
-  return "neutral";
-};
-
-const PbxBreadcrumb = ({ section, current }) => (
+const PbxBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 20,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
+      ...style,
     }}
   >
     <span>PBX</span>
@@ -382,22 +236,16 @@ const PbxBreadcrumb = ({ section, current }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-
 const TableListLoading = () => (
   <div
     style={{
       display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
       justifyContent: "center",
-      gap: 12,
-      padding: "56px 24px",
+      alignItems: "center",
+      padding: 48,
     }}
   >
-    <CircularProgress size={28} sx={{ color: C.accentDark }} />
-    <span style={{ fontSize: 13, color: C.mutedText, fontWeight: 500 }}>
-      Loading blocked entries…
-    </span>
+    <CircularProgress size={28} style={{ color: C.accent }} />
   </div>
 );
 
@@ -410,89 +258,33 @@ const TableListEmptyState = ({
   <div
     style={{
       display: "flex",
-      minHeight: 260,
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      padding: "32px 24px",
+      minHeight: 240,
+      padding: 24,
       textAlign: "center",
     }}
   >
     <div
       style={{
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        background: "#f1f5f9",
-        border: `1px solid ${C.divider}`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 22,
-        marginBottom: 14,
-      }}
-    >
-      🚫
-    </div>
-    <div
-      style={{
-        fontSize: 14,
+        color: "#3E5475",
+        fontSize: 13,
         fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
         marginBottom: showButton && onAddNew ? 16 : 0,
       }}
     >
       {message}
     </div>
     {showButton && onAddNew ? (
-      <Btn variant="primary" onClick={onAddNew}>
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
         {buttonLabel}
       </Btn>
     ) : null}
-  </div>
-);
-
-const BlockedListPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  totalCount,
-  onPrev,
-  onNext,
-  disabled,
-}) => (
-  <div style={blockedListPaginationStyle}>
-    <span style={{ fontSize: 12, color: C.mutedText, fontWeight: 500 }}>
-      Showing {recordCount} of {totalCount} record{totalCount !== 1 ? "s" : ""}{" "}
-      · Page {page} of {totalPages}
-    </span>
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <Btn onClick={onPrev} disabled={disabled || page <= 1} variant="outline">
-        ← Prev
-      </Btn>
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          padding: "4px 12px",
-          borderRadius: 6,
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#3E5475",
-          background: "#e0f2fe",
-          border: `1px solid #bae6fd`,
-        }}
-      >
-        {page} / {totalPages}
-      </span>
-      <Btn
-        onClick={onNext}
-        disabled={disabled || page >= totalPages}
-        variant="outline"
-      >
-        Next →
-      </Btn>
-    </div>
   </div>
 );
 
@@ -503,95 +295,21 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        backgroundColor: "#fff",
-        color: "#333",
+        bgcolor: "#fff",
+        color: "#334155",
         border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
+        fontSize: 12,
         maxWidth: 500,
-        padding: "12px 16px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
       },
     },
-    arrow: { sx: { color: "#fff" } },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
   },
 };
-
-const BlockedListSearchBox = ({
-  value,
-  onChange,
-  onClear,
-  focused,
-  onFocus,
-  onBlur,
-  isCompact,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      flex: isCompact ? "1 1 100%" : "0 1 auto",
-      minWidth: isCompact ? 0 : 220,
-      background: "var(--bg-main)",
-      border: `1px solid ${focused ? "#3E5475" : C.cardBorder}`,
-      borderRadius: 8,
-      padding: "6px 12px",
-      boxShadow: focused ? "0 0 0 2px rgba(62, 84, 117, 0.12)" : "none",
-      transition: "border-color 0.15s ease, box-shadow 0.15s ease",
-    }}
-  >
-    <span
-      style={{
-        fontSize: 13,
-        color: focused ? "#3E5475" : C.mutedText,
-        lineHeight: 1,
-      }}
-    >
-      🔍
-    </span>
-    <input
-      type="text"
-      value={value}
-      onChange={onChange}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      placeholder="Search by name, number, or match mode…"
-      style={{
-        border: "none",
-        background: "transparent",
-        fontSize: 12,
-        color: C.valueText,
-        outline: "none",
-        width: "100%",
-        minWidth: 0,
-        fontWeight: 500,
-      }}
-    />
-    {value ? (
-      <button
-        type="button"
-        onClick={onClear}
-        style={{
-          border: "none",
-          background: "#e2e8f0",
-          color: "#64748b",
-          borderRadius: 999,
-          width: 18,
-          height: 18,
-          fontSize: 10,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 0,
-          flexShrink: 0,
-        }}
-      >
-        ✕
-      </button>
-    ) : null}
-  </div>
-);
 
 const BlockedListPage = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -866,13 +584,9 @@ const BlockedListPage = () => {
   };
 
   return (
-    <div
-      style={{
-        ...blockedListPageWrapStyle,
-        padding: isCompact ? "12px 14px" : blockedListPageWrapStyle.padding,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: 0 }}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={pbxPageInnerStyle}>
+        {/* Error / Success Banner */}
         {error.text && (
           <Alert
             severity={
@@ -889,76 +603,58 @@ const BlockedListPage = () => {
               right: 20,
               zIndex: 9999,
               minWidth: 300,
-              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-              fontWeight: 500,
+              boxShadow: 3,
             }}
           >
             {error.text}
           </Alert>
         )}
 
-        <h1 style={pageTitleStyle}>Blocked List</h1>
         <PbxBreadcrumb section="Call Features" current="Blocked List" />
 
-        <div style={blockedListCardStyle}>
+        {/* Main Card */}
+        <div
+          style={{
+            background: "#ffffff",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: `1.5px solid ${C.cardBorder}`,
+            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+          }}
+        >
+          {/* Toolbar */}
           <div
             style={{
-              ...blockedListToolbarStyle,
-              ...(isCompact
-                ? { flexDirection: "column", alignItems: "stretch" }
-                : {}),
-            }}
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 44,
+              padding: "7px 14px",
+              borderBottom: `1px solid ${C.cardBorder}`,
+              background: "#ffffff",
+              flexWrap: "wrap",
+              gap: 12,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
           >
             <div
               style={{
                 display: "flex",
-                flexWrap: "wrap",
                 alignItems: "center",
-                gap: 10,
-                flex: "1 1 auto",
-                minWidth: 0,
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
-              <BlockedListSearchBox
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
-                }}
-                onClear={() => {
-                  setSearchQuery("");
-                  setPage(1);
-                }}
-                focused={searchFocused}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                isCompact={isCompact}
-              />
-              {!isInitialLoad && rows.length > 0 && (
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.mutedText,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {filteredRows.length} entr
-                  {filteredRows.length !== 1 ? "ies" : "y"}
-                </span>
-              )}
               {selected.length > 0 && (
                 <span
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    padding: "4px 12px",
-                    borderRadius: 999,
+                    background: "#e0f2fe",
+                    color: C.accent,
                     fontSize: 11,
                     fontWeight: 700,
-                    color: "#3E5475",
-                    background: "#e0f2fe",
-                    border: "1px solid #bae6fd",
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
                   }}
                 >
                   {selected.length} selected
@@ -969,30 +665,117 @@ const BlockedListPage = () => {
             <div
               style={{
                 display: "flex",
-                flexWrap: "wrap",
                 alignItems: "center",
                 gap: 8,
-                ...(isCompact ? { width: "100%" } : {}),
+                flexWrap: "wrap",
               }}
             >
+              {/* <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#ffffff",
+                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
+                  borderRadius: 6,
+                  padding: "5px 10px",
+                  transition: "border-color 0.15s ease",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: searchFocused ? C.accent : C.mutedText,
+                  }}
+                >
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder="Search blocked lists..."
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    fontSize: 11,
+                    color: C.valueText,
+                    outline: "none",
+                    width: 160,
+                  }}
+                />
+                {searchQuery && (
+                  <span
+                    onClick={() => setSearchQuery("")}
+                    style={{
+                      fontSize: 11,
+                      color: C.mutedText,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕
+                  </span>
+                )}
+              </div> */}
+
+              {/* <Btn
+                onClick={handlePrev}
+                disabled={loading.fetch || page <= 1}
+                variant="outline"
+              >
+                ← Prev
+              </Btn>
+              <Btn
+                onClick={handleNext}
+                disabled={loading.fetch || page >= totalPages}
+                variant="outline"
+              >
+                Next →
+              </Btn> */}
+
+              {/* <Btn
+                onClick={loadRows}
+                disabled={loading.fetch}
+                variant="default"
+              >
+                {loading.fetch ? (
+                  <CircularProgress size={11} style={{ color: "#fff" }} />
+                ) : (
+                  "Refresh"
+                )}
+              </Btn> */}
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                variant="cancel"
+                 variant="cancel"
+                style={{
+                  background: "#cbd5e1",
+                  color: "#374151",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+                }}
               >
-                {loading.delete ? (
-                  <CircularProgress size={12} sx={{ color: "#374151" }} />
-                ) : (
-                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                )}
+                {" "}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
                 variant="primary"
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 10,
+                }}
               >
                 + Add New
               </Btn>
@@ -1100,8 +883,8 @@ const BlockedListPage = () => {
                     const rowBg = isSelected
                       ? "#e0f2fe"
                       : idx % 2 === 1
-                        ? "var(--row-alt)"
-                        : "var(--bg-surface)";
+                        ? "#f8fafc"
+                        : "#ffffff";
 
                     return (
                       <tr
@@ -1112,7 +895,7 @@ const BlockedListPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f1f5f9";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -1139,8 +922,6 @@ const BlockedListPage = () => {
                             ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
-                            fontWeight: 600,
-                            color: C.mutedText,
                           }}
                         >
                           {realIdx + 1}
@@ -1150,8 +931,6 @@ const BlockedListPage = () => {
                             ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
-                            fontWeight: 600,
-                            textAlign: "left",
                           }}
                         >
                           {row.name}
@@ -1163,17 +942,23 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <StatusChip tone={getMatchModeTone(row.matchMode)}>
+                          <span
+                            style={{
+                              color: C.valueText,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {row.matchMode}
-                          </StatusChip>
+                          </span>
                         </td>
                         <td
                           style={{
                             ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
-                            fontFamily: "ui-monospace, monospace",
-                            fontSize: 12,
                           }}
                         >
                           {row.blockedNumber}
@@ -1185,9 +970,22 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <StatusChip tone={getDirectionTone(row.direction)}>
+                          <span
+                            style={{
+                              color:
+                                row.direction === "Inbound"
+                                  ? "#16a34a"
+                                  : row.direction === "Outbound"
+                                    ? C.accent
+                                    : "#475569",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {row.direction}
-                          </StatusChip>
+                          </span>
                         </td>
                         <td
                           style={{
@@ -1196,11 +994,18 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <StatusChip
-                            tone={row.enabled === "Yes" ? "success" : "neutral"}
+                          <span
+                            style={{
+                              color:
+                                row.enabled === "Yes" ? "#16a34a" : "#475569",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.01em",
+                              whiteSpace: "nowrap",
+                            }}
                           >
                             {row.enabled}
-                          </StatusChip>
+                          </span>
                         </td>
                         <td
                           style={{
@@ -1216,35 +1021,23 @@ const BlockedListPage = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <button
-                              type="button"
-                              title="Edit"
+                            <EditDocumentIcon
+                              titleAccess="Edit"
                               onClick={() => handleOpenEditModal(row)}
                               style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: 32,
-                                height: 32,
-                                border: "none",
-                                borderRadius: 8,
-                                background: "transparent",
-                                color: "#3E5475",
                                 cursor: "pointer",
-                                transition:
-                                  "background 0.15s ease, color 0.15s ease",
+                                color: "#2563eb",
+                                fontSize: 22,
+                                opacity: 0.7,
+                                transition: "opacity 0.15s ease",
                               }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "#e0f2fe";
-                                e.currentTarget.style.color = "#2563eb";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "transparent";
-                                e.currentTarget.style.color = "#3E5475";
-                              }}
-                            >
-                              <EditDocumentIcon sx={{ fontSize: 20 }} />
-                            </button>
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.style.opacity = "1")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.style.opacity = "0.7")
+                              }
+                            />
                           </div>
                         </td>
                       </tr>
@@ -1255,16 +1048,54 @@ const BlockedListPage = () => {
             )}
           </div>
 
+          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <BlockedListPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedRows.length}
-              totalCount={filteredRows.length}
-              onPrev={handlePrev}
-              onNext={handleNext}
-              disabled={loading.fetch}
-            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "7px 14px",
+                borderTop: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {pagedRows.length} record
+                {pagedRows.length !== 1 ? "s" : ""} on page {page}
+              </span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <Btn
+                  onClick={handlePrev}
+                  disabled={loading.fetch || page <= 1}
+                  variant="outline"
+                >
+                  ← Prev
+                </Btn>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `0.5px solid ${C.cardBorder}`,
+                  }}
+                >
+                  Page {page} of {totalPages}
+                </span>
+                <Btn
+                  onClick={handleNext}
+                  disabled={loading.fetch || page >= totalPages}
+                  variant="outline"
+                >
+                  Next →
+                </Btn>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1274,38 +1105,31 @@ const BlockedListPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: blockedListModalPaperSx }}
+        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
       >
         <DialogTitle
-          sx={{
+          style={{
             background: "#1e2d42",
             color: "#fff",
             fontWeight: 700,
-            fontSize: "16px !important",
-            lineHeight: "1.4 !important",
+            fontSize: 16,
             textAlign: "center",
-            padding: "14px 24px !important",
-            letterSpacing: "-0.01em",
+            padding: "14px 24px",
           }}
         >
           {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
         </DialogTitle>
 
-        <DialogContent
-          sx={{
-            padding: "24px !important",
-            background: "var(--bg-surface)",
-          }}
-        >
+        <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "var(--bg-main)",
-                border: `1px solid ${C.divider}`,
-                borderRadius: FIELD_RADIUS,
-                padding: 20,
-              }}
-            >
+          <div
+  style={{
+    background: "#f5f7fa",
+    border: `1px solid ${C.cardBorder}`,
+    borderRadius: 6,
+    padding: 16,
+  }}
+>
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
@@ -1320,7 +1144,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: FIELD_LABEL_COLOR,
+      color: C.labelText,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1334,7 +1158,13 @@ const BlockedListPage = () => {
                     fullWidth
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    sx={blockedListFieldSx}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        padding: "6px 8px",
+                        backgroundColor: "#fff",
+                      },
+                    }}
                   />
                 </div>
 
@@ -1349,7 +1179,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: FIELD_LABEL_COLOR,
+      color: C.labelText,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1367,7 +1197,16 @@ const BlockedListPage = () => {
                         if (val === "Extension") setBlockedNumber("");
                         else setSelectedExtension("");
                       }}
-                      sx={blockedListFieldSx}
+                      sx={{
+                        fontSize: 13,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
+                      }}
                     >
                       <MenuItem
                         value="Exact Match"
@@ -1399,7 +1238,7 @@ const BlockedListPage = () => {
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
-                        color: FIELD_LABEL_COLOR,
+                        color: C.labelText,
                         width: 160,
                         flexShrink: 0,
                       }}
@@ -1411,7 +1250,7 @@ const BlockedListPage = () => {
                         value={selectedExtension}
                         onChange={(e) => setSelectedExtension(e.target.value)}
                         displayEmpty
-                        sx={blockedListFieldSx}
+                        sx={{ fontSize: 13 }}
                       >
                         <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                           <span style={{ color: C.mutedText }}>
@@ -1442,7 +1281,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: FIELD_LABEL_COLOR,
+      color: C.labelText,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1457,7 +1296,13 @@ const BlockedListPage = () => {
                       size="small"
                       value={blockedNumber}
                       onChange={(e) => setBlockedNumber(e.target.value)}
-                      sx={blockedListFieldSx}
+                      inputProps={{
+                        style: {
+                          fontSize: 13,
+                          padding: "6px 8px",
+                          backgroundColor: "#fff",
+                        },
+                      }}
                     />
                   </div>
                 )}
@@ -1473,7 +1318,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: FIELD_LABEL_COLOR,
+      color: C.labelText,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1487,7 +1332,16 @@ const BlockedListPage = () => {
                     <MuiSelect
                       value={direction}
                       onChange={(e) => setDirection(e.target.value)}
-                      sx={blockedListFieldSx}
+                      sx={{
+                        fontSize: 13,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
+                      }}
                     >
                       <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
                         Inbound
@@ -1513,7 +1367,7 @@ const BlockedListPage = () => {
     style={{
       fontSize: 13,
       fontWeight: 600,
-      color: FIELD_LABEL_COLOR,
+      color: C.labelText,
       width: 160,
       flexShrink: 0,
       cursor: "help",
@@ -1526,7 +1380,16 @@ const BlockedListPage = () => {
                     <MuiSelect
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={blockedListFieldSx}
+                      sx={{
+                        fontSize: 13,
+                        backgroundColor: "#fff",
+                        height: 32,
+                        "& .MuiSelect-select": {
+                          padding: "6px 8px",
+                          display: "flex",
+                          alignItems: "center",
+                        },
+                      }}
                     >
                       <MenuItem value="Yes" sx={{ fontSize: 13 }}>
                         Yes
@@ -1543,18 +1406,19 @@ const BlockedListPage = () => {
         </DialogContent>
 
         <DialogActions
-          sx={{
-            padding: "16px 24px !important",
+          style={{
+            padding: "16px 24px",
             background: C.pageBg,
-            borderTop: `1px solid ${C.divider}`,
-            justifyContent: "center !important",
-            gap: "12px",
+            borderTop: `1px solid ${C.cardBorder}`,
+            justifyContent: "center",
+            gap: 12,
           }}
         >
           <Btn
             onClick={handleSave}
             disabled={loading.save}
-            variant="dialogPrimary"
+            variant="primary"
+            style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress
@@ -1572,7 +1436,8 @@ const BlockedListPage = () => {
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
-            variant="dialogCancel"
+            variant="cancel"
+            style={pbxModalCancelBtnStyle}
           >
             Cancel
           </Btn>

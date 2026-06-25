@@ -34,14 +34,14 @@ import {
 
 // ── Local page UI (inlined from systemSharedUi) ──
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-subtle)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
   amber: "#dc2626",
 };
 
@@ -52,22 +52,22 @@ const systemSettingsTdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid var(--border-subtle)`,
-  borderRight: `1px solid var(--border-subtle)`,
+  borderBottom: `1px solid ${C.cardBorder}`,
+  borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
 
 const SystemSettingsTH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid var(--border-subtle)`,
-      borderRight: `1px solid var(--border-subtle)`,
+      borderBottom: `1px solid ${C.cardBorder}`,
+      borderRight: `1px solid ${C.cardBorder}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -78,93 +78,193 @@ const SystemSettingsTH = ({ children, style: extra }) => (
   </th>
 );
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
-const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
-const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-const BTN_DANGER = `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`;
-
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  error: BTN_ERROR,
-  delete: BTN_DELETE,
-  edit: BTN_EDIT,
-  danger: BTN_DANGER,
+const SystemSettingsBtn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = s.background;
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {startIcon && (
+        <span style={{ display: "flex", alignItems: "center" }}>
+          {startIcon}
+        </span>
+      )}
+      {children}
+    </button>
+  );
 };
-
-const SystemSettingsBtn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, startIcon }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {startIcon && <span className="flex items-center">{startIcon}</span>}
-    {children}
-  </button>
-);
 
 const systemSettingsCheckboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const SYS_TOAST_SX = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
+const systemSettingsSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
 };
-const SYS_PAGE = "clixxo-system-settings theme-page-bg bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] flex flex-col items-center box-border";
-const SYS_INNER = "w-full max-w-[1000px] mx-auto";
-const SYS_CARD = "overflow-hidden rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)] mb-[24px]";
-const SYS_TOOLBAR = "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-subtle)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[20px]";
-const SYS_TOOLBAR_SIDE = "flex flex-wrap items-center gap-[8px]";
-const SYS_SELECTED_BADGE = "rounded-full border border-[var(--border-subtle)] bg-[var(--row-selected)] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const SYS_PAGINATION = "flex flex-wrap items-center justify-between gap-[8px] overflow-hidden border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[20px]";
-const SYS_PAGE_BADGE = "rounded-[6px] border border-[var(--border-strong)] bg-[var(--row-selected)] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
+
+const systemSettingsPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  boxSizing: "border-box",
+};
+
+const systemSettingsInnerStyle = {
+  width: "100%",
+  maxWidth: 1000,
+  margin: "0 auto",
+};
+
+const systemSettingsCardStyle = {
+  background: C.cardBg,
+  borderRadius: 10,
+  overflow: "hidden",
+  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  marginBottom: 24,
+  border: `1.5px solid ${C.cardBorder}`,
+};
+
+const systemSettingsToolbarStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.cardBorder}`,
+  background: "#ffffff",
+  borderTopLeftRadius: SYSTEM_SETTINGS_CARD_RADIUS,
+  borderTopRightRadius: SYSTEM_SETTINGS_CARD_RADIUS,
+};
+
+const systemSettingsPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: SYSTEM_SETTINGS_CARD_RADIUS,
+  borderBottomRightRadius: SYSTEM_SETTINGS_CARD_RADIUS,
+  overflow: "hidden",
+  flexWrap: "wrap",
+  gap: 8,
+};
+
+const systemSettingsPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
 
 const SystemSettingsBreadcrumb = ({ current }) => (
-  <div className="mb-[16px] flex flex-nowrap items-center gap-[4px] whitespace-nowrap text-[12px] font-normal leading-[1.5] text-[var(--text-muted)]">
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "nowrap",
+      whiteSpace: "nowrap",
+      lineHeight: 1.5,
+    }}
+  >
     <span>System</span>
     <span>&gt;</span>
     <span>System Settings</span>
     <span>&gt;</span>
-    <span className="font-semibold text-[var(--text-primary)]">{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -220,8 +320,8 @@ const { height: _nh, ...nativeFieldBase } = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-surface)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -234,12 +334,12 @@ const systemModalFieldInputStyle = {
   width: "100%",
   padding: "0 10px",
   lineHeight: 1.35,
-  color: "var(--text-primary)",
+  color: "#1e293b",
 };
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
       transition: "border-color 0.2s ease",
@@ -283,10 +383,10 @@ const tooltips = {
 
 const muiSelectSx = {
   fontSize: 13,
-  backgroundColor: "var(--bg-surface)",
+  backgroundColor: "#fff",
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -314,7 +414,7 @@ const modalSelectSx = {
   "& .MuiOutlinedInput-root": {
     minHeight: 36,
     height: 36,
-    backgroundColor: "var(--bg-surface)",
+    backgroundColor: "#fff",
   },
 };
 
@@ -776,30 +876,44 @@ const SipTrunkPage = () => {
   const pagedStart = (page - 1) * itemsPerPage;
 
   return (
-    <div className={SYS_PAGE}>
+    <div style={systemSettingsPageWrapStyle}>
       {message.text && (
         <Alert
           severity={message.type}
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={SYS_TOAST_SX}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
         >
           {message.text}
         </Alert>
       )}
 
-      <div className={SYS_INNER}>
+      <div style={systemSettingsInnerStyle}>
         <SystemSettingsBreadcrumb current="Global SIP" />
 
-        <div className={SYS_CARD}>
-          <div className={SYS_TOOLBAR}>
-            <div className={SYS_TOOLBAR_SIDE}>
+        <div style={systemSettingsCardStyle}>
+          <div style={systemSettingsToolbarStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
-                <span className={SYS_SELECTED_BADGE}>
+                <span style={systemSettingsSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div className={SYS_TOOLBAR_SIDE}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <SystemSettingsBtn
                 variant="cancel"
                 onClick={handleDelete}
@@ -868,7 +982,7 @@ const SipTrunkPage = () => {
               <>
                 <div
                   style={{
-                    color: "var(--text-primary)",
+                    color: "#3E5475",
                     fontSize: 13,
                     fontWeight: 600,
                     marginBottom: 16,
@@ -948,10 +1062,10 @@ const SipTrunkPage = () => {
                     const isLastRow = idx === pagedRegisters.length - 1;
                     const isRowChecked = selected.includes(realIdx);
                     const rowBg = isRowChecked
-                      ? "var(--row-selected)"
+                      ? "#f0f9ff"
                       : idx % 2 === 1
-                        ? "var(--row-alt)"
-                        : "var(--bg-surface)";
+                        ? "#f8fafc"
+                        : "#ffffff";
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
@@ -965,7 +1079,7 @@ const SipTrunkPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isRowChecked)
-                            e.currentTarget.style.background = "var(--row-alt)";
+                            e.currentTarget.style.background = "#f1f5f9";
                         }}
                         onMouseLeave={(e) => {
                           if (!isRowChecked)
@@ -1063,7 +1177,7 @@ const SipTrunkPage = () => {
           </div>
 
           {registers.length > 0 && (
-            <div className={SYS_PAGINATION}>
+            <div style={systemSettingsPaginationStyle}>
               <span
                 style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}
               >
@@ -1079,7 +1193,7 @@ const SipTrunkPage = () => {
                   >
                     ← Prev
                   </SystemSettingsBtn>
-                  <span className={SYS_PAGE_BADGE}>
+                  <span style={systemSettingsPageBadgeStyle}>
                     Page {page} of {totalPages}
                   </span>
                   <SystemSettingsBtn
@@ -1113,7 +1227,7 @@ const SipTrunkPage = () => {
             borderRadius: "8px",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
             backgroundImage: "none",
             maxHeight: "90vh",
             display: "flex",
@@ -1129,7 +1243,7 @@ const SipTrunkPage = () => {
             fontSize: "16px",
             color: "#ffffff",
             backgroundColor: "#1e2d42",
-            borderBottom: `1px solid var(--border-subtle)`,
+            borderBottom: `1px solid ${C.cardBorder}`,
             px: 3,
             py: 2,
             textAlign: "center",
@@ -1143,7 +1257,7 @@ const SipTrunkPage = () => {
         <DialogContent
           sx={{
             p: "24px",
-            backgroundColor: "var(--bg-surface)",
+            backgroundColor: "#ffffff",
             overflowY: "auto",
             flex: "1 1 auto",
           }}
@@ -1153,8 +1267,8 @@ const SipTrunkPage = () => {
               display: "flex",
               flexDirection: "column",
               gap: 14,
-              background: "var(--row-alt)",
-              border: `1px solid var(--border-subtle)`,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
               marginTop: 22,
@@ -1308,7 +1422,7 @@ const SipTrunkPage = () => {
                                 "& .MuiFormControlLabel-label": {
                                   fontSize: 12,
                                   fontWeight: 500,
-                                  color: "var(--text-secondary)",
+                                  color: "#374151",
                                 },
                               }}
                             />
@@ -1458,8 +1572,8 @@ const SipTrunkPage = () => {
             gap: 2,
             py: "10px",
             px: "16px",
-            borderTop: `1px solid var(--border-subtle)`,
-            backgroundColor: "var(--row-alt)",
+            borderTop: `1px solid ${C.cardBorder}`,
+            backgroundColor: "#f8fafc",
             flexShrink: 0,
           }}
         >

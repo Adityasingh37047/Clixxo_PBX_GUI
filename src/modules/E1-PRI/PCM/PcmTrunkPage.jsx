@@ -83,50 +83,102 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const LOCAL_STORAGE_KEY = "pcm_trunks";
 
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  strongText: "var(--text-primary)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
 };
 
 const CARD_RADIUS = 20;
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3]`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      borderRadius: 6,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = s.background;
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </button>
+  );
 };
-
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {children}
-  </button>
-);
 
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "var(--table-header-bg)",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -149,115 +201,15 @@ const cellStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "var(--bg-surface)",
+  background: "#ffffff",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
   whiteSpace: "nowrap",
 };
 
-const E1_PAGE = "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px]";
-const E1_INNER = "w-full max-w-full mx-auto";
-const E1_CARD =
-  "overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_10px_30px_rgba(15,23,42,0.06)]";
-const E1_TOOLBAR =
-  "flex min-h-[44px] flex-wrap items-center justify-between gap-[12px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-t-[20px]";
-const E1_TOOLBAR_LEFT = "flex flex-wrap items-center gap-[8px]";
-const E1_TOOLBAR_ACTIONS = "flex flex-wrap items-center gap-[8px]";
-const E1_SELECTED_BADGE =
-  "rounded-full border border-[#3E5475] bg-[#eff6ff] px-[12px] py-[5px] text-[11px] font-bold text-[var(--text-label)]";
-const E1_PAGINATION =
-  "flex items-center justify-between overflow-hidden border-t border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] rounded-b-[20px]";
-const E1_PAGE_BADGE =
-  "rounded-[6px] border border-[var(--border-strong)] bg-[#e0f2fe] px-[14px] py-[5px] text-[11px] font-semibold text-[var(--text-label)]";
-const E1_TOAST_SX = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
-};
-
-const modalInputProps = {
-  style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
-};
-
-const e1DialogTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-};
-
-const e1DialogContentStyle = { padding: "24px", backgroundColor: "var(--bg-surface)" };
-
-const e1DialogFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: "var(--row-alt)",
-  border: "1px solid var(--border-subtle)",
-  borderRadius: 8,
-  padding: 20,
-};
-
-const e1DialogFieldRowStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-};
-
-const e1DialogFieldLabelStyle = {
-  fontSize: 13,
-  color: "var(--text-primary)",
-  fontWeight: 600,
-  whiteSpace: "nowrap",
-  width: 170,
-  lineHeight: 1.2,
-  textAlign: "left",
-};
-
-const e1DialogFieldControlStyle = { width: "min(100%, 320px)" };
-
-const e1DialogActionsStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: "var(--row-alt)",
-  borderTop: "1px solid #9CA3AF",
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-};
-
-const e1DialogPaperSx = {
-  width: 600,
-  maxWidth: "95vw",
-  mx: "auto",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const E1Breadcrumb = ({ section, current }) => (
-  <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">
-    <span>E1-PRI</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span className="font-semibold text-[#1e293b]">{current}</span>
-  </div>
-);
-
 const checkboxSx = {
   padding: "1px",
-  color: "var(--text-primary)",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
 };
 const modalOverlayStyle = {
@@ -318,7 +270,7 @@ const modalInputStyle = {
   padding: "3px 6px",
   borderRadius: 3,
   border: "1px solid #bbb",
-  background: "var(--bg-main)",
+  background: "#fff",
 };
 const modalFooterStyle = {
   display: "flex",
@@ -382,7 +334,7 @@ const blueBarStyle = {
   borderBottom: `1px solid ${C.cardBorder}`,
 };
 const thStyle = {
-  background: "var(--table-header-bg)",
+  background: "#F8FAFC",
   color: C.labelText,
   fontWeight: 700,
   fontSize: 11,
@@ -399,7 +351,7 @@ const tdStyle = {
   borderRight: `1px solid ${C.cardBorder}`,
   padding: "7px 14px",
   fontSize: 13,
-  background: "var(--bg-main)",
+  background: "#fff",
   textAlign: "center",
   whiteSpace: "nowrap",
   color: C.valueText,
@@ -434,7 +386,7 @@ const pageSelectStyle = {
   padding: "2px 6px",
   borderRadius: 3,
   border: "1px solid #bbb",
-  background: "var(--bg-main)",
+  background: "#fff",
 };
 
 const PcmTrunkPage = () => {
@@ -529,13 +481,38 @@ const PcmTrunkPage = () => {
 
   // UI
   return (
-    <div className={E1_PAGE}>
-      <div className={E1_INNER}>
-        <E1Breadcrumb section="PCM" current="PCM Trunk" />
+    <div
+      style={{
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: 16,
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>E1-PRI</span>
+          <span>&gt;</span>
+          <span>PCM</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            PCM Trunk
+          </span>
+        </div>
         {trunks.length === 0 ? (
           <div
             style={{
-              background: "var(--bg-surface)",
+              background: "#ffffff",
               borderRadius: 10,
               border: `1.5px solid ${C.cardBorder}`,
               boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
@@ -550,7 +527,7 @@ const PcmTrunkPage = () => {
           >
             <div
               style={{
-                color: "var(--text-primary)",
+                color: "#3E5475",
                 fontSize: 13,
                 fontWeight: 600,
                 marginBottom: 16,
@@ -580,15 +557,46 @@ const PcmTrunkPage = () => {
           </div>
         ) : (
           <div style={tableContainerStyle}>
-            <div className={E1_TOOLBAR}>
-              <div className={E1_TOOLBAR_LEFT}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                minHeight: 44,
+                padding: "7px 14px",
+                borderBottom: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                flexWrap: "wrap",
+                gap: 12,
+                borderTopLeftRadius: CARD_RADIUS,
+                borderTopRightRadius: CARD_RADIUS,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {selected.length > 0 && (
-                  <span className={E1_SELECTED_BADGE}>
+                  <span
+                    style={{
+                      background: "#eff6ff",
+                      color: C.accent,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: "5px 12px",
+                      borderRadius: 999,
+                      border: `1px solid ${C.accent}`,
+                    }}
+                  >
                     {selected.length} selected
                   </span>
                 )}
               </div>
-              <div className={E1_TOOLBAR_ACTIONS}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
                 <Btn
                   variant="cancel"
                   onClick={handleInverse}
@@ -725,7 +733,7 @@ const PcmTrunkPage = () => {
                 justifyContent: "space-between",
                 padding: "7px 14px",
                 borderTop: `1px solid ${C.cardBorder}`,
-                background: "var(--bg-surface)",
+                background: "#ffffff",
                 borderBottomLeftRadius: CARD_RADIUS,
                 borderBottomRightRadius: CARD_RADIUS,
               }}
@@ -742,7 +750,17 @@ const PcmTrunkPage = () => {
                 >
                   ← Prev
                 </Btn>
-                <span className={E1_PAGE_BADGE}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: C.accent,
+                    background: "#e0f2fe",
+                    padding: "5px 14px",
+                    borderRadius: 6,
+                    border: `1px solid ${C.cardBorder}`,
+                  }}
+                >
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -778,7 +796,7 @@ const PcmTrunkPage = () => {
         <DialogContent
           className="flex flex-col gap-2 py-4"
           style={{
-            backgroundColor: "var(--bg-muted)",
+            backgroundColor: "#dde0e4",
             border: "1px solid #444444",
             borderTop: "none",
           }}
@@ -796,7 +814,8 @@ const PcmTrunkPage = () => {
                 whiteSpace: "nowrap",
                 display: "inline-block",
               }}
-            >              Index:
+            >
+              Index:
             </E1PriFieldLabel>
             <Select
               value={form.index}
@@ -806,7 +825,7 @@ const PcmTrunkPage = () => {
               size="small"
               fullWidth
               variant="outlined"
-              className="bg-[var(--bg-surface)]"
+              className="bg-white"
               sx={{ maxWidth: 120, minWidth: 0 }}
             >
               {PCM_TRUNK_INDEX_OPTIONS.map((i) => (
@@ -829,7 +848,8 @@ const PcmTrunkPage = () => {
                 whiteSpace: "nowrap",
                 display: "inline-block",
               }}
-            >              PCM NO.:
+            >
+              PCM NO.:
             </E1PriFieldLabel>
             <Select
               value={form.pcmNo}
@@ -839,7 +859,7 @@ const PcmTrunkPage = () => {
               size="small"
               fullWidth
               variant="outlined"
-              className="bg-[var(--bg-surface)]"
+              className="bg-white"
               sx={{ maxWidth: 120, minWidth: 0 }}
             >
               {PCM_TRUNK_PCM_NO_OPTIONS.map((i) => (
@@ -862,7 +882,8 @@ const PcmTrunkPage = () => {
                 whiteSpace: "nowrap",
                 display: "inline-block",
               }}
-            >              Including Ts:
+            >
+              Including Ts:
             </E1PriFieldLabel>
             <Checkbox
               checked={checkAll}
@@ -872,7 +893,7 @@ const PcmTrunkPage = () => {
             <span className="font-medium">Check All</span>
           </div>
           {/* TS Checkboxes Block */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-gray-200 rounded bg-[var(--bg-surface)] p-2 mb-2 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-gray-200 rounded bg-white p-2 mb-2 w-full">
             {form.ts.map((checked, idx) => (
               <label
                 key={idx}
@@ -916,7 +937,7 @@ const PcmTrunkPage = () => {
             sx={{
               background:
                 "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "var(--text-secondary)",
+              color: "#374151",
               fontWeight: 600,
               fontSize: "16px",
               borderRadius: 1,
@@ -926,7 +947,7 @@ const PcmTrunkPage = () => {
               "&:hover": {
                 background:
                   "linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)",
-                color: "var(--text-secondary)",
+                color: "#374151",
               },
             }}
             onClick={handleCloseModal}

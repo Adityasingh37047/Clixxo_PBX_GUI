@@ -157,10 +157,10 @@ const CallerIDReservePool = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border" style={{backgroundColor: "var(--bg-muted)"}}>
+    <div className="bg-gray-50 min-h-[calc(100vh-200px)] flex flex-col items-center box-border" style={{backgroundColor: "#dde0e4"}}>
       {rows.length === 0 ? (
         <div className="w-full h-full flex flex-col items-center justify-center" style={{ minHeight: '15vh' }}>
-          <div className="text-[var(--text-secondary)] text-xl md:text-[16px] font-semibold mb-4 text-center">No available CallerID Reserve!</div>
+          <div className="text-gray-600 text-xl md:text-[16px] font-semibold mb-4 text-center">No available CallerID Reserve!</div>
           <Button
             variant="contained"
             sx={{
@@ -187,19 +187,19 @@ const CallerIDReservePool = () => {
               </div>
           
           <div style={{ border: '2px solid #bbb', borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-          <div className="bg-[var(--bg-surface)] w-full flex flex-col overflow-hidden" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
-            <div className="overflow-x-auto w-full border-b border-[var(--border-subtle)]" style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderBottom: 'none' }}>
-            <table className="w-full min-w-[500px] border border-[var(--border-subtle)] border-collapse whitespace-nowrap" style={{ tableLayout: 'auto', border: '1px solid #bbb' }}>
+          <div className="bg-white w-full flex flex-col overflow-hidden" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+            <div className="overflow-x-auto w-full border-b border-gray-300" style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderBottom: 'none' }}>
+            <table className="w-full min-w-[500px] border border-gray-300 border-collapse whitespace-nowrap" style={{ tableLayout: 'auto', border: '1px solid #bbb' }}>
               <thead>
-                <tr>{CALLERID_RESERVE_POOL_TABLE_COLUMNS.map(col => <th key={col.key} className="bg-[var(--bg-surface)] text-[#222] font-semibold text-[12px] border border-[var(--border-subtle)] text-center" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>{col.label}</th>)}</tr>
+                <tr>{CALLERID_RESERVE_POOL_TABLE_COLUMNS.map(col => <th key={col.key} className="bg-white text-[#222] font-semibold text-[12px] border border-gray-300 text-center" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>{col.label}</th>)}</tr>
               </thead>
               <tbody>
                 {rows.map((row, idx) => (
                   <tr key={idx} style={{ minHeight: 32 }}>
-                    <td className="border border-[var(--border-subtle)] text-center bg-[var(--bg-surface)] text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}><input type="checkbox" checked={selected.includes(idx)} onChange={() => handleSelectRow(idx)} /></td>
-                    <td className="border border-[var(--border-subtle)] text-center bg-[var(--bg-surface)] text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>{row.no}</td>
-                    <td className="border border-[var(--border-subtle)] text-center bg-[var(--bg-surface)] text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>{row.callerId}</td>
-                    <td className="border border-[var(--border-subtle)] text-center bg-[var(--bg-surface)] text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}><EditDocumentIcon style={{ cursor: 'pointer', color: '#0e8fd6', display: 'block', margin: '0 auto' }} onClick={() => handleOpenModal(row, idx)} /></td>
+                    <td className="border border-gray-300 text-center bg-white text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}><input type="checkbox" checked={selected.includes(idx)} onChange={() => handleSelectRow(idx)} /></td>
+                    <td className="border border-gray-300 text-center bg-white text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>{row.no}</td>
+                    <td className="border border-gray-300 text-center bg-white text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}>{row.callerId}</td>
+                    <td className="border border-gray-300 text-center bg-white text-[12px]" style={{ border: '1px solid #bbb', padding: '6px 8px', minHeight: 32, whiteSpace: 'nowrap' }}><EditDocumentIcon style={{ cursor: 'pointer', color: '#0e8fd6', display: 'block', margin: '0 auto' }} onClick={() => handleOpenModal(row, idx)} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -209,38 +209,38 @@ const CallerIDReservePool = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full px-2 py-2" style={{ background: '#e3e7ef', marginTop: 12 }}>
             <div className="flex flex-wrap gap-2">
               <button 
-                className="bg-gray-300 text-[var(--text-secondary)] font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
+                className="bg-gray-300 text-gray-600 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
                 onClick={handleCheckAll}
               >
                 Check All
               </button>
               <button 
-                className="bg-gray-300 text-[var(--text-secondary)] font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
+                className="bg-gray-300 text-gray-600 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
                 onClick={handleUncheckAll}
               >
                 Uncheck All
               </button>
               <button 
-                className="bg-gray-300 text-[var(--text-secondary)] font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
+                className="bg-gray-300 text-gray-600 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
                 onClick={handleInverse}
               >
                 Inverse
               </button>
               <button 
-                className="bg-gray-300 text-[var(--text-secondary)] font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
+                className="bg-gray-300 text-gray-600 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
                 onClick={handleDelete}
               >
                 Delete
               </button>
               <button 
-                className="bg-gray-300 text-[var(--text-secondary)] font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
+                className="bg-gray-300 text-gray-600 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
                 onClick={handleClearAll}
               >
                 Clear All
               </button>
             </div>
             <button 
-              className="bg-gray-300 text-[var(--text-secondary)] font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
+              className="bg-gray-300 text-gray-600 font-semibold text-xs rounded px-3 py-1 min-w-[80px] shadow hover:bg-gray-400" 
               onClick={() => handleOpenModal()}
             >
               Add New
@@ -283,7 +283,7 @@ const CallerIDReservePool = () => {
             {CALLERID_RESERVE_POOL_FIELDS.map((field) => (
               <div
                 key={field.name}
-                className="flex items-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded px-2 py-1 gap-2"
+                className="flex items-center bg-white border border-gray-300 rounded px-2 py-1 gap-2"
                 style={{ minHeight: 28 }}
               >
                 <E1PriFieldLabel
@@ -299,7 +299,8 @@ const CallerIDReservePool = () => {
                   }}
                 >
                   {field.label}
-                </E1PriFieldLabel>                <div className="flex-1">
+                </E1PriFieldLabel>
+                <div className="flex-1">
                   <TextField
                     type={field.type || 'text'}
                     name={field.name}
@@ -358,7 +359,7 @@ const CallerIDReservePool = () => {
             variant="contained"
             sx={{
               background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-              color: 'var(--text-secondary)',
+              color: '#374151',
               fontWeight: 800,
               fontSize: '16px',
               minWidth: 80,
@@ -369,7 +370,7 @@ const CallerIDReservePool = () => {
               textTransform: 'none',
               '&:hover': {
                 background: 'linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)',
-                color: 'var(--text-secondary)',
+                color: '#374151',
               },
             }}
             onClick={handleCloseModal}

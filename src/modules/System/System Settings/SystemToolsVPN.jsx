@@ -43,25 +43,24 @@ import {
   seVpnState,
 } from "../../../api/apiService";
 const C = {
-  pageBg: "var(--bg-main)",
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-subtle)",
-  divider: "var(--border-subtle)",
-  cardShadow: "var(--shadow-soft)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  strongText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
-  accent: "var(--accent-brand)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  divider: "#9CA3AF",
+  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  labelText: "#3E5475",
+  valueText: "#1e293b",
+  strongText: "#0f172a",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   primary: "#2563eb",
   primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
-
 // ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
@@ -90,8 +89,8 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
-  backgroundColor: "var(--bg-main)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -131,7 +130,7 @@ const systemFieldInputStyle = {
   width: "100%",
   padding: "6px 10px",
   borderRadius: 10,
-  background: "var(--bg-main)",
+  background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
 };
@@ -149,48 +148,102 @@ const inputStyle = systemFieldInputStyle;
 const selectStyle = systemFieldSelectStyle;
 
 
-const BTN_BASE =
-  "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
-const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
-const BTN_OUTLINE = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-label)] border-[var(--border-strong)] hover:bg-[var(--row-alt)]`;
-const BTN_CANCEL = `${BTN_BASE} bg-[var(--border-subtle)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:opacity-90`;
-const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)]`;
-const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
-const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
-const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-const BTN_DANGER = `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`;
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  startIcon,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    error: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `1px solid ${C.errorRed}`,
+    },
+  };
 
-const btnVariantCls = {
-  default: BTN_DEFAULT,
-  primary: BTN_PRIMARY,
-  cancel: BTN_CANCEL,
-  outline: BTN_OUTLINE,
-  error: BTN_ERROR,
-  delete: BTN_DELETE,
-  edit: BTN_EDIT,
-  danger: BTN_DANGER,
+  const s = styles[variant] || styles.default;
+  const hoverBg = (() => {
+    switch (variant) {
+      case "primary":
+        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+      case "error":
+        return "#b91c1c";
+      case "cancel":
+        return "#b6c2d3";
+      case "default":
+      default:
+        return "#e2e8f0";
+    }
+  })();
+
+  const baseBg = s.background;
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {startIcon && (
+        <span style={{ display: "flex", alignItems: "center" }}>
+          {startIcon}
+        </span>
+      )}
+      {children}
+    </button>
+  );
 };
-
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title, startIcon }) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    style={style}
-    className={`${btnVariantCls[variant] || btnVariantCls.default} ${className}`.trim()}
-  >
-    {startIcon && <span className="flex items-center">{startIcon}</span>}
-    {children}
-  </button>
-);
 
 const disabledInputStyle = {
   ...inputStyle,
-  background: "var(--bg-muted)",
-  color: "var(--text-muted)",
+  background: "#f1f5f9",
+  color: "#94a3b8",
   cursor: "not-allowed",
-  borderColor: "var(--border-subtle)",
+  borderColor: "#e2e8f0",
 };
 
 const SystemToolsVPN = () => {
@@ -1461,7 +1514,7 @@ const SystemToolsVPN = () => {
 
   return (
     <div
-      className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
+      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
       <div className="w-full" style={{ maxWidth: 1000 }}>
@@ -1491,7 +1544,7 @@ const SystemToolsVPN = () => {
           <div
             style={{
               fontSize: 12,
-              color: "var(--text-muted)",
+              color: "#94a3b8",
               fontWeight: 400,
               display: "flex",
               alignItems: "center",
@@ -1533,7 +1586,7 @@ const SystemToolsVPN = () => {
             overflow: "hidden",
             boxShadow: C.cardShadow,
             marginBottom: 24,
-            border: `1px solid var(--border-subtle)`,
+            border: `1.5px solid ${C.cardBorder}`,
           }}
         >
           <div
@@ -1640,7 +1693,7 @@ const SystemToolsVPN = () => {
 
                   {showAdvanced && (
                     <>
-                      <div style={{ height: 1, background: "var(--border-subtle)" }} />
+                      <div style={{ height: 1, background: "#e5e7eb" }} />
 
                       <ROW label="Configuration File:">
                         <div
@@ -1672,12 +1725,12 @@ const SystemToolsVPN = () => {
                               className="cursor-pointer select-none"
                               style={{
                                 padding: "5px 12px",
-                                background: "var(--border-subtle)",
+                                background: "#cbd5e1",
                                 border: "1px solid #b6c2d3",
                                 borderRadius: 8,
                                 fontSize: 12,
                                 fontWeight: 600,
-                                color: "var(--text-secondary)",
+                                color: "#374151",
                                 whiteSpace: "nowrap",
                                 flexShrink: 0,
                                 transition: "background 0.15s",
@@ -1686,7 +1739,7 @@ const SystemToolsVPN = () => {
                                 e.currentTarget.style.background = "#b6c2d3";
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "var(--border-subtle)";
+                                e.currentTarget.style.background = "#cbd5e1";
                               }}
                             >
                               Choose File
@@ -1749,7 +1802,7 @@ const SystemToolsVPN = () => {
                         />
                       </ROW>
 
-                      <div style={{ height: 1, background: "var(--border-subtle)" }} />
+                      <div style={{ height: 1, background: "#e5e7eb" }} />
 
                       <div
                         style={{
@@ -1814,7 +1867,7 @@ const SystemToolsVPN = () => {
                   <div
                     style={{
                       marginTop: 32,
-                      borderTop: `1px solid var(--border-subtle)`,
+                      borderTop: `1px solid ${C.cardBorder}`,
                       paddingTop: 20,
                     }}
                   >
@@ -1869,11 +1922,11 @@ const SystemToolsVPN = () => {
                         height: 200,
                         fontSize: 12,
                         fontFamily: "monospace",
-                        backgroundColor: "var(--row-alt)",
+                        backgroundColor: "#f8fafc",
                         color: C.valueText,
                         padding: "10px 12px",
                         borderRadius: 8,
-                        border: `1px solid var(--border-subtle)`,
+                        border: `1.5px solid ${C.cardBorder}`,
                         outline: "none",
                         resize: "vertical",
                         lineHeight: 1.6,
@@ -1969,7 +2022,7 @@ const SystemToolsVPN = () => {
                     {/* Inner config box — no cut lines, clean card */}
                     <div
                       style={{
-                        background: "var(--row-alt)",
+                        background: "#f8fafc",
                         borderRadius: 10,
                         border: "1px solid #e2e8f0",
                         padding: "20px 24px",
@@ -2022,7 +2075,7 @@ const SystemToolsVPN = () => {
                       <div
                         style={{
                           height: 1,
-                          background: "var(--border-subtle)",
+                          background: "#e2e8f0",
                           margin: "4px 0 14px",
                         }}
                       />
@@ -2095,8 +2148,8 @@ const SystemToolsVPN = () => {
                               className="cursor-pointer select-none"
                               style={{
                                 padding: "5px 12px",
-                                background: "var(--bg-main)",
-                                border: `1px solid var(--border-subtle)`,
+                                background: "#fff",
+                                border: `1.5px solid ${C.cardBorder}`,
                                 borderRadius: 8,
                                 fontSize: 12,
                                 fontWeight: 600,
@@ -2129,8 +2182,8 @@ const SystemToolsVPN = () => {
                               className="cursor-pointer select-none"
                               style={{
                                 padding: "5px 12px",
-                                background: "var(--bg-main)",
-                                border: `1px solid var(--border-subtle)`,
+                                background: "#fff",
+                                border: `1.5px solid ${C.cardBorder}`,
                                 borderRadius: 8,
                                 fontSize: 12,
                                 fontWeight: 600,
@@ -2150,7 +2203,7 @@ const SystemToolsVPN = () => {
                       <div
                         style={{
                           height: 1,
-                          background: "var(--border-subtle)",
+                          background: "#e2e8f0",
                           margin: "14px 0",
                         }}
                       />
@@ -2284,7 +2337,7 @@ const SystemToolsVPN = () => {
                     {/* SoftEther Logs */}
                     <div
                       style={{
-                        borderTop: `1px solid var(--border-subtle)`,
+                        borderTop: `1px solid ${C.cardBorder}`,
                         paddingTop: 20,
                       }}
                     >
@@ -2328,11 +2381,11 @@ const SystemToolsVPN = () => {
                           height: 200,
                           fontSize: 12,
                           fontFamily: "monospace",
-                          backgroundColor: "var(--row-alt)",
+                          backgroundColor: "#f8fafc",
                           color: C.valueText,
                           padding: "10px 12px",
                           borderRadius: 8,
-                          border: `1px solid var(--border-subtle)`,
+                          border: `1.5px solid ${C.cardBorder}`,
                           outline: "none",
                           resize: "vertical",
                           lineHeight: 1.6,

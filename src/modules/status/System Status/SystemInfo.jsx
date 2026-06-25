@@ -1,20 +1,30 @@
-﻿import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 import { Button, CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { THEME_PALETTE as C } from "../../../constants/themePalette";
 
 const REFRESH_INTERVAL_MS = 5000;
 
+// ── Color palette ─────────────────────────────────────────────────────────────
+const C = {
+  cardBg: "#ffffff",
+  cardBorder: "#dde4ed",
+  cardHeader: "#1e2d42",
+  labelText: "#64748b",
+  valueText: "#1e293b",
+  mutedText: "#94a3b8",
+  accent: "#29a8e0",
+  successGreen: "#16a34a",
+  warningAmber: "#d97706",
+  pageBg: "#f8fafc",
+};
 
-// â”€â”€ Color palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-// â”€â”€ Local page UI (inlined from statusSharedUi) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
 const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
       fontSize: 12,
-      color: "var(--text-muted)",
+      color: "#94a3b8",
       marginBottom: 16,
       fontWeight: 400,
       display: "flex",
@@ -32,7 +42,7 @@ const PageBreadcrumb = ({ segments, style }) => (
         <span
           style={
             index === segments.length - 1
-              ? { color: "var(--text-primary)", fontWeight: 600 }
+              ? { color: "#1e293b", fontWeight: 600 }
               : undefined
           }
         >
@@ -42,7 +52,7 @@ const PageBreadcrumb = ({ segments, style }) => (
     ))}
   </div>
 );
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const renderPktsValue = (val) => {
   const str = Array.isArray(val) ? val.join("  ") : String(val ?? "");
   const parts = str.split(/(\bErr:\s*\d+|\bDrop:\s*\d+)/g);
@@ -82,7 +92,7 @@ const renderPktsValue = (val) => {
 
 const renderCellValue = (key, val) => {
   if (val === null || val === undefined || val === "")
-    return <span style={{ color: C.mutedText }}>â€”</span>;
+    return <span style={{ color: C.mutedText }}>—</span>;
   const lk = (key || "").toLowerCase();
   const isPkts = lk.includes("pkts") || lk.includes("packet");
   if (isPkts) return renderPktsValue(val);
@@ -115,7 +125,7 @@ const renderCellValue = (key, val) => {
   return str;
 };
 
-// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sub-components ────────────────────────────────────────────────────────────
 const Card = ({ title, children, style }) => (
   <div
     style={{
@@ -161,7 +171,7 @@ const InfoTableRow = ({ label, value, keyName, even }) => (
       padding: "5px 14px",
       minHeight: 28,
       alignItems: "center",
-      background: even ? "var(--row-alt)" : "var(--bg-surface)",
+      background: even ? "#f8fafc" : "#ffffff",
     }}
   >
     <span
@@ -206,7 +216,7 @@ const StatCard = ({ label, value, type, accentColor }) => {
       </div>
     ) : (
       <span style={{ color: C.mutedText, fontSize: 18, fontWeight: 700 }}>
-        â€”
+        —
       </span>
     );
   } else if (type === "cpu") {
@@ -485,7 +495,7 @@ const SystemInfo = () => {
   const packetLoss = getMetric(["packet loss", "packet_loss", "rx loss"]);
 
   const refreshBtnSx = {
-    background: "var(--bg-surface)",
+    background: "#ffffff",
     color: C.accent,
     fontWeight: 600,
     fontSize: 13,
@@ -529,7 +539,7 @@ const SystemInfo = () => {
 
         <PageBreadcrumb segments={["Status", "System Status", "System Info"]} />
 
-        {/* Top stat cards â€” equal height, accent borders */}
+        {/* Top stat cards — equal height, accent borders */}
         <div
           style={{
             display: "grid",
@@ -614,7 +624,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -622,7 +632,7 @@ const SystemInfo = () => {
               </Card>
             </div>
 
-            {/* System Details â€” left column only (~50% width), right side empty */}
+            {/* System Details — left column only (~50% width), right side empty */}
             <div
               style={{
                 display: "grid",
@@ -652,7 +662,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -723,7 +733,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -749,7 +759,7 @@ const SystemInfo = () => {
                 <div
                   style={{
                     flex: 1,
-                    background: "var(--row-alt)",
+                    background: "#f8fafc",
                     borderTop: "0.5px solid #f1f5f9",
                     minHeight: 8,
                   }}
@@ -759,7 +769,7 @@ const SystemInfo = () => {
           </>
         )}
 
-        {/* Refresh button â€” tight below cards, no floating space */}
+        {/* Refresh button — tight below cards, no floating space */}
         <div
           style={{
             display: "flex",
