@@ -280,6 +280,18 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
+      {
+        id: "autoProvision",
+        title: "Auto Provision",
+        icon: TuneIcon,
+        items: [
+          {
+            id: "autoProvisionSettings",
+            title: "Auto Provision",
+            path: "/auto-provision/auto-provision",
+          },
+        ],
+      },
     ],
   },
 
