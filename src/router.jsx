@@ -108,6 +108,7 @@ import DisaPage from "./modules/PBX/CallFeatures/DisaPage";
 import VoicePromptsPage from "./modules/PBX/VoicePrompts/VoicePromptsPage";
 import PbxMonitor from "./modules/status/PBX Status/PbxMonitor";
 import ViewVoicemailPage from "./modules/status/PBX Status/ViewVoicemailPage";
+
 import PortFxsPage from "./modules/FXS/Port/PortFxsPage";
 import PortFxsAdvancedPage from "./modules/FXS/Port/PortFxsAdvancedPage";
 import PortGroupPage from "./modules/FXS/Port/PortGroupPage";
@@ -133,6 +134,7 @@ import CallQueue from "./modules/PBX/CallFeatures/CallQueue";
 import OutboundRestrictions from "./modules/PBX/CallControl/OutboundRestrictions";
 import FeatureCodePage from "./modules/PBX/Features Codes/FeatureCodePage";
 import VoicemailPage from "./modules/PBX/Voicemail/VoicemailPage";
+import AutoProvision from "./modules/PBX/AutoProvision/AutoProvision";
 import UserManage from "./modules/UserManage/User Permission/UserManage";
 // FXS → modules/FXS/Route pages
 import FxsRouteRoutingParameterPage from "./modules/FXS/Route/RouteRoutingParameterPage";
@@ -250,6 +252,10 @@ export const router = createBrowserRouter([
       {
         path: "/voicemail/voicemail",
         element: <VoicemailPage />,
+      },
+      {
+        path: "/auto-provision/auto-provision",
+        element: <AutoProvision />,
       },
       {
         path: "/route/routing-parameters",

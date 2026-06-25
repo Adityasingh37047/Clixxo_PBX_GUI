@@ -1487,6 +1487,24 @@ export const deleteVoicemail = async (id) => {
   return response.data;
 };
 
+
+
+export const listAutoProvision = async () => {
+  try {
+    const response = await axiosInstance.post("/auto-provision", {
+      type: "list",
+      data: {},
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing auto provision:', error.message);
+    if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+      throw new Error('Network Error');
+    }
+    throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
 // Feature Code API
 export const getFeatureCodes = async () => {
   try {
