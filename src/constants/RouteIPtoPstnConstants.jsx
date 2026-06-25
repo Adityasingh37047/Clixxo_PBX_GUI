@@ -47,23 +47,23 @@ const PREFIX_RULES =
 /** IP to PSTN (route_type: ip_to_pstn) */
 export const ROUTE_IP_PSTN_FIELD_TOOLTIPS = {
   callSource:
-    "Saved as call_source.\n" +
-    "Select a SIP trunk group from the loaded SIP trunk group list.",
+    "SIP trunk group where the call originates (saved as call_source).\n" +
+    "Required. Options loaded from configured SIP trunk groups.",
 
   callerIdPrefix:
-    "Saved as caller_id_prefix.\n" + PREFIX_RULES,
+    "CallerID prefix match for this route (saved as caller_id_prefix).\n" + PREFIX_RULES,
 
   calleeIdPrefix:
-    "Saved as callee_id_prefix.\n" + PREFIX_RULES,
+    "CalleeID prefix match for this route (saved as callee_id_prefix).\n" + PREFIX_RULES,
 
   callDestination:
-    "Saved as call_destination.\n" +
-    "Select a PCM trunk group from the loaded PCM trunk group list.",
+    "PCM trunk group where the call is sent (saved as call_destination).\n" +
+    "Required. Options loaded from configured PCM trunk groups.",
 
   numberFilter:
-    "Saved as number_filter.\n" +
-    "Only option shown in this UI: none. Default: none.",
+    "Number filter applied to this route (saved as number_filter).\n" +
+    "Only option in this UI: none. Default: none.",
 
   description:
-    "Saved as description. Free-text field. Default: default.",
+    "Optional description for this route (saved as description). Default: default.",
 };

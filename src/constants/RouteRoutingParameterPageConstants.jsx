@@ -17,10 +17,12 @@ export const ROUTE_SETTINGS_DEFAULTS = {
 /** Route Settings */
 export const ROUTE_ROUTING_PARAMETER_TOOLTIPS = {
   ipIncoming:
-    "Dropdown for IP Incoming setting.\n" +
-    "Options: Route after Number Manipulate (default), Route before Number Manipulate.",
+    "Controls whether IP incoming calls are routed before or after number manipulation.\n" +
+    "Options: Route after Number Manipulate (default), Route before Number Manipulate.\n" +
+    "Note: Save currently shows a confirmation only; settings are not persisted to the device API.",
 
   pstnIncoming:
-    "Dropdown for PSTN Incoming setting.\n" +
-    "Options: Route after Number Manipulate (default), Route before Number Manipulate.",
+    "Controls whether PSTN incoming calls are routed before or after number manipulation.\n" +
+    "Options: Route after Number Manipulate (default), Route before Number Manipulate.\n" +
+    "Note: Save currently shows a confirmation only; settings are not persisted to the device API.",
 }; 

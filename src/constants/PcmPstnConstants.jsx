@@ -216,7 +216,7 @@ const yesNoChannels = (field, defaultVal) =>
 
 /** PCM PSTN (PcmPstnPage) — POST /pstn create */
 export const PCM_PSTN_FIELD_TOOLTIPS = {
-  id: spanField("id", null, "Required. Saved as span_id and span.id. Duplicate ID blocked on create."),
+  id: spanField("id", null, "Required. Saved as span_id and span.id. Duplicate ID blocked on create.\nIn edit mode, Save still calls POST /pstn (create); no separate update API is used."),
   timing: spanField("timing", "0, 1", "Default: 0."),
   lbo: spanField("lbo", "0, 1", "Default: 0."),
   framing: spanField("framing", "d4, esf, ccs, cas"),

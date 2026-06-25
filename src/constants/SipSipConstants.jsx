@@ -167,7 +167,7 @@ const buildSipSettingsTooltips = () => {
     if (field.default !== undefined) parts.push(`Default: ${field.default}.`);
     if (field.validation === "integer") parts.push("UI accepts digits only.");
     if (field.key === "calledPrefix") {
-      parts.push("UI allows digits and : only, up to 5 segments.");
+      parts.push("UI allows digits and : only, up to 6 colon-separated segments.");
     }
     if (field.key === "sipWan") {
       parts.push("Select options loaded for WAN address.");

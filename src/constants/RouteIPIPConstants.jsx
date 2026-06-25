@@ -54,27 +54,27 @@ const PREFIX_RULES =
 /** IP to IP (route_type: ip_to_ip) */
 export const ROUTE_IP_IP_FIELD_TOOLTIPS = {
   index:
-    "Table ID column shows the row number.\n" +
-    "This form field is not sent when the route is saved.",
+    "Display-only row identifier in the form.\n" +
+    "The table ID column shows the row number; this field is not sent when the route is saved.",
 
   callSource:
-    "Saved as call_source.\n" +
-    "SIP trunk group from the loaded list. Cannot be the same as Call Destination.",
+    "SIP trunk group where the call originates (saved as call_source).\n" +
+    "Options loaded from configured SIP trunk groups. Cannot be the same as Call Destination.",
 
   callerIdPrefix:
-    "Saved as caller_id_prefix.\n" + PREFIX_RULES,
+    "CallerID prefix match for this route (saved as caller_id_prefix).\n" + PREFIX_RULES,
 
   calleeIdPrefix:
-    "Saved as callee_id_prefix.\n" + PREFIX_RULES,
+    "CalleeID prefix match for this route (saved as callee_id_prefix).\n" + PREFIX_RULES,
 
   callDestination:
-    "Saved as call_destination.\n" +
-    "SIP trunk group from the loaded list. Cannot be the same as Call Source.",
+    "SIP trunk group where the call is sent (saved as call_destination).\n" +
+    "Options loaded from configured SIP trunk groups. Cannot be the same as Call Source.",
 
   numberFilter:
-    "Saved as number_filter.\n" +
-    "Only option shown in this UI: No. Default: No.",
+    "Number filter applied to this route (saved as number_filter).\n" +
+    "Only option in this UI: No. Default: No.",
 
   description:
-    "Saved as description. Free-text field. Default: default.",
+    "Optional description for this route (saved as description). Default: default.",
 };

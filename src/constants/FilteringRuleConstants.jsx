@@ -19,6 +19,10 @@ export const FILTERING_RULE_DROPDOWN_OPTIONS = [
   'none'
 ];
 
+const GROUP_OPTIONS_NOTE =
+  "Options loaded when the modal opens from number-filter and number-pool APIs.\n" +
+  "Always includes none; group numbers appear when matching whitelist, blacklist, or pool records exist.";
+
 /** Filtering Rule modal */
 export const FILTERING_RULE_FIELD_TOOLTIPS = {
   id:
@@ -26,42 +30,42 @@ export const FILTERING_RULE_FIELD_TOOLTIPS = {
     "Not included in the create save payload.",
 
   callerIdWhitelist:
-    "Saved as caller_id_white_list.\n" +
-    "Options: none or whitelist caller group numbers. Default: none.",
+    "CallerID whitelist group for this rule (saved as caller_id_white_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   calleeIdWhitelist:
-    "Saved as callee_id_white_list.\n" +
-    "Options: none or whitelist callee group numbers. Default: none.",
+    "CalleeID whitelist group for this rule (saved as callee_id_white_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   callerIdBlacklist:
-    "Saved as caller_id_black_list.\n" +
-    "Options: none or blacklist caller group numbers. Default: none.",
+    "CallerID blacklist group for this rule (saved as caller_id_black_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   calleeIdBlacklist:
-    "Saved as callee_id_black_list.\n" +
-    "Options: none or blacklist callee group numbers. Default: none.",
+    "CalleeID blacklist group for this rule (saved as callee_id_black_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   callerIdPoolWhitelist:
-    "Saved as caller_id_pool_in_white_list.\n" +
-    "Options: none or Number Pool group numbers. Default: none.",
+    "CallerID number-pool whitelist group (saved as caller_id_pool_in_white_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   callerIdPoolBlacklist:
-    "Saved as caller_id_pool_in_black_list.\n" +
-    "Options: none or Number Pool group numbers. Default: none.",
+    "CallerID number-pool blacklist group (saved as caller_id_pool_in_black_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   calleeIdPoolWhitelist:
-    "Saved as callee_id_pool_in_white_list.\n" +
-    "Options: none or Number Pool group numbers. Default: none.",
+    "CalleeID number-pool whitelist group (saved as callee_id_pool_in_white_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   calleeIdPoolBlacklist:
-    "Saved as callee_id_pool_in_black_list.\n" +
-    "Options: none or Number Pool group numbers. Default: none.",
+    "CalleeID number-pool blacklist group (saved as callee_id_pool_in_black_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   originalCallerIdPoolWhitelist:
-    "Saved as original_caller_id_pool_in_white_list.\n" +
-    "Options: none or Number Pool group numbers. Default: none.",
+    "Original CallerID number-pool whitelist group (saved as original_caller_id_pool_in_white_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 
   originalCallerIdPoolBlacklist:
-    "Saved as original_caller_id_pool_in_black_list.\n" +
-    "Options: none or Number Pool group numbers. Default: none.",
+    "Original CallerID number-pool blacklist group (saved as original_caller_id_pool_in_black_list).\n" +
+    GROUP_OPTIONS_NOTE + "\nDefault: none.",
 };

@@ -49,19 +49,40 @@ export const PSTN_CALL_IN_CALLEEID_INITIAL_FORM = {
 /** PSTN Call In CalleeID (manipulation_type: pstn_in_calleeid) */
 export const PSTN_CALL_IN_CALLEEID_FIELD_TOOLTIPS = {
   call_initiator:
-    "Saved as call_initiator. manipulation_type: pstn_in_calleeid.\n" +
-    "Select a PCM trunk group from the loaded list. Required.",
-  callerid_prefix: `Saved as callerid_prefix. Required text field. Default: *.`,
-  calleeid_prefix: `Saved as calleeid_prefix. Required text field. Default: *.`,
+    "PCM trunk group for this rule (saved as call_initiator).\n" +
+    "Applies to inbound PSTN calls on the selected trunk when CallerID and CalleeID prefixes match.\n" +
+    "Required. Options loaded from configured PCM trunk groups.",
+
+  callerid_prefix:
+    "Incoming CallerID match pattern (saved as callerid_prefix).\n" +
+    "Only digits (0-9) and * are allowed. Default: *. Required.",
+
+  calleeid_prefix:
+    "Incoming CalleeID match pattern (saved as calleeid_prefix).\n" +
+    "Only digits (0-9) and * are allowed. Default: *. Required.",
+
   with_original_calleeid:
-    "Saved as with_original_calleeid. Required.\nOptions: Yes, No. Default: No.",
+    "Whether the original callee ID is kept (saved as with_original_calleeid).\n" +
+    "Options: Yes, No. Default: No. Required.",
+
   stripped_digits_from_left:
-    "Saved as stripped_digits_from_left.\nEmpty value is saved as 0. Default: 0.",
+    "Digits removed from the left before prefix/suffix are applied (saved as stripped_digits_from_left).\n" +
+    "Empty value is saved as 0. Default: 0.",
+
   stripped_digits_from_right:
-    "Saved as stripped_digits_from_right.\nEmpty value is saved as 0. Default: 0.",
+    "Digits removed from the right before prefix/suffix are applied (saved as stripped_digits_from_right).\n" +
+    "Empty value is saved as 0. Default: 0.",
+
   reserved_digits_from_right:
-    "Saved as reserved_digits_from_right.\nEmpty value is saved as 0. Default: 20.",
-  prefix_to_add: "Saved as prefix_to_add. Free-text field. Default: empty.",
-  suffix_to_add: "Saved as suffix_to_add. Free-text field. Default: empty.",
-  description: "Saved as description. Free-text field. Default: empty.",
+    "Digits kept from the right after stripping (saved as reserved_digits_from_right).\n" +
+    "Empty value is saved as 0. Default: 20.",
+
+  prefix_to_add:
+    "Text prepended to the number after stripping (saved as prefix_to_add). Default: empty.",
+
+  suffix_to_add:
+    "Text appended to the number after stripping (saved as suffix_to_add). Default: empty.",
+
+  description:
+    "Optional label for this rule (saved as description). Default: empty.",
 };

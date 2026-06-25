@@ -9,7 +9,8 @@ const WHITELIST_BLACKLIST_ID_EDIT =
 export const BLACKLIST_FIELD_TOOLTIPS = {
   groupNo:
     GROUP_NO_0_199 +
-    "\nChanging group recalculates no_in_groups internally.",
+    "\nChanging group recalculates no_in_groups internally.\n" +
+    "In edit mode, only this field can be changed.",
 
   callerId:
     "Saved as number with type blacklist and subtype callerid.\n" +

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CALLERID_POOL_TABLE_COLUMNS, CALLERID_POOL_MODAL_FIELDS, CALLERID_POOL_INITIAL_FORM, CALLERID_POOL_FIELD_TOOLTIPS } from '../../../constants/CallerIDPoolConstants';
+import { CALLERID_POOL_TABLE_COLUMNS, CALLERID_POOL_MODAL_FIELDS, CALLERID_POOL_INITIAL_FORM, CALLERID_POOL_FIELD_TOOLTIPS, CALLERID_POOL_TOP_FIELD_TOOLTIPS } from '../../../constants/CallerIDPoolConstants';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
 import { Button, TextField, Select, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Tooltip } from '@mui/material';
 
@@ -259,7 +259,9 @@ const CallerIDPool = () => {
         {/* First row - Manipulate IP->PSTN CallerIDs section */}
         <div className="flex flex-wrap items-center gap-4 mb-4">
           <div className="flex items-center justify-between gap-6 min-w-fit">
-            <span className="font-medium text-sm whitespace-nowrap">Manipulate IP-&gt;PSTN CallerIDs with Designated Prefix:</span>
+            <E1PriFieldLabel tooltipKey="prefix" tooltips={CALLERID_POOL_TOP_FIELD_TOOLTIPS} style={{ fontWeight: 500, fontSize: 14 }}>
+              Manipulate IP-&gt;PSTN CallerIDs with Designated Prefix:
+            </E1PriFieldLabel>
             <TextField 
               size="small" 
               value={prefix} 
@@ -283,7 +285,9 @@ const CallerIDPool = () => {
             />
           </div>
           <div className="flex items-center justify-between gap-6 min-w-fit">
-            <span className="font-medium text-sm whitespace-nowrap">Starting Date:</span>
+            <E1PriFieldLabel tooltipKey="startDate" tooltips={CALLERID_POOL_TOP_FIELD_TOOLTIPS} style={{ fontWeight: 500, fontSize: 14 }}>
+              Starting Date:
+            </E1PriFieldLabel>
             <TextField 
               type="date" 
               size="small" 
@@ -308,7 +312,9 @@ const CallerIDPool = () => {
             />
           </div>
           <div className="flex items-center justify-between gap-6 min-w-fit">
-            <span className="font-medium text-sm whitespace-nowrap">Usage Cycle (Day):</span>
+            <E1PriFieldLabel tooltipKey="usageCycle" tooltips={CALLERID_POOL_TOP_FIELD_TOOLTIPS} style={{ fontWeight: 500, fontSize: 14 }}>
+              Usage Cycle (Day):
+            </E1PriFieldLabel>
             <TextField 
               type="number" 
               size="small" 
@@ -333,7 +339,9 @@ const CallerIDPool = () => {
             />
           </div>
           <div className="flex items-center justify-between gap-6 min-w-fit">
-            <span className="font-medium text-sm whitespace-nowrap">Destination PCM:</span>
+            <E1PriFieldLabel tooltipKey="destinationPcm" tooltips={CALLERID_POOL_TOP_FIELD_TOOLTIPS} style={{ fontWeight: 500, fontSize: 14 }}>
+              Destination PCM:
+            </E1PriFieldLabel>
             <FormControl size="small" className="w-32">
               <Select 
                 value={destinationPcm} 
@@ -378,7 +386,9 @@ const CallerIDPool = () => {
         {/* Second row - IP->PSTN Outbound Calls section */}
         <div className="flex flex-wrap items-center gap-15 mb-4">
           <div className="flex items-center justify-between gap-6 min-w-fit">
-            <span className="font-medium text-sm whitespace-nowrap">IP-&gt;PSTN Outbound Calls with Designated CallerID:</span>
+            <E1PriFieldLabel tooltipKey="outboundCallerId" tooltips={CALLERID_POOL_TOP_FIELD_TOOLTIPS} style={{ fontWeight: 500, fontSize: 14 }}>
+              IP-&gt;PSTN Outbound Calls with Designated CallerID:
+            </E1PriFieldLabel>
             <TextField 
               size="small" 
               value={outboundCallerId} 
@@ -402,7 +412,9 @@ const CallerIDPool = () => {
             />
           </div>
           <div className="flex items-center justify-between gap-6 min-w-fit">
-            <span className="font-medium text-sm whitespace-nowrap">IP-&gt;PSTN Designation Mode:</span>
+            <E1PriFieldLabel tooltipKey="designationMode" tooltips={CALLERID_POOL_TOP_FIELD_TOOLTIPS} style={{ fontWeight: 500, fontSize: 14 }}>
+              IP-&gt;PSTN Designation Mode:
+            </E1PriFieldLabel>
             <FormControl size="small" className="w-48">
               <Select 
                 value={designationMode} 

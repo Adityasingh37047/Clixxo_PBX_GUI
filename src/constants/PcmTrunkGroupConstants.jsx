@@ -33,7 +33,9 @@ export const PCM_TRUNK_GROUP_TABLE_COLUMNS = [
 /** PCM Trunk Group (PcmTrunkGroupPage) — POST /pstngroups */
 export const PCM_TRUNK_GROUP_FIELD_TOOLTIPS = {
   groupId:
-    "Saved as group_id. Select 0–255. Required.\nDuplicate group ID is blocked.",
+    "Saved as group_id. Select 0–255.\n" +
+    "On create, the next available group ID may be assigned automatically when adding multiple PSTN spans.\n" +
+    "Duplicate group ID is blocked.",
   description:
     "Saved as description. Required non-empty text. Default: Testing.",
   pstnIds:
