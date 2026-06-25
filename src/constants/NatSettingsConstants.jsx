@@ -104,11 +104,8 @@ export const NAT_SETTINGS_FIELDS = [
 ];
 
 export const NAT_SETTINGS_NOTE = `The non-professional person please do not modify the configuration on this page.
-"Local NAT Traversal": Please select one method according to your current network environment.
-"Auto Nat": It is required to enable the feature of upon or pmp for the router.
-"Mapping Contact IP": It is required to set the router to map the SIP port to the gateway.
-"Mapping SDP IP": It is required to set the router to map the RTP port range to the gateway.
-"Auto Detect NAT IP": It is valid only when the feature "Rport" is enabled and the router is set to map the RTP port range to the gateway.`;
+"Local NAT Traversal": Select one method for your network. "Auto Nat" needs router UPnP/PMP; "Mapping Contact IP" / "Mapping SDP IP" need SIP/RTP port forwarding to the gateway.
+"Auto Detect NAT IP" applies only when "Rport" is enabled and the router maps the RTP port range to the gateway.`;
 
 /** FXS VoIP NAT Settings — conditional visibility from NatSettingsPage.shouldShowField */
 export const NAT_SETTINGS_FIELD_TOOLTIPS = {

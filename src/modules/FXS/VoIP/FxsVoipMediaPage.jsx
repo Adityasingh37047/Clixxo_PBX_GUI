@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Alert, Tooltip } from "@mui/material";
 import {
   MEDIA_PARAMETERS_NOTE,
@@ -117,7 +117,8 @@ const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow: "0 2px 10px rgba(15, 23, 42, 0.07)",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
   divider: "#e2e6ec",
   labelText: "#374151",
   valueText: "#1f2937",
