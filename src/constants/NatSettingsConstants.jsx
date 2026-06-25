@@ -109,3 +109,66 @@ export const NAT_SETTINGS_NOTE = `The non-professional person please do not modi
 "Mapping Contact IP": It is required to set the router to map the SIP port to the gateway.
 "Mapping SDP IP": It is required to set the router to map the RTP port range to the gateway.
 "Auto Detect NAT IP": It is valid only when the feature "Rport" is enabled and the router is set to map the RTP port range to the gateway.`;
+
+/** FXS VoIP NAT Settings — conditional visibility from NatSettingsPage.shouldShowField */
+export const NAT_SETTINGS_FIELD_TOOLTIPS = {
+  autoNat:
+    "Local NAT Traversal — Method 1.\n" +
+    "Options: DisableAutoNat, Enable PMP, Enable UPNP.\n" +
+    "Default: DisableAutoNat.\n" +
+    "When Enable PMP or Enable UPNP is selected, Outer Network Address is shown (read-only).",
+
+  outerNetworkAddress:
+    "Read-only outer network address reported by PMP/UPNP.\n" +
+    "Shown only when Auto Nat is Enable PMP or Enable UPNP.\n" +
+    "Default display: Offline.",
+
+  stunServer:
+    "Local NAT Traversal — Method 2.\n" +
+    "Enable STUN server for NAT discovery.\n" +
+    "When enabled, shows NAT Type (read-only) and STUN Server Address.\n" +
+    "Default: disabled (false).",
+
+  natType:
+    "Read-only NAT type detected via STUN.\n" +
+    "Shown only when STUN Server is enabled.\n" +
+    "Default display: Unknown.",
+
+  stunServerAddress:
+    "STUN server IP or hostname.\n" +
+    "Shown only when STUN Server is enabled.\n" +
+    "Default: 127.0.0.1.",
+
+  mappingContactIp:
+    "Local NAT Traversal — Method 3.\n" +
+    "Public IP mapped for SIP Contact header.\n" +
+    "Requires router SIP port forwarding to the gateway.",
+
+  mappingSdpIp:
+    "Local NAT Traversal — Method 3.\n" +
+    "Public IP mapped for SDP media.\n" +
+    "Requires router RTP port range forwarding to the gateway.",
+
+  rport:
+    "Local NAT Traversal — Method 4.\n" +
+    "Enable SIP rport parameter for NAT traversal.\n" +
+    "Default: enabled (true).",
+
+  learnNat:
+    "Local NAT Traversal — Method 4.\n" +
+    "Learn NAT address from incoming SIP traffic.\n" +
+    "When unchecked, Auto Detect NAT IP is forced off and disabled.\n" +
+    "Default: disabled (false).",
+
+  autoDetectNatIp:
+    "Local NAT Traversal — Method 4.\n" +
+    "Automatically detect NAT IP for RTP.\n" +
+    "Checkbox is disabled unless Learn NAT is enabled.\n" +
+    "Valid only when Rport is enabled and router maps RTP port range.\n" +
+    "Default: disabled (false).",
+
+  rtpSelfAdaption:
+    "Help Remote Device Complete NAT Traversal.\n" +
+    "Enable RTP self-adaption to assist remote endpoints behind NAT.\n" +
+    "Default: disabled (false).",
+};

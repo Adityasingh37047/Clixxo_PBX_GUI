@@ -21,4 +21,20 @@ export const DIALING_TIMEOUT_INITIAL_DATA = {
   description: 'example',
 };
 
+/** Dialing Timeout modal */
+export const DIALING_TIMEOUT_FIELD_TOOLTIPS = {
+  description:
+    "Required label for this dialing-timeout profile.\n" +
+    "State key: description. Text field; cannot be empty or whitespace only.\n" +
+    "Default on open: current saved value or 'example'.",
 
+  interDigitTimeout:
+    "Seconds to wait between dialed digits before the dial string is sent.\n" +
+    "State key: interDigitTimeout. Required; digits only (0–9).\n" +
+    "Must parse to a non-negative integer. Default: 6 seconds.",
+
+  offHookTimeout:
+    "Seconds to wait for the first digit after off-hook before timing out.\n" +
+    "State key: offHookTimeout. Required; digits only (0–9).\n" +
+    "Must parse to a non-negative integer. Default: 6 seconds.",
+};

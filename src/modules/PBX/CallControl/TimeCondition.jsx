@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Alert,
+import {
+  Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -9,7 +10,10 @@ import {Alert,
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  TextField, useMediaQuery } from "@mui/material";
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   TC_TITLE,
   TC_TYPES,
@@ -20,7 +24,8 @@ import {
   TC_DAYS_OF_MONTH,
   TC_TABLE_COLUMNS,
   TC_INITIAL_FORM,
-} from "../../../constants/TimeComditionConstants";
+  TIME_CONDITION_FIELD_TOOLTIPS,
+} from "../../../constants/TimeConditionConstants";
 import {
   fetchTimeConditions,
   createTimeCondition,
@@ -392,7 +397,79 @@ const apiSlotsToFormRanges = (slots) =>
   }));
 
 // ─── sub-components ───────────────────────────────────────────────────────────
-const FieldRow = ({ label, required, children, fitContent }) => (
+const TIME_CONDITION_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const formatTimeConditionTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const TimeConditionFieldLabel = ({
+  tooltipKey,
+  label,
+  required,
+  style = {},
+}) => {
+  const tooltip = TIME_CONDITION_FIELD_TOOLTIPS[tooltipKey] || "";
+  const content = (
+    <>
+      {label}
+      {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
+    </>
+  );
+  const labelEl = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#30415A",
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {content}
+    </span>
+  );
+  if (!tooltip) return labelEl;
+  return (
+    <Tooltip
+      title={formatTimeConditionTooltipTitle(tooltip)}
+      {...TIME_CONDITION_TOOLTIP_PROPS}
+    >
+      {labelEl}
+    </Tooltip>
+  );
+};
+
+const FieldRow = ({ label, tooltipKey, required, children, fitContent }) => (
   <div
     style={{
       display: "flex",
@@ -402,19 +479,33 @@ const FieldRow = ({ label, required, children, fitContent }) => (
       width: fitContent ? "max-content" : "100%",
     }}
   >
-    <label
-      style={{
-        width: 120,
-        flexShrink: 0,
-        fontSize: 13,
-        fontWeight: 600,
-        color: "var(--text-primary)",
-        paddingTop: 4,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
-    </label>
+    {tooltipKey ? (
+      <TimeConditionFieldLabel
+        tooltipKey={tooltipKey}
+        label={label}
+        required={required}
+        style={{
+          width: 120,
+          flexShrink: 0,
+          paddingTop: 4,
+          display: "inline-block",
+        }}
+      />
+    ) : (
+      <label
+        style={{
+          width: 120,
+          flexShrink: 0,
+          fontSize: 13,
+          fontWeight: 600,
+          color: "var(--text-primary)",
+          paddingTop: 4,
+        }}
+      >
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
+      </label>
+    )}
     <div style={fitContent ? { flexShrink: 0 } : { flex: 1 }}>{children}</div>
   </div>
 );
@@ -445,8 +536,7 @@ const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
   );
   const allChecked =
     checked.length === allValues.length && allValues.length > 0;
-  const someChecked =
-    checked.length > 0 && checked.length < allValues.length;
+  const someChecked = checked.length > 0 && checked.length < allValues.length;
 
   return (
     <div
@@ -908,7 +998,16 @@ const TimeCondition = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "auto",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -923,7 +1022,8 @@ const TimeCondition = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 900, ...(isCompact ? { minWidth: 720 } : {}),
+                  minWidth: 900,
+                  ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1130,12 +1230,12 @@ const TimeCondition = () => {
       </div>
 
       <Dialog
-      sx={{
-        "& .MuiDialog-container": {
-          alignItems: "flex-start",
-          paddingTop: "80px",
-        },
-      }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            paddingTop: "80px",
+          },
+        }}
         open={showModal}
         onClose={() => {
           if (loading.save) return;
@@ -1167,22 +1267,22 @@ const TimeCondition = () => {
         </DialogTitle>
 
         <DialogContent sx={{ p: "24px", backgroundColor: "var(--bg-surface)" }}>
-         <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-    background: "var(--row-alt)",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 8,
-    padding: 20,
-    marginTop: 22,
-    width: "100%",
-    boxSizing: "border-box",
-  }}
->
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "var(--row-alt)",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+              marginTop: 22,
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
             {/* Name */}
-            <FieldRow label="Name" required>
+            <FieldRow label="Name" tooltipKey="name" required>
               <TextField
                 value={form.name}
                 onChange={(e) =>
@@ -1197,7 +1297,7 @@ const TimeCondition = () => {
             </FieldRow>
 
             {/* Type */}
-            <FieldRow label="Type" required>
+            <FieldRow label="Type" tooltipKey="type" required>
               <div style={{ display: "flex", gap: 20 }}>
                 {TC_TYPES.map((t) => (
                   <label
@@ -1228,7 +1328,12 @@ const TimeCondition = () => {
             {/* ── WorkTime fields ── */}
             {form.type === "worktime" && (
               <>
-                <FieldRow label="Settings" required fitContent>
+                <FieldRow
+                  label="Settings"
+                  tooltipKey="settings"
+                  required
+                  fitContent
+                >
                   <div
                     style={{
                       display: "flex",
@@ -1321,7 +1426,7 @@ const TimeCondition = () => {
                   </div>
                 </FieldRow>
 
-                <FieldRow label="Day of Week" required>
+                <FieldRow label="Day of Week" tooltipKey="day_of_week" required>
                   <CheckGroup
                     items={TC_DAYS_OF_WEEK}
                     checked={form.daysOfWeek}
@@ -1335,7 +1440,7 @@ const TimeCondition = () => {
             {/* ── Holiday fields ── */}
             {form.type === "holiday" && (
               <>
-                <FieldRow label="Month" required>
+                <FieldRow label="Month" tooltipKey="month" required>
                   <CheckGroup
                     items={TC_MONTHS}
                     checked={form.months}
@@ -1344,7 +1449,11 @@ const TimeCondition = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Day of Month" required>
+                <FieldRow
+                  label="Day of Month"
+                  tooltipKey="day_of_month"
+                  required
+                >
                   <CheckGroup
                     items={TC_DAYS_OF_MONTH.map(String)}
                     checked={form.daysOfMonth.map(String)}
@@ -1369,7 +1478,7 @@ const TimeCondition = () => {
                         });
                       }
                     }}
-                    cols={7}
+                    cols={11}
                   />
                 </FieldRow>
               </>

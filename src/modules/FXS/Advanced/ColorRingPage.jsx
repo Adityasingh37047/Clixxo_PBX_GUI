@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import {
   COLOR_RING_TABLE_COLUMNS,
   COLOR_RING_INDEX_OPTIONS,
@@ -306,13 +306,13 @@ const ColorRingPagination = ({
     </span>
     <div className="flex items-center gap-[8px]">
       <Btn onClick={onPrev} disabled={page <= 1} variant="outline">
-        ← Prev
+        ΓåÉ Prev
       </Btn>
       <span className={COLOR_RING_PAGE_BADGE}>
         Page {page} of {totalPages}
       </span>
       <Btn onClick={onNext} disabled={page >= totalPages} variant="outline">
-        Next →
+        Next ΓåÆ
       </Btn>
     </div>
   </div>

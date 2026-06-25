@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+﻿import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   sipRegisterFields,
   SIP_REGISTER_INITIAL_FORM,
@@ -524,7 +524,7 @@ const SipPcmPagination = ({
         disabled={page <= 1}
         variant="outline"
       >
-        ← Prev
+        ΓåÉ Prev
       </Btn>
       <span className={SIP_PCM_PAGE_BADGE}>
         Page {page} of {totalPages}
@@ -534,7 +534,7 @@ const SipPcmPagination = ({
         disabled={page >= totalPages}
         variant="outline"
       >
-        Next →
+        Next ΓåÆ
       </Btn>
     </div>
   </div>
@@ -672,7 +672,7 @@ const sipRegisterModifyCellStyle = {
   borderRight: "none",
 };
 
-/** 100% — headers may use 2 lines; data stays single line */
+/** 100% ΓÇö headers may use 2 lines; data stays single line */
 const sipRegisterHeaderCellStyle100 = {
   whiteSpace: "normal",
   overflow: "visible",
@@ -718,7 +718,7 @@ const sipRegisterFieldColumnWidths = {
   identity_ip: 130,
 };
 
-/** 100% zoom — fits headers + longest SIP value on one line, no horizontal scroll */
+/** 100% zoom ΓÇö fits headers + longest SIP value on one line, no horizontal scroll */
 const sipRegisterFieldColumnPercents = {
   trunk_id: "7%",
   username: "10%",
@@ -758,7 +758,7 @@ const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
 
 /** Locked at ~100% browser zoom. Do NOT refresh while Ctrl+/- shrinks innerWidth. */
 const sipRegisterZoomBaselineRef = { innerWidth: 0, dpr: 1 };
-/** Ctrl+/− steps from 100% (Chrome: 100→110→125…; ≥2 ≈ 125%). */
+/** Ctrl+/ΓêÆ steps from 100% (Chrome: 100ΓåÆ110ΓåÆ125ΓÇª; ΓëÑ2 Γëê 125%). */
 const sipRegisterZoomStepsRef = { current: 0 };
 
 const lockSipRegisterZoomBaseline = (force = false) => {
@@ -780,7 +780,7 @@ const syncSipRegisterZoomBaselineIfWindowWidened = () => {
   }
 };
 
-/** Scroll at ≥115% (Ctrl+ ×2 ≈ 125%). ≤100% incl. 90%/80% = no scroll. */
+/** Scroll at ΓëÑ115% (Ctrl+ ├ù2 Γëê 125%). Γëñ100% incl. 90%/80% = no scroll. */
 const SIP_REGISTER_ZOOM_SCROLL_MIN = 1.14;
 const SIP_REGISTER_ZOOM_SCROLL_STEPS = 2;
 
@@ -2580,7 +2580,7 @@ const SipRegisterPage = () => {
                                       ? `sip:${value}`
                                       : hasValue
                                         ? value
-                                        : "—";
+                                        : "ΓÇö";
                                   return (
                                     <td
                                       key={field.name}
@@ -2626,7 +2626,7 @@ const SipRegisterPage = () => {
                                     />
                                   ) : (
                                     <span style={{ color: C.mutedText }}>
-                                      —
+                                      ΓÇö
                                     </span>
                                   )}
                                 </div>
@@ -3031,7 +3031,7 @@ const SipRegisterPage = () => {
                             {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
                               (c) => (
                                 <MenuItem key={c || "_empty"} value={c}>
-                                  {c || <em>—</em>}
+                                  {c || <em>ΓÇö</em>}
                                 </MenuItem>
                               ),
                             )}
@@ -3628,7 +3628,7 @@ const SipRegisterPage = () => {
                             sx={{ fontSize: 14 }}
                           >
                             <MenuItem value="">
-                              <em>—</em>
+                              <em>ΓÇö</em>
                             </MenuItem>
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>

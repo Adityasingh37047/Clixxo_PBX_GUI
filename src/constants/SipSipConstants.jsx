@@ -80,3 +80,105 @@ export const SIP_SETTINGS_FIELDS = [
 
 export const SIP_SETTINGS_NOTE =
   'Note: Only one SIP Trunk can be configured and it is "Local Network Port" should be set to "Any Lan" once the feature "Switch Network Port by Packet Loss Rate" is enabled.';
+
+const SIP_SETTINGS_UI_TO_API = {
+  sipWan: "sip_address_of_wan",
+  sipPort: "sip_signaling_port",
+  tls: "tls_enable",
+  externalBound: "match_external_address",
+  send180: "send_180_before_sending_183",
+  send183: "send_183_message",
+  calledPrefix: "called_number_prefix_for_180_reply",
+  send100rel: "send_100rel",
+  ipCallRoute: "ip_call_in_first_route",
+  softSwitch: "soft_switch_connected",
+  hideCallerId: "hide_caller_id",
+  obtainCallerId: "obtain_caller_id_from",
+  obtainCalleeId: "obtain_callee_id_from",
+  sendCalleeId: "send_callee_id_from",
+  assertedId: "asserted_identity_mode",
+  prackSend: "prack_send_mode",
+  displayName: "display_name",
+  userName: "user_name",
+  sipAddress: "sip_address",
+  diversionField: "send_obtain_redirect_ori_callee_id_from_diversion_field",
+  natTraversal: "nat_traversal",
+  relMessage: "set_redirection_param_of_rel_msg_when_recv_refer_msg",
+  rtpSelf: "rtp_self_adaption",
+  rport: "rport",
+  filterFake: "filter_out_fake_calls",
+  autoReply: "auto_reply_of_source_addr",
+  audioSelection: "multiple_audio_selection",
+  responseVia: "send_response_by_former_via",
+  registrationSettings: "registration_related_settings",
+  callerOverClock: "caller_over_clocking_ip_out",
+  ethResource: "eth_resource",
+  sipAccountNumbers: "sip_account_numbers",
+  sipAccountInterval: "sip_account_registration_interval_ms",
+  dscp: "dscp",
+  callsFromTrunkOnly: "calls_from_sip_trunk_address_only",
+  matchCallCount:
+    "match_call_count_to_sip_trunk_based_on_source_address_of_invite",
+  switchSignalPort: "switch_signal_port_if_sip_reg_failed",
+  hangupTimeout: "hangup_upon_call_timeout",
+  workingPeriod: "working_period_24_hour",
+  sessionTimer: "session_timer",
+  mediaStream: "media_stream_processing",
+  sipTrunkHeart: "sip_trunk_heart",
+  earlyMedia: "early_media",
+  earlySession: "early_session",
+  support100rel: "support_100rel",
+  notWaitAck: "not_wait_ack_after_sending_200_ok",
+  matchTrunkPort: "match_sip_trunk_port",
+  regMsgPercent: "the_per_of_reg_msg_sending_cycle_to_period_of_validity",
+  maxWaitAnswer: "max_wait_answer_time",
+  maxWaitRtp: "max_wait_rtp_time",
+  maxWaitPstn: "max_wait_pstn_res_time",
+  switchNetPort: "switch_net_port_by_packet_loss_rate",
+  addContactTo: "add_content_to_field_in_invite_msg",
+  userAgent: "user_agent_field",
+};
+
+const sipFieldOpts = (field) => {
+  if (!field.options) return "";
+  const opts = field.options.map((o) =>
+    typeof o === "object" ? o.value ?? o.label : o
+  );
+  return `Options: ${opts.join(", ")}.`;
+};
+
+const buildSipSettingsTooltips = () => {
+  const tooltips = {};
+  SIP_SETTINGS_FIELDS.forEach((field) => {
+    const apiKey = SIP_SETTINGS_UI_TO_API[field.key];
+    const parts = [];
+    if (apiKey) {
+      parts.push(
+        `Saved as ${apiKey} via updateSipSettings (id: 1).`,
+        'Checkboxes saved as "1" or null.'
+      );
+    } else {
+      parts.push(
+        "Shown in SIP settings form. Not sent in updateSipSettings payload."
+      );
+    }
+    const opts = sipFieldOpts(field);
+    if (opts) parts.push(opts);
+    if (field.default !== undefined) parts.push(`Default: ${field.default}.`);
+    if (field.validation === "integer") parts.push("UI accepts digits only.");
+    if (field.key === "calledPrefix") {
+      parts.push("UI allows digits and : only, up to 6 colon-separated segments.");
+    }
+    if (field.key === "sipWan") {
+      parts.push("Select options loaded for WAN address.");
+    }
+    if (field.conditional) {
+      parts.push(`Conditionally shown based on ${field.conditional}.`);
+    }
+    tooltips[field.key] = parts.join("\n");
+  });
+  return tooltips;
+};
+
+/** SIP Settings (SipSipPage) — listSipSettings / updateSipSettings */
+export const SIP_SETTINGS_FIELD_TOOLTIPS = buildSipSettingsTooltips();

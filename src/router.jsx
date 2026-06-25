@@ -1,7 +1,8 @@
 // router.jsx
+import Storage from "./modules/System/System Settings/Storage";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
-import { ROUTE_PATHS } from "./constants/routeConstatns";
+import { ROUTE_PATHS } from "./constants/routeConstants";
 import SystemInfo from "./modules/status/System Status/SystemInfo";
 import PstnStatus from "./modules/status/System Status/PstnStatus";
 import PcmInfo from "./modules/status/System Status/PcmInfo";
@@ -67,6 +68,7 @@ import Network from "./modules/System/System Settings/Network";
 import Authorization from "./modules/Maitenance/System Tools/Authorization";
 import Management from "./modules/System/System Settings/Management";
 import IPRoutingTable from "./modules/System/System Settings/IPRoutingTable";
+import SipAccessControl from "./modules/System/System Settings/SipAccessControl";
 import AccessControl from "./modules/System/System Settings/AccessControl";
 import IDSSettings from "./modules/Maitenance/System Tools/IDSSettings";
 import DDOSSettings from "./modules/Maitenance/System Tools/DDOSSettings";
@@ -106,6 +108,7 @@ import DisaPage from "./modules/PBX/CallFeatures/DisaPage";
 import VoicePromptsPage from "./modules/PBX/VoicePrompts/VoicePromptsPage";
 import PbxMonitor from "./modules/status/PBX Status/PbxMonitor";
 import ViewVoicemailPage from "./modules/status/PBX Status/ViewVoicemailPage";
+
 import PortFxsPage from "./modules/FXS/Port/PortFxsPage";
 import PortFxsAdvancedPage from "./modules/FXS/Port/PortFxsAdvancedPage";
 import PortGroupPage from "./modules/FXS/Port/PortGroupPage";
@@ -131,6 +134,7 @@ import CallQueue from "./modules/PBX/CallFeatures/CallQueue";
 import OutboundRestrictions from "./modules/PBX/CallControl/OutboundRestrictions";
 import FeatureCodePage from "./modules/PBX/Features Codes/FeatureCodePage";
 import VoicemailPage from "./modules/PBX/Voicemail/VoicemailPage";
+import AutoProvision from "./modules/PBX/AutoProvision/AutoProvision";
 import UserManage from "./modules/UserManage/User Permission/UserManage";
 // FXS → modules/FXS/Route pages
 import FxsRouteRoutingParameterPage from "./modules/FXS/Route/RouteRoutingParameterPage";
@@ -143,6 +147,7 @@ import FxsPSTNCallInCallerID from "./modules/FXS/Num Manipulate/FxsPSTNCallInCal
 import FxsPSTNCallInCalleeID from "./modules/FXS/Num Manipulate/FxsPSTNCallInCalleeID";
 import ActiveCallQueue from "./modules/status/PBX Status/ActiveCallQueue";
 import TimeCondition from "./modules/PBX/CallControl/TimeCondition";
+import RecordSettings from "./modules/PBX/RecordSettings/RecordSettings";
 import LicenseLimits from "./modules/Maitenance/System Tools/LicenseLimits";
 // Error Boundary Component
 const ErrorBoundary = ({ error }) => {
@@ -249,6 +254,10 @@ export const router = createBrowserRouter([
         element: <VoicemailPage />,
       },
       {
+        path: "/auto-provision/auto-provision",
+        element: <AutoProvision />,
+      },
+      {
         path: "/route/routing-parameters",
         element: <RouteRoutingParameterPage />,
       },
@@ -344,6 +353,7 @@ export const router = createBrowserRouter([
       { path: "/call-features/speed-dial", element: <SpeedDialPage /> },
       { path: "/call-features/disa", element: <DisaPage /> },
       { path: "/call-control/time-condition", element: <TimeCondition /> },
+      { path: "/record-settings/record-settings", element: <RecordSettings /> },
       {
         path: "/pcm/status",
         element: <PcmStatusPage />,
@@ -445,6 +455,10 @@ export const router = createBrowserRouter([
         element: <Network />,
       },
       {
+        path: "/system-tools/storage",
+        element: <Storage />,
+      },
+      {
         path: "/system-tools/routing-interface",
         element: <RoutingInterface />,
       },
@@ -459,6 +473,10 @@ export const router = createBrowserRouter([
       {
         path: "/system-tools/ip-routing-table",
         element: <IPRoutingTable />,
+      },
+      {
+        path: "/system-tools/sip-access-control",
+        element: <SipAccessControl />,
       },
       {
         path: "/system-tools/access-control",

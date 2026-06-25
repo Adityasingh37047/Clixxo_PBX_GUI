@@ -1,8 +1,8 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ── Theme tokens (manual toggle via body.dark) ───────────────────────────── */
+/* â”€â”€ Theme tokens (manual toggle via body.dark) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --bg-main: #f8fafc;
   --bg-surface: #ffffff;
@@ -79,7 +79,7 @@ body {
   color: var(--text-label) !important;
 }
 
-/* ── Unified page + card containers ───────────────────────────────────────── */
+/* â”€â”€ Unified page + card containers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .clixxo-page,
 .clixxo-page-body {
   background-color: var(--bg-main);
@@ -127,7 +127,7 @@ body {
   color: var(--status-primary) !important;
 }
 
-/* System Settings module — consistent dark/light surfaces */
+/* System Settings module â€” consistent dark/light surfaces */
 .clixxo-system-settings {
   background-color: var(--bg-main);
   color: var(--text-primary);
@@ -210,6 +210,19 @@ body {
   background-color: var(--bg-main) !important;
 }
 
+/* App-wide smooth scroll (anchors, keyboard, programmatic scroll).
+   Mouse-wheel easing is wired in Layout.jsx — pure CSS cannot slow wheel scroll. */
+html {
+  scroll-behavior: smooth;
+}
+
+body,
+.app-main-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* VoIP settings pages — outer layout #eef2f7 + inner page shell #f8fafc (matches Media Parameters) */
 .fxs-voip-media-page {
   background: var(--bg-main);
   min-height: calc(100vh - 80px);
@@ -237,7 +250,7 @@ body {
   ) !important;
 }
 
-/* Complex configuration forms — input contrast on surface panels */
+/* Complex configuration forms â€” input contrast on surface panels */
 .clixxo-form-panel,
 .sip-reg {
   background-color: var(--bg-surface);
@@ -328,7 +341,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* Material UI — theme-aware surfaces */
+/* Material UI â€” theme-aware surfaces */
 .MuiPaper-root,
 .MuiDialog-paper,
 .MuiMenu-paper,
@@ -361,7 +374,7 @@ body {
   color: var(--text-label);
 }
 
-/* Tables — all modes */
+/* Tables â€” all modes */
 table th,
 thead th {
   background-color: var(--table-header-bg);
@@ -414,7 +427,7 @@ body.dark .border-gray-500 {
   border-color: var(--border-subtle) !important;
 }
 
-/* MUI outlined fields — theme-aware borders */
+/* MUI outlined fields â€” theme-aware borders */
 .MuiOutlinedInput-notchedOutline {
   border-color: var(--border-subtle) !important;
 }
@@ -502,10 +515,10 @@ body.dark .border-gray-500 {
   border-left: 1px solid var(--border-strong);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   GLOBAL THEME ENFORCEMENT — all authenticated app pages (clixxo-app-shell)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GLOBAL THEME ENFORCEMENT â€” all authenticated app pages (clixxo-app-shell)
    Overrides legacy inline whites/blacks without touching component logic.
-   ═══════════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .clixxo-app-shell {
   color: var(--text-primary);

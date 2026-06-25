@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -288,7 +288,7 @@ const SipPcmPagination = ({
     </span>
     <div className="flex gap-[8px] items-center">
       <Btn onClick={() => onPageChange(page - 1)} disabled={page <= 1} variant="outline">
-        ← Prev
+        ΓåÉ Prev
       </Btn>
       <span style={sipPcmPageBadgeStyle}>
         Page {page} of {totalPages}
@@ -298,7 +298,7 @@ const SipPcmPagination = ({
         disabled={page >= totalPages}
         variant="outline"
       >
-        Next →
+        Next ΓåÆ
       </Btn>
     </div>
   </div>
@@ -334,7 +334,7 @@ const ExtensionGroupsPage = () => {
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
 
-  // ── Load Data ──
+  // ΓöÇΓöÇ Load Data ΓöÇΓöÇ
   const loadGroups = async () => {
     setLoading((p) => ({ ...p, fetch: true }));
     setMessage({ type: "", text: "" });
@@ -366,7 +366,7 @@ const ExtensionGroupsPage = () => {
     }
   }, []);
 
-  // ── Search & Pagination ──
+  // ΓöÇΓöÇ Search & Pagination ΓöÇΓöÇ
   const filteredGroups = searchQuery.trim()
     ? groups.filter(
         (g) =>
@@ -382,7 +382,7 @@ const ExtensionGroupsPage = () => {
   const dataEmpty = groups.length === 0;
   const searchEmpty = !dataEmpty && filteredGroups.length === 0;
 
-  // ── Checkbox Selection Logic ──
+  // ΓöÇΓöÇ Checkbox Selection Logic ΓöÇΓöÇ
   const pageIds = pagedGroups.map((g) => g.id);
   const allPageSelected =
     pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
@@ -404,7 +404,7 @@ const ExtensionGroupsPage = () => {
     );
   };
 
-  // ── Delete ──
+  // ΓöÇΓöÇ Delete ΓöÇΓöÇ
   const handleDelete = async () => {
     if (!selectedIds.length) {
       showMessage("error", "Please select at least one record to delete.");
@@ -437,7 +437,7 @@ const ExtensionGroupsPage = () => {
     }
   };
 
-  // ── Modal Actions ──
+  // ΓöÇΓöÇ Modal Actions ΓöÇΓöÇ
   const openExtensionList = () => {
     setLoading((p) => ({ ...p, extensions: true }));
     fetchSipAccounts()
@@ -816,7 +816,7 @@ const ExtensionGroupsPage = () => {
                         }
                         label={
                           <span style={{ fontSize: 13, color: C.valueText }}>
-                            {extension} {name ? `— ${name}` : ""}
+                            {extension} {name ? `ΓÇö ${name}` : ""}
                           </span>
                         }
                         sx={{ margin: 0 }}

@@ -367,7 +367,7 @@ const Hosts = () => {
   const parseHostsFile = (content) => {
     const lines = content.split("\n");
     const parsedHosts = [];
-    let index = 0;
+    let index = 1;
 
     lines.forEach((line) => {
       const trimmedLine = line.trim();
@@ -506,7 +506,7 @@ const Hosts = () => {
       setEditIndex(idx);
     } else {
       setForm({
-        index: hosts.length.toString(),
+        index: (hosts.length + 1).toString(),
         proxyIp: "",
         domain: "",
       });
@@ -547,7 +547,7 @@ const Hosts = () => {
         updatedHosts = [
           ...hosts,
           {
-            index: hosts.length.toString(),
+            index: (hosts.length + 1).toString(),
             proxyIp: form.proxyIp,
             domain: form.domain,
           },
@@ -625,7 +625,7 @@ const Hosts = () => {
 
       const reindexedHosts = updatedHosts.map((host, i) => ({
         ...host,
-        index: i.toString(),
+        index: (i + 1).toString(),
       }));
 
       const fileContent = generateHostsFileContent(reindexedHosts);
@@ -915,7 +915,7 @@ const Hosts = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          {idx}
+                          {item.index ?? idx + 1}
                         </td>
                         <td
                           style={{

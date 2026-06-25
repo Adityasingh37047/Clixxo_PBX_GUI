@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material"; 
 import { Checkbox, Alert } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -125,6 +127,36 @@ const userPermissionFieldInputStyle = {
 
 const inputStyle = userPermissionFieldInputStyle;
 
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",      
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  username: "The username of the user.",
+  password: "The password of the user.",
+  confirmPassword: "The confirmation password of the user.",
+  accessType: "The access type of the user.",
+  rolePermission: "The role permission of the user.",
+};  
 // ── Button Component ──────────────────────────────────────────────────────────
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[5px] h-[30px] px-[14px] py-[5px] rounded-[6px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
@@ -1111,17 +1143,20 @@ export default function UserManage() {
                 <div style={{ width: 480 }} className="flex flex-col gap-3">
                   {mode === "add" && (
                     <div className="flex items-center gap-4">
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 120,
-                          shrink: 0,
-                        }}
-                      >
-                        Username
-                      </span>
+                       <Tooltip title={tooltips.username} {...tooltipProps}
+                       >
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: 120,
+                            shrink: 0,
+                          }}
+                        >
+                          Username
+                        </span>
+                        </Tooltip>
                       <input
                         style={inputStyle}
                         type="text"
@@ -1134,6 +1169,9 @@ export default function UserManage() {
                   )}
                   {mode === "add" && (
                     <div className="flex items-center gap-4">
+                     
+                      <Tooltip title={tooltips.password} {...tooltipProps}
+                      >
                       <span
                         style={{
                           fontSize: 12,
@@ -1143,8 +1181,9 @@ export default function UserManage() {
                           shrink: 0,
                         }}
                       >
-                        Password
-                      </span>
+                            Password
+                        </span>
+                        </Tooltip>
                       <input
                         style={inputStyle}
                         type="password"
@@ -1156,6 +1195,8 @@ export default function UserManage() {
                     </div>
                   )}
                   <div className="flex items-center gap-4">
+                    <Tooltip title={tooltips.accessType} {...tooltipProps}
+                    >
                     <span
                       style={{
                         fontSize: 12,
@@ -1167,6 +1208,7 @@ export default function UserManage() {
                     >
                       Access Type
                     </span>
+                    </Tooltip>
                     <select
                       style={inputStyle}
                       value={accessType}
@@ -1178,6 +1220,8 @@ export default function UserManage() {
                     </select>
                   </div>
                   <div className="flex items-center gap-4">
+                    <Tooltip title={tooltips.rolePermission} {...tooltipProps}
+                    >
                     <span
                       style={{
                         fontSize: 12,
@@ -1189,6 +1233,7 @@ export default function UserManage() {
                     >
                       Role Permission
                     </span>
+                    </Tooltip>
                     <select
                       style={inputStyle}
                       value={rolePermission}

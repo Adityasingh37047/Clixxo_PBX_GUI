@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   NETWORK_SETTINGS_FIELDS,
   NETWORK_SETTINGS_INITIAL_FORM,
@@ -217,6 +219,50 @@ const SectionHeading = ({ title, isFirst = false }) => (
     </span>
   </div>
 );
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  ipv4NetworkType:
+    "Select the IPv4 network configuration type. Static allows manual IP configuration, while DHCP obtains settings automatically.",
+  ipAddress: "Specify the IPv4 address assigned to this interface.",
+  subnetMask:
+    "Specify the subnet mask used for the IPv4 network. It defines the network and host portions of the IP address.",
+  defaultGateway:
+    "Specify the default gateway IP address used to route traffic outside the local network.",
+  ipv6Address:
+    "Specify the IPv6 address assigned to this interface for IPv6 network communication.",
+  ipv6Prefix:
+    "Specify the prefix length for the IPv6 address assigned to this interface. The prefix length is the number of bits in the prefix.",
+  vlanEnable:
+    "Enable VLAN tagging for this interface. When enabled, network traffic will be associated with the configured VLAN ID.",
+  preferredDnsServer:
+    "Specify the preferred DNS server used for domain name resolution. This server will be queried first when resolving hostnames.",
+  standbyDnsServer:
+    "Specify the standby (secondary) DNS server. It will be used if the preferred DNS server is unavailable.",
+  defaultMode:
+    "Select the default network mode for this interface. The selected mode determines how the device obtains and manages network connectivity.",
+};
 
 const Network = () => {
   const [lanInterfaces, setLanInterfaces] = useState([]);
@@ -1186,8 +1232,12 @@ const Network = () => {
                           className="flex flex-col gap-3 w-full"
                           style={{ maxWidth: 640, margin: "0 auto" }}
                         >
-                          {/* IPV4 Network Type */}
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                        {/* IPV4 Network Type */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                          <Tooltip
+                            title={tooltips.ipv4NetworkType}
+                            {...tooltipProps}
+                          >
                             <label
                               style={{
                                 fontSize: 12,
@@ -1200,45 +1250,69 @@ const Network = () => {
                             >
                               IPV4 Network Type (M):
                             </label>
-                            <div className="flex-1 w-full max-w-[280px]">
-                              <select
-                                value={lan.ipv4Type || "Static"}
-                                onChange={(e) =>
-                                  handleLanChange(
-                                    idx,
-                                    "ipv4Type",
-                                    e.target.value,
-                                  )
-                                }
-                                style={selectStyle}
-                                onFocus={inputInteraction.onFocus}
-                                onBlur={inputInteraction.onBlur}
-                                onMouseEnter={inputInteraction.onMouseEnter}
-                                onMouseLeave={inputInteraction.onMouseLeave}
-                              >
-                                <option value="Static">Static</option>
-                                <option value="DHCP">DHCP</option>
-                              </select>
-                            </div>
+                          </Tooltip>
+                          <div className="flex-1 w-full max-w-[280px]">
+                            <select
+                              value={lan.ipv4Type || "Static"}
+                              onChange={(e) =>
+                                handleLanChange(
+                                  idx,
+                                  "ipv4Type",
+                                  e.target.value,
+                                )
+                              }
+                              style={selectStyle}
+                              onFocus={inputInteraction.onFocus}
+                              onBlur={inputInteraction.onBlur}
+                              onMouseEnter={inputInteraction.onMouseEnter}
+                              onMouseLeave={inputInteraction.onMouseLeave}
+                            >
+                              <option value="Static">Static</option>
+                              <option value="DHCP">DHCP</option>
+                            </select>
                           </div>
+                        </div>
 
                           {(lan.ipv4Type || "Static") === "Static" && (
                             <>
-                              {/* IP Address */}
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                                <label
-                                  style={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    color: C.labelText,
-                                    width: "100%",
-                                    maxWidth: 220,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  IP Address (I):
-                                </label>
-                                <div className="flex-1 w-full max-w-[280px]">
+                                  {/* IP Address */}
+                                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                                  <Tooltip
+    title={tooltips.ipAddress}
+    arrow
+    placement="top"
+    slotProps={{
+      tooltip: {
+        sx: {
+          bgcolor: "#fff",
+          color: "#334155",
+          border: "1px solid #d1d5db",
+          fontSize: 12,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        },
+      },
+      arrow: {
+        sx: {
+          color: "#fff",
+        },
+      },
+    }}
+  >
+    <label
+      style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        maxWidth: 220,
+        flexShrink: 0,
+        cursor: "help",
+      }}
+    >
+      IP Address (I):
+    </label>
+  </Tooltip>
+                                    <div className="flex-1 w-full max-w-[280px]">
                                   <input
                                     type="text"
                                     value={lan.ipAddress || ""}
@@ -1276,18 +1350,41 @@ const Network = () => {
 
                               {/* Subnet Mask */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                                <label
-                                  style={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    color: C.labelText,
-                                    width: "100%",
-                                    maxWidth: 220,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  Subnet Mask (U):
-                                </label>
+                              <Tooltip
+    title={tooltips.subnetMask}
+    arrow
+    placement="top"
+    slotProps={{
+      tooltip: {
+        sx: {
+          bgcolor: "#fff",
+          color: "#334155",
+          border: "1px solid #d1d5db",
+          fontSize: 12,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        },
+      },
+      arrow: {
+        sx: {
+          color: "#fff",
+        },
+      },
+    }}
+  >
+    <label
+      style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        maxWidth: 220,
+        flexShrink: 0,
+        cursor: "help",
+      }}
+    >
+      Subnet Mask (U):
+    </label>
+  </Tooltip>
                                 <div className="flex-1 w-full max-w-[280px]">
                                   <input
                                     type="text"
@@ -1326,18 +1423,41 @@ const Network = () => {
 
                               {/* Default Gateway */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                                <label
-                                  style={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    color: C.labelText,
-                                    width: "100%",
-                                    maxWidth: 220,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  Default Gateway (D):
-                                </label>
+                              <Tooltip
+  title={tooltips.defaultGateway}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.labelText,
+      width: "100%",
+      maxWidth: 220,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Default Gateway (D):
+  </label>
+</Tooltip>
                                 <div className="flex-1 w-full max-w-[280px]">
                                   <input
                                     type="text"
@@ -1376,18 +1496,41 @@ const Network = () => {
 
                               {/* IPV6 Address */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                                <label
-                                  style={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    color: C.labelText,
-                                    width: "100%",
-                                    maxWidth: 220,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  IPV6 Address (I):
-                                </label>
+                              <Tooltip
+  title={tooltips.ipv6Address}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.labelText,
+      width: "100%",
+      maxWidth: 220,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    IPV6 Address (I):
+  </label>
+</Tooltip>
                                 <div className="flex-1 w-full max-w-[280px]">
                                   <input
                                     type="text"
@@ -1410,7 +1553,28 @@ const Network = () => {
 
                               {/* IPV6 Address Prefix */}
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                                <label
+                              <Tooltip
+  title={tooltips.ipv6Prefix}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
                                   style={{
                                     fontSize: 12,
                                     fontWeight: 600,
@@ -1422,6 +1586,7 @@ const Network = () => {
                                 >
                                   IPV6 Address Prefix (U):
                                 </label>
+</Tooltip>
                                 <div className="flex-1 w-full max-w-[280px]">
                                   <input
                                     type="text"
@@ -1458,18 +1623,41 @@ const Network = () => {
                       style={{ maxWidth: 640, margin: "0 auto" }}
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                        <label
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: "100%",
-                            maxWidth: 220,
-                            flexShrink: 0,
-                          }}
-                        >
-                          VLAN Enable:
-                        </label>
+                      <Tooltip
+  title={tooltips.vlanEnable}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.labelText,
+      width: "100%",
+      maxWidth: 220,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    VLAN Enable:
+  </label>
+</Tooltip>
                         <div className="flex-1 w-full max-w-[280px]">
                           <div className="flex items-center gap-6">
                             <label className="flex items-center gap-2 cursor-pointer">
@@ -1706,18 +1894,41 @@ const Network = () => {
                     >
                       {/* Preferred DNS Server */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                        <label
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: "100%",
-                            maxWidth: 220,
-                            flexShrink: 0,
-                          }}
-                        >
-                          Preferred DNS Server (P):
-                        </label>
+                      <Tooltip
+  title={tooltips.preferredDnsServer}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.labelText,
+      width: "100%",
+      maxWidth: 220,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Preferred DNS Server (P):
+  </label>
+</Tooltip>
                         <div className="flex-1 w-full max-w-[280px]">
                           <input
                             type="text"
@@ -1750,18 +1961,41 @@ const Network = () => {
 
                       {/* Standby DNS Server */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                        <label
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: "100%",
-                            maxWidth: 220,
-                            flexShrink: 0,
-                          }}
-                        >
-                          Standby DNS Server (P):
-                        </label>
+                      <Tooltip
+  title={tooltips.standbyDnsServer}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.labelText,
+      width: "100%",
+      maxWidth: 220,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Standby DNS Server (P):
+  </label>
+</Tooltip>
                         <div className="flex-1 w-full max-w-[280px]">
                           <input
                             type="text"
@@ -1802,18 +2036,41 @@ const Network = () => {
                       style={{ maxWidth: 640, margin: "0 auto" }}
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                        <label
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: "100%",
-                            maxWidth: 220,
-                            flexShrink: 0,
-                          }}
-                        >
-                          Default Mode:
-                        </label>
+                      <Tooltip
+  title={tooltips.defaultMode}
+  arrow
+  placement="top"
+  slotProps={{
+    tooltip: {
+        sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  }}
+>
+  <label
+    style={{
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.labelText,
+      width: "100%",
+      maxWidth: 220,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Default Mode:
+  </label>
+</Tooltip>
                         <div className="flex-1 w-full max-w-[280px]">
                           <select
                             value={arpMode}
@@ -1849,7 +2106,6 @@ const Network = () => {
               </form>
             )}
           </div>
-
           {!loading && (
             <div style={advancedFormInlineFooterStyle}>
               <Btn

@@ -3,6 +3,7 @@ import {
   DIALING_TIMEOUT_TABLE_COLUMNS,
   DIALING_TIMEOUT_INITIAL_FORM,
   DIALING_TIMEOUT_INITIAL_DATA,
+  DIALING_TIMEOUT_FIELD_TOOLTIPS,
 } from "../../../constants/DialingTimeoutConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -12,7 +13,70 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Tooltip,
 } from "@mui/material";
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+// ── Local page UI (inlined from fxsSharedUi) ──
 
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
@@ -150,6 +214,7 @@ const FieldRow = ({
   label,
   children,
   labelWidth = 170,
+  tooltipKey,
 }) => (
   <div
     style={{
@@ -170,7 +235,10 @@ const FieldRow = ({
         textAlign: "left",
       }}
     >
-      {label}
+      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={DIALING_TIMEOUT_FIELD_TOOLTIPS}>
+        {label}
+      </FxsFieldLabel>
+      {required && <span style={{ color: "#dc2626" }}> *</span>}
     </label>
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
@@ -435,6 +503,7 @@ const DialingTimeoutPage = () => {
             <FieldRow
               label="Description:"
               labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
+              tooltipKey="description"
             >
               <TextField
                 name="description"
@@ -450,6 +519,7 @@ const DialingTimeoutPage = () => {
             <FieldRow
               label="Inter Digit Timeout (s):"
               labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
+              tooltipKey="interDigitTimeout"
             >
               <TextField
                 name="interDigitTimeout"
@@ -466,6 +536,7 @@ const DialingTimeoutPage = () => {
             <FieldRow
               label="Off-hook waiting digit timeout(s):"
               labelWidth={DIALING_TIMEOUT_FIELD_LABEL_WIDTH}
+              tooltipKey="offHookTimeout"
             >
               <TextField
                 name="offHookTimeout"

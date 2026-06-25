@@ -1,7 +1,68 @@
 import React, { useState } from "react";
-import { Alert, Checkbox, TextField } from "@mui/material";
-import { QOS_INITIAL_FORM } from "../../../constants/QosConstants";
+import { Alert, Checkbox, TextField, Tooltip } from "@mui/material";
+import { QOS_INITIAL_FORM, QOS_FIELD_TOOLTIPS } from "../../../constants/QosConstants";
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
 
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+// ── Local page UI (inlined from fxsSharedUi) ──
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
   labelText: "var(--text-primary)",
@@ -195,7 +256,7 @@ const qosInputColStyle = {
   paddingLeft: 10,
 };
 
-const QosFieldRow = ({ label, labelFor, children, inputAlign = false }) => (
+const QosFieldRow = ({ label, labelFor, children, inputAlign = false, tooltipKey }) => (
   <div
     style={{
       display: "flex",
@@ -206,7 +267,9 @@ const QosFieldRow = ({ label, labelFor, children, inputAlign = false }) => (
     }}
   >
     <label htmlFor={labelFor} style={qosLabelStyle}>
-      {label}
+      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={QOS_FIELD_TOOLTIPS}>
+        {label}
+      </FxsFieldLabel>
     </label>
     <div style={inputAlign ? qosInputColStyle : qosCheckboxColStyle}>
       {children}
@@ -298,7 +361,7 @@ const QosPage = () => {
               maxWidth: "100%",
             }}
           >
-            <QosFieldRow label="QoS" labelFor="qosEnabled">
+            <QosFieldRow label="QoS" labelFor="qosEnabled" tooltipKey="qosEnabled">
               <FormEnableCheckbox
                 id="qosEnabled"
                 checked={formData.qosEnabled}
@@ -316,6 +379,7 @@ const QosPage = () => {
                   label="Media Premium QoS"
                   labelFor="mediaPremiumQos"
                   inputAlign
+                  tooltipKey="mediaPremiumQos"
                 >
                   <TextField
                     id="mediaPremiumQos"
@@ -339,6 +403,7 @@ const QosPage = () => {
                   label="Control Premium QoS"
                   labelFor="controlPremiumQos"
                   inputAlign
+                  tooltipKey="controlPremiumQos"
                 >
                   <TextField
                     id="controlPremiumQos"

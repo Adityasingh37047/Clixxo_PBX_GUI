@@ -3,6 +3,7 @@ import {
   CDR_QUERY_INITIAL_FORM,
   PORT_OPTIONS,
   CALL_DIRECTION_OPTIONS,
+  CDR_QUERY_FIELD_TOOLTIPS,
 } from "../../../constants/CdrQueryConstants";
 import {
   Alert,
@@ -10,7 +11,69 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
+  Tooltip,
 } from "@mui/material";
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
@@ -183,7 +246,7 @@ const CdrQueryFormCard = ({
 const CDR_LABEL_WIDTH = 190;
 const CDR_FIELD_GAP = 16;
 
-const CdrFieldRow = ({ label, children }) => (
+const CdrFieldRow = ({ label, children, tooltipKey }) => (
   <div
     style={{
       display: "flex",
@@ -201,7 +264,9 @@ const CdrFieldRow = ({ label, children }) => (
         textAlign: "left",
       }}
     >
-      {label}
+      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={CDR_QUERY_FIELD_TOOLTIPS}>
+        {label}
+      </FxsFieldLabel>
     </label>
     <div style={{ flexShrink: 0 }}>{children}</div>
   </div>
@@ -334,7 +399,7 @@ const CdrQueryPage = () => {
               maxWidth: "100%",
             }}
           >
-            <CdrFieldRow label="Starting Date">
+            <CdrFieldRow label="Starting Date" tooltipKey="startdate">
               <TextField
                 id="startdate"
                 type="date"
@@ -346,7 +411,7 @@ const CdrQueryPage = () => {
                 inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
               />
             </CdrFieldRow>
-            <CdrFieldRow label="Ending Date">
+            <CdrFieldRow label="Ending Date" tooltipKey="enddate">
               <TextField
                 id="enddate"
                 type="date"
@@ -358,7 +423,7 @@ const CdrQueryPage = () => {
                 inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
               />
             </CdrFieldRow>
-            <CdrFieldRow label="Port">
+            <CdrFieldRow label="Port" tooltipKey="port">
               <FormControl size="small" sx={{ width: 132 }}>
                 <MuiSelect
                   value={formData.port}
@@ -377,7 +442,7 @@ const CdrQueryPage = () => {
                 </MuiSelect>
               </FormControl>
             </CdrFieldRow>
-            <CdrFieldRow label="Call Direction">
+            <CdrFieldRow label="Call Direction" tooltipKey="billtype">
               <FormControl size="small" sx={{ width: 132 }}>
                 <MuiSelect
                   value={formData.billtype}
@@ -398,7 +463,7 @@ const CdrQueryPage = () => {
                 </MuiSelect>
               </FormControl>
             </CdrFieldRow>
-            <CdrFieldRow label="CallerID">
+            <CdrFieldRow label="CallerID" tooltipKey="callingnum">
               <TextField
                 id="callingnum"
                 value={formData.callingnum || ""}
@@ -412,7 +477,7 @@ const CdrQueryPage = () => {
                 inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
               />
             </CdrFieldRow>
-            <CdrFieldRow label="CalleeID">
+            <CdrFieldRow label="CalleeID" tooltipKey="callednum">
               <TextField
                 id="callednum"
                 value={formData.callednum || ""}
@@ -424,7 +489,7 @@ const CdrQueryPage = () => {
                 inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
               />
             </CdrFieldRow>
-            <CdrFieldRow label="Call Duration(s)">
+            <CdrFieldRow label="Call Duration(s)" tooltipKey="mintalktime">
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <TextField
                   id="mintalktime"
@@ -453,7 +518,7 @@ const CdrQueryPage = () => {
                 />
               </div>
             </CdrFieldRow>
-            <CdrFieldRow label="Keyword">
+            <CdrFieldRow label="Keyword" tooltipKey="keyword">
               <TextField
                 id="keyword"
                 value={formData.keyword || ""}

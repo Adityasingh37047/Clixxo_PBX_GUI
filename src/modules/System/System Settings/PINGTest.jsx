@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Alert } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import { postPingtest, fetchNetwork } from "../../../api/apiService";
 import {
   PING_TITLE,
@@ -117,6 +118,35 @@ const systemToolFieldSelectStyle = {
   lineHeight: 1.35,
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  sourceIp: "Select the source IP address used to send ping requests.",
+  destIp: "Enter the destination IP address to test connectivity.",
+  count: "Specify how many ping packets should be sent.",
+  length: "Specify the size of each ping packet in bytes.",
+  info: "Displays the ping test results and response details.",
+};
 const inputStyle = systemToolFieldInputStyle;
 const selectStyle = systemToolFieldSelectStyle;
 
@@ -555,7 +585,14 @@ const PINGTest = () => {
               style={{ maxWidth: 460, margin: "0 auto" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{PING_LABELS.sourceIp}</span>
+              <Tooltip
+  title={tooltips.sourceIp}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {PING_LABELS.sourceIp}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <select
                     style={selectStyle}
@@ -579,7 +616,14 @@ const PINGTest = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{PING_LABELS.destIp}</span>
+              <Tooltip
+  title={tooltips.destIp}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {PING_LABELS.destIp}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <input
                     type="text"
@@ -603,7 +647,14 @@ const PINGTest = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{PING_LABELS.count}</span>
+              <Tooltip
+  title={tooltips.count}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {PING_LABELS.count}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <input
                     type="number"
@@ -627,7 +678,14 @@ const PINGTest = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-                <span style={labelStyle}>{PING_LABELS.length}</span>
+              <Tooltip
+  title={tooltips.length}
+  {...tooltipProps}
+>
+      <span style={labelStyle}>
+    {PING_LABELS.length}
+  </span>
+</Tooltip>
                 <div style={fieldWrapStyle}>
                   <input
                     type="number"

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { CircularProgress, Alert } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import {
   DEFAULT_SERIAL,
   DEFAULT_STATUS,
@@ -383,6 +384,56 @@ function parseLicensePayload(responseData) {
   };
 }
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+const tooltips = {
+  "Serial Number:":
+    "Displays the unique serial number assigned to this device.",
+
+  "Authorization Status:":
+    "Shows the current authorization or license status of the device.",
+
+  "Device Type:":
+    "Displays the model or type of the device.",
+
+  "Expiry Date:":
+    "Shows the date on which the current authorization or license expires.",
+
+  "Maximum Number of SIP Extensions:":
+    "Displays the maximum number of SIP extensions supported by this device.",
+
+  "Maximum Number of FXS Channels:":
+    "Displays the maximum number of FXS channels supported by this device.",
+
+  "Maximum Number of FXO Channels:":
+    "Displays the maximum number of FXO channels supported by this device.",
+
+  "Maximum Number of SIP Trunk Channels:":
+    "Displays the maximum number of SIP trunk channels supported by this device.",
+
+  "Maximum Number of E1-PRI:":
+    "Displays the maximum number of E1-PRI interfaces supported by this device.",
+};
+  
 const Authorization = () => {
   const [serial, setSerial] = useState(DEFAULT_SERIAL);
   const [deviceType, setDeviceType] = useState("");
@@ -580,7 +631,14 @@ const Authorization = () => {
             >
               {rows.map((row) => (
                 <React.Fragment key={row.label}>
-                  <label style={labelStyle}>{row.label}</label>
+           <Tooltip
+  title={tooltips[row.label] || ""}
+  {...tooltipProps}
+>
+  <span style={labelStyle}>
+    {row.label}
+  </span>
+</Tooltip>
                   <div className="flex items-center gap-2 min-w-0">
                     <input
                       type="text"

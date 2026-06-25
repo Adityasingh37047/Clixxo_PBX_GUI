@@ -4,7 +4,7 @@ import {
   NUMBER_TYPE_OPTIONS,
   NUMBER_TYPE_MODAL_FIELDS,
   NUMBER_TYPE_MODAL_INITIAL_FORM
-} from '../../constants/IsdnNumberParamaterConstants';
+} from '../../constants/IsdnNumberParameterConstants';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { postLinuxCmd } from "../../../api/apiService";
-import { Alert } from "@mui/material";
+import { Alert } from "@mui/material";  
+import { Tooltip } from "@mui/material";
 import {
   LINUX_CLI_TITLE,
   LINUX_CLI_LABELS,
@@ -148,7 +149,6 @@ const Btn = ({ children, onClick, disabled, variant = "default", className = "",
     {children}
   </button>
 );
-
 const LinuxCLI = () => {
   const [command, setCommand] = useState("");
   const [logs, setLogs] = useState("");
@@ -297,7 +297,11 @@ const LinuxCLI = () => {
             <div className="flex flex-col gap-6">
               {/* Command Row */}
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <span
+                <Tooltip
+  title={tooltips.command}
+  {...tooltipProps}
+>
+  <span
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -308,6 +312,7 @@ const LinuxCLI = () => {
                 >
                   {LINUX_CLI_LABELS.command}
                 </span>
+</Tooltip>
                 <div className="flex flex-col w-full max-w-md">
                   <input
                     type="text"
@@ -356,7 +361,11 @@ const LinuxCLI = () => {
 
               {/* Logs Row */}
               <div className="flex flex-col sm:flex-row gap-4 items-start">
-                <span
+                <Tooltip
+  title={tooltips.logs}
+  {...tooltipProps}
+>
+  <span
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -368,7 +377,8 @@ const LinuxCLI = () => {
                 >
                   {LINUX_CLI_LABELS.logs}
                 </span>
-                <textarea
+</Tooltip>
+                        <textarea
                   style={{
                     ...inputStyle,
                     height: "auto",

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material"; 
 import { fetchChangePassword } from "../../../api/apiService";
 import useAuth from "../../../context/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -209,7 +211,6 @@ const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
 const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-
 const btnVariantCls = {
   default: BTN_DEFAULT,
   primary: BTN_PRIMARY,
@@ -468,7 +469,9 @@ const ChangePassword = () => {
               >
                 {CHANGE_PASSWORD_FIELDS.map((field) => (
                   <React.Fragment key={field.name}>
-                    <label style={labelStyle}>{field.label}:</label>
+                    <Tooltip title={tooltips[field.name] || ""} {...tooltipProps}>
+                      <label style={labelStyle}>{field.label}:</label>
+                    </Tooltip>
                     <div className="flex flex-col min-w-0 w-full">
                       {field.type === "password" ? (
                         <TextField

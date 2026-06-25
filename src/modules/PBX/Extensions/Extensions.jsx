@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import {
   SIP_ACCOUNT_FIELDS,
   SIP_ACCOUNT_TABLE_COLUMNS,
   SIP_ACCOUNT_INITIAL_FORM,
   CODEC_OPTIONS,
-} from "../../../constants/SipAccountConstants";
+} from "../../../constants/ExtensionsConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -42,7 +42,7 @@ import {
 } from "../../../api/apiService";
 const PBX_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Local page UI (inlined from pbxSharedUi) ──
+// ΓöÇΓöÇ Local page UI (inlined from pbxSharedUi) ΓöÇΓöÇ
 const C = {
   pageBg: "var(--bg-main)",
   cardBg: "var(--bg-surface)",
@@ -151,7 +151,7 @@ const ExtensionTd = ({ children, rowBg, isLast, style: extra }) => (
   </td>
 );
 
-const MUTED_DASH = <span className="text-[#94a3b8]">—</span>;
+const MUTED_DASH = <span className="text-[#94a3b8]">ΓÇö</span>;
 
 const PbxBreadcrumb = ({ section, current, className = "" }) => (
   <div
@@ -391,7 +391,7 @@ const SipPcmPagination = ({
         disabled={page <= 1}
         variant="outline"
       >
-        ← Prev
+        ΓåÉ Prev
       </Btn>
       <span className={SIP_PCM_PAGE_BADGE}>
         Page {page} of {totalPages}
@@ -401,7 +401,7 @@ const SipPcmPagination = ({
         disabled={page >= totalPages}
         variant="outline"
       >
-        Next →
+        Next ΓåÆ
       </Btn>
     </div>
   </div>
@@ -581,7 +581,7 @@ const extensionTableCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Status style helper ───────────────────────────────────────────────────────
+// ΓöÇΓöÇ Status style helper ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const statusStyle = (s) => {
   const v = String(s || "").toLowerCase();
 
@@ -603,7 +603,7 @@ const statusStyle = (s) => {
 
   return { color: "#475569" };
 };
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Constants ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const FOLLOW_ME_TIMEOUT_OPTIONS = [
   0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95,
   100,
@@ -621,7 +621,7 @@ const FOLLOW_ME_DESTINATION_TYPES = [
   "Other",
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 const SipAccountPage = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -667,7 +667,7 @@ const SipAccountPage = () => {
     }
   }, []);
 
-  // ── Filter rows by search ──────────────────────────────────────────────────
+  // ΓöÇΓöÇ Filter rows by search ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const filteredAccounts = searchQuery.trim()
     ? accounts.filter((a) =>
         [
@@ -702,7 +702,7 @@ const SipAccountPage = () => {
     [accounts],
   );
 
-  // ── Select-all logic (mirrors CDR) ────────────────────────────────────────
+  // ΓöÇΓöÇ Select-all logic (mirrors CDR) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const allPageSelected =
     pagedAccounts.length > 0 &&
     pagedAccounts.every((_, i) =>
@@ -731,13 +731,13 @@ const SipAccountPage = () => {
     );
   };
 
-  // ── Message ───────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Message ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
-  // ── Transform helpers (unchanged from original) ───────────────────────────
+  // ΓöÇΓöÇ Transform helpers (unchanged from original) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const transformApiToUi = (apiData) => {
     const isEnabled = (value) =>
       value === true ||
@@ -1058,7 +1058,7 @@ const SipAccountPage = () => {
     };
   };
 
-  // ── Load accounts ─────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Load accounts ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const loadAccounts = async () => {
     if (loading.fetch) return;
     setLoading((prev) => ({ ...prev, fetch: true }));
@@ -1082,7 +1082,7 @@ const SipAccountPage = () => {
     }
   };
 
-  // ── Validation ────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Validation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const validateExtension = (v) =>
     !v || !v.trim() ? "Extension is required" : null;
   const validateContext = (v) =>
@@ -1161,7 +1161,7 @@ const SipAccountPage = () => {
       .includes(codec);
   };
 
-  // ── Follow Me helpers ─────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Follow Me helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleFollowMeEntryChange = (index, field, value) => {
     setForm((prev) => {
       const current = Array.isArray(prev.follow_me_entries)
@@ -1190,7 +1190,7 @@ const SipAccountPage = () => {
     }));
   };
 
-  // ── DND helpers ───────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ DND helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleDndNumberChange = (index, value) => {
     setForm((prev) => {
       const cur = Array.isArray(prev.dnd_special_numbers)
@@ -1212,7 +1212,7 @@ const SipAccountPage = () => {
     }));
   };
 
-  // ── Modal open/close ──────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Modal open/close ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleOpenModal = (row = null, idx = null) => {
     setForm(row ? { ...row } : { ...SIP_ACCOUNT_INITIAL_FORM });
     setEditIndex(row ? idx : null);
@@ -1245,7 +1245,7 @@ const SipAccountPage = () => {
     setActiveTab("basic");
   };
 
-  // ── Save (single) ─────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Save (single) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleSave = async () => {
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -1331,7 +1331,7 @@ const SipAccountPage = () => {
     }
   };
 
-  // ── Bulk save ─────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Bulk save ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleBulkSave = async () => {
     const start = parseInt(bulkForm.startExtension, 10);
     const count = parseInt(bulkForm.createNumber, 10);
@@ -1444,7 +1444,7 @@ const SipAccountPage = () => {
     }
   };
 
-  // ── Delete / ClearAll ─────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Delete / ClearAll ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleDelete = async () => {
     if (!selected.length) {
       showMessage("error", "Please select accounts to delete");
@@ -1499,7 +1499,7 @@ const SipAccountPage = () => {
       if (res?.response) {
         showMessage(
           "success",
-          `Import complete — Created: ${res.created_count ?? 0}, Skipped: ${(res.skipped_validation_rows ?? 0) + (res.skipped_existing ?? 0)}`,
+          `Import complete ΓÇö Created: ${res.created_count ?? 0}, Skipped: ${(res.skipped_validation_rows ?? 0) + (res.skipped_existing ?? 0)}`,
         );
         await loadAccounts(true);
         setShowImportModal(false);
@@ -1528,15 +1528,15 @@ const SipAccountPage = () => {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   // RENDER
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   return (
     <div
       className={`bg-[var(--bg-main)] min-h-[calc(100vh-80px)] box-border ${isCompact ? "p-[8px]" : "p-[16px]"}`}
     >
       <div className="w-full max-w-full mx-auto">
-        {/* ── Error / success banner ── */}
+        {/* ΓöÇΓöÇ Error / success banner ΓöÇΓöÇ */}
         {message.text && (
           <Alert
             severity={message.type}
@@ -1579,7 +1579,7 @@ const SipAccountPage = () => {
                 <span
                   className={`text-[12px] ${searchFocused ? "text-[var(--text-label)]" : "text-[#94a3b8]"}`}
                 >
-                  🔍
+                  ≡ƒöì
                 </span>
                 <input
                   type="text"
@@ -1598,7 +1598,7 @@ const SipAccountPage = () => {
                     onClick={() => setSearchQuery("")}
                     className="text-[11px] text-[#94a3b8] cursor-pointer"
                   >
-                    ✕
+                    Γ£ò
                   </span>
                 )}
               </div>
@@ -1623,7 +1623,7 @@ const SipAccountPage = () => {
                 disabled={loading.fetch}
                 variant="cancel"
               >
-                ⬇ Import
+                Γ¼ç Import
               </Btn>
 
               <Btn
@@ -1631,7 +1631,7 @@ const SipAccountPage = () => {
                 disabled={loading.fetch}
                 variant="cancel"
               >
-                ⬆ Export
+                Γ¼å Export
               </Btn>
               <Btn
                 onClick={openBulkModal}
@@ -1794,7 +1794,7 @@ const SipAccountPage = () => {
                               isLast={isLastRow}
                               style={{ fontWeight: 400 }}
                             >
-                              {"•".repeat(
+                              {"ΓÇó".repeat(
                                 Math.min(item.password?.length || 0, 10),
                               )}
                             </ExtensionTd>
@@ -1870,9 +1870,9 @@ const SipAccountPage = () => {
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
           IMPORT MODAL
-      ══════════════════════════════════════════════════════════════════════ */}
+      ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
       <Dialog
         open={showImportModal}
         onClose={() => {
@@ -1960,9 +1960,9 @@ const SipAccountPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* ══════════════════════════════════════════════════════════════════════
+      {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
           ADD / EDIT / BULK MODAL  (same tab structure, CDR-styled shell)
-        ══════════════════════════════════════════════════════════════════════ */}
+        ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */}
       <Dialog
         open={showModal}
         onClose={() => {
@@ -2009,7 +2009,7 @@ const SipAccountPage = () => {
 
         <DialogContent className="!bg-[var(--bg-surface)] ![padding:24px]">
           <div style={modalTabShellStyle}>
-            {/* ── BASIC TAB ── */}
+            {/* ΓöÇΓöÇ BASIC TAB ΓöÇΓöÇ */}
             {activeTab === "basic" && (
               <div style={modalTabSectionStyle}>
                 <SectionCard title="General" isFirst>
@@ -2349,7 +2349,7 @@ const SipAccountPage = () => {
               </div>
             )}
 
-            {/* ── FEATURES TAB ── */}
+            {/* ΓöÇΓöÇ FEATURES TAB ΓöÇΓöÇ */}
             {activeTab === "features" && (
               <div style={modalTabSectionStyle}>
                 {/* Voicemail */}
@@ -3012,7 +3012,7 @@ const SipAccountPage = () => {
               </div>
             )}
 
-            {/* ── ADVANCED TAB ── */}
+            {/* ΓöÇΓöÇ ADVANCED TAB ΓöÇΓöÇ */}
             {activeTab === "advanced" && (
               <div style={modalTabSectionStyle}>
                 {/* RTP Settings */}
@@ -3256,7 +3256,7 @@ const SipAccountPage = () => {
   );
 };
 
-// ── Small helper components (inline, no extra file needed) ────────────────────
+// ΓöÇΓöÇ Small helper components (inline, no extra file needed) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const MonitorDualListbox = ({ available, selected, onChange }) => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
   const [leftSel, setLeftSel] = React.useState([]);

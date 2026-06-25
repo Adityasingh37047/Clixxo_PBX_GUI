@@ -43,4 +43,50 @@ export const DTMF_INITIAL_FORM = {
   dtmfHighPlayEnergy11: '-3',
 };
 
+const dtmfDigitLabel = (i) => {
+  if (i === 10) return "*";
+  if (i === 11) return "#";
+  return String(i);
+};
 
+const buildDtmfFieldTooltips = () => {
+  const tooltips = {
+    positiveTwist:
+      "Energy difference (dB) for high-frequency minus low-frequency detection.\nValid range: 0~24.",
+    negativeTwist:
+      "Energy difference (dB) for low-frequency minus high-frequency detection.\nValid range: 0~24.",
+    minDuration:
+      "Minimum tone duration at ON state (ms) for DTMF detection.\nValid range: 10~2000.",
+    minNegativeDuration:
+      "Minimum tone duration at OFF state (ms) for DTMF detection.\nValid range: 10~2000.",
+    energyRatio:
+      "Ratio of dual-tone energy (%).\nValid range: 1~100. Allows one decimal place.",
+    levelMinIn:
+      "Lowest energy threshold (dB) for accepting a digit.\nValid range: -40~-9.",
+    enableDisplayDtmf:
+      "When enabled, detected DTMF digits are reported via channel status.",
+    enableOmitABCD:
+      "When enabled, ABCD DTMF detection is omitted.",
+    dtmfEnergyAdvance:
+      "When enabled, per-digit low/high energy levels (0–9, *, #) replace the single DTMF Energy field.",
+    dtmfPlayEnergy:
+      "DTMF transmit energy (dB) when Advanced Energy Set is off.\nValid range: -18~11 dB.",
+    dtmfTxHighDuration:
+      "DTMF transmit duration at ON state (ms).\nValid range: 0~16383.",
+    dtmfTxLowDuration:
+      "DTMF transmit duration at OFF state (ms).\nValid range: 0~16383.",
+  };
+
+  for (let i = 0; i <= 11; i++) {
+    const digit = dtmfDigitLabel(i);
+    tooltips[`dtmfPlayEnergy${i}`] =
+      `DTMF${digit} low-frequency transmit energy (dB).\nValid range: -18.0~11.0 dB; one decimal place max.\nShown when DTMF Energy Advance Set is enabled.`;
+    tooltips[`dtmfHighPlayEnergy${i}`] =
+      `DTMF${digit} high-frequency transmit energy (dB).\nValid range: -18.0~11.0 dB; one decimal place max.\nShown when DTMF Energy Advance Set is enabled.`;
+  }
+
+  return tooltips;
+};
+
+/** DTMF detector/generator (DtmfPage) — local form state */
+export const DTMF_FIELD_TOOLTIPS = buildDtmfFieldTooltips();

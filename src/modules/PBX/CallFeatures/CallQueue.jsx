@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  Dialog,
-  DialogTitle,
+import Tooltip from "@mui/material/Tooltip";
+import {Dialog,  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -317,28 +316,58 @@ const inputProps = {
 };
 const LABEL_W = 175;
 
-const FieldRow = ({ label, children }) => (
+const FieldRow = ({ label, children, tooltip }) => (
   <div
     className="flex items-center rounded px-2 py-0.5 gap-2"
     style={{
       minHeight: 30,
     }}
   >
-    <label
-      className="text-[13px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left"
-      style={{
-        width: LABEL_W,
-        flexShrink: 0,
-        position: "relative",
-        left: "-8px",
-        color: C.accent,
-      }}
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label}
-    </label>
+      <label
+        className="text-[13px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left"
+        style={{
+          width: LABEL_W,
+          flexShrink: 0,
+          position: "relative",
+          left: "-8px",
+          color: C.accent,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label}
+      </label>
+    </Tooltip>
+
     <div className="flex-1 min-w-0">{children}</div>
   </div>
 );
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
 const CallQueue = () => {
   const isCompact = useMediaQuery(PBX_COMPACT_MQ);
@@ -765,16 +794,23 @@ const CallQueue = () => {
         }}
         maxWidth={false}
         className="z-50"
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 5,
+          },
+        }}
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
         PaperProps={{
           sx: {
-            width: 1020,
-            maxWidth: "98vw",
+            width: 900,
+            maxWidth: "96vw",
             mx: "auto",
             p: 0,
             borderRadius: "8px",
+            overflow: "hidden",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
             backgroundColor: "var(--bg-surface)",
@@ -837,7 +873,9 @@ const CallQueue = () => {
               >
                 <SectionCard title="Queue Settings" isFirst>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <FieldRow label="Queue Name *">
+                    <FieldRow label="Queue Name *"
+                    tooltip="User-defined name of a call queue. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters."
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -849,7 +887,9 @@ const CallQueue = () => {
                         inputProps={inputProps}
                       />
                     </FieldRow>
-                    <FieldRow label="Agent Call Timeout (s)">
+                    <FieldRow label="Agent Call Timeout (s)"
+                    tooltip="The maximum time for each agent to ring. the default value is 15 seconds."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -863,7 +903,9 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Queue Number *">
+                    <FieldRow label="Queue Number *"
+                    tooltip="The number dialed to reach this call queue, with the default value range of 6700~6750 which can be modiied in 'PBX-Preference->Extension Preferences'. It is null by default and must be filled in: otherwise the configuration will fail to be saved."
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -875,7 +917,9 @@ const CallQueue = () => {
                         inputProps={inputProps}
                       />
                     </FieldRow>
-                    <FieldRow label="Agent Announcement">
+                    <FieldRow label="Agent Announcement"
+                    tooltip="Announcement played to the Agent prior to bridging in the caller."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.agent_announcement}
@@ -898,7 +942,9 @@ const CallQueue = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Pin *">
+                    <FieldRow label="Pin *"
+                    tooltip="Set whether a password is needed for entering this call queue. The default setting is No."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.pin}
@@ -910,7 +956,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Agent Retry Time (s)">
+                    <FieldRow label="Agent Retry Time (s)"
+                    tooltip="Interval between calling the agent again after the failure of calling the agent. The default value is 30s."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -925,7 +973,9 @@ const CallQueue = () => {
                     </FieldRow>
 
                     {form.pin === "yes" && (
-                      <FieldRow label="Agent Password *">
+                      <FieldRow label="Agent Password *"
+                      tooltip="Set the password for dynamic agents to enter this call queue. It is null by default and must be filled in: otherwise the configuration will fail to be saved."
+                      >
                         <TextField
                           size="small"
                           fullWidth
@@ -946,7 +996,9 @@ const CallQueue = () => {
                         />
                       </FieldRow>
                     )}
-                    <FieldRow label="Wrap Up Time (s)">
+                    <FieldRow label="Wrap Up Time (s)"
+                    tooltip="How many seconds after the completion of a call an Agent will have before the queue can ring them with a new call. The default value is 30s."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -960,7 +1012,9 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Ring Strategy *">
+                    <FieldRow label="Ring Strategy *"
+                    tooltip="Selct the ring strategy for this queue. Ring all: All available agents ring. Longest idle agent(default): The agent keeping idle for the longest time rings first. Round Robin: All available agents ring randomly. Agent with least talk time: The agent whose total call time is shortest rings first. Agent with fewest calls: The agent with the fewest calls rings first. Agent with fewest calls: The agent with the fewest calls rings first. Agent with fewest calls: The agent with the fewest calls rings first. Top Down: The agents ring from top to down in the order already configured."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.ring_strategy}
@@ -977,7 +1031,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Max No Answer">
+                    <FieldRow label="Max No Answer " 
+                    tooltip="The allowed number of consecutive unanswered calls. 0 means no limit and the default value is 0."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -998,18 +1054,24 @@ const CallQueue = () => {
                         minHeight: 30,
                       }}
                     >
-                      <label
-                        className="text-[13px] font-medium whitespace-nowrap text-left"
-                        style={{
-                          width: LABEL_W,
-                          flexShrink: 0,
-                          color: C.accent,
-                          position: "relative",
-                          left: "-8px", // same as other labels
-                        }}
-                      >
-                        Timeout Action
-                      </label>
+                      <Tooltip
+  title="Select the action to perform when the timeout period is reached without any user input."
+  {...tooltipProps}
+>
+  <label
+    className="text-[13px] font-medium whitespace-nowrap text-left"
+    style={{
+      width: LABEL_W,
+      flexShrink: 0,
+      color: C.accent,
+      position: "relative",
+      left: "-8px",
+      cursor: "help",
+    }}
+  >
+    Timeout Action
+  </label>
+</Tooltip>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -1062,7 +1124,9 @@ const CallQueue = () => {
                         </div>
                       )}
                     </div>
-                    <FieldRow label="Discard Abandoned After(s)">
+                    <FieldRow label="Discard Abandoned After(s)"
+                    tooltip="Set the discard abandoned after seconds."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1079,7 +1143,9 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Caller ID Name Prefix">
+                    <FieldRow label="Caller ID Name Prefix"
+                    tooltip="Theprefix of a caller ID name sent when the queue allocates a call to the agent. By default it is null."
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -1091,7 +1157,9 @@ const CallQueue = () => {
                         inputProps={inputProps}
                       />
                     </FieldRow>
-                    <FieldRow label="Max Wait Time (s)">
+                    <FieldRow label="Max Wait Time (s)"
+                    tooltip="The maximum time for a caller to wait in the queue. 0 means no limit and the default value is 0."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1111,19 +1179,24 @@ const CallQueue = () => {
                       style={{
                         minHeight: 30,
                       }}
+                    ><Tooltip
+                    title="Transfer to the destination when the number of calling parties in the queue exceeds the upper limit."
+                    {...tooltipProps}
+                  >
+                    <label
+                      className="text-[13px] font-medium whitespace-nowrap text-left"
+                      style={{
+                        width: LABEL_W,
+                        flexShrink: 0,
+                        color: C.accent,
+                        position: "relative",
+                        left: "-8px",
+                        cursor: "help",
+                      }}
                     >
-                      <label
-                        className="text-[13px] font-medium whitespace-nowrap text-left"
-                        style={{
-                          width: LABEL_W,
-                          flexShrink: 0,
-                          color: C.accent,
-                          position: "relative",
-                          left: "-8px", // same value as Timeout Action
-                        }}
-                      >
-                        Overflow Action
-                      </label>
+                      Overflow Action
+                    </label>
+                  </Tooltip>
                       <div className="flex-1 min-w-0">
                         <FormControl fullWidth size="small">
                           <MuiSelect
@@ -1176,7 +1249,9 @@ const CallQueue = () => {
                         </div>
                       )}
                     </div>
-                    <FieldRow label="Max Queue Length">
+                    <FieldRow label="Max Queue Length"
+                    tooltip="The maximum number of calls that can be in the queue at the same time. The default value is 20."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1190,7 +1265,9 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Agents Initial Status">
+                    <FieldRow label="Agents Initial Status"
+                    tooltip="Sets the initial status of the static agents."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.agents_initial_status}
@@ -1207,7 +1284,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Alert info">
+                    <FieldRow label="Alert info"
+                    tooltip="Set the content of the alert-info field. By default it is null."
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -1363,7 +1442,9 @@ const CallQueue = () => {
               >
                 <SectionCard title="Caller Settings" isFirst>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <FieldRow label="Music on Hold *">
+                    <FieldRow label="Music on Hold *"
+                    tooltip="Select the music on hold to play when the caller enters this queue. By default it is null."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.music_on_hold}
@@ -1443,7 +1524,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Join When No Agent">
+                    <FieldRow label="Join When No Agent"
+                    tooltip="If enabled, callers can join a queue that has no agents. By default it is unticked."
+                    >
                       <Checkbox
                         checked={!!form.join_when_no_agent}
                         onChange={(e) =>
@@ -1454,7 +1537,9 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Max Wait Time No Agent (s)">
+                    <FieldRow label="Max Wait Time No Agent (s)"
+                    tooltip="The maximum time for a caller to wait in the queue when there are no agents available. The default value is 90s."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1467,7 +1552,9 @@ const CallQueue = () => {
                         inputProps={{ ...inputProps, min: 0 }}
                       />
                     </FieldRow>
-                    <FieldRow label="Join Announce">
+                    <FieldRow label="Join Announce"
+                    tooltip="Select the announcement to play when a caller joins the queue. By default it is null."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.join_announce}
@@ -1494,7 +1581,9 @@ const CallQueue = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Queue Busy Resume Offer">
+                    <FieldRow label="Queue Busy Resume Offer"
+                    tooltip="Set whether to offer the caller to join the queue when the queue is busy. The default setting is Enable."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.queue_busy_resume}
@@ -1508,8 +1597,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Join Announce Playtime">
-                      <TextField
+                    <FieldRow label="Join Announce Playtime"
+                    tooltip="Set the playtime of the join announcement. The default value is 0."
+                    >
+                        <TextField
                         type="number"
                         size="small"
                         fullWidth
@@ -1522,8 +1613,10 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Transfer Prompt">
-                      <FormControl fullWidth size="small">
+                    <FieldRow label="Transfer Prompt"
+                    tooltip="The caller waiting in the queue will hear a periodic announcement at configured intervals. When an agent answers the call, the transfer prompt tone will be played before connecting the caller. Leave this field empty (NULL) to use the system default behavior."
+                    >
+                      <FormControl fullWidth size="small">  
                         <MuiSelect
                           value={form.transfer_prompt}
                           onChange={(e) =>
@@ -1549,7 +1642,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Answer Type">
+                    <FieldRow label="Answer Type"
+                    tooltip="Select the type of answer for the caller. Answer: The caller will hear the answer tone when an agent answers the call. Progress: The caller will hear the progress tone when an agent answers the call."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.answer_type}
@@ -1564,7 +1659,9 @@ const CallQueue = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Agent Busy Announce">
+                      <FieldRow label="Agent Busy Announce"
+                      tooltip="Select the announcement to play when the agent is busy. By default it is null."
+                      >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.agent_busy_announce}
@@ -1591,7 +1688,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="No Agent Announce">
+                    <FieldRow label="No Agent Announce"
+                    tooltip="Select the announcement to play when there are no agents available. By default it is null."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.no_agent_announce}
@@ -1619,7 +1718,9 @@ const CallQueue = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Answer Announce To Caller">
+                    <FieldRow label="Answer Announce To Caller"
+                    tooltip="Select the announcement to play when the agent answers the call. By default it is null."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.answer_announce}
@@ -1658,7 +1759,9 @@ const CallQueue = () => {
 
                 <SectionCard title="Caller Position Announcements">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <FieldRow label="Announce Position">
+                    <FieldRow label="Announce Position"
+                    tooltip="Set whether to announce the position of the caller in the queue. By default it is unticked."
+                    >
                       <Checkbox
                         checked={!!form.announce_position}
                         onChange={(e) =>
@@ -1668,7 +1771,9 @@ const CallQueue = () => {
                         sx={checkboxSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Call Duration(s)">
+                    <FieldRow label="Call Duration(s)"
+                    tooltip="Set the duration of the call. The default value is 60s."
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1682,7 +1787,9 @@ const CallQueue = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Announce Hold Time">
+                    <FieldRow label="Announce Hold Time"
+                    tooltip="Set whether to announce the hold time of the caller. By default it is unticked."
+                    >
                       <Checkbox
                         checked={!!form.announce_hold_time}
                         onChange={(e) =>
@@ -1692,7 +1799,9 @@ const CallQueue = () => {
                         sx={checkboxSx}
                       />
                     </FieldRow>
-                    <FieldRow label="Announce Frequency(s)">
+                    <FieldRow label="Announce Frequency(s)"
+                    tooltip="Set the frequency of the announcement. The default value is 30s."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.announce_frequency}
@@ -1714,7 +1823,9 @@ const CallQueue = () => {
 
                 <SectionCard title="Periodic Announcements">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <FieldRow label="Announce Sound">
+                    <FieldRow label="Announce Sound"
+                    tooltip="Select the sound to play when the announcement is made. By default it is null."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.periodic_sound}
@@ -1740,7 +1851,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Announce Frequency(s)">
+                    <FieldRow label="Announce Frequency(s)"
+                    tooltip="Set the frequency of the announcement. The default value is 0."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.periodic_frequency}
@@ -1762,7 +1875,9 @@ const CallQueue = () => {
 
                 <SectionCard title="Busy Callback">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <FieldRow label="Enable Busy Callback">
+                    <FieldRow label="Enable Busy Callback"
+                    tooltip="Set whether to enable the busy callback. The default setting is No."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.busy_callback}
@@ -1776,7 +1891,9 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </FieldRow>
-                    <FieldRow label="Busy Callback Announce">
+                    <FieldRow label="Busy Callback Announce"
+                    tooltip="Select the announcement to play when the agent is busy. By default it is null."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.busy_callback_announce}
@@ -1806,7 +1923,9 @@ const CallQueue = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Agent Busy Callback Key">
+                      <FieldRow label="Agent Busy Callback Key"
+                    tooltip="Set the key to press to enable the busy callback. The default value is 8."
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.busy_callback_key}

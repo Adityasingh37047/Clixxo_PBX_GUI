@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   SC_SECTIONS,
   SC_LABELS,
@@ -153,7 +155,6 @@ const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
 const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-
 const btnVariantCls = {
   default: BTN_DEFAULT,
   primary: BTN_PRIMARY,
@@ -866,12 +867,13 @@ const SignalingCapture = () => {
             <div className="flex flex-col gap-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label
+                  <FieldLabel
+                    tooltipKey="networkInterface"
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
                     {SC_LABELS.networkInterface}
-                  </label>
+                  </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
                       style={{ ...inputStyle, width: "100%", minWidth: 220 }}
@@ -946,12 +948,13 @@ const SignalingCapture = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label
+                <FieldLabel
+                  tooltipKey="captureSyslog"
                   className="sm:w-[280px] whitespace-nowrap"
                   style={labelStyle}
                 >
                   {SC_LABELS.captureSyslog}
-                </label>
+                </FieldLabel>
                 <div className="flex items-center gap-2">
                   <Checkbox
                     size="small"
@@ -986,12 +989,13 @@ const SignalingCapture = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <label
+                <FieldLabel
+                  tooltipKey="syslogDest"
                   className="sm:w-[280px] whitespace-nowrap"
                   style={labelStyle}
                 >
                   {SC_LABELS.syslogDest}
-                </label>
+                </FieldLabel>
                 <input
                   type="text"
                   value={syslogDest}
@@ -1048,12 +1052,13 @@ const SignalingCapture = () => {
                 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label
+                  <FieldLabel
+                    tooltipKey="pcmTs"
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
                     {SC_LABELS.pcmTs}
-                  </label>
+                  </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
                       style={{ ...inputStyle, minWidth: 100 }}
@@ -1146,12 +1151,13 @@ const SignalingCapture = () => {
                 }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                  <label
+                  <FieldLabel
+                    tooltipKey="e1PcmTs"
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
                     {SC_LABELS.pcmTs}
-                  </label>
+                  </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
                       style={{ ...inputStyle, minWidth: 100 }}

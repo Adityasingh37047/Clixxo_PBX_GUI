@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 
 function getBaseURL() {
   const url = new URL(window.location.origin);
@@ -8,9 +8,7 @@ function getBaseURL() {
     ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
 
   if (isLocalhost) {
-
     let testIp = "192.168.0.98";
-
 
     // Local development → backend usually runs on 5000
     return `https://${testIp}:443/api`;

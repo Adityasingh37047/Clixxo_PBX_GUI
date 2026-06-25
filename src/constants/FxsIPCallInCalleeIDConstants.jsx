@@ -41,3 +41,38 @@ export const IP_CALL_IN_CALLEEID_INITIAL_FORM = {
   suffix_to_add: '',
   description: '',
 };
+
+/** FXS IP Call In CalleeID (manipulation_type: ip_in_calleeid) */
+export const IP_CALL_IN_CALLEEID_FIELD_TOOLTIPS = {
+  call_initiator:
+    "Saved as call_initiator. manipulation_type: ip_in_calleeid.\n" +
+    "Free-text match pattern. Required. Default: *.",
+
+  callerid_prefix:
+    "Saved as callerid_prefix. Required text field. Default: *.",
+
+  calleeid_prefix:
+    "Saved as calleeid_prefix. Required text field. Default: *.",
+
+  stripped_digits_from_left:
+    "Saved as stripped_digits_from_left.\n" +
+    "Digits removed from the left before prefix/suffix are applied. Empty value is saved as 0. Default: 0.",
+
+  stripped_digits_from_right:
+    "Saved as stripped_digits_from_right.\n" +
+    "Digits removed from the right before prefix/suffix are applied. Empty value is saved as 0. Default: 0.",
+
+  reserved_digits_from_right:
+    "Saved as reserved_digits_from_right.\n" +
+    "Digits kept from the right after stripping. Empty value is saved as 0. Default: 20.",
+
+  prefix_to_add:
+    "Saved as prefix_to_add. Prepended after stripping. Default: empty.",
+
+  suffix_to_add:
+    "Saved as suffix_to_add. Appended after stripping. Default: empty.",
+
+  description:
+    "Saved as description. Free-text field. Default: empty.\n" +
+    "with_original_calleeid is not shown in this form; create/update always sends No.",
+};

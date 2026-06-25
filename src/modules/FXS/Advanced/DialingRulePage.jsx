@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import {
   DIALING_RULE_TABLE_COLUMNS,
   DIALING_RULE_INITIAL_FORM,
@@ -295,13 +295,13 @@ const DialingRulePagination = ({
     </span>
     <div className="flex items-center gap-[8px]">
       <Btn onClick={onPrev} disabled={page <= 1} variant="outline">
-        ← Prev
+        ΓåÉ Prev
       </Btn>
       <span className={DIALING_RULE_PAGE_BADGE}>
         Page {page} of {totalPages}
       </span>
       <Btn onClick={onNext} disabled={page >= totalPages} variant="outline">
-        Next →
+        Next ΓåÆ
       </Btn>
     </div>
   </div>

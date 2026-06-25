@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import Tooltip from "@mui/material/Tooltip";
 import {Alert,
   CircularProgress,
   Dialog,
@@ -231,8 +232,7 @@ const PagingPagination = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div
+const FieldRow = ({ label, children, required, align = "center" }) => (  <div
     style={{
       display: "flex",
       alignItems: align,
@@ -240,6 +240,11 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
       minHeight: 32,
     }}
   >
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
+    >
     <label
       style={{
         fontSize: 13,
@@ -250,11 +255,35 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
         paddingTop: align === "flex-start" ? 8 : 0,
       }}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
 const PBX_MODAL_SECTION_BG = "#f5f7fa";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
@@ -1045,7 +1074,7 @@ const Paging = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <FieldRow label="Name" required>
+                  <FieldRow label="Name" required tooltip="User-defined name of a paging group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
                     <TextField
                       size="small"
                       fullWidth
@@ -1061,7 +1090,7 @@ const Paging = () => {
                     />
                   </FieldRow>
 
-                  <FieldRow label="Number" required>
+                  <FieldRow label="Number" required tooltip="The number dialed to reach this paging group. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.">
                     <TextField
                       size="small"
                       fullWidth
@@ -1083,7 +1112,7 @@ const Paging = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <FieldRow label="Type" required>
+                  <FieldRow label="Type" required tooltip="Select the type of paging group. One-way: The paging group rings the selected extensions one by one. Two-way: The paging group rings the selected extensions one by one and the extensions can also ring back to the paging group.">
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={pagingType}
@@ -1108,7 +1137,7 @@ const Paging = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label="CallerID Name Prefix">
+                  <FieldRow label="CallerID Name Prefix" tooltip="The prefix of a caller ID name sent when the paging group rings. By default it is null.">
                     <TextField
                       size="small"
                       fullWidth

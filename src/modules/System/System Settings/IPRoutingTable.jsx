@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Tooltip } from "@mui/material";
 import {
   IP_ROUTING_TABLE_COLUMNS,
   IP_ROUTING_TABLE_MODAL_FIELDS,
@@ -139,6 +140,34 @@ const muiTextFieldSx = {
   },
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  Destination: "Enter the destination IP address or subnet.",
+  "Subnet Mask": "Enter the subnet mask in CIDR notation (e.g., 24).",
+  "Network Port": "Select the network port to route traffic through.",
+  "Gateway (Optional)": "Enter the gateway IP address for this route (required for VPN).",
+};
 const muiSelectSx = {
   fontSize: 13,
   backgroundColor: "var(--bg-surface)",
@@ -311,7 +340,7 @@ const IPRoutingTable = () => {
   const normalizeRows = (list) =>
     (list || []).map((row, idx) => ({
       ...row,
-      no: idx,
+      no: idx + 1,
     }));
 
   // Persistent routes file helpers - save routes to config file for boot persistence
@@ -553,7 +582,7 @@ WantedBy=multi-user.target
     if (rowIdx !== null) {
       setForm({ ...rows[rowIdx] });
     } else {
-      setForm({ ...IP_ROUTING_TABLE_INITIAL_ROW, no: rows.length });
+      setForm({ ...IP_ROUTING_TABLE_INITIAL_ROW, no: rows.length + 1 });
     }
     // Always refresh network options when opening modal (prefer LAN1 when adding new)
     loadNetworkOptions(rowIdx !== null);
@@ -1723,19 +1752,32 @@ WantedBy=multi-user.target
                   gap: 12,
                 }}
               >
-                <label
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    width: 170,
-                    flexShrink: 0,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {field.label}:
-                </label>
+               <Tooltip
+  title={tooltips[field.label] || ""}
+  {...tooltipProps}
+>
+  <span
+    style={{
+      width: 170,
+      flexShrink: 0,
+      display: "inline-block",
+    }}
+  >
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 170,
+        flexShrink: 0,
+        textAlign: "left",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {field.label}:
+    </label>
+  </span>
+</Tooltip>
                 <div style={{ width: "min(100%, 320px)", display: "flex" }}>
                   {field.type === "text" || field.type === "number" ? (
                     <input

@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogActions,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import {
   PORT_GROUP_TOTAL_PORTS,
@@ -17,7 +18,70 @@ import {
   PORT_GROUP_AUTHENTICATION_MODE_OPTIONS,
   PORT_GROUP_SELECT_MODE_OPTIONS,
   PORT_GROUP_MULTI_GROUP_OPTIONS,
+  PORT_GROUP_FIELD_TOOLTIPS,
 } from "../../../constants/PortGroupPageConstants";
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 // ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
@@ -310,7 +374,7 @@ const routeTdStyle = tdStyle;
 
 const routeThExtra = {};
 
-const FieldRow = ({ label, children }) => (
+const FieldRow = ({ label, tooltipKey, children }) => (
   <div
     style={{
       display: "flex",
@@ -329,7 +393,9 @@ const FieldRow = ({ label, children }) => (
         textAlign: "left",
       }}
     >
-      {label}
+      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={PORT_GROUP_FIELD_TOOLTIPS}>
+        {label}
+      </FxsFieldLabel>
     </label>
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
@@ -889,7 +955,7 @@ const PortGroupPage = () => {
 
   const renderFormFields = () => (
     <>
-              <FieldRow label="ID:">
+              <FieldRow label="ID:" tooltipKey="index">
                 <select
                   value={form.index}
                   onChange={(e) => handleFormChange("index", e.target.value)}
@@ -904,7 +970,7 @@ const PortGroupPage = () => {
                 </select>
               </FieldRow>
 
-              <FieldRow label="Description:">
+              <FieldRow label="Description:" tooltipKey="description">
                 <input
                   type="text"
                   value={form.description}
@@ -917,7 +983,7 @@ const PortGroupPage = () => {
                 />
               </FieldRow>
 
-              <FieldRow label="Register Port Group:">
+              <FieldRow label="Register Port Group:" tooltipKey="registerPortGroup">
                 <select
                   value={form.registerPortGroup}
                   onChange={(e) =>
@@ -936,7 +1002,7 @@ const PortGroupPage = () => {
 
               {form.registerPortGroup === "1" && (
                 <>
-                  <FieldRow label="SIP Account:">
+                  <FieldRow label="SIP Account:" tooltipKey="sipAccount">
                     <input
                       type="text"
                       value={form.sipAccount}
@@ -947,7 +1013,7 @@ const PortGroupPage = () => {
                       {...inputInteraction}
                     />
                   </FieldRow>
-                  <FieldRow label="Display Name:">
+                  <FieldRow label="Display Name:" tooltipKey="displayName">
                     <input
                       type="text"
                       value={form.displayName}
@@ -958,7 +1024,7 @@ const PortGroupPage = () => {
                       {...inputInteraction}
                     />
                   </FieldRow>
-                  <FieldRow label="Password:">
+                  <FieldRow label="Password:" tooltipKey="password">
                     <input
                       type="password"
                       value={form.password}
@@ -972,7 +1038,7 @@ const PortGroupPage = () => {
                 </>
               )}
 
-              <FieldRow label="Authentication Mode:">
+              <FieldRow label="Authentication Mode:" tooltipKey="registerSelectMode">
                 <select
                   value={form.registerSelectMode}
                   onChange={(e) =>
@@ -989,7 +1055,7 @@ const PortGroupPage = () => {
                 </select>
               </FieldRow>
 
-              <FieldRow label="Port Select Mode:">
+              <FieldRow label="Port Select Mode:" tooltipKey="portSelectMode">
                 <select
                   value={form.portSelectMode}
                   onChange={(e) =>
@@ -1008,7 +1074,7 @@ const PortGroupPage = () => {
 
               {form.portSelectMode === "5" && (
                 <>
-                  <FieldRow label="Rule for Ringing by Turns:">
+                  <FieldRow label="Rule for Ringing by Turns:" tooltipKey="enumRule">
                     <input
                       type="text"
                       value={form.enumRule}
@@ -1019,7 +1085,7 @@ const PortGroupPage = () => {
                       {...inputInteraction}
                     />
                   </FieldRow>
-                  <FieldRow label="Timeout for Ringing by Turns (s):">
+                  <FieldRow label="Timeout for Ringing by Turns (s):" tooltipKey="ringExpire">
                     <input
                       type="text"
                       value={form.ringExpire}
@@ -1034,7 +1100,7 @@ const PortGroupPage = () => {
               )}
 
               {form.portSelectMode !== "4" && form.portSelectMode !== "5" && (
-                <FieldRow label="Preemptive Answer Keyboard Shortcut:">
+                <FieldRow label="Preemptive Answer Keyboard Shortcut:" tooltipKey="robKey">
                   <input
                     type="text"
                     value={form.robKey}
@@ -1045,7 +1111,7 @@ const PortGroupPage = () => {
                 </FieldRow>
               )}
 
-              <FieldRow label="Port Reused by Multiple Groups:">
+              <FieldRow label="Port Reused by Multiple Groups:" tooltipKey="enablePortMultiGroup">
                 <select
                   value={form.enablePortMultiGroup}
                   onChange={(e) =>
@@ -1087,7 +1153,13 @@ const PortGroupPage = () => {
                 alignItems: "center",
               }}
             >
-              Assign Ports
+              <FxsFieldLabel
+                tooltipKey="ports"
+                tooltips={PORT_GROUP_FIELD_TOOLTIPS}
+                style={{ fontSize: 13, fontWeight: 700 }}
+              >
+                Assign Ports
+              </FxsFieldLabel>
               <div style={{ display: "flex", gap: 8 }}>
                 <Btn
                   onClick={handleCheckAllPorts}

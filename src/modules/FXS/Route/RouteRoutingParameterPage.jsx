@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   ROUTE_MODE_OPTIONS,
   ROUTE_ROUTING_PARAMETER_INITIAL_FORM,
+  ROUTE_ROUTING_PARAMETER_TOOLTIPS,
 } from "../../../constants/FxsRouteRoutingParameterPageConstants";
 import {
   Select,
@@ -10,6 +11,7 @@ import {
   TextField,
   Alert,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 /** Match E1-PRI Route Routing Parameters card radii (10px, not table 20px kit). */
 // ── Local page UI (inlined from fxsSharedUi) ──
@@ -240,6 +242,61 @@ const fieldLabelStyle = {
   flexShrink: 0,
 };
 
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 const fieldControlSx = {
   ...muiSelectSx,
   width: 240,
@@ -354,7 +411,13 @@ const RouteRoutingParameterPage = () => {
               style={{ marginBottom: 12 }}
             >
               <div className="flex items-center justify-between">
-                <label style={fieldLabelStyle}>IP-&gt;TEL</label>
+                <FxsFieldLabel
+                  tooltipKey="ipInRouteMode"
+                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
+                  style={fieldLabelStyle}
+                >
+                  IP-&gt;TEL
+                </FxsFieldLabel>
                 <FormControl size="small">
                   <Select
                     name="ipInRouteMode"
@@ -379,7 +442,13 @@ const RouteRoutingParameterPage = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <label style={fieldLabelStyle}>TEL-&gt;IP</label>
+                <FxsFieldLabel
+                  tooltipKey="pstnToIPRouteMode"
+                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
+                  style={fieldLabelStyle}
+                >
+                  TEL-&gt;IP
+                </FxsFieldLabel>
                 <FormControl size="small">
                   <Select
                     name="pstnToIPRouteMode"
@@ -404,7 +473,13 @@ const RouteRoutingParameterPage = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <label style={fieldLabelStyle}>Route Detection Cycle (s)</label>
+                <FxsFieldLabel
+                  tooltipKey="routeCheckPeriod"
+                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
+                  style={fieldLabelStyle}
+                >
+                  Route Detection Cycle (s)
+                </FxsFieldLabel>
                 <TextField
                   id="RouteCheckPeriod"
                   value={formData.routeCheckPeriod || ""}

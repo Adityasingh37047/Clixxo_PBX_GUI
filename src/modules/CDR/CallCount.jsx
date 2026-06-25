@@ -7,7 +7,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Tooltip,
 } from "@mui/material";
+import { CALL_COUNT_FILTER_TOOLTIPS } from "../../constants/CallCountConstants";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
 
@@ -620,19 +622,72 @@ const SipPcmPagination = ({
 
 const Dash = () => <span className="text-[#94a3b8]">—</span>;
 
-const FilterLabel = ({ children }) => (
-  <span className="block text-[11px] font-semibold text-[var(--text-label)] tracking-[0.04em] uppercase mb-[6px]">
-    {children}
-  </span>
-);
+const CALL_COUNT_FILTER_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
 
-const FilterField = ({ label, children, full }) => (
+const formatCallCountFilterTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FilterLabel = ({ children, tooltipKey }) => {
+  const tooltip = tooltipKey ? CALL_COUNT_FILTER_TOOLTIPS[tooltipKey] : "";
+  const label = (
+    <span
+      className="block text-[11px] font-semibold text-[var(--text-label)] tracking-[0.04em] uppercase mb-[6px]"
+      style={{ cursor: tooltip ? "help" : undefined, display: "inline-block" }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatCallCountFilterTooltipTitle(tooltip)}
+      {...CALL_COUNT_FILTER_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const FilterField = ({ label, tooltipKey, children, full, style: extraStyle }) => (
   <div
     className={
       full ? "min-w-0 w-full flex-[0_0_auto]" : "min-w-[140px] flex-[0_0_auto]"
     }
+    style={extraStyle}
   >
-    {label && <FilterLabel>{label}</FilterLabel>}
+    {label && <FilterLabel tooltipKey={tooltipKey}>{label}</FilterLabel>}
     {children}
   </div>
 );
@@ -687,8 +742,8 @@ const ToolbarActionBtn = ({ onClick, disabled, children }) => (
   </Btn>
 );
 
-const ModalFilterField = ({ label, children }) => (
-  <FilterField label={label} full>
+const ModalFilterField = ({ label, tooltipKey, children }) => (
+  <FilterField label={label} tooltipKey={tooltipKey} full>
     {children}
   </FilterField>
 );
@@ -888,6 +943,7 @@ const MODAL_FILTER_FIELDS = [
     type: "select",
     label: "Call Status",
     field: "callStatus",
+    tooltipKey: "call_status",
     options: CALL_STATUS_OPTIONS,
     syncModify: false,
   },
@@ -895,6 +951,7 @@ const MODAL_FILTER_FIELDS = [
     type: "select",
     label: "Direction",
     field: "direction",
+    tooltipKey: "direction",
     options: DIRECTION_OPTIONS,
     syncModify: false,
   },
@@ -902,6 +959,7 @@ const MODAL_FILTER_FIELDS = [
     type: "search",
     label: "Call From",
     field: "callFrom",
+    tooltipKey: "call_from",
     placeholder: "Call From",
     syncModify: true,
   },
@@ -909,6 +967,7 @@ const MODAL_FILTER_FIELDS = [
     type: "search",
     label: "Call To",
     field: "callTo",
+    tooltipKey: "call_to",
     placeholder: "Call To",
     syncModify: true,
   },
@@ -916,11 +975,12 @@ const MODAL_FILTER_FIELDS = [
     type: "search",
     label: "Trunk Name",
     field: "trunkName",
+    tooltipKey: "trunk_name",
     placeholder: "Trunk Name",
     syncModify: true,
   },
-  { type: "talkDuration", label: "Talk Duration" },
-  { type: "dateRange", label: "Time Range" },
+  { type: "talkDuration", label: "Talk Duration", tooltipKey: "talk_duration" },
+  { type: "dateRange", label: "Time Range", tooltipKey: "time_range" },
 ];
 
 const CallCount = () => {
@@ -1146,7 +1206,7 @@ const CallCount = () => {
   const renderModalField = (field) => {
     if (field.type === "select") {
       return (
-        <ModalFilterField key={field.field} label={field.label}>
+        <ModalFilterField key={field.field} label={field.label} tooltipKey={field.tooltipKey}>
           <FilterSelect
             aria-label={field.label}
             value={filterDraft[field.field]}
@@ -1159,7 +1219,7 @@ const CallCount = () => {
 
     if (field.type === "search") {
       return (
-        <ModalFilterField key={field.field} label={field.label}>
+        <ModalFilterField key={field.field} label={field.label} tooltipKey={field.tooltipKey}>
           <FilterSearch
             placeholder={field.placeholder}
             value={filterDraft[field.field]}
@@ -1171,7 +1231,7 @@ const CallCount = () => {
 
     if (field.type === "talkDuration") {
       return (
-        <ModalFilterField key={field.type} label={field.label}>
+        <ModalFilterField key={field.type} label={field.label} tooltipKey={field.tooltipKey}>
           <div className="grid grid-cols-[110px_1fr] gap-2">
             <FilterSelect
               aria-label="Talk Duration Operator"
@@ -1204,7 +1264,7 @@ const CallCount = () => {
 
     if (field.type === "dateRange") {
       return (
-        <ModalFilterField key={field.type} label={field.label}>
+        <ModalFilterField key={field.type} label={field.label} tooltipKey={field.tooltipKey}>
           <div className="grid grid-cols-2 gap-2">
             <FilterDate
               aria-label="Start Date"

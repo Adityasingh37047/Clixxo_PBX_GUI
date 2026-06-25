@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {
-  CircularProgress,
+import Tooltip from "@mui/material/Tooltip";
+import {Button,  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -206,24 +206,52 @@ const SpeedDialPagination = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 150,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
+const FieldRow = ({ label, children, required, align = "center" }) => (  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: 150,
+          flexShrink: 0,
+          paddingTop: align === "flex-start" ? 8 : 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SpeedDialPage = () => {
@@ -821,7 +849,7 @@ const SpeedDialPage = () => {
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                <FieldRow label="Name" required>
+                <FieldRow label="Name" required tooltip="User-defined name of a speed dial. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
                   <TextField
                     size="small"
                     fullWidth
@@ -837,7 +865,7 @@ const SpeedDialPage = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Speed Dial Number" required>
+                <FieldRow label="Speed Dial Number" required tooltip="The number dialed to reach this speed dial. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.">
                   <TextField
                     size="small"
                     fullWidth
@@ -853,7 +881,7 @@ const SpeedDialPage = () => {
                   />
                 </FieldRow>
 
-                <FieldRow label="Destination" required>
+                <FieldRow label="Destination" required tooltip="Select the destination to ring when the speed dial is dialed. Call Queue: Ring the call queue. CallBacks: Ring the callbacks. Conference Rooms: Ring the conference rooms. DISA: Ring the DISA. Extensions: Ring the extensions. Fax To Mail: Ring the fax to mail. IVR Menus: Ring the IVR menus. Ring Group: Ring the ring group. Voicemails: Ring the voicemails. Other: Hang up the call.">
                   <TextField
                     size="small"
                     fullWidth

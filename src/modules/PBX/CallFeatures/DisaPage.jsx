@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {CircularProgress,
-  Dialog,
+import Tooltip from "@mui/material/Tooltip";
+import {Button,
+  CircularProgress,  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -248,23 +249,52 @@ const DisaPagination = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 150,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
+const FieldRow = ({ label, children, required, align = "center" }) => (  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: 150,
+          flexShrink: 0,
+          paddingTop: align === "flex-start" ? 8 : 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
 
 const PBX_MODAL_SECTION_BG = "#f5f7fa";
 const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
@@ -1062,8 +1092,7 @@ const DisaPage = () => {
             borderRadius: 2,
           },
         }}
-      >
-        <DialogTitle
+      >        <DialogTitle
           style={{
             background: "#1e2d42",
             color: "#fff",
@@ -1118,7 +1147,7 @@ const DisaPage = () => {
                       gap: 16,
                     }}
                   >
-                    <FieldRow label="Name" required>
+                    <FieldRow label="Name" required tooltip="User-defined name of a DISA. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
                       <TextField
                         size="small"
                         fullWidth
@@ -1136,7 +1165,7 @@ const DisaPage = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Response Timeout (s)" required>
+                    <FieldRow label="Response Timeout (s)" required tooltip="The timeout time to ring next extension, and also the timeout time to enter Timeout destination if all extensions are unavailable. The default value is 10s.">
                       <TextField
                         size="small"
                         fullWidth
@@ -1159,7 +1188,7 @@ const DisaPage = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Second Dial">
+                    <FieldRow label="Second Dial" tooltip="Select the action to perform when the second dial is received. Enable: The second dial is enabled. Disable: The second dial is disabled.">
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={form.secondDial}
@@ -1193,7 +1222,7 @@ const DisaPage = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Pin Type">
+                    <FieldRow label="Pin Type" tooltip="Select the type of PIN. None: No PIN is required. Single Pin: A single PIN is required.">
                       <div
                         style={{
                           display: "flex",
@@ -1318,7 +1347,7 @@ const DisaPage = () => {
                       gap: 16,
                     }}
                   >
-                    <FieldRow label="Digit Timeout (s)" required>
+                    <FieldRow label="Digit Timeout (s)" required tooltip="The timeout time to ring next extension, and also the timeout time to enter Timeout destination if all extensions are unavailable. The default value is 5s.">
                       <TextField
                         size="small"
                         fullWidth
@@ -1341,7 +1370,7 @@ const DisaPage = () => {
                       />
                     </FieldRow>
 
-                    <FieldRow label="Transparent">
+                    <FieldRow label="Transparent" tooltip="Select the action to perform when the transparent is received. Enable: The transparent is enabled. Disable: The transparent is disabled.">
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={form.transparent}
@@ -1375,7 +1404,7 @@ const DisaPage = () => {
                       </FormControl>
                     </FieldRow>
 
-                    <FieldRow label="Enabled">
+                    <FieldRow label="Enabled" tooltip="Set whether to enable this DISA. Yes: The DISA is enabled. No: The DISA is disabled."    >
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={form.enabled ? "Yes" : "No"}

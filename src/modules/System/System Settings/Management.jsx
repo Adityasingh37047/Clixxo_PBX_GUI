@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Tooltip } from "@mui/material";
 import {
   MANAGEMENT_SECTIONS,
   MANAGEMENT_INITIAL_FORM,
@@ -233,6 +234,116 @@ const SectionHeading = ({ title, isFirst = false }) => (
     </span>
   </div>
 );
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  webPort: "TCP port used to access the web management interface.",
+  webAccess:
+    "Controls which client IP addresses are allowed to access the web interface.",
+  webIpAddress:
+    "IP addresses for the access list. Used when whitelist or blacklist mode is selected.",
+  webTimeout:
+    "Inactivity period in seconds before the web session is automatically logged out.",
+  webWhitelist:
+    "IP addresses permitted to access the web interface under whitelist restrictions.",
+  sshEnable: "Enable or disable SSH remote shell access to the system.",
+  sshPort: "TCP port used for SSH connections.",
+  sshWhitelist: "IP addresses allowed to connect via SSH.",
+  remoteDataCapture:
+    "Enable or disable remote packet and call data capture on the system.",
+  captureRtp: "Include RTP media streams in remote data capture.",
+  captureRtpInterface:
+    "Network interface used when capturing RTP traffic.",
+  ftpEnable: "Enable or disable FTP file transfer access.",
+  ftpWhitelist: "IP addresses allowed to connect via FTP.",
+  telnetEnable: "Enable or disable Telnet remote access.",
+  telnetWhitelist: "IP addresses allowed to connect via Telnet.",
+  syslogEnable:
+    "Enable or disable forwarding of system log messages to a remote server.",
+  syslogServerAddress:
+    "IP address or hostname of the remote syslog server.",
+  syslogLevel:
+    "Minimum severity of log messages sent to the syslog server.",
+  cdrEnable:
+    "Enable or disable sending call detail records to a remote server.",
+  cdrServerAddress: "IP address or hostname of the CDR server.",
+  cdrServerPort: "Port used to send CDR data to the remote server.",
+  cdrSendFailed:
+    "Include call records for failed or unanswered calls in CDR output.",
+  cdrContent: "Level of detail included in each call detail record.",
+  cdrHangup:
+    "Include which party initiated the call hangup in the CDR.",
+  cdrAddLanIp:
+    "Append LAN1 and LAN2 IPv4 addresses to each call detail record.",
+  cdrSendNumberClass:
+    "Enable sending number classification data to a separate server.",
+  cdrServerIp: "IP address of the number classification server.",
+  cdrServerPortClass:
+    "Port used by the number classification server.",
+  cdrKeepRouting:
+    "Continue normal call routing if the CDR server is unreachable.",
+  cdrAllowDeny:
+    "Allow or deny CDR transmission based on configured access rules.",
+  ntpEnable:
+    "Enable or disable automatic time synchronization using NTP.",
+  ntpServerAddress: "IP address or hostname of the NTP time server.",
+  synchronizingCycle:
+    "Interval in seconds between NTP synchronization attempts.",
+  dailyRestart: "Enable or disable a scheduled daily system restart.",
+  restartHour: "Hour of the day when the scheduled daily restart occurs.",
+  restartMinute:
+    "Minute within the selected hour when the daily restart occurs.",
+  systemTime:
+    "Current system date and time. Enable Modify to edit manually.",
+  modifyTime: "Allow manual changes to the system date and time.",
+  timeZone: "Time zone offset applied to system time and scheduling.",
+};
+
+const FieldLabel = ({ name, children }) => {
+  const label = (
+    <label
+      style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        maxWidth: 220,
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </label>
+  );
+
+  if (!tooltips[name]) return label;
+
+  return (
+    <Tooltip title={tooltips[name]} {...tooltipProps}>
+      {label}
+    </Tooltip>
+  );
+};
 
 const Management = () => {
   const [form, setForm] = useState(MANAGEMENT_INITIAL_FORM);
@@ -1301,18 +1412,7 @@ const Management = () => {
   // Helper to render System Time row with Modify checkbox and date/time input inline
   const renderSystemTimeInline = (field, nextField) => (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-      <label
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: C.labelText,
-          width: "100%",
-          maxWidth: 220,
-          flexShrink: 0,
-        }}
-      >
-        {field.label}
-      </label>
+      <FieldLabel name={field.name}>{field.label}</FieldLabel>
       <div className="flex-1 w-full max-w-[280px]">
         <div className="flex items-center gap-2 w-full">
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -1323,9 +1423,11 @@ const Management = () => {
               onChange={handleCheckboxChange(nextField.name)}
               sx={checkboxSx}
             />
-            <span style={{ fontSize: 12, fontWeight: 600, color: C.labelText }}>
-              {nextField.label}
-            </span>
+            <Tooltip title={tooltips.modifyTime} {...tooltipProps}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: C.labelText }}>
+                {nextField.label}
+              </span>
+            </Tooltip>
           </div>
           <input
             type="datetime-local"
@@ -1552,18 +1654,7 @@ const Management = () => {
                             key={section.section + field.name}
                             className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
                           >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              {field.label}
-                            </label>
+                            <FieldLabel name={field.name}>{field.label}</FieldLabel>
 
                             <div className="flex-1 w-full max-w-[280px]">
                               {field.type === "text" && (

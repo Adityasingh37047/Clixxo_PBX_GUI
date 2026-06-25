@@ -214,4 +214,22 @@ export const getInitialFormState = () => {
   return state;
 };
 
+const buildFunctionKeyFieldTooltips = () => {
+  const tooltips = {};
+  FUNCTION_KEY_FIELDS.forEach((field) => {
+    const patternHint = field.isReboot
+      ? "User-defined format: *#digits*# (e.g. *#88921532*#)."
+      : `User-defined format: *digits* (e.g. ${field.defaultValue}). Max ${field.isReboot ? 12 : 7} characters.`;
+    tooltips[field.enableKey] =
+      `Enable or disable the ${field.name} function key.\nWhen unchecked, the key and mode fields are inactive.`;
+    tooltips[field.functionKeyKey] =
+      `Dial string for ${field.name}.\nDefault code: ${field.defaultValue}.\n${patternHint}\nDuplicate codes across enabled keys are rejected on save.`;
+    tooltips[field.modeKey] =
+      `Key assignment mode for ${field.name}.\nDefault — use factory code (${field.defaultValue}).\nUser-defined — edit the Function Key field; validated on save.`;
+  });
+  return tooltips;
+};
+
+/** Function key table (FunctionKeyPage) — local form state */
+export const FUNCTION_KEY_FIELD_TOOLTIPS = buildFunctionKeyFieldTooltips();
 

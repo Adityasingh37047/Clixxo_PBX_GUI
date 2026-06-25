@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { postAsteriskCLI } from "../../../api/apiService";
 import { Alert } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import {
   ASTERISK_CLI_TITLE,
   ASTERISK_CLI_LABELS,
@@ -111,6 +112,32 @@ const systemToolFieldInputStyle = {
   minHeight: 34,
 };
 
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  command: "Enter the Asterisk CLI command to execute.",
+  logs: "Displays the output of the Asterisk CLI command.",
+};  
 const inputStyle = systemToolFieldInputStyle;
 
 
@@ -322,7 +349,11 @@ const AsteriskCLI = () => {
             <div className="flex flex-col gap-6">
               {/* Command Row */}
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <span
+                  <Tooltip
+  title={tooltips.command}
+  {...tooltipProps}
+>
+  <span
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -333,6 +364,7 @@ const AsteriskCLI = () => {
                 >
                   {ASTERISK_CLI_LABELS.command}
                 </span>
+</Tooltip>
                 <div className="flex flex-col w-full max-w-md">
                   <input
                     type="text"
@@ -381,7 +413,11 @@ const AsteriskCLI = () => {
 
               {/* Logs Row */}
               <div className="flex flex-col sm:flex-row gap-4 items-start">
-                <span
+                <Tooltip
+  title={tooltips.logs}
+  {...tooltipProps}
+>
+  <span
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
@@ -393,6 +429,7 @@ const AsteriskCLI = () => {
                 >
                   {ASTERISK_CLI_LABELS.logs}
                 </span>
+</Tooltip>
                 <textarea
                   style={{
                     ...inputStyle,

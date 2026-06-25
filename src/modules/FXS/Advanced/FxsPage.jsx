@@ -1,7 +1,69 @@
 import React, { useState } from "react";
-import { FXS_INITIAL_FORM } from "../../../constants/FxsConstants";
-import { Alert, Checkbox } from "@mui/material";
+import { FXS_INITIAL_FORM, FXS_FIELD_TOOLTIPS } from "../../../constants/FxsConstants";
+import { Alert, Checkbox, Tooltip } from "@mui/material";
 // ── Local page UI (inlined from fxsSharedUi) ──
+
+
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 const C = {
   cardBg: "var(--bg-surface)",
   cardBorder: "var(--border-strong)",
@@ -502,7 +564,11 @@ const FxsPage = () => {
                 <tbody>
                   {/* Tone Energy (dB) */}
                   <tr>
-                    <td style={labelCellStyle}>Tone Energy (dB)</td>
+                    <td style={labelCellStyle}>
+                      <FxsFieldLabel tooltipKey="toneEnergy" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Tone Energy (dB)
+                      </FxsFieldLabel>
+                    </td>
                     <td style={{ textAlign: "left" }}>
                       <input
                         type="text"
@@ -521,7 +587,9 @@ const FxsPage = () => {
                   {/* Ringing Scheme Setting */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Ringing Scheme Setting
+                      <FxsFieldLabel tooltipKey="ringingSchemeEnabled" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Ringing Scheme Setting
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("ringingSchemeEnabled")}
@@ -534,7 +602,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Ringing Mode
+                          <FxsFieldLabel tooltipKey="ringMode" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Ringing Mode
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <input
@@ -558,7 +628,9 @@ const FxsPage = () => {
                   {/* Hook-flash Detection */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Hook-flash Detection
+                      <FxsFieldLabel tooltipKey="hookFlashDetection" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Hook-flash Detection
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("hookFlashDetection")}
@@ -571,7 +643,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Minimum Time Length of On-hook Detection (ms)
+                          <FxsFieldLabel tooltipKey="minHangupTime" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Minimum Time Length of On-hook Detection (ms)
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <input
@@ -595,7 +669,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Minimum Time (ms)
+                          <FxsFieldLabel tooltipKey="hookFlashMinTime" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Minimum Time (ms)
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <input
@@ -613,7 +689,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Maximum Time (ms)
+                          <FxsFieldLabel tooltipKey="hookFlashMaxTime" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Maximum Time (ms)
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <input
@@ -635,7 +713,9 @@ const FxsPage = () => {
                   {/* Preferred 18x Response */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Preferred 18x Response (NO valid P_Early_Media)
+                      <FxsFieldLabel tooltipKey="preferred18xResponse" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Preferred 18x Response (NO valid P_Early_Media)
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       <select
@@ -655,7 +735,9 @@ const FxsPage = () => {
                   {/* Enable Press-Key Call-Forward */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Enable Press-Key Call-Forward
+                      <FxsFieldLabel tooltipKey="pressKeyCallForward" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Enable Press-Key Call-Forward
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("pressKeyCallForward")}
@@ -668,7 +750,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Call-Forward Key
+                          <FxsFieldLabel tooltipKey="callForwardKey" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Call-Forward Key
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <select
@@ -686,7 +770,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Call-Forward Method
+                          <FxsFieldLabel tooltipKey="callForwardMethod" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Call-Forward Method
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <select
@@ -710,7 +796,9 @@ const FxsPage = () => {
                   {/* CID Transmit Mode */}
                   <tr>
                     <td style={labelCellStyle}>
-                      CID Transmit Mode
+                      <FxsFieldLabel tooltipKey="cidTransmitMode" tooltips={FXS_FIELD_TOOLTIPS}>
+                        CID Transmit Mode
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       <select
@@ -732,7 +820,9 @@ const FxsPage = () => {
                       <tr className="h-3" />
                       <tr>
                         <td style={labelCellStyle}>
-                          Occasion to Send FSK CallerID
+                          <FxsFieldLabel tooltipKey="occasionToSendFSKCallerID" tooltips={FXS_FIELD_TOOLTIPS}>
+                            Occasion to Send FSK CallerID
+                          </FxsFieldLabel>
                         </td>
                         <td className="align-middle text-left">
                           <select
@@ -754,7 +844,9 @@ const FxsPage = () => {
                   {/* Send Polarity Reversal Signal */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Send Polarity Reversal Signal
+                      <FxsFieldLabel tooltipKey="sendPolarityReversal" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Send Polarity Reversal Signal
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("sendPolarityReversal")}
@@ -765,7 +857,9 @@ const FxsPage = () => {
                   {/* Off-hook Dither Signal Duration */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Off-hook Dither Signal Duration (ms)
+                      <FxsFieldLabel tooltipKey="offHookDitherSignalDuration" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Off-hook Dither Signal Duration (ms)
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       <input
@@ -785,7 +879,9 @@ const FxsPage = () => {
                   {/* Handling of Call from Internal Station */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Handling of Call from Internal Station
+                      <FxsFieldLabel tooltipKey="handlingOfCallFromInternalStation" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Handling of Call from Internal Station
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       <select
@@ -805,7 +901,9 @@ const FxsPage = () => {
                   {/* Light Up Mode for Voice Message */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Light Up Mode for Voice Message
+                      <FxsFieldLabel tooltipKey="lightUpModeForVoiceMessage" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Light Up Mode for Voice Message
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       <select
@@ -825,7 +923,9 @@ const FxsPage = () => {
                   {/* Open Session In Advance */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Open Session In Advance
+                      <FxsFieldLabel tooltipKey="openSessionInAdvance" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Open Session In Advance
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("openSessionInAdvance")}
@@ -836,7 +936,9 @@ const FxsPage = () => {
                   {/* Report FXS Status */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Report FXS Status
+                      <FxsFieldLabel tooltipKey="reportFXSStatus" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Report FXS Status
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("reportFXSStatus")}
@@ -847,7 +949,9 @@ const FxsPage = () => {
                   {/* Enable Send DTMF while receiving 183 */}
                   <tr>
                     <td style={labelCellStyle}>
-                      Enable Send DTMF while receiving 183
+                      <FxsFieldLabel tooltipKey="enableSendDTMFWhileReceiving183" tooltips={FXS_FIELD_TOOLTIPS}>
+                        Enable Send DTMF while receiving 183
+                      </FxsFieldLabel>
                     </td>
                     <td className="align-middle text-left">
                       {renderEnableCheckbox("enableSendDTMFWhileReceiving183")}

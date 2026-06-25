@@ -3,9 +3,71 @@ import { createPortal } from "react-dom";
 import {
   PCM_RECEPTION_TIMEOUT_FIELDS,
   PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
+  PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS,
 } from "../../../constants/PcmReceptionTimeoutConstants";
-import { Alert } from "@mui/material";
+import { Alert, Tooltip } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 // ── Color palette (same as SIPAccountGenerator) ───────────────────────────────
 const C = {
   pageBg: "var(--bg-main)",
@@ -511,18 +573,19 @@ const PcmReceptionTimeoutPage = () => {
                         gap: 12,
                       }}
                     >
-                      <label
+                      <E1PriFieldLabel
+                        tooltipKey={field.name}
+                        tooltips={PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS}
                         style={{
                           width: 170,
                           fontSize: 13,
-                          fontWeight: 600,
-                          color: C.labelText,
                           textAlign: "left",
                           whiteSpace: "nowrap",
+                          display: "inline-block",
                         }}
                       >
                         {field.label}:
-                      </label>
+                      </E1PriFieldLabel>
                       <div style={{ width: "min(100%, 320px)" }}>
                         <input
                           type={field.type || "text"}

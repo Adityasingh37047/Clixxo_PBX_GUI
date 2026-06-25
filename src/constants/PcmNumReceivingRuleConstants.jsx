@@ -33,3 +33,13 @@ export const NUM_RECEIVING_RULE_TABLE_COLUMNS = [
   { key: "provider", label: "Provider" },
   { key: "modify", label: "Modify" },
 ];
+
+/** Number-Receiving Rule (PcmNumReceivingRulePage) — POST /numrecv */
+export const NUM_RECEIVING_RULE_FIELD_TOOLTIPS = {
+  number_data:
+    "Saved as number_data. Required trimmed non-empty text.\n" +
+    "UI note: x and * wildcards are supported in rules.",
+  provider:
+    "Saved as provider. Required.\n" +
+    "Options: bsnl, airtel, jio, vi, other. Default: bsnl.",
+};

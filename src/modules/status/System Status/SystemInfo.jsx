@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+﻿import React, { useEffect, useState, useRef, useCallback } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
 import { Button, CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -6,7 +6,10 @@ import { THEME_PALETTE as C } from "../../../constants/themePalette";
 
 const REFRESH_INTERVAL_MS = 5000;
 
-// ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
+
+// â”€â”€ Color palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+// â”€â”€ Local page UI (inlined from statusSharedUi) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
@@ -39,7 +42,7 @@ const PageBreadcrumb = ({ segments, style }) => (
     ))}
   </div>
 );
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const renderPktsValue = (val) => {
   const str = Array.isArray(val) ? val.join("  ") : String(val ?? "");
   const parts = str.split(/(\bErr:\s*\d+|\bDrop:\s*\d+)/g);
@@ -79,7 +82,7 @@ const renderPktsValue = (val) => {
 
 const renderCellValue = (key, val) => {
   if (val === null || val === undefined || val === "")
-    return <span style={{ color: C.mutedText }}>—</span>;
+    return <span style={{ color: C.mutedText }}>â€”</span>;
   const lk = (key || "").toLowerCase();
   const isPkts = lk.includes("pkts") || lk.includes("packet");
   if (isPkts) return renderPktsValue(val);
@@ -112,7 +115,7 @@ const renderCellValue = (key, val) => {
   return str;
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const Card = ({ title, children, style }) => (
   <div
     style={{
@@ -203,7 +206,7 @@ const StatCard = ({ label, value, type, accentColor }) => {
       </div>
     ) : (
       <span style={{ color: C.mutedText, fontSize: 18, fontWeight: 700 }}>
-        —
+        â€”
       </span>
     );
   } else if (type === "cpu") {
@@ -526,7 +529,7 @@ const SystemInfo = () => {
 
         <PageBreadcrumb segments={["Status", "System Status", "System Info"]} />
 
-        {/* Top stat cards — equal height, accent borders */}
+        {/* Top stat cards â€” equal height, accent borders */}
         <div
           style={{
             display: "grid",
@@ -619,7 +622,7 @@ const SystemInfo = () => {
               </Card>
             </div>
 
-            {/* System Details — left column only (~50% width), right side empty */}
+            {/* System Details â€” left column only (~50% width), right side empty */}
             <div
               style={{
                 display: "grid",
@@ -756,7 +759,7 @@ const SystemInfo = () => {
           </>
         )}
 
-        {/* Refresh button — tight below cards, no floating space */}
+        {/* Refresh button â€” tight below cards, no floating space */}
         <div
           style={{
             display: "flex",

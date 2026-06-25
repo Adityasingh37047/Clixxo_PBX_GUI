@@ -3,10 +3,11 @@ import {
   TABLE_HEADERS,
   SIGNALING_PROTOCOL_OPTIONS,
   CLOCK_OPTIONS,
-  CONNECTION_LINE_OPTIONS
+  CONNECTION_LINE_OPTIONS,
+  PCM_PCM_FIELD_TOOLTIPS,
 } from '../../../constants/PcmPcmConstants';
 import EditDocumentIcon from '@mui/icons-material/EditDocument';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Select, MenuItem, TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Select, MenuItem, TextField, Checkbox, FormControlLabel, Tooltip } from '@mui/material';
 
 const initialPcmData = [{
   pcmNo: 0,
@@ -19,6 +20,67 @@ const initialPcmData = [{
   crc4: true,
   sipTrunkNo: -1
 }];
+
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const PcmPcmPage = () => {
   const [pcmData, setPcmData] = useState(initialPcmData);
@@ -98,9 +160,8 @@ const PcmPcmPage = () => {
         <DialogContent className="flex flex-col gap-2 py-4" style={{ backgroundColor: '#dde0e4', border: '1px solid #444444', borderTop: 'none' }}>
           <div className="flex flex-col gap-2 w-full">
             {/* PCM No. */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>PCM No.:</label>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="pcmNo" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-block', textAlign: 'left', whiteSpace: 'nowrap' }}>PCM No.:</E1PriFieldLabel>              <div className="flex-1 min-w-0">
                 <TextField
                   type="text"
                   value={modalForm.pcmNo}
@@ -113,9 +174,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Signaling Protocol */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Signaling Protocol:</label>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="signalingProtocol" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-block', textAlign: 'left', whiteSpace: 'nowrap' }}>Signaling Protocol:</E1PriFieldLabel>              <div className="flex-1 min-w-0">
                 <Select
                   value={modalForm.signalingProtocol}
                   onChange={e => handleModalChange('signalingProtocol', e.target.value)}
@@ -132,9 +192,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Signaling Time Slot */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Signaling Time Slot:</label>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="signalingTimeSlot" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-block', textAlign: 'left', whiteSpace: 'nowrap' }}>Signaling Time Slot:</E1PriFieldLabel>              <div className="flex-1 min-w-0">
                 <TextField
                   type="text"
                   value={modalForm.signalingTimeSlot}
@@ -147,9 +206,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Clock */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Clock:</label>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="clock" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-block', textAlign: 'left', whiteSpace: 'nowrap' }}>Clock:</E1PriFieldLabel>              <div className="flex-1 min-w-0">
                 <Select
                   value={modalForm.clock}
                   onChange={e => handleModalChange('clock', e.target.value)}
@@ -166,9 +224,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Connection Line */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Connection Line:</label>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="connectionLine" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-block', textAlign: 'left', whiteSpace: 'nowrap' }}>Connection Line:</E1PriFieldLabel>              <div className="flex-1 min-w-0">
                 <Select
                   value={modalForm.connectionLine}
                   onChange={e => handleModalChange('connectionLine', e.target.value)}
@@ -185,9 +242,8 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Option Sip Trunk ID */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left" style={{width:180, marginRight:10}}>Option Sip Trunk ID:</label>
-              <div className="flex-1 min-w-0">
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="sipTrunkNo" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-block', textAlign: 'left', whiteSpace: 'nowrap' }}>Option Sip Trunk ID:</E1PriFieldLabel>              <div className="flex-1 min-w-0">
                 <TextField
                   type="text"
                   value={modalForm.sipTrunkNo}
@@ -200,27 +256,25 @@ const PcmPcmPage = () => {
               </div>
             </div>
             {/* Enable CRC-4 */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left flex items-center" style={{width:180, marginRight:10}}>
-                <Checkbox
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="crc4" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-flex', alignItems: 'center', textAlign: 'left', whiteSpace: 'nowrap' }}>                <Checkbox
                   checked={modalForm.crc4 || false}
                   onChange={() => handleModalCheckbox('crc4')}
                   sx={{ color: '#6b7280', '&.Mui-checked': { color: '#6b7280' }, padding: 0, marginRight: 1 }}
                 />
                 Enable CRC-4
-              </label>
+              </E1PriFieldLabel>
               <div className="flex-1"></div>
             </div>
             {/* Apply to All PCMs */}
-            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-[var(--bg-surface)]" style={{ minHeight: 40 }}>
-              <label className="text-[14px] text-[var(--text-secondary)] font-medium whitespace-nowrap text-left flex items-center" style={{width:180, marginRight:10}}>
-                <Checkbox
+            <div className="flex items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white" style={{ minHeight: 40 }}>
+              <E1PriFieldLabel tooltipKey="applyToAllPcMs" tooltips={PCM_PCM_FIELD_TOOLTIPS} style={{ width: 180, marginRight: 10, display: 'inline-flex', alignItems: 'center', textAlign: 'left', whiteSpace: 'nowrap' }}>                <Checkbox
                   checked={modalForm.applyToAllPcMs || false}
                   onChange={() => handleModalCheckbox('applyToAllPcMs')}
                   sx={{ color: '#6b7280', '&.Mui-checked': { color: '#6b7280' }, padding: 0, marginRight: 1 }}
                 />
                 Apply to All PCMs
-              </label>
+              </E1PriFieldLabel>
               <div className="flex-1"></div>
             </div>
           </div>

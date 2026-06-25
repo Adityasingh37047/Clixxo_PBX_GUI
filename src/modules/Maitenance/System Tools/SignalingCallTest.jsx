@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   SCT_TITLE,
   SCT_LABELS,
@@ -163,7 +165,6 @@ const BTN_PRIMARY = `${BTN_BASE} text-white border-[#5A6F8F] bg-[linear-gradient
 const BTN_ERROR = `${BTN_BASE} bg-[#dc2626] text-white border-[#dc2626] hover:bg-[#b91c1c]`;
 const BTN_DELETE = `${BTN_BASE} bg-[#fee2e2] text-[#991b1b] border-[#fecaca] hover:bg-[#fecaca]`;
 const BTN_EDIT = `${BTN_BASE} bg-[#dcfce7] text-[#166534] border-[#bbf7d0] hover:bg-[#bbf7d0]`;
-
 const btnVariantCls = {
   default: BTN_DEFAULT,
   primary: BTN_PRIMARY,
@@ -504,7 +505,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.testType}
+                <Tooltip title={tooltips.testType} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.testType}</span>
+                </Tooltip>
               </label>
               <select
                 style={selectStyle}
@@ -527,7 +530,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.trunkGroup}
+                <Tooltip title={tooltips.trunkGroup} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.trunkGroup}</span>
+                </Tooltip>
               </label>
               <select
                 style={selectStyle}
@@ -550,7 +555,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.callerId}
+                <Tooltip title={tooltips.callerId} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.callerId}</span>
+                </Tooltip>
               </label>
               <input
                 type="text"
@@ -568,7 +575,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.calledId}
+                <Tooltip title={tooltips.calledId} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.calledId}</span>
+                </Tooltip>
               </label>
               <input
                 type="text"
@@ -586,7 +595,9 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                {SCT_LABELS.originalCallee}
+                <Tooltip title={tooltips.originalCallee} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_LABELS.originalCallee}</span>
+                </Tooltip>
               </label>
               <input
                 type="text"
@@ -650,7 +661,9 @@ const SignalingCallTest = () => {
                   fontWeight: 600,
                 }}
               >
-                {SCT_TRACE_LABEL}
+                <Tooltip title={tooltips.trace} {...tooltipProps}>
+                  <span style={{ color: C.labelText }}>{SCT_TRACE_LABEL}</span>
+                </Tooltip>
               </label>
               <textarea
                 value={trace}

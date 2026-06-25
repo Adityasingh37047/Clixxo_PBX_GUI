@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import Tooltip from "@mui/material/Tooltip";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
   CircularProgress,
@@ -344,7 +345,6 @@ const IvrPagination = ({
     </div>
   </div>
 );
-
 const PBX_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",
   background: "var(--bg-surface)",
@@ -415,21 +415,29 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const FieldRow = ({ label, children, required }) => (
+const FieldRow = ({ label, children, required, tooltip }) => (
   <div
     style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 150,
-        flexShrink: 0,
-      }}
+    <Tooltip
+      title={tooltip || ""}
+      {...tooltipProps}
+      disableHoverListener={!tooltip}
     >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: 150,
+          flexShrink: 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
+      </label>
+    </Tooltip>
+
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
@@ -1858,8 +1866,7 @@ const IVRPage = () => {
                             }}
                           />
                         </FieldRow>
-                        <FieldRow label="IVR Number" required>
-                          <TextField
+                        <FieldRow label="IVR Number" required>                          <TextField
                             size="small"
                             fullWidth
                             type="number"
@@ -1875,7 +1882,14 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Greet Long">
+                        <FieldRow label={
+  <Tooltip
+    title="It is played as the first prompt for entering the IVR menu. The default setting is default."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Greet Long</span>
+  </Tooltip>
+} required>
                           <div
                             style={{
                               display: "flex",
@@ -1924,7 +1938,14 @@ const IVRPage = () => {
                           </div>
                         </FieldRow>
 
-                        <FieldRow label="Greet Short">
+                        <FieldRow label={
+  <Tooltip
+    title="It is played when the user doesn't enter any key or enters a wrong key. By default it is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Greet Short</span>
+  </Tooltip>
+} required>
                           <div
                             style={{
                               display: "flex",
@@ -1973,7 +1994,14 @@ const IVRPage = () => {
                           </div>
                         </FieldRow>
 
-                        <FieldRow label="Response Timeout(ms)" required>
+                        <FieldRow label={
+  <Tooltip
+    title="The number of milliseconds to wait for a digit input after prompt, in miliseconds. If no DTMF is received, it will repeat the prompt according to the Max Timeouts settings until it has finished the rrepeat. After that, call will go to the Timeout destination set in options. Default is 10000."
+    {...tooltipProps}
+  >
+      <span style={{ cursor: "help" }}>Response Timeout(ms)</span>
+    </Tooltip>
+  } required>
                           <TextField
                             size="small"
                             fullWidth
@@ -1990,7 +2018,14 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Password">
+                        <FieldRow label={
+  <Tooltip
+    title="Set IVR password, default is 0000."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Password</span>
+  </Tooltip>
+} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -2025,7 +2060,14 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Check Voicemail">
+                        <FieldRow label={
+  <Tooltip
+    title="If enabled, the caller will be allowed to dial feature code: Voicemail main menu to check voicemail."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Check Voicemail</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={checkVoicemail}
@@ -2063,17 +2105,23 @@ const IVRPage = () => {
                             gap: 12,
                           }}
                         >
-                          <label
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: 170,
-                              flexShrink: 0,
-                            }}
-                          >
-                            Direct Outbound
-                          </label>
+                         <Tooltip
+  title="Set whether the user can dial directly out after hearing the IVR prompt. By default it is unticked."
+  {...tooltipProps}
+>
+  <label
+    style={{
+      fontSize: 13,
+      fontWeight: 600,
+      color: C.labelText,
+      width: 170,
+      flexShrink: 0,
+      cursor: "help",
+    }}
+  >
+    Direct Outbound
+  </label>
+</Tooltip>
                           <div style={{ flex: 1 }}>
                             <Checkbox
                               checked={directOutbound}
@@ -2095,7 +2143,14 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label="Inter-Digit Timeout(ms)" required>
+                        <FieldRow label={
+  <Tooltip
+    title="The maximum time between your entering of two adjacent DTMF digits. The default value is 3000ms."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Inter-Digit Timeout(ms)</span>
+  </Tooltip>
+} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -2114,7 +2169,14 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Max Failures" required>
+                        <FieldRow label={
+  <Tooltip
+    title="The maximum number of failed attempts before the IVR is considered to have failed. The default setting is 3."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Max Failures</span>
+  </Tooltip>
+} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -2131,8 +2193,15 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Max Timeouts" required>
-                          <TextField
+                        <FieldRow label={
+  <Tooltip
+    title="The maximum number of timeouts before the IVR is considered to have failed. The default setting is 3."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Max Timeouts</span>
+  </Tooltip>
+} required>
+                          <TextField  
                             size="small"
                             fullWidth
                             type="number"
@@ -2148,7 +2217,14 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Digit Length" required>
+                        <FieldRow label={
+  <Tooltip
+    title="The length of the digits to be entered by the caller. The default setting is 4."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Digit Length</span>
+  </Tooltip>
+} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -2165,7 +2241,14 @@ const IVRPage = () => {
                           />
                         </FieldRow>
 
-                        <FieldRow label="Enabled" required>
+                        <FieldRow label={
+  <Tooltip
+    title="Enable the IVR to be used. The default setting is unticked."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Enabled</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={enabled}
@@ -2194,7 +2277,14 @@ const IVRPage = () => {
                           </FormControl>
                         </FieldRow>
 
-                        <FieldRow label="Direct Extension" required>
+                        <FieldRow label={
+  <Tooltip
+    title="Enable direct extension to allow calls to be placed through direct extension without additional restrictions."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Direct Extension</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={directExtension}
@@ -2225,7 +2315,14 @@ const IVRPage = () => {
                           </FormControl>
                         </FieldRow>
 
-                        <FieldRow label="FXO Flash Transfer" required>
+                        <FieldRow label={
+  <Tooltip
+    title="Enable FXO flash transfer to allow calls to be placed through FXO flash transfer without additional restrictions."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>FXO Flash Transfer</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={fxoFlashTransfer}
@@ -2441,17 +2538,17 @@ const IVRPage = () => {
                         margin: "32px 0 20px 0",
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          color: C.labelText,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        Advanced
-                      </span>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: C.labelText,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          Advanced
+                        </span>
 
                       <div
                         style={{
@@ -2479,7 +2576,14 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label="Invalid Sound">
+                        <FieldRow label={
+  <Tooltip
+    title="The sound to play when the caller enters an invalid digit. The default setting is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Invalid Sound</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={invalidSound}
@@ -2508,7 +2612,14 @@ const IVRPage = () => {
                           </FormControl>
                         </FieldRow>
 
-                        <FieldRow label="Exit Sound">
+                        <FieldRow label={
+  <Tooltip
+    title="The sound to play when the caller exits the IVR. The default setting is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Exit Sound</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={exitSound}
@@ -2537,7 +2648,14 @@ const IVRPage = () => {
                           </FormControl>
                         </FieldRow>
 
-                        <FieldRow label="Exit Action">
+                        <FieldRow label={
+  <Tooltip
+    title="The action to take when the caller exits the IVR. The default setting is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Exit Action</span>
+  </Tooltip>
+} required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={exitActionType || ""}
@@ -2587,7 +2705,14 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label="Ring Back" align="flex-start">
+                        <FieldRow label={
+  <Tooltip
+    title="The sound to play when the caller is ringing back. The default setting is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Ring Back</span>
+  </Tooltip>
+} align="flex-start">
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={ringBack}
@@ -2682,7 +2807,14 @@ const IVRPage = () => {
                           </FormControl>
                         </FieldRow>
 
-                        <FieldRow label="Caller ID Name Prefix">
+                        <FieldRow label={
+  <Tooltip
+    title="The prefix to add to the caller ID name. The default setting is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Caller ID Name Prefix</span>
+  </Tooltip>
+} required>
                           <TextField
                             size="small"
                             fullWidth
@@ -2701,7 +2833,14 @@ const IVRPage = () => {
                         </FieldRow>
 
                         {exitActionType && (
-                          <FieldRow label="Destination">
+                          <FieldRow label={
+  <Tooltip
+    title="The destination to call when the caller exits the IVR. The default setting is null."
+    {...tooltipProps}
+  >
+    <span style={{ cursor: "help" }}>Destination</span>
+  </Tooltip>
+} required>
                             {renderDestinationSelect(
                               exitActionType,
                               exitActionValue,

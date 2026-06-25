@@ -3,6 +3,7 @@ import {
   PSTN_CALL_IN_CALLEEID_FIELDS,
   PSTN_CALL_IN_CALLEEID_TABLE_COLUMNS,
   PSTN_CALL_IN_CALLEEID_INITIAL_FORM,
+  PSTN_CALL_IN_CALLEEID_FIELD_TOOLTIPS,
 } from "../../../constants/FxsPSTNCallInCalleeIDConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -18,6 +19,7 @@ import {
   CircularProgress,
   TextField,
   Alert,
+  Tooltip,
 } from "@mui/material";
 const C = {
   cardBorder: "var(--border-strong)",
@@ -44,7 +46,16 @@ const btnVariantCls = {
   danger: `${BTN_BASE} bg-[#fef2f2] text-[#dc2626] border-[0.5px] border-[#fecaca] hover:bg-[#fca5a5]`,
 };
 
-const Btn = ({ children, onClick, disabled, variant = "default", className = "", style, type, title }) => (
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  className = "",
+  style,
+  type,
+  title,
+}) => (
   <button
     type={type}
     onClick={onClick}
@@ -64,17 +75,26 @@ const OUTLINED_FOCUS = "var(--status-primary)";
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
     backgroundColor: "var(--bg-surface)",
-    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease",
+    },
     "&:hover fieldset": { borderColor: OUTLINED_HOVER },
     "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: 2,
+    },
   },
 };
 
 const muiSelectSx = {
   fontSize: 13,
   backgroundColor: "var(--bg-surface)",
-  "& .MuiOutlinedInput-root": { minHeight: 36, backgroundColor: "var(--bg-surface)" },
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "var(--bg-surface)",
+  },
   "& .MuiSelect-select": {
     display: "flex",
     alignItems: "center",
@@ -158,7 +178,12 @@ const FXS_NUM_TOAST_SX = {
 };
 
 const modalInputProps = {
-  style: { fontSize: 13, height: 32, padding: "0 8px", boxSizing: "border-box" },
+  style: {
+    fontSize: 13,
+    height: 32,
+    padding: "0 8px",
+    boxSizing: "border-box",
+  },
 };
 
 const numDialogTitleStyle = {
@@ -172,7 +197,10 @@ const numDialogTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const numDialogContentStyle = { padding: "24px", backgroundColor: "var(--bg-surface)" };
+const numDialogContentStyle = {
+  padding: "24px",
+  backgroundColor: "var(--bg-surface)",
+};
 
 const numDialogFormStyle = {
   display: "flex",
@@ -221,7 +249,8 @@ const numDialogPaperSx = {
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
-  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
 const FxsNumBreadcrumb = ({ current }) => (
@@ -250,6 +279,66 @@ const deleteNumberManipulation = async () => ({
 const listPstnGroups = async () => ({ response: true, message: [] });
 
 const LOCAL_STORAGE_KEY = "pstnCallInCalleeIdRules";
+
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const PSTNCallInCalleeID = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -906,7 +995,8 @@ const PSTNCallInCalleeID = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSelected)
-                                e.currentTarget.style.background = "var(--row-alt)";
+                                e.currentTarget.style.background =
+                                  "var(--row-alt)";
                             }}
                             onMouseLeave={(e) => {
                               if (!isSelected)
@@ -1043,9 +1133,29 @@ const PSTNCallInCalleeID = () => {
         <DialogContent style={numDialogContentStyle}>
           <div style={numDialogFormStyle}>
             {getUpdatedFields().map((field) => (
-              <div key={field.name} style={numDialogFieldRowStyle}>
-                <label style={numDialogFieldLabelStyle}>{field.label}</label>
-                <div style={numDialogFieldControlStyle}>
+              <div
+                key={field.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
+                }}
+              >
+                <label
+                  style={{
+                    fontSize: 13,
+                    color: C.labelText,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 170,
+                    lineHeight: 1.2,
+                    textAlign: "left",
+                  }}
+                >
+                  {field.label}
+                </label>
+                <div style={{ width: "min(100%, 320px)" }}>
                   {field.type === "select" ? (
                     <FormControl size="small" fullWidth>
                       <MuiSelect

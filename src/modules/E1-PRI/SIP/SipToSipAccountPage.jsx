@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   Button,
   Dialog,
@@ -8,24 +8,24 @@ import {
   TextField,
   Alert,
   CircularProgress,
-  FormGroup,
-  FormControlLabel,
   Checkbox,
   InputAdornment,
   IconButton,
   FormControl,
   Select as MuiSelect,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import { CODEC_OPTIONS } from "../../../constants/SipAccountConstants";
 import {
+  CODEC_OPTIONS,
   SIP_TO_SIP_FIELDS,
   SIP_TO_SIP_TABLE_COLUMNS,
   SIP_TO_SIP_INITIAL_FORM,
   SIP_TO_SIP_FORM_LAYOUT,
+  SIP_TO_SIP_FIELD_TOOLTIPS,
 } from "../../../constants/SipToSipAccountConstants";
 import { fetchSipAccounts } from "../../../api/apiService";
 import {
@@ -37,6 +37,67 @@ import {
 } from "../../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 // ── Local page UI (inlined from e1PriSharedUi)
+// ── Page-local field label tooltip UI (not shared) ──
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 const C = {
   pageBg: "var(--bg-main)",
   cardBg: "var(--bg-surface)",
@@ -478,6 +539,117 @@ const sipPcmCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
+const pbxDualListLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#3E5475",
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const pbxDualListSelectStyle = {
+  width: "100%",
+  height: 160,
+  border: `1px solid ${C.cardBorder}`,
+  background: "#fff",
+  borderRadius: 4,
+  padding: "4px 8px",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
+  overflowY: "auto",
+};
+
+const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
+const SIP_TO_SIP_SECTION_HEADING_FONT_SIZE = 14;
+
+const SipToSipSectionHeading = ({ title, required = false, tooltipKey, tooltips }) => (
+  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: "#f5f7fa",
+        paddingRight: 8,
+        fontSize: SIP_TO_SIP_SECTION_HEADING_FONT_SIZE,
+        fontWeight: 600,
+        color: CODEC_PRIORITY_HEADING_COLOR,
+      }}
+    >
+      {tooltipKey && tooltips ? (
+        <E1PriFieldLabel
+          tooltipKey={tooltipKey}
+          tooltips={tooltips}
+          style={{ fontSize: SIP_TO_SIP_SECTION_HEADING_FONT_SIZE, color: CODEC_PRIORITY_HEADING_COLOR }}
+        >
+          {title}
+          {required && <span style={{ color: C.errorRed }}> *</span>}
+        </E1PriFieldLabel>
+      ) : (
+        <>
+          {title}
+          {required && <span style={{ color: C.errorRed }}> *</span>}
+        </>
+      )}
+    </span>
+  </div>
+);
+
+const pbxDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
+};
+
+const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={{
+      ...pbxDualListBtnStyle,
+      fontWeight: reorder ? 400 : pbxDualListBtnStyle.fontWeight,
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const parseCodecList = (value) => {
+  if (!value) return [];
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return Object.entries(value)
+      .filter(([, enabled]) => !!enabled)
+      .map(([codec]) => codec);
+  }
+  return String(value)
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+};
+
+const normalizeAllowCodecs = (value) => parseCodecList(value).join(",");
+
 const sipPcmPageWrapStyle = pbxPageWrapStyle;
 const sipPcmInnerStyle = pbxPageInnerStyle;
 
@@ -494,7 +666,6 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-
 const SipToSipAccountPage = () => {
   const [accounts, setAccounts] = useState([]);
   const [pjsipExtensions, setPjsipExtensions] = useState(new Set());
@@ -510,6 +681,8 @@ const SipToSipAccountPage = () => {
   const [form, setForm] = useState(SIP_TO_SIP_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
+  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasInitialLoadRef = useRef(false);
 
@@ -525,12 +698,119 @@ const SipToSipAccountPage = () => {
     }
   }, []);
 
-  const isCodecSelected = (codec) => {
-    if (!form.allow_codecs) return false;
-    return form.allow_codecs
-      .split(",")
-      .map((c) => c.trim())
-      .includes(codec);
+  const selectedCodecList = useMemo(
+    () => parseCodecList(form.allow_codecs),
+    [form.allow_codecs],
+  );
+
+  const availableCodecList = useMemo(
+    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    [selectedCodecList],
+  );
+
+  const getCodecLabel = (value) =>
+    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const updateCodecList = (newList) => {
+    const newCodecsString = newList.join(",");
+
+    if (validationErrors.allow_codecs) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.allow_codecs;
+        return newErrors;
+      });
+    }
+
+    const codecError = validateAllowCodecs(newCodecsString);
+    if (codecError) {
+      setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
+    }
+
+    setForm((prev) => ({ ...prev, allow_codecs: newCodecsString }));
+  };
+
+  const addSelectedCodecs = () => {
+    if (!codecAvailableSelected.length) return;
+    updateCodecList([
+      ...selectedCodecList,
+      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
+    ]);
+    setCodecAvailableSelected([]);
+  };
+
+  const addAllCodecs = () => {
+    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    setCodecAvailableSelected([]);
+  };
+
+  const removeSelectedCodecs = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
+    );
+    setCodecChosenSelected([]);
+  };
+
+  const removeAllCodecs = () => {
+    updateCodecList([]);
+    setCodecChosenSelected([]);
+  };
+
+  const moveCodecToBottom = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...rest, ...moving];
+      })(),
+    );
+  };
+
+  const moveCodecUp = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        codecChosenSelected.forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx > 0) {
+            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecDown = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        [...codecChosenSelected].reverse().forEach((id) => {
+          const idx = next.indexOf(id);
+          if (idx >= 0 && idx < next.length - 1) {
+            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+          }
+        });
+        return next;
+      })(),
+    );
+  };
+
+  const moveCodecToTop = () => {
+    if (!codecChosenSelected.length) return;
+    updateCodecList(
+      (() => {
+        const next = [...selectedCodecList];
+        const moving = codecChosenSelected.filter((id) => next.includes(id));
+        const rest = next.filter((id) => !moving.includes(id));
+        return [...moving, ...rest];
+      })(),
+    );
   };
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -540,10 +820,10 @@ const SipToSipAccountPage = () => {
       (a, b) => (parseInt(a.extension) || 0) - (parseInt(b.extension) || 0),
     );
     return sorted.map((it, i) => ({
-      index: i.toString(),
+      index: (i + 1).toString(),
       extension: it.extension,
       context: it.context,
-      allow_codecs: it.codecs,
+      allow_codecs: normalizeAllowCodecs(it.codecs || it.allow_codecs),
       password: it.password,
       contact: it.contact,
       from_domain: it.from_domain || it["Domain name"] || "",
@@ -605,21 +885,29 @@ const SipToSipAccountPage = () => {
   };
 
   const handleOpenModal = (row = null, idx = null) => {
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
     if (row && idx !== null) {
-      setForm({ ...SIP_TO_SIP_INITIAL_FORM, ...row });
+      setForm({
+        ...SIP_TO_SIP_INITIAL_FORM,
+        ...row,
+        allow_codecs: normalizeAllowCodecs(row.allow_codecs) || "ulaw,alaw",
+      });
       setEditIndex(idx);
     } else {
       setForm(SIP_TO_SIP_INITIAL_FORM);
       setEditIndex(null);
     }
-    setValidationErrors({}); // Clear validation errors when opening modal
+    setValidationErrors({});
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setShowPassword(false); // Reset password visibility when closing modal
-    setValidationErrors({}); // Clear validation errors when closing modal
+    setShowPassword(false);
+    setValidationErrors({});
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
   };
 
   // Validation functions
@@ -748,46 +1036,6 @@ const SipToSipAccountPage = () => {
     if (error) {
       setValidationErrors((prev) => ({ ...prev, [key]: error }));
     }
-  };
-
-  const handleCodecChange = (codec, checked) => {
-    setForm((prev) => {
-      const currentCodecs = prev.allow_codecs
-        ? prev.allow_codecs.split(",").map((c) => c.trim())
-        : [];
-      let newCodecs;
-
-      if (checked) {
-        // Add codec if not already present
-        if (!currentCodecs.includes(codec)) {
-          newCodecs = [...currentCodecs, codec];
-        } else {
-          newCodecs = currentCodecs;
-        }
-      } else {
-        // Remove codec
-        newCodecs = currentCodecs.filter((c) => c !== codec);
-      }
-
-      const newCodecsString = newCodecs.join(",");
-
-      // Clear validation error for allow_codecs when user changes codecs
-      if (validationErrors.allow_codecs) {
-        setValidationErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.allow_codecs;
-          return newErrors;
-        });
-      }
-
-      // Real-time validation
-      const codecError = validateAllowCodecs(newCodecsString);
-      if (codecError) {
-        setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
-      }
-
-      return { ...prev, allow_codecs: newCodecsString };
-    });
   };
 
   const handleSave = async () => {
@@ -957,6 +1205,121 @@ const SipToSipAccountPage = () => {
     flexShrink: 0,
   };
 
+  const renderAllowCodecsSection = () => (
+    <div style={{ width: "100%" }}>
+      <SipToSipSectionHeading
+        title="Allow Codecs"
+        required
+        tooltipKey="allow_codecs"
+        tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+      />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 48px 1fr 48px",
+          gap: 12,
+          width: "100%",
+        }}
+      >
+        <div>
+          <div style={pbxDualListLabelStyle}>Available</div>
+          <select
+            multiple
+            size={6}
+            value={codecAvailableSelected}
+            onChange={(e) =>
+              setCodecAvailableSelected(
+                Array.from(e.target.selectedOptions, (opt) => opt.value),
+              )
+            }
+            style={pbxDualListSelectStyle}
+          >
+            {availableCodecList.length === 0 ? (
+              <option disabled value="">
+                No codecs
+              </option>
+            ) : (
+              availableCodecList.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            paddingTop: 28,
+          }}
+        >
+          <PbxDualListBtn onClick={addSelectedCodecs}>&gt;</PbxDualListBtn>
+          <PbxDualListBtn onClick={addAllCodecs}>&gt;&gt;</PbxDualListBtn>
+          <PbxDualListBtn onClick={removeSelectedCodecs}>&lt;</PbxDualListBtn>
+          <PbxDualListBtn onClick={removeAllCodecs}>&lt;&lt;</PbxDualListBtn>
+        </div>
+        <div>
+          <div style={pbxDualListLabelStyle}>Selected</div>
+          <select
+            multiple
+            size={6}
+            value={codecChosenSelected}
+            onChange={(e) =>
+              setCodecChosenSelected(
+                Array.from(e.target.selectedOptions, (opt) => opt.value),
+              )
+            }
+            style={pbxDualListSelectStyle}
+          >
+            {selectedCodecList.length === 0 ? (
+              <option disabled value="">
+                No selected codecs
+              </option>
+            ) : (
+              selectedCodecList.map((id) => (
+                <option key={id} value={id}>
+                  {getCodecLabel(id)}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            paddingTop: 28,
+          }}
+        >
+          <PbxDualListBtn
+            reorder
+            title="Move to bottom"
+            onClick={moveCodecToBottom}
+          >
+            vv
+          </PbxDualListBtn>
+          <PbxDualListBtn reorder title="Move up" onClick={moveCodecUp}>
+            ^
+          </PbxDualListBtn>
+          <PbxDualListBtn reorder title="Move down" onClick={moveCodecDown}>
+            v
+          </PbxDualListBtn>
+          <PbxDualListBtn reorder title="Move to top" onClick={moveCodecToTop}>
+            ^^
+          </PbxDualListBtn>
+        </div>
+      </div>
+      {validationErrors.allow_codecs && (
+        <div className="text-red-500 text-xs mt-1">
+          {validationErrors.allow_codecs}
+        </div>
+      )}
+    </div>
+  );
+
   const renderFormFieldControl = (field) => {
     if (field.type === "password") {
       return (
@@ -1004,6 +1367,7 @@ const SipToSipAccountPage = () => {
         </div>
       );
     }
+
 
     if (field.type === "checkbox") {
       return (
@@ -1170,11 +1534,18 @@ const SipToSipAccountPage = () => {
         display: "grid",
         gridTemplateColumns: "120px 1fr",
         gap: 12,
-        alignItems: field.type === "checkbox" ? "flex-start" : "center",
+        alignItems: "center",
       }}
     >
       <label style={formFieldLabelStyle}>
-        {field.label} <span style={{ color: C.errorRed }}>*</span>
+        <E1PriFieldLabel
+          tooltipKey={field.name}
+          tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+          style={{ fontSize: 13, display: "inline" }}
+        >
+          {field.label}
+        </E1PriFieldLabel>{" "}
+        <span style={{ color: C.errorRed }}>*</span>
       </label>
       <div style={{ width: "100%", minWidth: 0 }}>
         {renderFormFieldControl(field)}
@@ -1295,62 +1666,63 @@ const SipToSipAccountPage = () => {
                 </Btn>
               </div>
             ) : (
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
-                tableLayout: "auto",
-                minWidth: 900,
-              }}
-            >
-              <thead>
-                <tr>
-                  <TH
-                    style={{
-                      width: 40,
-                      padding: 0,
-                      borderLeft: "none",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={
-                        selected.length > 0 &&
-                        selected.length === accounts.length
-                      }
-                      indeterminate={
-                        selected.length > 0 && selected.length < accounts.length
-                      }
-                      onChange={
-                        selected.length === accounts.length
-                          ? () => setSelected([])
-                          : () => setSelected(accounts.map((_, i) => i))
-                      }
-                      disabled={loading.delete}
-                      sx={sipPcmCheckboxSx}
-                    />
-                  </TH>
-                  {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
-                    <TH key={col.key}>{col.label}</TH>
-                  ))}
-                  <TH
-                    style={{
-                      width: 70,
-                      borderRight: "none",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    Modify
-                  </TH>
-                </tr>
-              </thead>
-              <tbody>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
+                      style={{
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={
+                          selected.length > 0 &&
+                          selected.length === accounts.length
+                        }
+                        indeterminate={
+                          selected.length > 0 &&
+                          selected.length < accounts.length
+                        }
+                        onChange={
+                          selected.length === accounts.length
+                            ? () => setSelected([])
+                            : () => setSelected(accounts.map((_, i) => i))
+                        }
+                        disabled={loading.delete}
+                        sx={sipPcmCheckboxSx}
+                      />
+                    </TH>
+                    {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
+                      <TH key={col.key}>{col.label}</TH>
+                    ))}
+                    <TH
+                      style={{
+                        width: 70,
+                        borderRight: "none",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                      }}
+                    >
+                      Modify
+                    </TH>
+                  </tr>
+                </thead>
+                <tbody>
                   {pagedAccounts.map((item, idx) => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSel = selected.includes(realIdx);
@@ -1436,8 +1808,8 @@ const SipToSipAccountPage = () => {
                       </tr>
                     );
                   })}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
             )}
           </div>
 
@@ -1513,6 +1885,7 @@ const SipToSipAccountPage = () => {
                     </div>
                   );
                 })}
+                {renderAllowCodecsSection()}
               </div>
             </div>
           </div>

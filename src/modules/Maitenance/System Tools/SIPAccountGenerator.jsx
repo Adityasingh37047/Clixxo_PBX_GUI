@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   SIP_ACCOUNT_FIELDS,
   SIP_ACCOUNT_NOTE,
@@ -138,6 +140,35 @@ const systemToolsEditableFieldInputStyle = {
 };
 const inputStyle = systemToolsEditableFieldInputStyle;
 
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  sipTrunkNo: "Specifies the SIP trunk number.",
+  registrationPeriod: "Specifies the registration validity period in seconds.",
+  registrationAddress: "Specifies the registration address.",
+  description: "Specifies the description.",
+};
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
@@ -309,7 +340,9 @@ const SIPAccountGenerator = () => {
                         color: C.labelText,
                       }}
                     >
-                      SIP Trunk No.
+                      <Tooltip title={tooltips.sipTrunkNo} {...tooltipProps}>
+                        <span style={{ color: C.labelText }}>SIP Trunk No.</span>
+                      </Tooltip>
                     </label>
                     <input
                       id="sipTrunkNo"
@@ -333,7 +366,9 @@ const SIPAccountGenerator = () => {
                         color: C.labelText,
                       }}
                     >
-                      Registration Validity Period(s)
+                      <Tooltip title={tooltips.registrationPeriod} {...tooltipProps}>
+                        <span style={{ color: C.labelText }}>Registration Validity Period(s)</span>
+                      </Tooltip>
                     </label>
                     <input
                       id="registrationPeriod"
@@ -357,7 +392,9 @@ const SIPAccountGenerator = () => {
                         color: C.labelText,
                       }}
                     >
-                      Registration Address
+                      <Tooltip title={tooltips.registrationAddress} {...tooltipProps}>
+                        <span style={{ color: C.labelText }}>Registration Address</span>
+                      </Tooltip>
                     </label>
                     <input
                       id="registrationAddress"
@@ -380,7 +417,9 @@ const SIPAccountGenerator = () => {
                         color: C.labelText,
                       }}
                     >
-                      Description
+                      <Tooltip title={tooltips.description} {...tooltipProps}>
+                        <span style={{ color: C.labelText }}>Description</span>
+                      </Tooltip>
                     </label>
                     <input
                       id="description"

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   ROUTE_IP_PSTN_INITIAL_FORM,
   ROUTE_IP_PSTN_TABLE_COLUMNS,
+  ROUTE_IP_PSTN_FIELD_TOOLTIPS,
 } from "../../../constants/FxsRouteIPtoPstnConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -16,6 +17,7 @@ import {
   FormControl,
   TextField,
   Alert,
+  Tooltip,
 } from "@mui/material";
 // ── Local page UI (inlined from fxsSharedUi) ──
 
@@ -280,7 +282,67 @@ const routeTdStyle = tdStyle;
 
 const routeThExtra = {};
 
-const FieldRow = ({ label, children }) => (
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const FieldRow = ({ label, tooltipKey, tooltips, children, labelWidth = 170 }) => (
   <div
     style={{
       display: "flex",
@@ -289,18 +351,18 @@ const FieldRow = ({ label, children }) => (
       gap: 12,
     }}
   >
-    <label
+    <FxsFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
       style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 170,
+        width: labelWidth,
         flexShrink: 0,
         textAlign: "left",
+        display: "inline-block",
       }}
     >
       {label}
-    </label>
+    </FxsFieldLabel>
     <div style={{ width: "min(100%, 320px)" }}>{children}</div>
   </div>
 );
@@ -1018,7 +1080,7 @@ const RouteIpPstnPage = () => {
               padding: 20,
             }}
           >
-            <FieldRow label="Index:">
+            <FieldRow label="Index:" tooltipKey="index" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
               <FormControl size="small" fullWidth>
                 <MuiSelect
                   value={indexSelect || ""}
@@ -1039,7 +1101,7 @@ const RouteIpPstnPage = () => {
               </FormControl>
             </FieldRow>
 
-            <FieldRow label="Description:">
+            <FieldRow label="Description:" tooltipKey="description" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
               <TextField
                 name="description"
                 value={formData.description || ""}
@@ -1059,7 +1121,7 @@ const RouteIpPstnPage = () => {
               />
             </FieldRow>
 
-            <FieldRow label="Source IP:">
+            <FieldRow label="Source IP:" tooltipKey="sourceIP" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
               <div style={{ width: "100%" }}>
                 <TextField
                   name="sourceIP"
@@ -1084,7 +1146,7 @@ const RouteIpPstnPage = () => {
               </div>
             </FieldRow>
 
-            <FieldRow label="CallerID Prefix:">
+            <FieldRow label="CallerID Prefix:" tooltipKey="callerIdPrefix" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
               <TextField
                 name="callerIdPrefix"
                 value={formData.callerIdPrefix || ""}
@@ -1104,7 +1166,7 @@ const RouteIpPstnPage = () => {
               />
             </FieldRow>
 
-            <FieldRow label="CalleeID Prefix:">
+            <FieldRow label="CalleeID Prefix:" tooltipKey="calleeIdPrefix" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
               <TextField
                 name="calleeIdPrefix"
                 value={formData.calleeIdPrefix || ""}
@@ -1124,7 +1186,7 @@ const RouteIpPstnPage = () => {
               />
             </FieldRow>
 
-            <FieldRow label="Route by Number:">
+            <FieldRow label="Route by Number:" tooltipKey="routeByNumber" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
               <label
                 style={{
                   display: "flex",
@@ -1146,7 +1208,7 @@ const RouteIpPstnPage = () => {
             </FieldRow>
 
             {formData.routeByNumber && (
-              <FieldRow label="Call Destination:">
+              <FieldRow label="Call Destination:" tooltipKey="callDestination" tooltips={ROUTE_IP_PSTN_FIELD_TOOLTIPS}>
                 <FormControl size="small" fullWidth>
                   <MuiSelect
                     value={formData.callDestination || ""}

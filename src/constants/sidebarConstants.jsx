@@ -14,7 +14,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import PhoneInTalkIcon from "@mui/icons-material/PhoneInTalk";
 import SettingsPhoneIcon from "@mui/icons-material/SettingsPhone";
-import { ROUTE_PATHS } from "./routeConstatns";
+import { ROUTE_PATHS } from "./routeConstants";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -230,7 +230,18 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
-
+      {
+        id: "recordSettings",
+        title: "Record Settings",
+        icon: RecordVoiceOverIcon,
+        items: [
+          {
+            id: "recordSettingsPage",
+            title: "Record Settings",
+            path: "/record-settings/record-settings",
+          },
+        ],
+      },
       {
         id: "voicePrompts",
         title: "Voice Prompts",
@@ -243,6 +254,7 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
+
       {
         id: "FeatureCode",
         title: "Feature Codes",
@@ -265,6 +277,18 @@ export const SIDEBAR_SECTIONS = [
             id: "voicemailSettings",
             title: "Voicemail",
             path: "/voicemail/voicemail",
+          },
+        ],
+      },
+      {
+        id: "autoProvision",
+        title: "Auto Provision",
+        icon: TuneIcon,
+        items: [
+          {
+            id: "autoProvisionSettings",
+            title: "Auto Provision",
+            path: "/auto-provision/auto-provision",
           },
         ],
       },
@@ -615,6 +639,11 @@ export const SIDEBAR_SECTIONS = [
         items: [
           { id: "sysNetwork", title: "Network", path: "/system-tools/network" },
           {
+            id: "sysStorage",
+            title: "Storage",
+            path: "/system-tools/storage",
+          },
+          {
             id: "sysRoutingInterface",
             title: "Routing Interface",
             path: "/system-tools/routing-interface",
@@ -633,6 +662,11 @@ export const SIDEBAR_SECTIONS = [
             id: "sysIpRoutingTable",
             title: "IP Route Table",
             path: "/system-tools/ip-routing-table",
+          },
+          {
+            id: "sysSipAccessControl",
+            title: "SIP Access Control",
+            path: "/system-tools/sip-access-control",
           },
           {
             id: "sysAccessControl",

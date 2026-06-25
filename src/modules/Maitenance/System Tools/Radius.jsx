@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
+import Tooltip from "@mui/material/Tooltip";
+import { InfoOutlined } from "@mui/icons-material";
 import {
   RADIUS_FIELDS,
   LOCAL_IP_OPTIONS,
@@ -12,7 +14,7 @@ import {
   FormControlLabel,
   Alert,
 } from "@mui/material";
-// ── Color palette (same as AccountManage) ────────────────────────────────────
+// ΓöÇΓöÇ Color palette (same as AccountManage) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const C = {
   pageBg: "var(--bg-main)",
   cardBg: "var(--bg-surface)",
@@ -37,7 +39,7 @@ const SYS_TOAST_SX = {
   minWidth: 300,
   boxShadow: 3,
 };
-// ── Local field UI (inlined from maitenanceSharedUi) ──
+// ΓöÇΓöÇ Local field UI (inlined from maitenanceSharedUi) ΓöÇΓöÇ
 const OUTLINED_BORDER = "var(--border-subtle)";
 const OUTLINED_HOVER = "var(--border-strong)";
 const OUTLINED_FOCUS = "var(--status-primary)";
@@ -226,7 +228,43 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-// ── Button Component (same as AccountManage) ─────────────────────────────────
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#334155",
+        border: "1px solid #d1d5db",
+        fontSize: 12,
+        maxWidth: 500,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
+const tooltips = {
+  radius: "Specifies whether the Radius is enabled or disabled.",
+  certification: "Specifies whether the Certification is enabled or disabled.",
+  allowCalls: "Specifies whether the Allow Calls is enabled or disabled.",
+  localIp: "Specifies the local IP address.",
+  masterServer: "Specifies the master server address.",
+  sharedKey: "Specifies the shared key.",
+  spareServer: "Specifies the spare server address.",
+  spareSharedKey: "Specifies the spare shared key.",
+  timeout: "Specifies the timeout in seconds.",
+  retransmission: "Specifies the retransmission times.",
+  transmitInterval: "Specifies the transmit interval of charge alive package(s).",
+  callType: "Specifies the call type.",
+};
+// ΓöÇΓöÇ Button Component (same as AccountManage) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const BTN_BASE =
   "inline-flex items-center justify-center gap-[6px] h-[30px] px-[14px] py-[6px] rounded-[10px] text-[12px] font-semibold whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border disabled:cursor-not-allowed disabled:opacity-60";
 const BTN_DEFAULT = `${BTN_BASE} bg-[var(--bg-surface)] text-[var(--text-primary)] border-[var(--border-subtle)] hover:bg-[var(--row-alt)]`;
@@ -380,7 +418,7 @@ const Radius = () => {
       className="clixxo-system-settings theme-page-bg min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
-      {/* ── Alerts ── */}
+      {/* ΓöÇΓöÇ Alerts ΓöÇΓöÇ */}
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -391,7 +429,7 @@ const Radius = () => {
         </Alert>
       )}
 
-      {/* ── Breadcrumb ── */}
+      {/* ΓöÇΓöÇ Breadcrumb ΓöÇΓöÇ */}
       <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
           style={{
@@ -425,14 +463,16 @@ const Radius = () => {
               >
                 {/* Form Fields Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {/* Enable checkboxes — same spacing as Call Type list, tighter rows only */}
+                  {/* Enable checkboxes ΓÇö same spacing as Call Type list, tighter rows only */}
                   <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
                     {ENABLE_CHECKBOX_FIELDS.map((field) => (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words">
-                          <span style={{ color: C.labelText }}>
-                            {field.label}
-                          </span>
+                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                            <span style={{ color: C.labelText }}>
+                              {field.label}
+                            </span>
+                          </Tooltip>
                         </div>
                         <div className="flex items-center pl-2 sm:pl-0">
                           <CallTypeCheckbox
@@ -450,9 +490,11 @@ const Radius = () => {
                     field.type === "checkboxGroup" ? (
                       <React.Fragment key={field.name || "callTypeGroup"}>
                         <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words">
-                          <span style={{ color: C.labelText }}>
-                            {field.label}
-                          </span>
+                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                            <span style={{ color: C.labelText }}>
+                              {field.label}
+                            </span>
+                          </Tooltip>
                         </div>
                         <div className="flex flex-col min-h-[34px] pl-2 sm:pl-0 gap-0 pt-0.5">
                           {CALL_TYPE_OPTIONS.map((opt) => (
@@ -470,9 +512,11 @@ const Radius = () => {
                     ) : (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-[var(--text-muted)] text-left pl-2 sm:pl-4 break-words min-h-[34px]">
-                          <span style={{ color: C.labelText }}>
-                            {field.label}
-                          </span>
+                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                            <span style={{ color: C.labelText }}>
+                              {field.label}
+                            </span>
+                          </Tooltip>
                         </div>
                         <div className="flex items-center min-h-[34px] pl-2 sm:pl-0">
                           {field.type === "select" ? (

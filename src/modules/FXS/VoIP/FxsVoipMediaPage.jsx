@@ -1,31 +1,131 @@
 import React, { useMemo, useState } from "react";
-import { Alert } from "@mui/material";
-import { MEDIA_PARAMETERS_NOTE } from "../../../constants/MediaParametersConstants";
+import { Alert, Tooltip } from "@mui/material";
+import {
+  MEDIA_PARAMETERS_NOTE,
+  FXS_MEDIA_FIELD_TOOLTIPS,
+} from "../../../constants/MediaParametersConstants";
+
+// ── Page-local field label tooltip UI (matches Extensions page pattern) ──
+const FIELD_LABEL_COLOR = "#374151";
+
+const MEDIA_FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatMediaTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const MediaTooltipLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = tooltipKey ? FXS_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip
+      title={formatMediaTooltipTitle(tooltip)}
+      {...MEDIA_FIELD_TOOLTIP_PROPS}
+    >
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const MediaFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
+  const tooltip = tooltipKey ? FXS_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        flex: "1 1 auto",
+        minWidth: 0,
+        paddingRight: 16,
+        textAlign: "left",
+        lineHeight: 1.4,
+        cursor: tooltip ? "help" : undefined,
+        ...labelStyle,
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  return (
+    <div
+      className="flex flex-row items-center w-full"
+      style={{ minHeight: 36 }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatMediaTooltipTitle(tooltip)}
+          {...MEDIA_FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      {children}
+    </div>
+  );
+};
 
 // ── Local page UI (inlined from fxsSharedUi) ──
 const C = {
-  cardBg: "var(--bg-surface)",
-  cardBorder: "var(--border-strong)",
-  labelText: "var(--text-primary)",
-  valueText: "var(--text-primary)",
-  mutedText: "var(--text-muted)",
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#9CA3AF",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#94a3b8",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
 };
 
-const FXS_VOIP_MEDIA_PAGE_WRAP =
-  "bg-[var(--bg-main)] min-h-[calc(100vh-80px)] p-[16px] box-border flex flex-col items-center";
-const FXS_VOIP_MEDIA_PAGE_INNER = "w-full max-w-[1000px] mx-auto";
-const FXS_VOIP_MEDIA_TABLE_CONTAINER =
-  "w-full max-w-full mx-auto overflow-hidden rounded-[10px] border-[1.5px] border-[var(--border-strong)] bg-[var(--bg-surface)] shadow-[0_4px_20px_rgba(15,23,42,0.06)]";
-const FXS_VOIP_MEDIA_BLUE_BAR =
-  "flex w-full min-h-[44px] flex-wrap items-center justify-start gap-[12px] rounded-t-[10px] border-b border-[var(--border-strong)] bg-[var(--bg-surface)] px-[14px] py-[7px] text-[13px] font-bold text-[var(--text-label)]";
-const FXS_VOIP_MEDIA_FORM_FOOTER =
-  "flex w-full flex-wrap items-center justify-center gap-[12px] border-t border-[var(--border-strong)] box-border px-[20px] py-[10px]";
-
-const BTN_FORM_PRIMARY =
-  "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border text-white border-[#5A6F8F] bg-[linear-gradient(to_bottom,#5A6F8F_0%,#3E5475_60%,#2C3E57_100%)] hover:bg-[linear-gradient(to_bottom,#3E5475_0%,#5A6F8F_100%)] disabled:cursor-not-allowed disabled:opacity-60";
-
-const BTN_FORM_CANCEL =
-  "inline-flex items-center justify-center box-border m-0 min-w-[110px] h-[34px] gap-[6px] px-[28px] py-0 rounded-[10px] text-[13px] font-semibold leading-[34px] whitespace-nowrap transition-all duration-150 ease-in-out cursor-pointer border bg-[#cbd5e1] text-[#374151] border-[#cbd5e1] shadow-[0_1px_2px_rgba(15,23,42,0.08)] hover:bg-[#b6c2d3] disabled:cursor-not-allowed disabled:opacity-60";
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -33,22 +133,95 @@ const Btn = ({
   disabled,
   variant = "formPrimary",
   type,
-}) => (
-  <button
-    type={type}
-    onClick={onClick}
-    disabled={disabled}
-    className={variant === "formCancel" ? BTN_FORM_CANCEL : BTN_FORM_PRIMARY}
-  >
-    {children}
-  </button>
-);
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const baseBg = extraStyle?.background ?? s.background;
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) e.currentTarget.style.background = baseBg;
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
-const OUTLINED_BORDER = "var(--border-subtle)";
-const OUTLINED_HOVER = "var(--border-strong)";
-const OUTLINED_FOCUS = "var(--status-primary)";
+const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
+const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
+const OUTLINED_FOCUS = "#1976d2";
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = (color) => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -96,26 +269,26 @@ const FXS_VOIP_MEDIA_FIELD_INTERACTION = {
 const getFxsVoipMediaFieldInteraction = (disabled) =>
   disabled ? {} : FXS_VOIP_MEDIA_FIELD_INTERACTION;
 
-const FXS_VOIP_MEDIA_INPUT_STYLE = {
+const nativeFieldInputStyle = {
   height: 28,
   width: 200,
   padding: "0 8px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
-  backgroundColor: "var(--bg-surface)",
-  color: "var(--text-primary)",
+  backgroundColor: "#fff",
+  color: "#0f172a",
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const FXS_VOIP_MEDIA_SELECT_STYLE = {
-  width: FXS_VOIP_MEDIA_INPUT_STYLE.width,
+const nativeFieldSelectStyle = {
+  width: nativeFieldInputStyle.width,
   minHeight: 32,
   padding: "6px 28px 6px 8px",
-  fontSize: FXS_VOIP_MEDIA_INPUT_STYLE.fontSize,
+  fontSize: nativeFieldInputStyle.fontSize,
   lineHeight: 1.35,
   border: FXS_VOIP_MEDIA_INPUT_STYLE.border,
   borderRadius: FXS_VOIP_MEDIA_INPUT_STYLE.borderRadius,
@@ -125,10 +298,94 @@ const FXS_VOIP_MEDIA_SELECT_STYLE = {
   boxSizing: FXS_VOIP_MEDIA_INPUT_STYLE.boxSizing,
   transition: FXS_VOIP_MEDIA_INPUT_STYLE.transition,
   appearance: "auto",
+  cursor: "pointer",
 };
 
-const FxsVoipMediaBreadcrumb = ({ current }) => (
-  <div className="mb-[16px] flex flex-wrap items-center gap-[4px] text-[12px] font-normal text-[#94a3b8]">
+const advancedPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  boxSizing: "border-box",
+};
+
+const advancedPageInnerStyle = {
+  width: "100%",
+  maxWidth: 1000,
+  margin: "0 auto",
+};
+
+const advancedTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  overflow: "hidden",
+  marginBottom: 24,
+};
+
+const advancedBlueBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.cardBorder}`,
+};
+
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "calc(100% + 40px)",
+  marginLeft: -20,
+  marginRight: -20,
+  marginTop: 0,
+  marginBottom: 0,
+  padding: "10px 20px 10px",
+  borderTop: `1px solid ${C.cardBorder}`,
+  boxSizing: "border-box",
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const VoipBreadcrumb = ({ current }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
     <span>FXS</span>
     <span>&gt;</span>
     <span>VoIP</span>
@@ -137,19 +394,18 @@ const FxsVoipMediaBreadcrumb = ({ current }) => (
   </div>
 );
 
-const FxsVoipMediaPageShell = ({ children, fullWidth = false }) => (
-  <div className={FXS_VOIP_MEDIA_PAGE_WRAP}>
+const AdvancedPageShell = ({ children, fullWidth = false }) => (
+  <div style={advancedPageWrapStyle}>
     <div
-      className={
-        fullWidth ? "w-full max-w-full mx-auto" : FXS_VOIP_MEDIA_PAGE_INNER
-      }
+      style={{
+        ...advancedPageInnerStyle,
+        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
+      }}
     >
       {children}
     </div>
   </div>
 );
-
-const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
 
 const CODEC_OPTIONS = [
   { id: "6", label: "G711A" },
@@ -162,57 +418,114 @@ const CODEC_OPTIONS = [
 
 const DEFAULT_SELECTED_CODECS = ["6", "7", "131", "98", "96", "4"];
 
-const fxsVoipMediaDualListSelectStyle = {
+const codecDualListSelectStyle = {
   width: "100%",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
-  background: "var(--bg-main)",
+  background: "#fff",
   borderRadius: 4,
   padding: "4px 8px",
   fontSize: 13,
   outline: "none",
   boxSizing: "border-box",
   overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const codecDualListBtnStyle = {
+  height: 36,
+  width: "100%",
+  border: "1px solid #6b7280",
+  backgroundColor: "#d9dde3",
+  color: "#111827",
+  fontSize: 14,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "block",
+  boxSizing: "border-box",
+  textAlign: "center",
 };
 
-const FXS_VOIP_MEDIA_DUAL_LIST_BTN =
-  "block box-border h-[36px] w-full m-0 p-0 border border-[#6b7280] bg-[#d9dde3] text-[#111827] text-[14px] font-semibold font-inherit leading-none text-center cursor-pointer hover:bg-[#c5cbd3]";
-
-const FXS_VOIP_MEDIA_DUAL_LIST_BTN_REORDER =
-  "block box-border h-[36px] w-full m-0 p-0 border border-[#6b7280] bg-[#d9dde3] text-[#111827] text-[14px] font-normal font-inherit leading-none text-center cursor-pointer hover:bg-[#c5cbd3]";
+const codecDualListReorderBtnStyle = {
+  ...codecDualListBtnStyle,
+  fontWeight: 400,
+};
 
 const FxsVoipMediaDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    className={
-      reorder
-        ? FXS_VOIP_MEDIA_DUAL_LIST_BTN_REORDER
-        : FXS_VOIP_MEDIA_DUAL_LIST_BTN
-    }
+    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = "#d9dde3";
+    }}
   >
     {children}
   </button>
 );
 
-const CodecPrioritySectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: CODEC_PRIORITY_HEADING_COLOR,
-      }}
-    >
-      {title}
-    </span>
+const CodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+  variant = "available",
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getCodecListBoxStyle(variant, isEmpty)}>
+      {isEmpty ? (
+        <div style={codecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.id;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={codecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const SectionHeading = ({ title, tooltipKey }) => (
+  <div style={{ marginBottom: 2 }}>
+    {tooltipKey ? (
+      <MediaTooltipLabel
+        tooltipKey={tooltipKey}
+        style={{ fontSize: 14, fontWeight: 700, color: C.strongText }}
+      >
+        {title}
+      </MediaTooltipLabel>
+    ) : (
+      <span style={{ fontSize: 14, fontWeight: 700, color: C.strongText }}>
+        {title}
+      </span>
+    )}
   </div>
 );
 
@@ -459,18 +772,30 @@ const FxsVoipMediaPage = () => {
     }
   };
 
+  const toggleAvailableSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   const fieldStyle = {
-    ...FXS_VOIP_MEDIA_INPUT_STYLE,
+    ...nativeFieldInputStyle,
     width: 220,
   };
 
   const fieldSelectStyle = {
-    ...FXS_VOIP_MEDIA_SELECT_STYLE,
+    ...nativeFieldSelectStyle,
     width: 220,
   };
 
   const getFieldInteraction = (disabled = false) =>
-    getFxsVoipMediaFieldInteraction(disabled);
+    getFxsNativeFieldInteraction(disabled);
 
   const labelColStyle = {
     fontSize: 13,
@@ -484,7 +809,7 @@ const FxsVoipMediaPage = () => {
   };
 
   const valueColStyle = {
-    flex: "1 1 52%",
+    flex: "1 1 auto",
     minWidth: 0,
     display: "flex",
     alignItems: "center",
@@ -493,10 +818,11 @@ const FxsVoipMediaPage = () => {
 
   const controlSlotStyle = {
     width: 220,
+    maxWidth: "100%",
     flexShrink: 0,
     display: "flex",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
   };
 
   const mediaParameterRows = [
@@ -544,7 +870,7 @@ const FxsVoipMediaPage = () => {
       keyPress: "number",
     },
     {
-      label: "Voice Gain Output from IP (dB)",
+      label: "Voice Gain Output from IP",
       type: "text",
       name: "voiceGainOutput",
       keyPress: "number-minus",
@@ -570,12 +896,9 @@ const FxsVoipMediaPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <FxsVoipMediaBreadcrumb current="Media Parameters" />
-      <div
-        className={FXS_VOIP_MEDIA_TABLE_CONTAINER}
-        style={{ marginBottom: 0 }}
-      >
-        <div className={FXS_VOIP_MEDIA_BLUE_BAR}>
+      <VoipBreadcrumb current="Media Parameters" />
+      <div style={{ ...advancedTableContainerStyle, marginBottom: 0 }}>
+        <div style={advancedBlueBarStyle}>
           <span>Media Parameters</span>
         </div>
         <div style={{ padding: "24px 32px 0" }}>
@@ -589,11 +912,11 @@ const FxsVoipMediaPage = () => {
               }}
             >
               {mediaParameterRows.map((row) => (
-                <div
+                <MediaFieldRow
                   key={row.name}
-                  className="flex flex-row items-start w-full"
+                  label={row.label}
+                  tooltipKey={row.name}
                 >
-                  <label style={labelColStyle}>{row.label}</label>
                   <div style={valueColStyle}>
                     <div style={controlSlotStyle}>
                       {row.type === "select" ? (
@@ -626,9 +949,10 @@ const FxsVoipMediaPage = () => {
                       )}
                     </div>
                   </div>
-                </div>
+                </MediaFieldRow>
               ))}
             </div>
+          </div>
 
             {/* CODEC Priority — Available / Selected (Inbound Member Trunks style) */}
             <div style={{ width: "100%", marginTop: 16 }}>
@@ -640,166 +964,163 @@ const FxsVoipMediaPage = () => {
                   gap: 12,
                 }}
               >
-                <div>
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#3E5475",
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Available
+                    </div>
+                    <select
+                      multiple
+                      size={6}
+                      value={availableSelected}
+                      onChange={(e) =>
+                        setAvailableSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {availableCodecList.length === 0 ? (
+                        <option disabled value="">
+                          No codecs
+                        </option>
+                      ) : (
+                        availableCodecList.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.label}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
                   <div
                     style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "var(--text-primary)",
-                      textAlign: "center",
-                      marginBottom: 8,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: 28,
                     }}
                   >
-                    Available
+                    <CodecDualListBtn onClick={addSelectedCodecs}>
+                      &gt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={addAllCodecs}>
+                      &gt;&gt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeSelectedCodecs}>
+                      &lt;
+                    </CodecDualListBtn>
+                    <CodecDualListBtn onClick={removeAllCodecs}>
+                      &lt;&lt;
+                    </CodecDualListBtn>
                   </div>
-                  <select
-                    multiple
-                    size={6}
-                    value={availableSelected}
-                    onChange={(e) =>
-                      setAvailableSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={fxsVoipMediaDualListSelectStyle}
-                  >
-                    {availableCodecList.length === 0 ? (
-                      <option disabled value="">
-                        No codecs
-                      </option>
-                    ) : (
-                      availableCodecList.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.label}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#3E5475",
+                        textAlign: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Selected
+                    </div>
+                    <select
+                      multiple
+                      size={6}
+                      value={chosenSelected}
+                      onChange={(e) =>
+                        setChosenSelected(
+                          Array.from(
+                            e.target.selectedOptions,
+                            (opt) => opt.value,
+                          ),
+                        )
+                      }
+                      style={codecDualListSelectStyle}
+                    >
+                      {selectedCodecs.length === 0 ? (
+                        <option disabled value="">
+                          No selected codecs
                         </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <FxsVoipMediaDualListBtn onClick={addSelectedCodecs}>
-                    &gt;
-                  </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn onClick={addAllCodecs}>
-                    &gt;&gt;
-                  </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn onClick={removeSelectedCodecs}>
-                    &lt;
-                  </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn onClick={removeAllCodecs}>
-                    &lt;&lt;
-                  </FxsVoipMediaDualListBtn>
-                </div>
-                <div>
+                      ) : (
+                        selectedCodecs.map((id) => (
+                          <option key={id} value={id}>
+                            {getCodecLabel(id)}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
                   <div
                     style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "var(--text-primary)",
-                      textAlign: "center",
-                      marginBottom: 8,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      paddingTop: 28,
                     }}
                   >
-                    Selected
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveCodecToBottom}
+                    >
+                      vv
+                    </CodecDualListBtn>
+                    <CodecDualListBtn reorder title="Move up" onClick={moveCodecUp}>
+                      ^
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveCodecDown}
+                    >
+                      v
+                    </CodecDualListBtn>
+                    <CodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveCodecToTop}
+                    >
+                      ^^
+                    </CodecDualListBtn>
                   </div>
-                  <select
-                    multiple
-                    size={6}
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={fxsVoipMediaDualListSelectStyle}
-                  >
-                    {selectedCodecs.length === 0 ? (
-                      <option disabled value="">
-                        No selected codecs
-                      </option>
-                    ) : (
-                      selectedCodecs.map((id) => (
-                        <option key={id} value={id}>
-                          {getCodecLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <FxsVoipMediaDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveCodecToBottom}
-                  >
-                    vv
-                  </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn
-                    reorder
-                    title="Move up"
-                    onClick={moveCodecUp}
-                  >
-                    ^
-                  </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveCodecDown}
-                  >
-                    v
-                  </FxsVoipMediaDualListBtn>
-                  <FxsVoipMediaDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveCodecToTop}
-                  >
-                    ^^
-                  </FxsVoipMediaDualListBtn>
-                </div>
-              </div>
             </div>
 
-            <div className="flex flex-col gap-0 w-full">
-              <CodecPrioritySectionHeading title="Note:" />
+            <div style={{ marginTop: 12 }}>
               <div
                 style={{
-                  width: "100%",
-                  maxWidth: 860,
-                  margin: "0 auto",
-                  padding: "0 8px",
-                  boxSizing: "border-box",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: C.strongText,
+                  marginBottom: 8,
                 }}
               >
+                Note:
+              </div>
+              <div style={{ width: "100%", boxSizing: "border-box" }}>
                 {MEDIA_PARAMETERS_NOTE.split("\n")
                   .filter(Boolean)
                   .map((line, index) => (
                     <p
                       key={index}
                       style={{
-                        margin: 0,
+                        margin: index === 0 ? 0 : "8px 0 0",
                         color: C.mutedText,
                         fontSize: 11,
-                        lineHeight: 1.45,
+                        lineHeight: 1.5,
                         whiteSpace: "normal",
                         overflowWrap: "break-word",
                         wordBreak: "break-word",
@@ -813,8 +1134,20 @@ const FxsVoipMediaPage = () => {
             </div>
           </div>
         </div>
-        <div className={FXS_VOIP_MEDIA_FORM_FOOTER}>
-          <Btn type="button" onClick={handleSave} variant="formPrimary">
+        <div
+          style={{
+            ...advancedFormInlineFooterStyle,
+            width: "100%",
+            marginLeft: 0,
+            marginRight: 0,
+          }}
+        >
+          <Btn
+            type="button"
+            onClick={handleSave}
+            variant="primary"
+            style={advancedFormBtnStyle}
+          >
             Save
           </Btn>
           <Btn type="button" onClick={handleReset} variant="formCancel">

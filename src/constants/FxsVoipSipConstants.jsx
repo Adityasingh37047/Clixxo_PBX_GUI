@@ -86,3 +86,65 @@ export const SIP_SETTINGS_FIELDS = [
 ];
 
 export const SIP_SETTINGS_NOTE = "";
+
+const INTEGER_VALIDATION =
+  "Integer digits only while typing (empty allowed).";
+
+/** FXS VoIP SIP Settings — listFxsSipSettings / saveFxsSipSettings POST /fxs/sip */
+export const FXS_SIP_FIELD_TOOLTIPS = {
+  registerStatus:
+    "Read-only. Loaded via listFxsSipSettings (type: list) and refreshed every 30s via statusFxsSipSettings (type: status) when registrationMode is remote.\n" +
+    "In local PBX mode (registrationMode: local) displays: Local PBX (registration not required).",
+
+  registrarIp:
+    "Saved in saveFxsSipSettings payload (POST /fxs/sip, type: save).\n" +
+    "Primary SIP registrar IP address.",
+
+  registrarPort:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Primary SIP registrar port.\n" +
+    `Default: 5060.\n${INTEGER_VALIDATION}`,
+
+  spareRegistrarServer:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "When enabled, shows Spare Registrar IP Address and Spare Registrar Port fields.\n" +
+    "Default: enabled (true).",
+
+  spareRegistrarIp:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Shown only when Spare Registrar Server is enabled.",
+
+  spareRegistrarPort:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Shown only when Spare Registrar Server is enabled.\n" +
+    `Default: 5060.\n${INTEGER_VALIDATION}`,
+
+  registerInterval:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Register interval time in milliseconds.\n" +
+    `Default: 0.\n${INTEGER_VALIDATION}`,
+
+  registryValidity:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Registry validity period in seconds.\n" +
+    `Default: 3600.\n${INTEGER_VALIDATION}`,
+
+  reregistrationInterval:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Re-registration interval in seconds.\n" +
+    `Default: 32.\n${INTEGER_VALIDATION}`,
+
+  multiRegistrarMode:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Enables multi-registrar server mode.\n" +
+    "Default: disabled (false).",
+
+  sipTransportProtocol:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Options: UDP, TCP.",
+
+  switchSignalPort:
+    "Saved in saveFxsSipSettings payload.\n" +
+    "Switch signal port if SIP registration failed.\n" +
+    "Default: enabled (true).",
+};

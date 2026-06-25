@@ -3,6 +3,7 @@ import {
   IP_CALL_IN_CALLEEID_FIELDS,
   IP_CALL_IN_CALLEEID_TABLE_COLUMNS,
   IP_CALL_IN_CALLEEID_INITIAL_FORM,
+  IP_CALL_IN_CALLEEID_FIELD_TOOLTIPS,
 } from "../../../constants/FxsIPCallInCalleeIDConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -18,6 +19,7 @@ import {
   CircularProgress,
   TextField,
   Alert,
+  Tooltip,
 } from "@mui/material";
 const C = {
   cardBorder: "var(--border-strong)",
@@ -248,6 +250,66 @@ const deleteNumberManipulation = async () => ({
   message: "Deleted successfully",
 });
 const listGroups = async () => ({ response: true, message: [] });
+
+const FIELD_LABEL_COLOR = "#3E5475";
+
+const FIELD_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const formatFieldTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
+};
 
 const IPCallInCalleeID = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -955,10 +1017,30 @@ const IPCallInCalleeID = () => {
         <DialogContent style={numDialogContentStyle}>
           <div style={numDialogFormStyle}>
             {modalFields.map((field) => (
-              <div key={field.name} style={numDialogFieldRowStyle}>
-                <label style={numDialogFieldLabelStyle}>{field.label}</label>
-                <div style={numDialogFieldControlStyle}>
-                  {field.type === "select" ? (
+              <div
+                key={field.name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 12,
+                }}
+              >
+                <FxsFieldLabel
+                  tooltipKey={field.name}
+                  tooltips={IP_CALL_IN_CALLEEID_FIELD_TOOLTIPS}
+                  style={{
+                    fontSize: 13,
+                    width: 170,
+                    lineHeight: 1.2,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                    display: "inline-block",
+                  }}
+                >
+                  {field.label}
+                </FxsFieldLabel>
+                <div style={{ width: "min(100%, 320px)" }}>                  {field.type === "select" ? (
                     <FormControl size="small" fullWidth>
                       <MuiSelect
                         value={formData[field.name] || ""}

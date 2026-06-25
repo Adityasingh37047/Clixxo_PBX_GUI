@@ -113,6 +113,29 @@ const PbxBreadcrumb = ({ section, current, className = "" }) => (
   </div>
 );
 
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        bgcolor: "#fff",
+        color: "#000",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        maxWidth: 500,
+      },
+    },
+    arrow: {
+      sx: {
+        color: "#fff",
+      },
+    },
+  },
+};
+
 const TableListLoading = () => (
   <div className="flex items-center justify-center p-[48px]">
     <CircularProgress size={28} sx={{ color: C.accent }} />
@@ -700,7 +723,18 @@ const VoicePromptsPage = () => {
                     border: `1px solid #e2e8f0`,
                   }}
                 >
-                  <FieldRow label="Music On Hold">
+<FieldRow
+  label={
+    <Tooltip
+      title="The music catalog to play when a call is being held. The default setting is default catalog."
+      {...tooltipProps}
+    >
+      <span style={{ cursor: "help" }}>
+        Music On Hold
+      </span>
+    </Tooltip>
+  }
+>
                     <FormControl size="small" sx={{ width: 260 }}>
                       <MuiSelect
                         value={promptMohCategory}
@@ -736,7 +770,16 @@ const VoicePromptsPage = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label="Play Call Forwarding Prompt">
+                  <FieldRow label={
+    <Tooltip
+      title="If enabled, the system will play a prompt before transferring a call. By default it is unticked."
+      {...tooltipProps}
+    >
+      <span style={{ cursor: "help" }}>
+        Play Call Forwarding Prompt
+      </span>
+    </Tooltip>
+  }>
                     <div
                       style={{
                         display: "flex",
@@ -797,7 +840,11 @@ const VoicePromptsPage = () => {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
-                    <label
+                    <Tooltip
+                      title="Enter the name of the category for the music or audio that callers hear while they are placed on hold."
+                      {...tooltipProps}
+                    >
+                      <label
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
@@ -805,7 +852,8 @@ const VoicePromptsPage = () => {
                       }}
                     >
                       Category
-                    </label>
+                      </label>
+                    </Tooltip>
                     <TextField
                       size="small"
                       value={mohCategoryName}
