@@ -5,9 +5,9 @@ import {
   PCM0_HEADERS,
   PCM0_STATUS_ROW,
   PCM0_CHECK_ROW,
-  PCM_MAINTENANCE_BUTTONS,
-  PCM_LOOPBACK_BUTTONS,
-  PCM0_BUTTONS,
+  PCM_MAINTENANCE_BUTTONS,                         // PCM Maintenance Buttons
+  PCM_LOOPBACK_BUTTONS,                            // PCM Loopback Buttons
+  PCM0_BUTTONS,                                    // PCM0 Buttons  
 } from "../../../constants/PcmCircuitMaintenanceConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import { listPstn, listChannelState } from "../../../api/apiService";
@@ -100,19 +100,102 @@ const ICONS = [
   </div>, // Unusable (dark red phone locked)
 ];
 
-// ── Color palette (matches PSTN Call In CallerID) ─────────────────────────────
+// ── Local page UI (matches FxsVoipMediaPage design language) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#3E5475",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
+  labelText: "#374151",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
 };
 
 const CARD_RADIUS = 10;
+
+const CHANNEL_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const advancedPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+  overflowX: "hidden",
+};
+
+const advancedPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const AdvancedPageShell = ({ children, shellStyle = {} }) => (
+  <div style={{ ...advancedPageWrapStyle, ...shellStyle }}>
+    <div style={advancedPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const pageTitleStyle = {
+  fontSize: 22,
+  fontWeight: 700,
+  color: C.strongText,
+  margin: "0 0 6px 0",
+  letterSpacing: "-0.02em",
+  flexShrink: 0,
+};
+
+const PcmBreadcrumb = ({ current }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>PCM</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
 
 const Btn = ({
   children,
@@ -120,19 +203,37 @@ const Btn = ({
   disabled,
   variant = "cancel",
   style: extraStyle,
+  type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
     primary: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -142,107 +243,182 @@ const Btn = ({
   };
   const s = styles[variant] || styles.cancel;
   const hoverBg =
-    variant === "primary"
-      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
-      : "#b6c2d3";
-  const baseBg = s.background;
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#b6c2d3";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#a3b1c2";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
-      type="button"
+    <Component
+      type={type || "button"}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
-const cardStyle = {
-  background: "#ffffff",
-  borderRadius: 10,
+const SECTION_CARD_GAP = 35;
+
+const sectionCardStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  marginBottom: 24,
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  maxWidth: "100%",
+  flexShrink: 0,
+  boxSizing: "border-box",
+  isolation: "isolate",
+};
+
+const panelCardStyle = {
+  ...sectionCardStyle,
+};
+
+const sectionCardsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: SECTION_CARD_GAP,
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 0 12px",
+  boxSizing: "border-box",
 };
 
 // Channel grid cards must allow inner horizontal scroll (overflow:hidden clips scrollbars)
 const channelCardStyle = {
-  ...cardStyle,
+  ...sectionCardStyle,
   overflow: "hidden",
 };
 
-const sectionHeaderStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+const panelToolbarStyle = {
   minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  textAlign: "center",
-  width: "100%",
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  padding: "10px 16px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: 10,
+  background: C.cardBg,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
-const actionBarStyle = {
+const panelSectionTitleStyle = {
+  fontSize: 14,
+  fontWeight: 700,
+  color: C.strongText,
+  letterSpacing: "-0.01em",
+};
+
+const panelFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
-  gap: 12,
-  minHeight: 44,
-  padding: "7px 14px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  alignItems: "center",
   justifyContent: "center",
-  borderBottomLeftRadius: CARD_RADIUS,
-  borderBottomRightRadius: CARD_RADIUS,
+  gap: 10,
+  padding: "10px 16px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
 };
+
+const configActionBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+};
+
+const actionBarStyle = panelFooterStyle;
 
 // PCM Maintenance & LoopBack only — tighter vertical spacing so page fits at 100% zoom
 const topConfigCardStyle = {
-  ...cardStyle,
-  marginBottom: 25,
+  ...panelCardStyle,
 };
 
 const topConfigCardLastStyle = {
-  ...cardStyle,
-  marginBottom: 25,
+  ...panelCardStyle,
 };
 
-const topConfigSectionHeaderStyle = {
-  ...sectionHeaderStyle,
-};
+const topConfigSectionHeaderStyle = panelToolbarStyle;
 
 const topConfigActionBarStyle = {
-  ...actionBarStyle,
-  flexWrap: "wrap",
+  ...panelFooterStyle,
   overflowX: "hidden",
 };
 
@@ -263,6 +439,7 @@ const tableCellStyle = {
 const labelCellStyle = {
   ...tableCellStyle,
   fontWeight: 600,
+  color: C.labelText,
   width: "50%",
   borderLeft: "none",
 };
@@ -467,8 +644,9 @@ const tableStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: C.accent,
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const PAGE_CHROME_OFFSET = 80; // navbar + layout padding
@@ -757,8 +935,10 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM Maintenance section
   const renderPcmMaintenance = () => (
-    <div style={{ ...topConfigCardStyle, marginBottom: channelScroll ? 25 : 14 }}>
-      <div style={topConfigSectionHeaderStyle}>PCM Maintenance</div>
+    <div style={topConfigCardStyle}>
+      <div style={topConfigSectionHeaderStyle}>
+        <span style={panelSectionTitleStyle}>PCM Maintenance</span>
+      </div>
       <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
           <tbody>
@@ -833,20 +1013,45 @@ const PcmCircuitMaintenancePage = () => {
           ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
         }}
       >
-        <Btn onClick={() => setMaintenanceChecked(true)}>Check All</Btn>
-        <Btn onClick={() => setMaintenanceChecked(false)}>Uncheck All</Btn>
-        <Btn onClick={() => setMaintenanceChecked((v) => !v)}>Inverse</Btn>
-        <Btn disabled={!maintenanceChecked}>Block</Btn>
-        <Btn disabled={!maintenanceChecked}>Unblock</Btn>
+        <Btn
+          onClick={() => setMaintenanceChecked(true)}
+          style={configActionBtnStyle}
+        >
+          Check All
+        </Btn>
+        <Btn
+          onClick={() => setMaintenanceChecked(false)}
+          style={configActionBtnStyle}
+        >
+          Uncheck All
+        </Btn>
+        <Btn
+          onClick={() => setMaintenanceChecked((v) => !v)}
+          style={configActionBtnStyle}
+        >
+          Inverse
+        </Btn>
+        <Btn disabled={!maintenanceChecked} style={configActionBtnStyle}>
+          Block
+        </Btn>
+        <Btn disabled={!maintenanceChecked} style={configActionBtnStyle}>
+          Unblock
+        </Btn>
         <Btn
           disabled={!maintenanceChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 180 }}
+          style={{
+            ...configActionBtnStyle,
+            ...(isCompact ? { minWidth: 0 } : { minWidth: 180 }),
+          }}
         >
           Physical Connect
         </Btn>
         <Btn
           disabled={!maintenanceChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 180 }}
+          style={{
+            ...configActionBtnStyle,
+            ...(isCompact ? { minWidth: 0 } : { minWidth: 180 }),
+          }}
         >
           Physical Disconnect
         </Btn>
@@ -856,10 +1061,10 @@ const PcmCircuitMaintenancePage = () => {
 
   // PCM LoopBack Config section
   const renderPcmLoopback = () => (
-    <div
-      style={{ ...topConfigCardLastStyle, marginBottom: channelScroll ? 25 : 14 }}
-    >
-      <div style={topConfigSectionHeaderStyle}>PCM LoopBack Config</div>
+    <div style={topConfigCardLastStyle}>
+      <div style={topConfigSectionHeaderStyle}>
+        <span style={panelSectionTitleStyle}>PCM LoopBack Config</span>
+      </div>
       <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
           <tbody>
@@ -934,24 +1139,48 @@ const PcmCircuitMaintenancePage = () => {
           ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
         }}
       >
-        <Btn onClick={() => setLoopbackChecked(true)}>Check All</Btn>
-        <Btn onClick={() => setLoopbackChecked(false)}>Uncheck All</Btn>
-        <Btn onClick={() => setLoopbackChecked((v) => !v)}>Inverse</Btn>
+        <Btn
+          onClick={() => setLoopbackChecked(true)}
+          style={configActionBtnStyle}
+        >
+          Check All
+        </Btn>
+        <Btn
+          onClick={() => setLoopbackChecked(false)}
+          style={configActionBtnStyle}
+        >
+          Uncheck All
+        </Btn>
+        <Btn
+          onClick={() => setLoopbackChecked((v) => !v)}
+          style={configActionBtnStyle}
+        >
+          Inverse
+        </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 160 }}
+          style={{
+            ...configActionBtnStyle,
+            ...(isCompact ? { minWidth: 0 } : { minWidth: 160 }),
+          }}
         >
           Local LoopBack
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 160 }}
+          style={{
+            ...configActionBtnStyle,
+            ...(isCompact ? { minWidth: 0 } : { minWidth: 160 }),
+          }}
         >
           Remote LoopBack
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 120 }}
+          style={{
+            ...configActionBtnStyle,
+            ...(isCompact ? { minWidth: 0 } : { minWidth: 120 }),
+          }}
         >
           UnLoopBack
         </Btn>
@@ -1035,8 +1264,10 @@ const PcmCircuitMaintenancePage = () => {
 
   const renderPcm0 = () => {
     return (
-      <div style={{ ...channelCardStyle, marginBottom: channelScroll ? 24 : 12 }}>
-        <div style={sectionHeaderStyle}>PCM 0</div>
+      <div style={channelCardStyle}>
+        <div style={panelToolbarStyle}>
+          <span style={panelSectionTitleStyle}>PCM 0</span>
+        </div>
         <AdaptiveChannelTable channelCount={32} scrollEnabled={channelScroll}>
           <thead>
             <tr>
@@ -1118,23 +1349,10 @@ const PcmCircuitMaintenancePage = () => {
                   <td key={i} style={statusDataTdFit()}>
                     <Tooltip
                       title={tooltipContent}
-                      arrow
-                      placement="top"
+                      {...CHANNEL_TOOLTIP_PROPS}
                       enterDelay={0}
                       enterNextDelay={0}
                       leaveDelay={100}
-                      componentsProps={{
-                        tooltip: {
-                          sx: {
-                            bgcolor: "#fff",
-                            color: "#111",
-                            border: "1px solid #bbb",
-                            boxShadow: 2,
-                            fontSize: 12,
-                          },
-                        },
-                        arrow: { sx: { color: "#fff" } },
-                      }}
                     >
                       <div style={statusCellContentStyle}>
                         {v === "frame" ? (
@@ -1195,11 +1413,25 @@ const PcmCircuitMaintenancePage = () => {
             ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
           }}
         >
-          <Btn onClick={handleCheckAll}>Check All</Btn>
-          <Btn onClick={handleUncheckAll}>Uncheck All</Btn>
-          <Btn onClick={handleInverse}>Inverse</Btn>
-          <Btn disabled={!(allChecked || pcm0Checked.some(Boolean))}>Block</Btn>
-          <Btn disabled={!(allChecked || pcm0Checked.some(Boolean))}>
+          <Btn onClick={handleCheckAll} style={configActionBtnStyle}>
+            Check All
+          </Btn>
+          <Btn onClick={handleUncheckAll} style={configActionBtnStyle}>
+            Uncheck All
+          </Btn>
+          <Btn onClick={handleInverse} style={configActionBtnStyle}>
+            Inverse
+          </Btn>
+          <Btn
+            disabled={!(allChecked || pcm0Checked.some(Boolean))}
+            style={configActionBtnStyle}
+          >
+            Block
+          </Btn>
+          <Btn
+            disabled={!(allChecked || pcm0Checked.some(Boolean))}
+            style={configActionBtnStyle}
+          >
             Unblock
           </Btn>
         </div>
@@ -1220,12 +1452,11 @@ const PcmCircuitMaintenancePage = () => {
     });
 
     return (
-      <div
-        key={span.spanId}
-        style={{ ...channelCardStyle, marginBottom: channelScroll ? 24 : 12 }}
-      >
-        <div style={sectionHeaderStyle}>
-          {span.name} · {span.ip}
+      <div key={span.spanId} style={channelCardStyle}>
+        <div style={panelToolbarStyle}>
+          <span style={panelSectionTitleStyle}>
+            {span.name} · {span.ip}
+          </span>
         </div>
         <AdaptiveChannelTable
           channelCount={span.channelRanges.length}
@@ -1305,7 +1536,7 @@ const PcmCircuitMaintenancePage = () => {
                 );
                 return (
                   <td key={i} style={statusDataTdFit()}>
-                    <Tooltip title={tooltipContent} arrow placement="top">
+                    <Tooltip title={tooltipContent} {...CHANNEL_TOOLTIP_PROPS}>
                       <div style={statusCellContentStyle}>
                         {v === "frame" ? (
                           colorBlock("#222")
@@ -1366,14 +1597,10 @@ const PcmCircuitMaintenancePage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        padding: isCompact ? 8 : 16,
-        boxSizing: "border-box",
-        width: "100%",
+    <AdvancedPageShell
+      shellStyle={{
+        padding: isCompact ? 8 : "8px 28px 16px",
         maxWidth: "100vw",
-        overflowX: "hidden",
         ...(highZoom || isCompact || contentOverflows
           ? { minHeight: "calc(100vh - 80px)", overflowY: "auto" }
           : {
@@ -1383,42 +1610,24 @@ const PcmCircuitMaintenancePage = () => {
             }),
       }}
     >
+      
+      <PcmBreadcrumb current="Circuit Maintenance" />
+
       <div
         ref={contentRef}
         style={{
           maxWidth: "100%",
           margin: "0 auto",
-          overflow: isCompact ? "visible" : "hidden",
+          overflow: "visible",
+          ...sectionCardsStackStyle,
         }}
       >
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: channelScroll ? 16 : 10,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>PCM</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Circuit Maintenance
-          </span>
-        </div>
-
         {renderPcmMaintenance()}
         {renderPcmLoopback()}
 
         {spansData.length > 0 ? spansData.map(renderSpanBlock) : renderPcm0()}
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

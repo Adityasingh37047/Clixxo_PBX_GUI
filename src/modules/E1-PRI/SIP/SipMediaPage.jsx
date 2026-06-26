@@ -5,15 +5,14 @@ import {
   SIP_MEDIA_INITIAL_FORM,
   SIP_MEDIA_FIELD_TOOLTIPS,
 } from "../../../constants/SipMediaConstants";
-import { Select, MenuItem, CircularProgress, Alert, Tooltip } from "@mui/material";
+import { CircularProgress, Alert, Tooltip } from "@mui/material";
 import {
   listMediaSettings,
   updateMediaSettings,
 } from "../../../api/apiService";
 
-// ── Local page UI (inlined from e1PriSharedUi)
-// ── Page-local field label tooltip UI (not shared) ──
-const FIELD_LABEL_COLOR = "#3E5475";
+// ── Page-local field label tooltip UI (matches SipSipPage pattern) ──
+const FIELD_LABEL_COLOR = "#374151";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -25,12 +24,9 @@ const FIELD_TOOLTIP_PROPS = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
+        fontSize: 13,
         maxWidth: 500,
-        padding: "10px 12px",
-        textTransform: "none",
-        letterSpacing: "normal",
+        padding: "12px 16px",
       },
     },
     arrow: { sx: { color: "#fff" } },
@@ -39,7 +35,12 @@ const FIELD_TOOLTIP_PROPS = {
 
 const formatFieldTooltipTitle = (text) => {
   if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
   if (normalized.includes("\n")) {
     return (
       <span style={{ whiteSpace: "pre-line", display: "block" }}>
@@ -50,40 +51,67 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
-  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+const SipFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
+  const tooltip = tooltipKey ? SIP_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
   const labelNode = (
-    <span
+    <label
       style={{
         fontSize: 13,
         fontWeight: 600,
         color: FIELD_LABEL_COLOR,
+        flex: "1 1 auto",
+        minWidth: 0,
+        paddingRight: 16,
+        textAlign: "left",
+        lineHeight: 1.4,
         cursor: tooltip ? "help" : undefined,
-        ...style,
+        ...labelStyle,
       }}
     >
-      {children}
-    </span>
+      {label}
+    </label>
   );
-  if (!tooltip) return labelNode;
+
   return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
-      {labelNode}
-    </Tooltip>
+    <div
+      className="flex flex-row items-center w-full"
+      style={{ minHeight: 34 }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatFieldTooltipTitle(tooltip)}
+          {...FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      {children}
+    </div>
   );
 };
 
+// ── Local page UI (matches SipSipPage design language) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
+  labelText: "#374151",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   amber: "#dc2626",
 };
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
 
 const Btn = ({
   children,
@@ -138,7 +166,33 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -151,24 +205,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -176,11 +247,11 @@ const Btn = ({
   );
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -197,7 +268,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInteraction = {
@@ -225,225 +296,103 @@ const nativeFieldInteraction = {
   },
 };
 
-const CARD_RADIUS = 10;
-
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
+const nativeFieldInputStyle = {
+  height: 32,
   width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const PbxBreadcrumb = ({ section, current, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "nowrap",
-      whiteSpace: "nowrap",
-      lineHeight: 1.5,
-      ...style,
-    }}
-  >
-    <span>E1-PRI</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
-const SipPcmBreadcrumb = ({ current }) => (
-  <PbxBreadcrumb section="SIP" current={current} />
-);
-
-const sipPcmFormPageWrapStyle = {
-  ...pbxPageWrapStyle,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
-
-const sipPcmFormPageInnerStyle = {
-  ...pbxPageInnerStyle,
-  maxWidth: 1000,
-};
-
-const sipPcmFormCardStyle = {
-  background: "#ffffff",
-  borderRadius: 10,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-};
-
-const sipPcmFormHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
+  maxWidth: 220,
+  padding: "0 10px",
   fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const SIP_PCM_AUTH_FIELD_WIDTH = 200;
-const SIP_PCM_FORM_FIELD_HEIGHT = 32;
-const SIP_PCM_FORM_STACK_CLASS = "space-y-4";
-const SIP_PCM_FORM_ROW_CLASS = "flex items-center justify-between";
-
-const sipPcmFormLabelStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  width: 320,
-  marginRight: 10,
-  lineHeight: 1.4,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-};
-
-const sipPcmFormControlWrapStyle = {
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  flexShrink: 0,
-};
-
-const sipPcmAuthInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
   border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  height: SIP_PCM_FORM_FIELD_HEIGHT,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  paddingLeft: 12,
-  paddingRight: 12,
-  lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-  textAlign: "left",
-  backgroundColor: "#ffffff",
+  borderRadius: FIELD_RADIUS,
   outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  backgroundColor: "#fff",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const sipPcmAuthInputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-  },
-};
-
-const muiSelectSx = {
+const nativeFieldSelectStyle = {
+  width: "100%",
+  maxWidth: 220,
+  minHeight: 32,
+  height: 32,
+  padding: "4px 28px 4px 10px",
   fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
   backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: OUTLINED_HOVER },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
-const sipPcmAuthMuiSelectSx = {
-  ...muiSelectSx,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  backgroundColor: "#ffffff",
-  borderRadius: "6px",
-  "& .MuiOutlinedInput-root": {
-    height: SIP_PCM_FORM_FIELD_HEIGHT,
-    minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-    backgroundColor: "#ffffff",
-    transition: "border-color 0.2s ease",
-    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: OUTLINED_HOVER },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-  "& .MuiSelect-select": {
-    padding: "0 32px 0 12px !important",
-    fontSize: 12,
-    lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-    height: "100%",
-    minHeight: "unset !important",
-    textAlign: "left",
-    display: "flex",
-    alignItems: "center",
-    boxSizing: "border-box",
-  },
+const MEDIA_COLUMN_SPLIT_INDEX = Math.ceil(SIP_MEDIA_FIELDS.length / 2);
+const MEDIA_LEFT_COLUMN_FIELDS = SIP_MEDIA_FIELDS.slice(0, MEDIA_COLUMN_SPLIT_INDEX);
+const MEDIA_RIGHT_COLUMN_FIELDS = SIP_MEDIA_FIELDS.slice(MEDIA_COLUMN_SPLIT_INDEX);
+
+const advancedPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
 };
 
-const sipPcmAuthFormFooterStyle = {
+const advancedPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const advancedCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const advancedTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
   width: "100%",
-  padding: "10px 20px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
-const sipPcmAuthFormBtnStyle = {
+const advancedFormBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -453,54 +402,98 @@ const sipPcmAuthFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const SipPcmSectionHeading = ({ title, isFirst = false }) => (
+const dashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+};
+
+const dashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 24px",
+  background: C.cardBg,
+};
+
+const dashboardDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+  margin: "14px 0",
+  flexShrink: 0,
+};
+
+const dashboardSectionTitleStyle = {
+  fontSize: 14,
+  fontWeight: 700,
+  color: C.strongText,
+  marginBottom: 2,
+  flexShrink: 0,
+};
+
+const dashboardFieldsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  gap: 10,
+};
+
+const SipPcmBreadcrumb = ({ current }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#30415A",
-      }}
-    >
-      {title}
-    </span>
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>SIP</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
+const AdvancedPageShell = ({ children }) => (
+  <div style={advancedPageWrapStyle} data-native-scroll>
+    <div style={advancedPageInnerStyle}>{children}</div>
+  </div>
+);
 
-/** Media Parameters — responsive side inset (20px min → 150px max) */
-const SIP_MEDIA_SIDE_MARGIN = "clamp(20px, 10vw, 150px)";
-
-/** Matches Network page card body — LAN 1 heading left/right inset */
-const SIP_MEDIA_FORM_BODY_STYLE = {
-  padding: "12px 32px 0",
-  boxSizing: "border-box",
+const valueColStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
 };
 
-const SIP_MEDIA_FORM_INSET_STYLE = {
-  marginLeft: SIP_MEDIA_SIDE_MARGIN,
-  marginRight: SIP_MEDIA_SIDE_MARGIN,
-  boxSizing: "border-box",
+const controlSlotStyle = {
+  width: 220,
+  maxWidth: "100%",
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
 };
 
-const SIP_MEDIA_FORM_FIELDS_WRAPPER_STYLE = {
-  flex: 1,
-  paddingTop: 16,
-  paddingBottom: 16,
-  marginBottom: 12,
-  boxSizing: "border-box",
+const fieldInputStyle = {
+  ...nativeFieldInputStyle,
+  width: "100%",
+};
+
+const fieldSelectStyle = {
+  ...nativeFieldSelectStyle,
+  width: "100%",
 };
 
 const SipMediaPage = () => {
@@ -597,182 +590,165 @@ const SipMediaPage = () => {
     showMessage("info", "Form reset to defaults");
   };
 
-  return (
-    <div style={sipPcmFormPageWrapStyle}>
-      <div style={sipPcmFormPageInnerStyle}>
-        {/* Toast Alert */}
-        {message.text && (
-          <div
-            style={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 420,
-            }}
-          >
-            <Alert
-              severity={message.type}
-              onClose={() => setMessage({ type: "", text: "" })}
-              sx={{ boxShadow: 3 }}
-            >
-              {message.text}
-            </Alert>
-          </div>
-        )}
+  const isFieldVisible = (field) => {
+    if (!field.conditional) return true;
+    const condVal = formData[field.conditional];
+    if (field.conditionalValues) {
+      return field.conditionalValues.includes(condVal);
+    }
+    if (field.conditionalValue) {
+      return condVal === field.conditionalValue;
+    }
+    return true;
+  };
 
-        <SipPcmBreadcrumb current="Media Parameters" />
+  const renderFormField = (field) => {
+    if (!isFieldVisible(field)) return null;
 
-        <div style={sipPcmFormCardStyle}>
-          <div style={sipPcmFormHeaderStyle}>
-            <span>Media Parameters</span>
-          </div>
-
-          <div style={SIP_MEDIA_FORM_BODY_STYLE}>
-            {loading ? (
-              <div className="flex items-center justify-center min-h-[400px] w-full">
-                <div className="text-center">
-                  <CircularProgress size={40} sx={{ color: C.accent }} />
-                  <div className="mt-3 text-gray-600">
-                    Loading media parameters...
-                  </div>
-                </div>
-              </div>
+    return (
+      <SipFieldRow
+        key={field.name}
+        label={field.label}
+        tooltipKey={field.name}
+        labelStyle={
+          field.name === SIP_MEDIA_CODEC_FIELD.name
+            ? { whiteSpace: "normal" }
+            : {}
+        }
+      >
+        <div style={valueColStyle}>
+          <div style={controlSlotStyle}>
+            {field.type === "select" ? (
+              <select
+                name={field.name}
+                value={formData[field.name]}
+                onChange={handleInputChange}
+                style={fieldSelectStyle}
+                {...nativeFieldInteraction}
+              >
+                {field.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             ) : (
-              <div style={SIP_MEDIA_FORM_FIELDS_WRAPPER_STYLE}>
-                <div style={SIP_MEDIA_FORM_INSET_STYLE}>
-                  <div className={SIP_PCM_FORM_STACK_CLASS}>
-                    {SIP_MEDIA_FIELDS.map((field) => {
-                      if (field.conditional) {
-                        const condVal = formData[field.conditional];
-                        if (field.conditionalValues) {
-                          if (!field.conditionalValues.includes(condVal))
-                            return null;
-                        } else if (field.conditionalValue) {
-                          if (condVal !== field.conditionalValue) return null;
-                        }
-                      }
-
-                      return (
-                        <div
-                          key={field.name}
-                          className={SIP_PCM_FORM_ROW_CLASS}
-                        >
-                          <E1PriFieldLabel
-                            tooltipKey={field.name}
-                            tooltips={SIP_MEDIA_FIELD_TOOLTIPS}
-                            style={sipPcmFormLabelStyle}
-                          >
-                            {field.label}
-                          </E1PriFieldLabel>
-                          <div style={sipPcmFormControlWrapStyle}>
-                            {field.type === "select" ? (
-                              <Select
-                                name={field.name}
-                                value={formData[field.name]}
-                                onChange={handleInputChange}
-                                variant="outlined"
-                                fullWidth
-                                sx={sipPcmAuthMuiSelectSx}
-                              >
-                                {field.options.map((option) => (
-                                  <MenuItem
-                                    key={option.value}
-                                    value={option.value}
-                                    sx={{ fontSize: 12 }}
-                                  >
-                                    {option.label}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            ) : (
-                              <input
-                                type="text"
-                                name={field.name}
-                                value={formData[field.name]}
-                                onChange={handleInputChange}
-                                style={sipPcmAuthInputStyle}
-                                {...sipPcmAuthInputInteraction}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <SipPcmSectionHeading title="CODEC Settings" />
-
-                <div style={SIP_MEDIA_FORM_INSET_STYLE}>
-                  <div className={SIP_PCM_FORM_ROW_CLASS}>
-                    <E1PriFieldLabel
-                      tooltipKey={SIP_MEDIA_CODEC_FIELD.name}
-                      tooltips={SIP_MEDIA_FIELD_TOOLTIPS}
-                      style={{
-                        ...sipPcmFormLabelStyle,
-                        whiteSpace: "normal",
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      Gateway Negotiation Coding Sequence:
-                    </E1PriFieldLabel>
-                    <div style={sipPcmFormControlWrapStyle}>
-                      <Select
-                        name={SIP_MEDIA_CODEC_FIELD.name}
-                        value={formData[SIP_MEDIA_CODEC_FIELD.name]}
-                        onChange={handleInputChange}
-                        variant="outlined"
-                        fullWidth
-                        sx={sipPcmAuthMuiSelectSx}
-                      >
-                        {SIP_MEDIA_CODEC_FIELD.options.map((option) => (
-                          <MenuItem
-                            key={option.value}
-                            value={option.value}
-                            sx={{ fontSize: 12 }}
-                          >
-                            {option.label}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <input
+                type="text"
+                name={field.name}
+                value={formData[field.name]}
+                onChange={handleInputChange}
+                style={fieldInputStyle}
+                {...nativeFieldInteraction}
+              />
             )}
           </div>
+        </div>
+      </SipFieldRow>
+    );
+  };
 
-          {!loading && (
-            <div style={sipPcmAuthFormFooterStyle}>
-              <Btn
-                variant="primary"
-                onClick={handleSave}
-                disabled={loading || saving}
-                style={sipPcmAuthFormBtnStyle}
-              >
-                {saving ? (
-                  <>
-                    <CircularProgress size={14} color="inherit" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleReset}
-                style={sipPcmAuthFormBtnStyle}
-              >
-                Reset
-              </Btn>
+  return (
+    <AdvancedPageShell>
+      {message.text && (
+        <Alert
+          severity={message.type}
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {message.text}
+        </Alert>
+      )}
+
+      <SipPcmBreadcrumb current="Media Parameters" />
+
+      <div style={advancedCardShellStyle}>
+        <div style={advancedTableContainerStyle}>
+          {loading ? (
+            <div
+              className="flex items-center justify-center w-full"
+              style={{ minHeight: 400, padding: "48px 32px" }}
+            >
+              <div className="text-center">
+                <CircularProgress size={40} sx={{ color: C.accent }} />
+                <div
+                  style={{
+                    marginTop: 12,
+                    fontSize: 13,
+                    color: C.mutedText,
+                    fontWeight: 500,
+                  }}
+                >
+                  Loading media parameters...
+                </div>
+              </div>
             </div>
+          ) : (
+            <>
+              <div style={dashboardGridStyle}>
+                <div style={dashboardColumnStyle}>
+                  <div style={dashboardSectionTitleStyle}>
+                    RTP &amp; DTMF Settings
+                  </div>
+                  <div style={dashboardFieldsStackStyle}>
+                    {MEDIA_LEFT_COLUMN_FIELDS.map((field) =>
+                      renderFormField(field),
+                    )}
+                  </div>
+                </div>
+
+                <div style={dashboardDividerStyle} aria-hidden="true" />
+
+                <div style={dashboardColumnStyle}>
+                  <div style={dashboardSectionTitleStyle}>
+                    Jitter &amp; CODEC Settings
+                  </div>
+                  <div style={dashboardFieldsStackStyle}>
+                    {MEDIA_RIGHT_COLUMN_FIELDS.map((field) =>
+                      renderFormField(field),
+                    )}
+                    {renderFormField(SIP_MEDIA_CODEC_FIELD)}
+                  </div>
+                </div>
+              </div>
+
+              <div style={advancedFormInlineFooterStyle}>
+                <Btn
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={loading || saving}
+                  style={advancedFormBtnStyle}
+                >
+                  {saving ? (
+                    <>
+                      <CircularProgress size={14} color="inherit" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  onClick={handleReset}
+                  style={advancedFormBtnStyle}
+                >
+                  Reset
+                </Btn>
+              </div>
+            </>
           )}
         </div>
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

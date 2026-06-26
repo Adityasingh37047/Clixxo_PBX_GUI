@@ -4,14 +4,12 @@ import {
   SIP_SETTINGS_NOTE,
   SIP_SETTINGS_FIELD_TOOLTIPS,
 } from "../../../constants/SipSipConstants";
-import { Select, MenuItem, FormControl, Checkbox, Tooltip } from "@mui/material";
+import { Checkbox, Tooltip } from "@mui/material";
 import { listSipSettings, updateSipSettings } from "../../../api/apiService";
 import { Alert, CircularProgress } from "@mui/material";
 
-
-// ── Local page UI (inlined from e1PriSharedUi) ──
-// ── Page-local field label tooltip UI (not shared) ──
-const FIELD_LABEL_COLOR = "#3E5475";
+// ── Page-local field label tooltip UI (matches FxsVoipMediaPage pattern) ──
+const FIELD_LABEL_COLOR = "#374151";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -23,12 +21,9 @@ const FIELD_TOOLTIP_PROPS = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
+        fontSize: 13,
         maxWidth: 500,
-        padding: "10px 12px",
-        textTransform: "none",
-        letterSpacing: "normal",
+        padding: "12px 16px",
       },
     },
     arrow: { sx: { color: "#fff" } },
@@ -37,7 +32,12 @@ const FIELD_TOOLTIP_PROPS = {
 
 const formatFieldTooltipTitle = (text) => {
   if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
   if (normalized.includes("\n")) {
     return (
       <span style={{ whiteSpace: "pre-line", display: "block" }}>
@@ -48,40 +48,67 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
-  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
+const SipFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
+  const tooltip = tooltipKey ? SIP_SETTINGS_FIELD_TOOLTIPS[tooltipKey] || "" : "";
   const labelNode = (
-    <span
+    <label
       style={{
         fontSize: 13,
         fontWeight: 600,
         color: FIELD_LABEL_COLOR,
+        flex: "1 1 auto",
+        minWidth: 0,
+        paddingRight: 16,
+        textAlign: "left",
+        lineHeight: 1.4,
         cursor: tooltip ? "help" : undefined,
-        ...style,
+        ...labelStyle,
       }}
     >
-      {children}
-    </span>
+      {label}
+    </label>
   );
-  if (!tooltip) return labelNode;
+
   return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
-      {labelNode}
-    </Tooltip>
+    <div
+      className="flex flex-row items-center w-full"
+      style={{ minHeight: 34 }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatFieldTooltipTitle(tooltip)}
+          {...FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      {children}
+    </div>
   );
 };
 
+// ── Local page UI (matches FxsVoipMediaPage design language) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
+  labelText: "#374151",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   amber: "#dc2626",
 };
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
 
 const Btn = ({
   children,
@@ -136,7 +163,33 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -149,24 +202,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -174,11 +244,11 @@ const Btn = ({
   );
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -195,7 +265,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInteraction = {
@@ -223,225 +293,103 @@ const nativeFieldInteraction = {
   },
 };
 
-const CARD_RADIUS = 10;
-
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
+const nativeFieldInputStyle = {
+  height: 32,
   width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const PbxBreadcrumb = ({ section, current, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "nowrap",
-      whiteSpace: "nowrap",
-      lineHeight: 1.5,
-      ...style,
-    }}
-  >
-    <span>E1-PRI</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
-const SipPcmBreadcrumb = ({ current }) => (
-  <PbxBreadcrumb section="SIP" current={current} />
-);
-
-const sipPcmFormPageWrapStyle = {
-  ...pbxPageWrapStyle,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
-
-const sipPcmFormPageInnerStyle = {
-  ...pbxPageInnerStyle,
-  maxWidth: 1000,
-};
-
-const sipPcmFormCardStyle = {
-  background: "#ffffff",
-  borderRadius: 10,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-};
-
-const sipPcmFormHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
+  maxWidth: 220,
+  padding: "0 10px",
   fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const SIP_PCM_AUTH_FIELD_WIDTH = 200;
-const SIP_PCM_FORM_FIELD_HEIGHT = 32;
-const SIP_PCM_FORM_STACK_CLASS = "space-y-4";
-const SIP_PCM_FORM_ROW_CLASS = "flex items-center justify-between";
-
-const sipPcmFormLabelStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  width: 320,
-  marginRight: 10,
-  lineHeight: 1.4,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-};
-
-const sipPcmFormControlWrapStyle = {
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  flexShrink: 0,
-};
-
-const sipPcmAuthInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
   border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  height: SIP_PCM_FORM_FIELD_HEIGHT,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  paddingLeft: 12,
-  paddingRight: 12,
-  lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-  textAlign: "left",
-  backgroundColor: "#ffffff",
+  borderRadius: FIELD_RADIUS,
   outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  backgroundColor: "#fff",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const sipPcmAuthInputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-  },
-};
-
-const muiSelectSx = {
+const nativeFieldSelectStyle = {
+  width: "100%",
+  maxWidth: 220,
+  minHeight: 32,
+  height: 32,
+  padding: "4px 28px 4px 10px",
   fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
   backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: OUTLINED_HOVER },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
-const sipPcmAuthMuiSelectSx = {
-  ...muiSelectSx,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  backgroundColor: "#ffffff",
-  borderRadius: "6px",
-  "& .MuiOutlinedInput-root": {
-    height: SIP_PCM_FORM_FIELD_HEIGHT,
-    minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-    backgroundColor: "#ffffff",
-    transition: "border-color 0.2s ease",
-    "& fieldset": { borderColor: OUTLINED_BORDER, transition: "border-color 0.2s ease" },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-    "&.Mui-focused:hover fieldset": { borderColor: OUTLINED_FOCUS, borderWidth: 2 },
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: OUTLINED_HOVER },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-  "& .MuiSelect-select": {
-    padding: "0 32px 0 12px !important",
-    fontSize: 12,
-    lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-    height: "100%",
-    minHeight: "unset !important",
-    textAlign: "left",
-    display: "flex",
-    alignItems: "center",
-    boxSizing: "border-box",
-  },
+const SIP_COLUMN_SPLIT_INDEX = Math.ceil(SIP_SETTINGS_FIELDS.length / 2);
+const SIP_LEFT_COLUMN_FIELDS = SIP_SETTINGS_FIELDS.slice(0, SIP_COLUMN_SPLIT_INDEX);
+const SIP_RIGHT_COLUMN_FIELDS = SIP_SETTINGS_FIELDS.slice(SIP_COLUMN_SPLIT_INDEX);
+
+const advancedPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
 };
 
-const sipPcmAuthFormFooterStyle = {
+const advancedPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const advancedCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const advancedTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
   width: "100%",
-  padding: "10px 20px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
-const sipPcmAuthFormBtnStyle = {
+const advancedFormBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -451,64 +399,122 @@ const sipPcmAuthFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const SipPcmSectionHeading = ({ title, isFirst = false }) => (
+const dashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+};
+
+const dashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 24px",
+  background: C.cardBg,
+};
+
+const dashboardDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+  margin: "14px 0",
+  flexShrink: 0,
+};
+
+const dashboardSectionTitleStyle = {
+  fontSize: 14,
+  fontWeight: 700,
+  color: C.strongText,
+  marginBottom: 2,
+  flexShrink: 0,
+};
+
+const dashboardFieldsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  gap: 10,
+};
+
+const pageTitleStyle = {
+  fontSize: 22,
+  fontWeight: 700,
+  color: C.strongText,
+  margin: "0 0 6px 0",
+  letterSpacing: "-0.02em",
+  flexShrink: 0,
+};
+
+const SipPcmBreadcrumb = ({ current }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#30415A",
-      }}
-    >
-      {title}
-    </span>
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>SIP</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
 
+const AdvancedPageShell = ({ children }) => (
+  <div style={advancedPageWrapStyle} data-native-scroll>
+    <div style={advancedPageInnerStyle}>{children}</div>
+  </div>
+);
 
-const SIP_PCM_FORM_BODY_CLASS = "w-full px-5 pt-3 pb-0";
-const SIP_PCM_FORM_FIELDS_WRAPPER_CLASS = "flex-1 py-4 px-16";
-
-const getSipPcmFormLabelStyle = (fieldKey) => ({
-  ...sipPcmFormLabelStyle,
-  width: fieldKey === "externalBound" ? 380 : 320,
-  whiteSpace: fieldKey === "externalBound" ? "normal" : "nowrap",
-});
-
-const sipPcmCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+const valueColStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
 };
 
-const sipPcmNativeCheckboxStyle = {
+const controlSlotStyle = {
+  width: 220,
+  maxWidth: "100%",
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+};
+
+const fieldInputStyle = {
+  ...nativeFieldInputStyle,
+  width: "100%",
+};
+
+const fieldSelectStyle = {
+  ...nativeFieldSelectStyle,
+  width: "100%",
+};
+
+const checkboxSx = {
+  padding: "2px",
+  color: OUTLINED_BORDER,
+  "&.Mui-checked": { color: OUTLINED_FOCUS },
+  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
+};
+
+const nativeRadioStyle = {
   width: 16,
   height: 16,
-  accentColor: "#0284c7",
+  accentColor: OUTLINED_FOCUS,
   cursor: "pointer",
 };
-
-const sipPcmNoteStyle = {
-  color: C.amber,
-  textAlign: "center",
-  marginTop: 24,
-  fontSize: 13,
-  lineHeight: 1.45,
-};
-
 
 const getInitialState = () => {
   const state = {};
@@ -687,275 +693,314 @@ const SipSipPage = () => {
     setForm(getInitialState());
   };
 
-  return (
-    <div style={sipPcmFormPageWrapStyle}>
-      <div style={sipPcmFormPageInnerStyle}>
-        {message.text && !saving && (
-          <Alert
-            severity={
-              message.type === "error"
-                ? "error"
-                : message.type === "success"
-                  ? "success"
-                  : "info"
-            }
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {message.text}
-          </Alert>
-        )}
+  const isFieldVisible = (field) => {
+    if (!field.conditional) return true;
+    if (field.conditionalValues) {
+      return field.conditionalValues.includes(form[field.conditional]);
+    }
+    if (field.conditionalValue) {
+      return form[field.conditional] === field.conditionalValue;
+    }
+    if (field.conditionalInverted) {
+      return !form[field.conditional];
+    }
+    if (field.type === "radio") {
+      return form[field.conditional] === "Yes";
+    }
+    return !!form[field.conditional];
+  };
 
-        {saving && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div
-              className="bg-white rounded-lg shadow-xl p-6 flex flex-col items-center gap-4 pointer-events-auto"
-              style={{ minWidth: "300px" }}
-            >
-              <CircularProgress size={50} sx={{ color: C.accent }} />
-              <div className="text-lg font-medium text-gray-700">
-                Applying Settings...
-              </div>
-            </div>
-          </div>
-        )}
+  const renderFormField = (field) => {
+    if (!isFieldVisible(field)) return null;
 
-        <SipPcmBreadcrumb current="SIP Settings" />
+    const fieldLabel =
+      field.key === "externalBound"
+        ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
+        : field.label;
 
-        <div style={sipPcmFormCardStyle}>
-          <div style={sipPcmFormHeaderStyle}>
-            <span>SIP Settings</span>
-          </div>
-
-          <div className={SIP_PCM_FORM_BODY_CLASS}>
-            {loading ? (
-              <div className="flex items-center justify-center min-h-[400px] w-full">
-                <div className="text-center">
-                  <CircularProgress size={40} sx={{ color: C.accent }} />
-                  <div className="mt-3 text-gray-600">
-                    Loading SIP settings...
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div
-                className={SIP_PCM_FORM_FIELDS_WRAPPER_CLASS}
-                style={{ marginBottom: 12 }}
-              >
-                <div className={SIP_PCM_FORM_STACK_CLASS}>
-                  {SIP_SETTINGS_FIELDS.map((field) => {
-                    if (field.conditional) {
-                      if (field.conditionalValues) {
-                        if (
-                          !field.conditionalValues.includes(
-                            form[field.conditional],
-                          )
-                        ) {
-                          return null;
-                        }
-                      } else if (field.conditionalValue) {
-                        if (
-                          form[field.conditional] !== field.conditionalValue
-                        ) {
-                          return null;
-                        }
-                      } else {
-                        if (field.conditionalInverted) {
-                          if (form[field.conditional]) return null;
-                        } else {
-                          if (field.type === "radio") {
-                            if (form[field.conditional] !== "Yes") return null;
-                          } else {
-                            if (!form[field.conditional]) return null;
-                          }
-                        }
-                      }
+    return (
+      <SipFieldRow
+        key={field.key}
+        label={fieldLabel}
+        tooltipKey={field.key}
+        labelStyle={
+          field.key === "externalBound" ? { whiteSpace: "normal" } : {}
+        }
+      >
+        <div style={valueColStyle}>
+          <div style={controlSlotStyle}>
+            {field.type === "text" && (
+              <input
+                type={field.key === "calledPrefix" ? "text" : "number"}
+                value={form[field.key]}
+                style={fieldInputStyle}
+                {...nativeFieldInteraction}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (field.key === "calledPrefix") {
+                    if (
+                      /^[0-9:]*$/.test(value) &&
+                      value.split(":").length <= 6
+                    ) {
+                      handleChange(field.key, value);
                     }
+                  } else if (/^\d*$/.test(value) || value === "") {
+                    handleChange(field.key, value);
+                  }
+                }}
+                placeholder={
+                  field.key === "calledPrefix" ? "e.g., 123:456:789" : ""
+                }
+              />
+            )}
 
-                    return (
-                      <div key={field.key} className={SIP_PCM_FORM_ROW_CLASS}>
-                        <E1PriFieldLabel
-                          tooltipKey={field.key}
-                          tooltips={SIP_SETTINGS_FIELD_TOOLTIPS}
-                          style={getSipPcmFormLabelStyle(field.key)}
-                        >
-                          {field.key === "externalBound"
-                            ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
-                            : field.label}
-                        </E1PriFieldLabel>
+            {field.type === "select" && (
+              <select
+                value={form[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                style={fieldSelectStyle}
+                {...nativeFieldInteraction}
+              >
+                {field.options.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            )}
 
-                        <div style={sipPcmFormControlWrapStyle}>
-                          {field.type === "text" && (
-                            <input
-                              type={
-                                field.key === "calledPrefix" ? "text" : "number"
-                              }
-                              value={form[field.key]}
-                              style={sipPcmAuthInputStyle}
-                              {...sipPcmAuthInputInteraction}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (field.key === "calledPrefix") {
-                                  if (
-                                    /^[0-9:]*$/.test(value) &&
-                                    value.split(":").length <= 6
-                                  ) {
-                                    handleChange(field.key, value);
-                                  }
-                                } else if (
-                                  /^\d*$/.test(value) ||
-                                  value === ""
-                                ) {
-                                  handleChange(field.key, value);
-                                }
-                              }}
-                              placeholder={
-                                field.key === "calledPrefix"
-                                  ? "e.g., 123:456:789"
-                                  : ""
-                              }
-                            />
-                          )}
+            {field.type === "checkbox" && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  minHeight: 32,
+                  gap: 8,
+                  width: "100%",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Checkbox
+                  size="small"
+                  checked={!!form[field.key]}
+                  onChange={() => handleCheckbox(field.key)}
+                  sx={checkboxSx}
+                />
+                {field.key === "workingPeriod" ? (
+                  field.labelAfter && (
+                    <span style={{ fontSize: 13, color: C.labelText }}>
+                      {field.labelAfter}
+                    </span>
+                  )
+                ) : (
+                  <>
+                    <span style={{ fontSize: 13, color: C.labelText }}>
+                      Enable
+                    </span>
+                    {field.labelAfter && (
+                      <span style={{ fontSize: 13, color: C.labelText }}>
+                        {field.labelAfter}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
-                          {field.type === "select" && (
-                            <FormControl size="small" fullWidth>
-                              <Select
-                                value={form[field.key]}
-                                onChange={(e) =>
-                                  handleChange(field.key, e.target.value)
-                                }
-                                variant="outlined"
-                                fullWidth
-                                sx={sipPcmAuthMuiSelectSx}
-                              >
-                                {field.options.map((opt) => (
-                                  <MenuItem key={opt} value={opt}>
-                                    {opt}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          )}
-
-                          {field.type === "checkbox" && (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                minHeight: 36,
-                                gap: 8,
-                              }}
-                            >
-                              <Checkbox
-                                size="small"
-                                checked={!!form[field.key]}
-                                onChange={() => handleCheckbox(field.key)}
-                                sx={sipPcmCheckboxSx}
-                              />
-                              {field.key === "workingPeriod" ? (
-                                field.labelAfter && (
-                                  <span
-                                    style={{ fontSize: 13, color: C.labelText }}
-                                  >
-                                    {field.labelAfter}
-                                  </span>
-                                )
-                              ) : (
-                                <>
-                                  <span
-                                    style={{ fontSize: 13, color: C.labelText }}
-                                  >
-                                    Enable
-                                  </span>
-                                  {field.labelAfter && (
-                                    <span
-                                      style={{
-                                        fontSize: 13,
-                                        color: C.labelText,
-                                      }}
-                                    >
-                                      {field.labelAfter}
-                                    </span>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          )}
-
-                          {field.type === "radio" && (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                minHeight: 36,
-                                gap: 16,
-                                fontSize: 13,
-                                color: C.labelText,
-                              }}
-                            >
-                              <label
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 4,
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <input
-                                  type="radio"
-                                  name={field.key}
-                                  value="Yes"
-                                  checked={form[field.key] === "Yes"}
-                                  onChange={() =>
-                                    handleChange(field.key, "Yes")
-                                  }
-                                  style={sipPcmNativeCheckboxStyle}
-                                />
-                                Yes
-                              </label>
-                              <label
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 4,
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <input
-                                  type="radio"
-                                  name={field.key}
-                                  value="No"
-                                  checked={form[field.key] === "No"}
-                                  onChange={() => handleChange(field.key, "No")}
-                                  style={sipPcmNativeCheckboxStyle}
-                                />
-                                No
-                              </label>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+            {field.type === "radio" && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  minHeight: 32,
+                  gap: 16,
+                  fontSize: 13,
+                  color: C.labelText,
+                  width: "100%",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={field.key}
+                    value="Yes"
+                    checked={form[field.key] === "Yes"}
+                    onChange={() => handleChange(field.key, "Yes")}
+                    style={nativeRadioStyle}
+                  />
+                  Yes
+                </label>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={field.key}
+                    value="No"
+                    checked={form[field.key] === "No"}
+                    onChange={() => handleChange(field.key, "No")}
+                    style={nativeRadioStyle}
+                  />
+                  No
+                </label>
               </div>
             )}
           </div>
+        </div>
+      </SipFieldRow>
+    );
+  };
 
-          {!loading && (
-            <div style={sipPcmAuthFormFooterStyle}>
+  return (
+    <AdvancedPageShell>
+      {message.text && !saving && (
+        <Alert
+          severity={
+            message.type === "error"
+              ? "error"
+              : message.type === "success"
+                ? "success"
+                : "info"
+          }
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
+          }}
+        >
+          {message.text}
+        </Alert>
+      )}
+
+      {saving && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <div
+            className="bg-white rounded-lg flex flex-col items-center gap-4 pointer-events-auto"
+            style={{
+              minWidth: "300px",
+              padding: "24px 32px",
+              border: `1px solid ${C.cardBorder}`,
+              boxShadow: C.cardShadow,
+              borderRadius: CARD_RADIUS,
+            }}
+          >
+            <CircularProgress size={50} sx={{ color: C.accent }} />
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 600,
+                color: C.strongText,
+              }}
+            >
+              Applying Settings...
+            </div>
+          </div>
+        </div>
+      )}
+
+     
+      <SipPcmBreadcrumb current="SIP Settings" />
+
+      <div style={advancedCardShellStyle}>
+        <div style={advancedTableContainerStyle}>
+        {loading ? (
+          <div
+            className="flex items-center justify-center w-full"
+            style={{ minHeight: 400, padding: "48px 32px" }}
+          >
+            <div className="text-center">
+              <CircularProgress size={40} sx={{ color: C.accent }} />
+              <div
+                style={{
+                  marginTop: 12,
+                  fontSize: 13,
+                  color: C.mutedText,
+                  fontWeight: 500,
+                }}
+              >
+                Loading SIP settings...
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={dashboardGridStyle}>
+              <div style={dashboardColumnStyle}>
+                <div style={dashboardSectionTitleStyle}>
+                  Network &amp; Signaling
+                </div>
+                <div style={dashboardFieldsStackStyle}>
+                  {SIP_LEFT_COLUMN_FIELDS.map((field) => renderFormField(field))}
+                </div>
+              </div>
+
+              <div style={dashboardDividerStyle} aria-hidden="true" />
+
+              <div style={dashboardColumnStyle}>
+                <div style={dashboardSectionTitleStyle}>
+                  Registration &amp; Timers
+                </div>
+                <div style={dashboardFieldsStackStyle}>
+                  {SIP_RIGHT_COLUMN_FIELDS.map((field) =>
+                    renderFormField(field),
+                  )}
+                </div>
+
+                {SIP_SETTINGS_NOTE && (
+                  <div style={{ marginTop: 12 }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: C.strongText,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Note:
+                    </div>
+                    <p
+                      style={{
+                        margin: 0,
+                       color: C.labelText,
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                        textAlign: "left",
+                      }}
+                    >
+                      {SIP_SETTINGS_NOTE.replace(/^Note:\s*/i, "")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={advancedFormInlineFooterStyle}>
               <Btn
                 variant="primary"
                 onClick={handleSave}
                 disabled={loading || saving}
-                style={sipPcmAuthFormBtnStyle}
+                style={advancedFormBtnStyle}
               >
                 {saving ? (
                   <>
@@ -969,17 +1014,16 @@ const SipSipPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleReset}
-                style={sipPcmAuthFormBtnStyle}
+                style={advancedFormBtnStyle}
               >
                 Reset
               </Btn>
             </div>
-          )}
+          </>
+        )}
         </div>
-
-        <div style={sipPcmNoteStyle}>{SIP_SETTINGS_NOTE}</div>
       </div>
-    </div>
+    </AdvancedPageShell>
   );
 };
 export default SipSipPage;
