@@ -118,7 +118,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#374151",
   valueText: "#1f2937",
@@ -366,7 +366,6 @@ const nativeFieldSelectStyle = {
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  height: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
   padding: "8px 28px 16px",
@@ -380,20 +379,16 @@ const advancedPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
-  flex: 1,
   display: "flex",
   flexDirection: "column",
-  minHeight: 0,
 };
 
 const advancedTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
-  flex: 1,
   display: "flex",
   flexDirection: "column",
-  minHeight: 0,
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
@@ -430,10 +425,8 @@ const dashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
-  flex: 1,
-  minHeight: 0,
   alignItems: "stretch",
-  overflow: "auto",
+  alignContent: "start",
 };
 
 const dashboardColumnStyle = {
@@ -441,8 +434,7 @@ const dashboardColumnStyle = {
   flexDirection: "column",
   gap: 12,
   minWidth: 0,
-  minHeight: "100%",
-  padding: "16px 36px 24px",
+  padding: "16px 36px 20px",
 };
 
 const dashboardColumnLeftStyle = {
@@ -469,21 +461,12 @@ const dashboardSectionTitleStyle = {
   marginBottom: 2,
 };
 
-const pageTitleStyle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.strongText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-  flexShrink: 0,
-};
-
 const VoipBreadcrumb = ({ current }) => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -1031,7 +1014,7 @@ const FxsVoipMediaPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <h1 style={pageTitleStyle}>Media Parameters</h1>
+
       <VoipBreadcrumb current="Media Parameters" />
       <div style={advancedTableContainerStyle}>
         <div style={dashboardGridStyle}>

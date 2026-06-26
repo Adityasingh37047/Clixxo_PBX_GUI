@@ -92,7 +92,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#374151",
   valueText: "#1f2937",
@@ -458,21 +458,12 @@ const dashboardSectionTitleStyle = {
   textAlign: "left",
 };
 
-const pageTitleStyle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.strongText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-  flexShrink: 0,
-};
-
 const VoipBreadcrumb = ({ current }) => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -735,7 +726,7 @@ const NatSettingsPage = () => {
         </Alert>
       )}
 
-      <h1 style={pageTitleStyle}>NAT Settings</h1>
+
       <VoipBreadcrumb current="NAT Settings" />
 
       <div style={advancedTableContainerStyle}>

@@ -43,22 +43,26 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const CompatibilityFieldRow = ({ label, tooltipKey, children }) => {
+const CompatibilityFieldRow = ({ label, tooltipKey, children, nested = false }) => {
   const tooltip = tooltipKey
     ? SIP_COMPATIBILITY_FIELD_TOOLTIPS[tooltipKey] || ""
     : "";
+  const isLongLabel = label.length > 48;
   const labelNode = (
     <label
       style={{
         fontSize: 13,
         fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
+        color: nested ? "#6b7280" : FIELD_LABEL_COLOR,
         flex: "1 1 auto",
         minWidth: 0,
         paddingRight: 16,
         textAlign: "left",
-        lineHeight: 1.4,
+        lineHeight: 1.45,
         cursor: tooltip ? "help" : undefined,
+        whiteSpace: "normal",
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
       }}
     >
       {label}
@@ -67,8 +71,12 @@ const CompatibilityFieldRow = ({ label, tooltipKey, children }) => {
 
   return (
     <div
-      className="flex flex-row items-center w-full"
-      style={{ minHeight: 36 }}
+      className={`flex flex-row w-full ${isLongLabel ? "items-start" : "items-center"}`}
+      style={{
+        minHeight: 36,
+        paddingTop: isLongLabel ? 6 : 0,
+        paddingBottom: isLongLabel ? 6 : 0,
+      }}
     >
       {tooltip ? (
         <Tooltip
@@ -91,7 +99,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#374151",
   valueText: "#1f2937",
@@ -325,7 +333,6 @@ const nativeFieldSelectStyle = {
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  height: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
   padding: "8px 28px 16px",
@@ -339,25 +346,21 @@ const advancedPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
-  flex: 1,
   display: "flex",
   flexDirection: "column",
-  minHeight: 0,
 };
 
 const advancedTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
-  flex: 1,
   display: "flex",
   flexDirection: "column",
-  minHeight: 0,
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
-  overflow: "auto",
+  overflow: "hidden",
 };
 
 const advancedFormInlineFooterStyle = {
@@ -373,6 +376,8 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
@@ -389,7 +394,6 @@ const dashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
-  flex: "1 1 auto",
   alignItems: "stretch",
   alignContent: "start",
 };
@@ -405,20 +409,21 @@ const dashboardColumnStyle = {
 const dashboardColumnLeftStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
 };
 
 const dashboardColumnRightStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const dashboardDividerCellStyle = {
   display: "flex",
   flexDirection: "column",
   alignSelf: "stretch",
-  padding: "14px 0 14px",
+  padding: "14px 0",
   boxSizing: "border-box",
-  minHeight: "100%",
 };
 
 const dashboardDividerLineStyle = {
@@ -436,21 +441,12 @@ const dashboardSectionTitleStyle = {
   textAlign: "left",
 };
 
-const pageTitleStyle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.strongText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-  flexShrink: 0,
-};
-
 const VoipBreadcrumb = ({ current }) => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -473,43 +469,56 @@ const AdvancedPageShell = ({ children }) => (
   </div>
 );
 
-const LEFT_COLUMN_FIELD_KEYS = [
-  "obtainCalleeId",
-  "callerIdPosition",
-  "obtainCallerId",
-  "callTransferMode",
-  "internalHandle",
-  "callFlashMode",
-  "holdMusicSource",
-  "maxWaitAnswer",
-  "sipIdentifying",
-  "maxWaitRtp",
-  "abnormalHangupCycle",
-  "cycle",
-  "encryptionCriterion",
-  "identifier",
-  "key",
-  "noIdlePort",
-  "calledPartyDisconnected",
-  "routeFailed",
-  "manageRefer",
-  "fxoHangupTime",
+const LEFT_COLUMN_LAYOUT = [
+  {
+    type: "fields",
+    keys: ["obtainCalleeId", "callerIdPosition", "obtainCallerId"],
+  },
+  { type: "group", parent: "callTransferMode", children: ["internalHandle"] },
+  { type: "group", parent: "callFlashMode", children: ["holdMusicSource"] },
+  {
+    type: "fields",
+    keys: ["maxWaitAnswer", "sipIdentifying", "maxWaitRtp"],
+  },
+  { type: "group", parent: "manageRefer", children: ["fxoHangupTime"] },
 ];
 
-const RIGHT_COLUMN_FIELD_KEYS = [
-  "useSourceAddress",
-  "useContactAddress",
-  "twoStageDialing",
-  "abnormalHangup",
-  "serverStatusDetection",
-  "sendCueTone",
-  "sipEncryption",
-  "rtpEncryption",
-  "invite100rel",
-  "ignoreAck",
-  "userDefinedSipCode",
-  "useIptables",
+const RIGHT_COLUMN_LAYOUT = [
+  {
+    type: "fields",
+    keys: ["useSourceAddress", "useContactAddress", "twoStageDialing"],
+  },
+  { type: "group", parent: "abnormalHangup", children: ["abnormalHangupCycle"] },
+  {
+    type: "group",
+    parent: "serverStatusDetection",
+    children: ["cycle", "sendCueTone"],
+  },
+  {
+    type: "group",
+    parent: "sipEncryption",
+    children: ["encryptionCriterion", "identifier", "key"],
+  },
+  { type: "fields", keys: ["rtpEncryption", "invite100rel", "ignoreAck"] },
+  {
+    type: "group",
+    parent: "userDefinedSipCode",
+    children: ["noIdlePort", "calledPartyDisconnected", "routeFailed"],
+  },
+  { type: "fields", keys: ["useIptables"] },
 ];
+
+const nestedFieldsWrapStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  marginLeft: 12,
+  paddingLeft: 14,
+  borderLeft: `2px solid ${C.divider}`,
+};
+
+const getFieldByKey = (key) =>
+  SIP_COMPATIBILITY_FIELDS.find((field) => field.key === key);
 
 const getInitialState = () => {
   const state = {};
@@ -610,21 +619,15 @@ const SipCompatibilityPage = () => {
     justifyContent: "flex-start",
   };
 
-  const leftColumnFields = SIP_COMPATIBILITY_FIELDS.filter((f) =>
-    LEFT_COLUMN_FIELD_KEYS.includes(f.key),
-  );
-  const rightColumnFields = SIP_COMPATIBILITY_FIELDS.filter((f) =>
-    RIGHT_COLUMN_FIELD_KEYS.includes(f.key),
-  );
-
-  const renderField = (field) => {
-    if (!shouldShowField(field)) return null;
+  const renderField = (field, nested = false) => {
+    if (!field || !shouldShowField(field)) return null;
 
     return (
       <CompatibilityFieldRow
         key={field.key}
         label={field.label}
         tooltipKey={field.key}
+        nested={nested}
       >
         <div style={valueColStyle}>
           {field.type === "text" && (
@@ -704,6 +707,49 @@ const SipCompatibilityPage = () => {
     );
   };
 
+  const renderConditionalGroup = (parentKey, childKeys) => {
+    const parentField = getFieldByKey(parentKey);
+    if (!parentField) return null;
+
+    const parentRow = renderField(parentField);
+    if (!parentRow) return null;
+
+    const visibleChildren = childKeys
+      .map((key) => getFieldByKey(key))
+      .filter((field) => field && shouldShowField(field));
+
+    return (
+      <div
+        key={parentKey}
+        style={{ display: "flex", flexDirection: "column", gap: 8 }}
+      >
+        {parentRow}
+        {visibleChildren.length > 0 ? (
+          <div style={nestedFieldsWrapStyle}>
+            {visibleChildren.map((field) => renderField(field, true))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderColumnLayout = (layout) =>
+    layout.map((block, index) => {
+      if (block.type === "fields") {
+        return block.keys.map((key) => renderField(getFieldByKey(key)));
+      }
+
+      if (block.type === "group") {
+        return (
+          <React.Fragment key={block.parent || index}>
+            {renderConditionalGroup(block.parent, block.children)}
+          </React.Fragment>
+        );
+      }
+
+      return null;
+    });
+
   return (
     <AdvancedPageShell>
       {toast.msg && (
@@ -724,7 +770,7 @@ const SipCompatibilityPage = () => {
         </Alert>
       )}
 
-      <h1 style={pageTitleStyle}>SIP Compatibility</h1>
+
       <VoipBreadcrumb current="SIP Compatibility" />
 
       <div style={advancedTableContainerStyle}>
@@ -732,7 +778,7 @@ const SipCompatibilityPage = () => {
           <div style={dashboardColumnLeftStyle}>
             <div style={dashboardSectionTitleStyle}>Core Configuration</div>
             <div className="flex flex-col gap-3" style={{ width: "100%" }}>
-              {leftColumnFields.map((field) => renderField(field))}
+              {renderColumnLayout(LEFT_COLUMN_LAYOUT)}
             </div>
           </div>
 
@@ -743,7 +789,7 @@ const SipCompatibilityPage = () => {
           <div style={dashboardColumnRightStyle}>
             <div style={dashboardSectionTitleStyle}>Feature Options</div>
             <div className="flex flex-col gap-3" style={{ width: "100%" }}>
-              {rightColumnFields.map((field) => renderField(field))}
+              {renderColumnLayout(RIGHT_COLUMN_LAYOUT)}
             </div>
           </div>
         </div>

@@ -54,7 +54,8 @@ const PBX_COMPACT_MQ = "(max-width: 768px)";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
@@ -115,7 +116,33 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -134,18 +161,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -171,8 +212,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -191,8 +232,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -387,8 +428,8 @@ const sipPcmCardStyle = {
   background: "#ffffff",
   borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
 const sipPcmToolbarStyle = {
@@ -397,7 +438,7 @@ const sipPcmToolbarStyle = {
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
@@ -411,7 +452,7 @@ const sipPcmPaginationStyle = {
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
+  borderTop: `1px solid ${C.divider}`,
   borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
   borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
   overflow: "hidden",
@@ -810,12 +851,27 @@ const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
     style={{
       ...pbxDualListBtnStyle,
       fontWeight: reorder ? 400 : pbxDualListBtnStyle.fontWeight,
+      transition:
+        "background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+      userSelect: "none",
     }}
     onMouseEnter={(e) => {
       e.currentTarget.style.backgroundColor = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.backgroundColor = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.97)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "";
     }}
   >
     {children}
