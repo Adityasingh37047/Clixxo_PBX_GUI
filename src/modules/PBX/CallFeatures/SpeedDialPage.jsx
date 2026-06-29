@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import {Button,
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Checkbox,
   TextField,
-  Alert, useMediaQuery } from "@mui/material";
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   createSpeedDial,
   deleteSpeedDial,
@@ -19,25 +21,33 @@ import {
   exportSpeedDialCsv,
   importSpeedDialCsv,
 } from "../../../api/apiService";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+import {
+  SPEED_DIAL_FIELD_TOOLTIPS,
+  SPEED_DIAL_ITEMS_PER_PAGE,
+  SPEED_DIAL_TITLE,
+} from "../../../constants/SpeedDialConstants";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const SPEED_DIAL_COMPACT_MQ = "(max-width: 768px)";
+
+// ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  successGreen: "#16a34a",
   errorRed: "#dc2626",
+  successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
 };
 
-const CARD_RADIUS = 10;
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -46,9 +56,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -59,11 +70,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -71,41 +78,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return C.errorRed;
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -123,30 +156,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -159,8 +193,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -171,39 +205,39 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
+const speedDialTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const speedDialTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
+const SPEED_DIAL_TABLE_CARD_RADIUS = 10;
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const speedDialPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const speedDialPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const SpeedDialBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -224,6 +258,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -276,63 +311,310 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  tooltip,
-}) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 150,
-          flexShrink: 0,
-          paddingTop: align === "flex-start" ? 8 : 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const speedDialCardStyle = {
+  background: "#ffffff",
+  borderRadius: SPEED_DIAL_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
+const speedDialToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SPEED_DIAL_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SPEED_DIAL_TABLE_CARD_RADIUS,
+};
 
-const tooltipProps = {
+const speedDialPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: SPEED_DIAL_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SPEED_DIAL_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const speedDialSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const speedDialCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const speedDialPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const speedDialPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const speedDialFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const speedDialEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleSpeedDialEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const speedDialOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const speedDialModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...speedDialOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const speedDialModalPaperSx = {
+  width: 560,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const speedDialModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const speedDialModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const speedDialModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const speedDialModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const SPEED_DIAL_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
+
+const formatSpeedDialTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const SPEED_DIAL_MODAL_LABEL_WIDTH = 160;
+
+const SpeedDialFieldLabel = ({
+  tooltipKey,
+  children,
+  required,
+  style = {},
+}) => {
+  const tooltip = SPEED_DIAL_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+      {required ? (
+        <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+      ) : null}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatSpeedDialTooltipTitle(tooltip)}
+      {...SPEED_DIAL_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const SpeedDialFieldRow = ({ label, tooltipKey, required, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    {tooltipKey ? (
+      <SpeedDialFieldLabel
+        tooltipKey={tooltipKey}
+        required={required}
+        style={{
+          width: SPEED_DIAL_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+      </SpeedDialFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: SPEED_DIAL_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+        ) : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const speedDialImportDropzoneStyle = {
+  textAlign: "center",
+  border: `2px dashed ${C.codecBoxBorder}`,
+  borderRadius: 8,
+  padding: 32,
+  cursor: "pointer",
+  background: "#fff",
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SpeedDialPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(SPEED_DIAL_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -345,7 +627,7 @@ const SpeedDialPage = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
-  const itemsPerPage = 20;
+  const itemsPerPage = SPEED_DIAL_ITEMS_PER_PAGE;
   const [page, setPage] = useState(1);
 
   // Form state
@@ -603,66 +885,53 @@ const SpeedDialPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...speedDialPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={speedDialPageInnerStyle}>
         {message.text && (
           <Alert
-            severity={message.type}
+            severity={
+              message.type === "error"
+                ? "error"
+                : message.type === "success"
+                  ? "success"
+                  : "info"
+            }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={speedDialFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Speed Dial" />
+        <SpeedDialBreadcrumb
+          section="Call Features"
+          current={SPEED_DIAL_TITLE}
+        />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={speedDialCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...speedDialToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: "3px 10px",
-                    borderRadius: 10,
-                    border: `0.5px solid ${C.accent}`,
-                  }}
-                >
+                <span style={speedDialSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -682,14 +951,8 @@ const SpeedDialPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={speedDialCancelBtnStyle}
               >
-                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -700,50 +963,22 @@ const SpeedDialPage = () => {
                   setImportResult(null);
                 }}
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={speedDialCancelBtnStyle}
               >
                 ⬇ Import
               </Btn>
               <Btn
                 onClick={handleExport}
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={speedDialCancelBtnStyle}
               >
                 ⬆ Export
               </Btn>
-
-              {/* <Btn
-                onClick={fetchSpeedDials}
-                disabled={loading.list}
-                variant="default"
-              >
-                {loading.list ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
-
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={speedDialPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -794,7 +1029,7 @@ const SpeedDialPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={speedDialTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -834,17 +1069,22 @@ const SpeedDialPage = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
-                    const rowBgColor = isSelected
+                    const rowBg = isSelected
                       ? "#e0f2fe"
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
+                    const lastRowCellStyle = {
+                      borderBottom: isLastRow
+                        ? "none"
+                        : speedDialTdStyle.borderBottom,
+                    };
 
                     return (
                       <tr
                         key={row.id || realIdx}
                         style={{
-                          background: rowBgColor,
+                          background: rowBg,
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
@@ -853,100 +1093,86 @@ const SpeedDialPage = () => {
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = rowBgColor;
+                            e.currentTarget.style.background = rowBg;
                         }}
                       >
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBgColor,
+                            ...speedDialTdStyle,
+                            background: rowBg,
                             borderLeft: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={speedDialTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBgColor,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...speedDialTdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBgColor,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...speedDialTdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
                         </td>
                         <td
-  style={{
-    ...tdStyle,
-    background: rowBgColor,
-    borderBottom: isLastRow
-      ? "none"
-      : tdStyle.borderBottom,
-  }}
->
-  {row.speedDialNumber}
-</td>
+                          style={{
+                            ...speedDialTdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
+                          }}
+                        >
+                          {row.speedDialNumber}
+                        </td>
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBgColor,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...speedDialTdStyle,
+                            background: rowBg,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.destination}
                         </td>
                         <td
                           style={{
-                            textAlign: "center",
-                            padding: "4px 8px",
-                            ...tdStyle,
-                            background: rowBgColor,
+                            ...speedDialTdStyle,
+                            background: rowBg,
                             borderRight: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                           
+                            ...lastRowCellStyle,
                           }}
                         >
-                                                    <EditDocumentIcon
-                            titleAccess="Edit"
-                            onClick={() => handleOpenEditModal(row)}
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={speedDialEditIconStyle}
+                              onMouseEnter={(e) =>
+                                handleSpeedDialEditIconHover(e, true)
+                              }
+                              onMouseLeave={(e) =>
+                                handleSpeedDialEditIconHover(e, false)
+                              }
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -956,25 +1182,13 @@ const SpeedDialPage = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={speedDialPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.list || page <= 1}
@@ -982,17 +1196,7 @@ const SpeedDialPage = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={speedDialPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1008,129 +1212,88 @@ const SpeedDialPage = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 560, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: speedDialModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          {editId != null ? "Edit Speed Dial" : "Add Speed Dial"}
+        <DialogTitle style={speedDialModalTitleStyle}>
+          {editId != null
+            ? `Edit ${SPEED_DIAL_TITLE}`
+            : `Add ${SPEED_DIAL_TITLE}`}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
-              }}
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={speedDialModalFormStyle}>
+            <SpeedDialFieldRow label="Name" tooltipKey="name" required>
+              <TextField
+                size="small"
+                fullWidth
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                sx={speedDialModalTextFieldFullSx}
+              />
+            </SpeedDialFieldRow>
+
+            <SpeedDialFieldRow
+              label="Speed Dial Number"
+              tooltipKey="speed_dial_number"
+              required
             >
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
-              >
-                <FieldRow label="Name" required tooltip="User-defined name of a speed dial. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  />
-                </FieldRow>
+              <TextField
+                size="small"
+                fullWidth
+                value={speedDialNumber}
+                onChange={(e) => setSpeedDialNumber(e.target.value)}
+                sx={speedDialModalTextFieldFullSx}
+              />
+            </SpeedDialFieldRow>
 
-                <FieldRow label="Speed Dial Number" required tooltip="The number dialed to reach this speed dial. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={speedDialNumber}
-                    onChange={(e) => setSpeedDialNumber(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  />
-                </FieldRow>
-
-                <FieldRow label="Destination" required tooltip="Select the destination to ring when the speed dial is dialed. Call Queue: Ring the call queue. CallBacks: Ring the callbacks. Conference Rooms: Ring the conference rooms. DISA: Ring the DISA. Extensions: Ring the extensions. Fax To Mail: Ring the fax to mail. IVR Menus: Ring the IVR menus. Ring Group: Ring the ring group. Voicemails: Ring the voicemails. Other: Hang up the call.">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  />
-                </FieldRow>
-              </div>
-            </div>
+            <SpeedDialFieldRow
+              label="Destination"
+              tooltipKey="destination"
+              required
+            >
+              <TextField
+                size="small"
+                fullWidth
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                sx={speedDialModalTextFieldFullSx}
+              />
+            </SpeedDialFieldRow>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={speedDialModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             {loading.save ? (
-              <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
-            ) : null}
-
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Speed Dial"
-                : "Create Speed Dial"}
+              <>
+                <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
+                Saving...
+              </>
+            ) : editId != null ? (
+              "Update Speed Dial"
+            ) : (
+              "Create Speed Dial"
+            )}
           </Btn>
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={speedDialModalCancelBtnStyle}
           >
             Cancel
           </Btn>
         </DialogActions>
       </Dialog>
 
-      {/* ── Import Modal ── */}
       <Dialog
         open={showImportModal}
         onClose={() => {
@@ -1141,32 +1304,14 @@ const SpeedDialPage = () => {
           }
         }}
         maxWidth={false}
-        PaperProps={{ sx: { width: 560, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: speedDialModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          Import Speed Dial
+        <DialogTitle style={speedDialModalTitleStyle}>
+          Import {SPEED_DIAL_TITLE}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "24px 16px", backgroundColor: C.pageBg }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
-            style={{
-              textAlign: "center",
-              border: `2px dashed ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 32,
-              cursor: "pointer",
-              background: "#fff",
-            }}
+            style={speedDialImportDropzoneStyle}
             onClick={() => importFileRef.current?.click()}
           >
             <div
@@ -1349,25 +1494,21 @@ const SpeedDialPage = () => {
             </div>
           )}
         </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={speedDialModalActionsStyle}>
           <Btn
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             {importLoading ? (
-              <CircularProgress size={14} sx={{ color: "#64748b", mr: 1 }} />
-            ) : null}
-            {importLoading ? "Importing..." : "Import"}
+              <>
+                <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
+                Importing...
+              </>
+            ) : (
+              "Import"
+            )}
           </Btn>
           <Btn
             onClick={() => {
@@ -1377,7 +1518,7 @@ const SpeedDialPage = () => {
             }}
             disabled={importLoading}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={speedDialModalCancelBtnStyle}
           >
             Cancel
           </Btn>

@@ -1,4 +1,4 @@
-export const EXTENSION_GROUP_FIELD_TOOLTIPS = {
+export const EXT_GROUP_FIELD_TOOLTIPS = {
   group_name:
     "Enter a unique name for this extension group (e.g. Sales, Support). This name is used to identify the group in lists and routing.",
 

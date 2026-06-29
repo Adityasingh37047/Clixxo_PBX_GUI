@@ -1,3 +1,5 @@
+export const OUTBOUND_RESTRICTION_ENABLE_OPTIONS = ["Yes", "No"];
+
 /** Field tooltips for Outbound Restrictions — concise, 1–4 lines */
 export const OUTBOUND_RESTRICTION_FIELD_TOOLTIPS = {
   name:

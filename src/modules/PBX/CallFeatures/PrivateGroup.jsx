@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import {Alert,
-  Button,
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -12,9 +12,10 @@ import {Alert,
   FormControl,
   MenuItem,
   Select as MuiSelect,
-  Checkbox,
-  TextField, useMediaQuery } from "@mui/material";
-
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   createPrivateGroup,
   deletePrivateGroup,
@@ -22,76 +23,41 @@ import {
   listPrivateGroups,
   updatePrivateGroup,
 } from "../../../api/apiService";
-import { PRIVATE_GROUP_ITEMS_PER_PAGE } from "../../../constants/PrivateGroupConstants";
+import {
+  PRIVATE_GROUP_FIELD_TOOLTIPS,
+  PRIVATE_GROUP_ITEMS_PER_PAGE,
+  PRIVATE_GROUP_TITLE,
+} from "../../../constants/PrivateGroupConstants";
+
+const PRIVATE_GROUP_COMPACT_MQ = "(max-width: 768px)";
 const ENABLE_OPTIONS = ["Yes", "No"];
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
-};
-const CARD_RADIUS = 10;
-
-const codecDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
 };
 
-const codecDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const CodecDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={codecDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -100,9 +66,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -113,11 +80,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -125,41 +88,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -177,30 +166,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -213,8 +203,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -225,38 +215,39 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
+const privateGroupTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const privateGroupTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const PRIVATE_GROUP_TABLE_CARD_RADIUS = 10;
+
+const privateGroupPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const privateGroupPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const PrivateGroupBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -277,6 +268,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -329,94 +321,536 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  tooltip,
-}) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 150,
-          flexShrink: 0,
-          paddingTop: align === "flex-start" ? 8 : 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const privateGroupCardStyle = {
+  background: "#ffffff",
+  borderRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
+const privateGroupToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
+};
 
-const tooltipProps = {
+const privateGroupPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const privateGroupSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const privateGroupCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const privateGroupPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const privateGroupPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const privateGroupFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const privateGroupEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handlePrivateGroupEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const privateGroupOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const privateGroupModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...privateGroupOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const privateGroupModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...privateGroupOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const privateGroupModalPaperSx = {
+  width: 900,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const privateGroupModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const privateGroupModalSectionStyle = {
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const privateGroupModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const privateGroupModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PRIVATE_GROUP_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
 
-const PBX_MODAL_SECTION_BG = "#f5f7fa";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const formatPrivateGroupTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
 
-const SectionHeading = ({ title, isFirst = false, required }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const PRIVATE_GROUP_MODAL_LABEL_WIDTH = 140;
+const PRIVATE_GROUP_MODAL_SECTION_BG = "#f8fafc";
+const PRIVATE_GROUP_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PrivateGroupFieldLabel = ({
+  tooltipKey,
+  children,
+  required,
+  style = {},
+}) => {
+  const tooltip = PRIVATE_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+      {required ? (
+        <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+      ) : null}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatPrivateGroupTooltipTitle(tooltip)}
+      {...PRIVATE_GROUP_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const PrivateGroupFieldRow = ({ label, tooltipKey, required, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    {tooltipKey ? (
+      <PrivateGroupFieldLabel
+        tooltipKey={tooltipKey}
+        required={required}
+        style={{
+          width: PRIVATE_GROUP_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+      </PrivateGroupFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: PRIVATE_GROUP_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+        ) : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const PrivateGroupSectionHeading = ({
+  title,
+  isFirst = false,
+  required = false,
+  tooltipKey,
+}) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: PRIVATE_GROUP_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: PRIVATE_GROUP_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
     </span>
-  </div>
+  );
+  const tooltip = tooltipKey ? PRIVATE_GROUP_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatPrivateGroupTooltipTitle(tooltip)}
+          {...PRIVATE_GROUP_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
+
+const PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT = 188;
+const PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH = 40;
+const PRIVATE_GROUP_MEMBER_CODEC_BTN_GAP = 6;
+const PRIVATE_GROUP_MEMBER_CODEC_BTN_HEIGHT =
+  (PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT -
+    PRIVATE_GROUP_MEMBER_CODEC_BTN_GAP * 3) /
+  4;
+const PRIVATE_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET = 28;
+
+const privateGroupMemberCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getPrivateGroupMemberCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  height: PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const privateGroupMemberCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const privateGroupMemberCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const privateGroupMemberCodecDualListBtnStyle = {
+  width: PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
+  height: PRIVATE_GROUP_MEMBER_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const privateGroupMemberCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: PRIVATE_GROUP_MEMBER_CODEC_BTN_GAP,
+  height: PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  width: PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
+};
+
+const PrivateGroupMemberCodecDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={privateGroupMemberCodecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
 );
+
+const PrivateGroupMemberCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getPrivateGroupMemberCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={privateGroupMemberCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={privateGroupMemberCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PrivateGroup = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(PRIVATE_GROUP_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -558,12 +992,10 @@ const PrivateGroup = () => {
   const somePageSelected =
     pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
 
-  const handleToggleRow = (idx) => {
+  const handleToggleRow = (idx) =>
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
-  };
-
   const handleToggleAll = () => {
     if (!pageIndices.length) return;
     setSelected((prev) =>
@@ -736,10 +1168,29 @@ const PrivateGroup = () => {
     setChosenSelected([]);
   };
 
+  const toggleAvailableMemberSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+  const toggleChosenMemberSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const availableMemberEmptyText = loading.extensions
+    ? "Loading..."
+    : "No extension";
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...privateGroupPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={privateGroupPageInnerStyle}>
         {message.text && (
           <Alert
             severity={
@@ -750,45 +1201,25 @@ const PrivateGroup = () => {
                   : "info"
             }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={privateGroupFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Private Group" />
+        <PrivateGroupBreadcrumb
+          section="Call Features"
+          current={PRIVATE_GROUP_TITLE}
+        />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={privateGroupCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...privateGroupToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -799,17 +1230,7 @@ const PrivateGroup = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={privateGroupSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -829,36 +1250,32 @@ const PrivateGroup = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={privateGroupCancelBtnStyle}
               >
-                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
-
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={privateGroupPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "hidden",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -892,7 +1309,7 @@ const PrivateGroup = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={privateGroupTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -937,6 +1354,9 @@ const PrivateGroup = () => {
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
+                    const lastRowCellStyle = {
+                      borderBottom: isLastRow ? "none" : privateGroupTdStyle.borderBottom,
+                    };
 
                     return (
                       <tr
@@ -956,50 +1376,42 @@ const PrivateGroup = () => {
                       >
                         <td
                           style={{
-                            ...tdStyle,
+                            ...privateGroupTdStyle,
                             background: rowBg,
                             borderLeft: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={privateGroupTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...privateGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...privateGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...privateGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
@@ -1017,11 +1429,9 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...privateGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {(row.members || [])
@@ -1034,33 +1444,30 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            textAlign: "center",
-                            padding: "7px 8px",
-                            ...tdStyle,
+                            ...privateGroupTdStyle,
                             background: rowBg,
                             borderRight: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom
+                            ...lastRowCellStyle,
                           }}
                         >
-                                                    <EditDocumentIcon
-                            titleAccess="Edit"
-                            onClick={() => handleOpenEditModal(row)}
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={privateGroupEditIconStyle}
+                              onMouseEnter={(e) =>
+                                handlePrivateGroupEditIconHover(e, true)
+                              }
+                              onMouseLeave={(e) =>
+                                handlePrivateGroupEditIconHover(e, false)
+                              }
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1070,20 +1477,8 @@ const PrivateGroup = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={privateGroupPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -1096,17 +1491,7 @@ const PrivateGroup = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={privateGroupPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1122,212 +1507,130 @@ const PrivateGroup = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: privateGroupModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          {editId != null ? "Edit Private Group" : "Add Private Group"}
+        <DialogTitle style={privateGroupModalTitleStyle}>
+          {editId != null ? `Edit ${PRIVATE_GROUP_TITLE}` : `Add ${PRIVATE_GROUP_TITLE}`}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={privateGroupModalSectionStyle}>
             <div
               style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
+                display: "grid",
+                gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+                gap: "16px 32px",
               }}
             >
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
-                  gap: "16px 32px",
-                }}
-              >
-                <FieldRow label="Name" required tooltip="User-defined name of a private group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  />
-                </FieldRow>
+              <PrivateGroupFieldRow label="Name" tooltipKey="name" required>
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  sx={privateGroupModalTextFieldFullSx}
+                />
+              </PrivateGroupFieldRow>
 
-                <FieldRow label="Enable" required tooltip="Set whether to enable this private group. Yes: The private group is enabled. No: The private group is disabled.">
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      value={enabled}
-                      onChange={(e) => setEnabled(e.target.value)}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "#fff",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
-                    >
-                      <MenuItem value="Yes" sx={{ fontSize: 13 }}>
-                        Yes
-                      </MenuItem>
-                      <MenuItem value="No" sx={{ fontSize: 13 }}>
-                        No
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </FieldRow>
-              </div>
-
-              <SectionHeading title="Member Extensions" />
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
-                  gap: 12,
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#3e5475",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
+              <PrivateGroupFieldRow label="Enable" tooltipKey="enabled" required>
+                <FormControl size="small" fullWidth>
+                  <MuiSelect
+                    value={enabled}
+                    onChange={(e) => setEnabled(e.target.value)}
+                    sx={privateGroupModalSelectSx}
                   >
-                    Available
-                  </div>
-                  <select
-                    multiple
-                    value={availableSelected}
-                    onChange={(e) =>
-                      setAvailableSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={codecDualListSelectStyle}
-                  >
-                    {loading.extensions ? (
-                      <option disabled>Loading...</option>
-                    ) : availableList.length === 0 ? (
-                      <option disabled>No extensions</option>
-                    ) : (
-                      availableList.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                    {ENABLE_OPTIONS.map((opt) => (
+                      <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
+              </PrivateGroupFieldRow>
+            </div>
+
+            <PrivateGroupSectionHeading
+              title="Member Extensions"
+              required
+              tooltipKey="member"
+            />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `1fr ${PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH}px 1fr`,
+                gap: 10,
+                width: "100%",
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <div style={privateGroupMemberCodecColumnLabelStyle}>
+                  Available
                 </div>
+                <PrivateGroupMemberCodecListBox
+                  items={loading.extensions ? [] : availableList}
+                  selectedIds={availableSelected}
+                  onToggle={toggleAvailableMemberSelect}
+                  emptyText={availableMemberEmptyText}
+                  getLabel={(id) => {
+                    const item = availableList.find((x) => x.value === id);
+                    return item?.label || getExtLabel(id);
+                  }}
+                />
+              </div>
+              <div>
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
+                    height: PRIVATE_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET,
                   }}
-                >
-                  <CodecDualListBtn onClick={addSelectedMembers}>
+                  aria-hidden="true"
+                />
+                <div style={privateGroupMemberCodecBtnColumnStyle}>
+                  <PrivateGroupMemberCodecDualListBtn
+                    onClick={addSelectedMembers}
+                  >
                     &gt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={addAllMembers}>
+                  </PrivateGroupMemberCodecDualListBtn>
+                  <PrivateGroupMemberCodecDualListBtn onClick={addAllMembers}>
                     &gt;&gt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={removeSelectedMembers}>
+                  </PrivateGroupMemberCodecDualListBtn>
+                  <PrivateGroupMemberCodecDualListBtn
+                    onClick={removeSelectedMembers}
+                  >
                     &lt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={removeAllMembers}>
+                  </PrivateGroupMemberCodecDualListBtn>
+                  <PrivateGroupMemberCodecDualListBtn onClick={removeAllMembers}>
                     &lt;&lt;
-                  </CodecDualListBtn>
+                  </PrivateGroupMemberCodecDualListBtn>
                 </div>
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#3e5475",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Selected
-                  </div>
-                  <select
-                    multiple
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={codecDualListSelectStyle}
-                  >
-                    {memberExtensions.length === 0 ? (
-                      <option disabled>No selected members</option>
-                    ) : (
-                      memberExtensions.map((id) => (
-                        <option key={id} value={id}>
-                          {getExtLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+              </div>
+              <div>
+                <div style={privateGroupMemberCodecColumnLabelStyle}>
+                  Selected
                 </div>
+                <PrivateGroupMemberCodecListBox
+                  items={memberExtensions}
+                  selectedIds={chosenSelected}
+                  onToggle={toggleChosenMemberSelect}
+                  emptyText="No selected member"
+                  getLabel={getExtLabel}
+                />
               </div>
             </div>
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={privateGroupModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1344,13 +1647,12 @@ const PrivateGroup = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={privateGroupModalCancelBtnStyle}
           >
             Cancel
           </Btn>
         </DialogActions>
       </Dialog>
-
     </div>
   );
 };

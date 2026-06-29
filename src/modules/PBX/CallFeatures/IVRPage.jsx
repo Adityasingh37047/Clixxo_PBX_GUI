@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import Tooltip from "@mui/material/Tooltip";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import {Button,
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -11,16 +13,16 @@ import {Button,
   DialogTitle,
   FormControl,
   IconButton,
+  InputAdornment,
   ListSubheader,
   MenuItem,
   Select as MuiSelect,
-  Checkbox,
-  TextField,
-  InputAdornment,
-  Alert,
+  Tab,
   Tabs,
-  Tab, useMediaQuery } from "@mui/material";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   listIvrDestinations,
   listIvrs,
@@ -32,22 +34,26 @@ import {
   getIvr,
   setIvrKeys,
 } from "../../../api/apiService";
+import {
+  IVR_CHECK_VOICEMAIL_OPTIONS,
+  IVR_DIRECT_EXTENSION_OPTIONS,
+  IVR_EMPTY_PROMPT_OPTIONS,
+  IVR_EMPTY_RING_BACK_OPTIONS,
+  IVR_ENABLE_OPTIONS,
+  IVR_FIELD_TOOLTIPS,
+  IVR_FXO_FLASH_TRANSFER_OPTIONS,
+  IVR_KEYS,
+  IVR_MODAL_TABS,
+  IVR_TEXT_TARGET_TYPES,
+  IVR_TITLE,
+} from "../../../constants/IVRConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const IVR_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Constants & Helpers ───────────────────────────────────────────────────────
-const ENABLE_OPTIONS = ["Yes", "No"];
-const CHECK_VOICEMAIL_OPTIONS = ["Disable", "Enable"];
-const DIRECT_EXTENSION_OPTIONS = ["Disable", "Enable"];
-const FXO_FLASH_TRANSFER_OPTIONS = ["Disable", "Enable"];
-const EMPTY_PROMPT_OPTIONS = { system: [], custom: [] };
-const EMPTY_RING_BACK_OPTIONS = {
-  country_tones: [],
-  moh_categories: [],
-  custom_prompts: [],
-};
-const KEYS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "#"];
-const TEXT_TARGET_TYPES = new Set(["Custom", "DialByName", "FlashCustom"]);
+const TEXT_TARGET_TYPES = new Set(IVR_TEXT_TARGET_TYPES);
+const EMPTY_PROMPT_OPTIONS = IVR_EMPTY_PROMPT_OPTIONS;
+const EMPTY_RING_BACK_OPTIONS = IVR_EMPTY_RING_BACK_OPTIONS;
+const KEYS = IVR_KEYS;
 
 const normalizeGreetShortUi = (v) => {
   if (v == null || v === "") return "Null";
@@ -136,76 +142,205 @@ const normalizeDestinationOptions = (list) => {
     .filter(Boolean);
 };
 
-// ── Color Palette (CDR Style) ─────────────────────────────────────────────────
+// ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#6b7280",
+  codecBtnBg: "#d9dde3",
 };
-const CARD_RADIUS = 10;
 
-const codecDualListSelectStyle = {
+const IVR_OUTBOUND_CODEC_LIST_BOX_HEIGHT = 188;
+const IVR_OUTBOUND_CODEC_BTN_COL_WIDTH = 40;
+const IVR_OUTBOUND_CODEC_BTN_GAP = 6;
+const IVR_OUTBOUND_CODEC_BTN_HEIGHT =
+  (IVR_OUTBOUND_CODEC_LIST_BOX_HEIGHT - IVR_OUTBOUND_CODEC_BTN_GAP * 3) / 4;
+const IVR_OUTBOUND_CODEC_LIST_LABEL_OFFSET = 28;
+
+const ivrOutboundDualListLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getIvrOutboundCodecListBoxStyle = (isEmpty) => ({
   width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
+  minHeight: IVR_OUTBOUND_CODEC_LIST_BOX_HEIGHT,
+  height: IVR_OUTBOUND_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
   boxSizing: "border-box",
   overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const ivrOutboundCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
 };
 
-const codecDualListBtnStyle = {
-  height: 36,
+const ivrOutboundCodecStripStyle = (isSelected) => ({
+  display: "block",
   width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const ivrOutboundCodecDualListBtnStyle = {
+  width: IVR_OUTBOUND_CODEC_BTN_COL_WIDTH,
+  height: IVR_OUTBOUND_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
   color: "#111827",
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
   fontFamily: "inherit",
   lineHeight: 1,
   padding: 0,
   margin: 0,
   cursor: "pointer",
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   boxSizing: "border-box",
-  textAlign: "center",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
 };
 
-const codecDualListReorderBtnStyle = {
-  ...codecDualListBtnStyle,
-  fontWeight: 400,
+const ivrOutboundCodecDualListReorderBtnStyle = {
+  ...ivrOutboundCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
 };
 
-const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const ivrOutboundCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: IVR_OUTBOUND_CODEC_BTN_GAP,
+  height: IVR_OUTBOUND_CODEC_LIST_BOX_HEIGHT,
+  width: IVR_OUTBOUND_CODEC_BTN_COL_WIDTH,
+};
+
+const IvrOutboundCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    style={
+      reorder
+        ? ivrOutboundCodecDualListReorderBtnStyle
+        : ivrOutboundCodecDualListBtnStyle
+    }
     onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.background = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
     }}
   >
     {children}
   </button>
 );
 
-// ── Shared UI Components ──────────────────────────────────────────────────────
+const IvrOutboundCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getIvrOutboundCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={ivrOutboundCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "object" ? item.id : item;
+          const label = getLabel
+            ? getLabel(id)
+            : typeof item === "object"
+              ? item.name || String(id)
+              : String(item);
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={ivrOutboundCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -214,9 +349,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -227,53 +363,75 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -291,30 +449,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -327,8 +486,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -343,12 +502,12 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const ivrTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -357,20 +516,20 @@ const checkboxSx = {
 
 
 // ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const ivrPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const ivrPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const IvrBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -443,61 +602,299 @@ const TableListEmptyState = ({
   </div>
 );
 
-const tooltipProps = {
+const IVR_TABLE_CARD_RADIUS = 10;
+
+const ivrCardStyle = {
+  background: "#ffffff",
+  borderRadius: IVR_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const ivrToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: IVR_TABLE_CARD_RADIUS,
+  borderTopRightRadius: IVR_TABLE_CARD_RADIUS,
+};
+
+const ivrPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: IVR_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: IVR_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const ivrSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const ivrCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const ivrPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const ivrPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const ivrFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const ivrEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleIvrEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const ivrOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const ivrModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...ivrOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const ivrModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...ivrOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const ivrModalPaperSx = {
+  width: 900,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const ivrModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const ivrModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+  marginTop: 24,
+};
+
+const ivrModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const ivrModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const ivrModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const IVR_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
 
-const PBX_MODAL_TAB_BAR_STYLE = {
-  borderBottom: "1px solid #e5e7eb",
+const formatIvrTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const ivrModalTabBarStyle = {
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
 };
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
-
-const pbxModalTabsSx = {
+const ivrModalTabsSx = {
   minHeight: 45,
   "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    color: "#374151",
     fontSize: 12,
     fontWeight: 500,
     textTransform: "none",
     minHeight: 45,
   },
   "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    color: C.accent,
     fontWeight: 700,
   },
 };
 
-const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
-  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+const IvrModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={ivrModalTabBarStyle}>
     <Tabs
       value={value}
       onChange={(_, next) => onChange(next)}
       variant={fullWidth ? "fullWidth" : "standard"}
       TabIndicatorProps={{
-        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+        style: { backgroundColor: C.accent, height: 2 },
       }}
-      sx={pbxModalTabsSx}
+      sx={ivrModalTabsSx}
     >
       {tabs.map((t) => (
         <Tab key={t.id} label={t.label} value={t.id} />
@@ -506,58 +903,58 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const IVR_MODAL_LABEL_WIDTH = 150;
 
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const IvrFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = IVR_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
     <span
       style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: PBX_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: 600,
-        color: "#30415A",
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
       }}
     >
-      {title}
+      {children}
     </span>
-  </div>
-);
-
-const FieldRow = ({ label, children, required, tooltip }) => (
-  <div
-    style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
-  >
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 150,
-          flexShrink: 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip title={formatIvrTooltipTitle(tooltip)} {...IVR_TOOLTIP_PROPS}>
+      {label}
     </Tooltip>
+  );
+};
 
+const IvrFieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  required = false,
+  alignTop = false,
+  labelWidth = IVR_MODAL_LABEL_WIDTH,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: alignTop ? "flex-start" : "center",
+      gap: 12,
+      minHeight: alignTop ? undefined : 32,
+    }}
+  >
+    <IvrFieldLabel
+      tooltipKey={tooltipKey}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        marginTop: alignTop ? 4 : 0,
+      }}
+    >
+      {label}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
+    </IvrFieldLabel>
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
@@ -565,7 +962,7 @@ const FieldRow = ({ label, children, required, tooltip }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const IVRPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(IVR_COMPACT_MQ);
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -1232,6 +1629,18 @@ const IVRPage = () => {
     setChosenSelected([]);
   };
 
+  const toggleAvailableRouteSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenRouteSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   const moveOutboundUp = () => {
     if (!chosenSelected.length) return;
     const ids = [...selectedOutboundRouteIds];
@@ -1349,9 +1758,7 @@ const IVRPage = () => {
           fullWidth
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          inputProps={{
-            style: { fontSize: 13, padding: "6px 8px", background: "#fff" },
-          }}
+          sx={ivrModalTextFieldFullSx}
         />
       );
     }
@@ -1451,52 +1858,33 @@ const IVRPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...ivrPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={ivrPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={ivrFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="IVR" />
+        <IvrBreadcrumb section="Call Features" current={IVR_TITLE} />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={ivrCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...ivrToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -1507,17 +1895,7 @@ const IVRPage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={ivrSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1604,39 +1982,20 @@ const IVRPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={ivrCancelBtnStyle}
               >
+                {loading.delete && (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                )}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
-
-              {/* <Btn
-                onClick={fetchInitialData}
-                disabled={loading.list}
-                variant="default"
-              >
-                {loading.list ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
 
               <Btn
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                  color: "#fff",
-                  border: "1px solid #5A6F8F",
-                }}
+                style={ivrPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1683,7 +2042,7 @@ const IVRPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={ivrTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1765,7 +2124,7 @@ const IVRPage = () => {
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={ivrTableCheckboxSx}
                           />
                         </td>
                         <td
@@ -1886,22 +2245,16 @@ const IVRPage = () => {
                             borderRight: "none",
                           }}
                         >
-                                                    <EditDocumentIcon
+                          <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
-                            style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
+                            style={ivrEditIconStyle}
+                            onMouseEnter={(e) =>
+                              handleIvrEditIconHover(e, true)
+                            }
+                            onMouseLeave={(e) =>
+                              handleIvrEditIconHover(e, false)
+                            }
                           />
                         </td>
                       </tr>
@@ -1912,20 +2265,8 @@ const IVRPage = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={ivrPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -1938,17 +2279,7 @@ const IVRPage = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={ivrPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1964,80 +2295,42 @@ const IVRPage = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
-   <Dialog
-  open={showModal}
-  onClose={loading.save ? null : handleCloseModal}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    
-      pt: 5,
-    },
-  }}
-  PaperProps={{
-    sx: {
-      width: 900,
-      maxWidth: "96vw",
-      mx: "auto",
-      p: 0,
-      borderRadius: "8px",
-      overflow: "hidden",
-    },
-  }}
->
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: 16,
-            padding: "16px 24px",
-            textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }}
-        >
+      <Dialog
+        open={showModal}
+        onClose={loading.save ? null : handleCloseModal}
+        maxWidth={false}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: ivrModalPaperSx }}
+        disableRestoreFocus
+        disableEnforceFocus
+      >
+        <DialogTitle style={ivrModalTitleStyle}>
           {editId != null ? "Edit IVR" : "Add IVR"}
         </DialogTitle>
 
-      <DialogContent
-  style={{
-    padding: "0px 24px 20px",
-    backgroundColor: "#ffffff",
-  }}
->
+        <DialogContent
+          className="app-main-scroll"
+          style={{
+            padding: "0px 24px 20px",
+            backgroundColor: "#ffffff",
+          }}
+          sx={ivrModalDialogContentSx}
+        >
           <div
             style={{
-               borderBottom: "0.5px solid #eef2f7",
+              borderBottom: `1px solid ${C.divider}`,
               background: "#ffffff",
               marginLeft: "-24px",
               marginRight: "-24px",
             }}
           >
-            <PbxModalTabs
-  value={activeTab}
-  onChange={setActiveTab}
-  tabs={[
-    { id: "basic", label: "BASIC" },
-    { id: "keypress", label: "KEY PRESS EVENT" },
-  ]}
-/>
+            <IvrModalTabs
+              value={activeTab}
+              onChange={setActiveTab}
+              tabs={IVR_MODAL_TABS}
+            />
           </div>
-        <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-    width: "100%",
-    background: "#f8fafc",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 8,
-    padding: 20,
-    marginTop: 24,
-  }}
->
+          <div style={ivrModalFormStyle}>
             <div style={{ padding: 0 }}>
               {/* ── BASIC TAB ── */}
               {activeTab === "basic" && (
@@ -2067,57 +2360,27 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                  <FieldRow
-  label="Name"
-  tooltip="User-defined IVR name. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_only."
-  required
->
+                  <IvrFieldRow label="Name" tooltipKey="name" required>
   <TextField
     size="small"
     fullWidth
     value={name}
     onChange={(e) => setName(e.target.value)}
-    inputProps={{
-      style: {
-        fontSize: 13,
-        padding: "6px 8px",
-        backgroundColor: "#fff",
-      },
-    }}
+    sx={ivrModalTextFieldFullSx}
   />
-</FieldRow>
-                        <FieldRow label={
-  <Tooltip
-    title="The extension number dialed to reach this IVR. Range of value: 6500-6599. You can modified in the submenu preference in the menu PBX."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>IVR Number</span>
-  </Tooltip>
-} required>
+</IvrFieldRow>
+                        <IvrFieldRow label="IVR Number" tooltipKey="ivr_number" required>
                           <TextField
                             size="small"
                             fullWidth
                             type="number"
                             value={ivrNumber}
                             onChange={(e) => setIvrNumber(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="It is played as the first prompt for entering the IVR menu. The default setting is default."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Greet Long</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Greet Long" tooltipKey="greet_long" required>
                           <div
                             style={{
                               display: "flex",
@@ -2130,16 +2393,7 @@ const IVRPage = () => {
                               <MuiSelect
                                 value={greetLong}
                                 onChange={(e) => setGreetLong(e.target.value)}
-                                sx={{
-                                  fontSize: 13,
-                                  backgroundColor: "#fff",
-                                  height: 32,
-                                  "& .MuiSelect-select": {
-                                    padding: "6px 8px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  },
-                                }}
+                                sx={ivrModalSelectSx}
                               >
                                 {greetLongOptions.map((opt) => (
                                   <MenuItem
@@ -2164,16 +2418,9 @@ const IVRPage = () => {
                               Prompt
                             </span>
                           </div>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="It is played when the user doesn't enter any key or enters a wrong key. By default it is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Greet Short</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Greet Short" tooltipKey="greet_short" required>
                           <div
                             style={{
                               display: "flex",
@@ -2186,16 +2433,7 @@ const IVRPage = () => {
                               <MuiSelect
                                 value={greetShort}
                                 onChange={(e) => setGreetShort(e.target.value)}
-                                sx={{
-                                  fontSize: 13,
-                                  backgroundColor: "#fff",
-                                  height: 32,
-                                  "& .MuiSelect-select": {
-                                    padding: "6px 8px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  },
-                                }}
+                                sx={ivrModalSelectSx}
                               >
                                 {greetShortOptions.map((opt) => (
                                   <MenuItem
@@ -2220,53 +2458,27 @@ const IVRPage = () => {
                               Prompt
                             </span>
                           </div>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The number of milliseconds to wait for a digit input after prompt, in miliseconds. If no DTMF is received, it will repeat the prompt according to the Max Timeouts settings until it has finished the rrepeat. After that, call will go to the Timeout destination set in options. Default is 10000."
-    {...tooltipProps}
-  >
-      <span style={{ cursor: "help" }}>Response Timeout(ms)</span>
-    </Tooltip>
-  } required>
+                        <IvrFieldRow label="Response Timeout(ms)" tooltipKey="response_timeout" required>
                           <TextField
                             size="small"
                             fullWidth
                             type="number"
                             value={responseTimeout}
                             onChange={(e) => setResponseTimeout(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="Set IVR password, default is 0000."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Password</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Password" tooltipKey="password" required>
                           <TextField
                             size="small"
                             fullWidth
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                             InputProps={{
                               endAdornment: (
                                 <InputAdornment position="end">
@@ -2286,34 +2498,18 @@ const IVRPage = () => {
                               ),
                             }}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="If enabled, the caller will be allowed to dial feature code: Voicemail main menu to check voicemail."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Check Voicemail</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Check Voicemail" tooltipKey="check_voicemail" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={checkVoicemail}
                               onChange={(e) =>
                                 setCheckVoicemail(e.target.value)
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
-                              {CHECK_VOICEMAIL_OPTIONS.map((opt) => (
+                              {IVR_CHECK_VOICEMAIL_OPTIONS.map((opt) => (
                                 <MenuItem
                                   key={opt}
                                   value={opt}
@@ -2324,43 +2520,22 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                          }}
+                        <IvrFieldRow
+                          label="Direct Outbound"
+                          tooltipKey="direct_outbound"
+                          labelWidth={170}
                         >
-                         <Tooltip
-  title="Set whether the user can dial directly out after hearing the IVR prompt. By default it is unticked."
-  {...tooltipProps}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: 170,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Direct Outbound
-  </label>
-</Tooltip>
-                          <div style={{ flex: 1 }}>
-                            <Checkbox
-                              checked={directOutbound}
-                              onChange={(e) =>
-                                setDirectOutbound(e.target.checked)
-                              }
-                              size="small"
-                              sx={checkboxSx}
-                            />
-                          </div>
-                        </div>
+                          <Checkbox
+                            checked={directOutbound}
+                            onChange={(e) =>
+                              setDirectOutbound(e.target.checked)
+                            }
+                            size="small"
+                            sx={ivrTableCheckboxSx}
+                          />
+                        </IvrFieldRow>
                       </div>
 
                       {/* Right Column */}
@@ -2371,14 +2546,7 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label={
-  <Tooltip
-    title="The maximum time between your entering of two adjacent DTMF digits. The default value is 3000ms."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Inter-Digit Timeout(ms)</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Inter-Digit Timeout(ms)" tooltipKey="inter_digit_timeout" required>
                           <TextField
                             size="small"
                             fullWidth
@@ -2387,112 +2555,51 @@ const IVRPage = () => {
                             onChange={(e) =>
                               setInterDigitTimeout(e.target.value)
                             }
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The maximum number of failed attempts before the IVR is considered to have failed. The default setting is 3."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Max Failures</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Max Failures" tooltipKey="max_failures" required>
                           <TextField
                             size="small"
                             fullWidth
                             type="number"
                             value={maxFailures}
                             onChange={(e) => setMaxFailures(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The maximum number of timeouts before the IVR is considered to have failed. The default setting is 3."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Max Timeouts</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Max Timeouts" tooltipKey="max_timeouts" required>
                           <TextField  
                             size="small"
                             fullWidth
                             type="number"
                             value={maxTimeouts}
                             onChange={(e) => setMaxTimeouts(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The length of the digits to be entered by the caller. The default setting is 4."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Digit Length</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Digit Length" tooltipKey="digit_length" required>
                           <TextField
                             size="small"
                             fullWidth
                             type="number"
                             value={digitLength}
                             onChange={(e) => setDigitLength(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="Enable the IVR to be used. The default setting is unticked."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Enabled</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Enabled" tooltipKey="enabled" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={enabled}
                               onChange={(e) => setEnabled(e.target.value)}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
-                              {ENABLE_OPTIONS.map((opt) => (
+                              {IVR_ENABLE_OPTIONS.map((opt) => (
                                 <MenuItem
                                   key={opt}
                                   value={opt}
@@ -2503,34 +2610,18 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="Enable direct extension to allow calls to be placed through direct extension without additional restrictions."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Direct Extension</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Direct Extension" tooltipKey="direct_extension" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={directExtension}
                               onChange={(e) =>
                                 setDirectExtension(e.target.value)
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
-                              {DIRECT_EXTENSION_OPTIONS.map((opt) => (
+                              {IVR_DIRECT_EXTENSION_OPTIONS.map((opt) => (
                                 <MenuItem
                                   key={opt}
                                   value={opt}
@@ -2541,34 +2632,18 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="Enable FXO flash transfer to allow calls to be placed through FXO flash transfer without additional restrictions."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>FXO Flash Transfer</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="FXO Flash Transfer" tooltipKey="fxo_flash_transfer" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={fxoFlashTransfer}
                               onChange={(e) =>
                                 setFxoFlashTransfer(e.target.value)
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
-                              {FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
+                              {IVR_FXO_FLASH_TRANSFER_OPTIONS.map((opt) => (
                                 <MenuItem
                                   key={opt}
                                   value={opt}
@@ -2579,7 +2654,7 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
                       </div>
                     </div>
 
@@ -2615,144 +2690,115 @@ const IVRPage = () => {
                         <div
                           style={{
                             display: "grid",
-                            gridTemplateColumns: "1fr 48px 1fr 48px",
-                            gap: 12,
+                            gridTemplateColumns: `1fr ${IVR_OUTBOUND_CODEC_BTN_COL_WIDTH}px 1fr ${IVR_OUTBOUND_CODEC_BTN_COL_WIDTH}px`,
+                            gap: 10,
+                            width: "100%",
+                            alignItems: "start",
                             marginTop: 16,
                           }}
                         >
                           <div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: "#30415A",
-                                textAlign: "center",
-                                marginBottom: 8,
-                              }}
-                            >
+                            <div style={ivrOutboundDualListLabelStyle}>
                               Available Routes
                             </div>
-                            <select
-                              multiple
-                              value={availableSelected.map(String)}
-                              onChange={(e) =>
-                                setAvailableSelected(
-                                  Array.from(e.target.selectedOptions, (opt) =>
-                                    Number(opt.value),
-                                  ).filter((n) => Number.isFinite(n)),
-                                )
+                            <IvrOutboundCodecListBox
+                              items={
+                                loading.outboundRoutes ? [] : availableOutboundList
                               }
-                              style={codecDualListSelectStyle}
-                            >
-                              {loading.outboundRoutes ? (
-                                <option disabled>Loading routes...</option>
-                              ) : availableOutboundList.length === 0 ? (
-                                <option disabled>No routes available</option>
-                              ) : (
-                                availableOutboundList.map((r) => (
-                                  <option key={r.id} value={r.id}>
-                                    {r.name}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 4,
-                              paddingTop: 28,
-                            }}
-                          >
-                            <CodecDualListBtn
-                              onClick={addSelectedOutboundRoutes}
-                            >
-                              &gt;
-                            </CodecDualListBtn>
-                            <CodecDualListBtn onClick={addAllOutboundRoutes}>
-                              &gt;&gt;
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              onClick={removeSelectedOutboundRoutes}
-                            >
-                              &lt;
-                            </CodecDualListBtn>
-                            <CodecDualListBtn onClick={removeAllOutboundRoutes}>
-                              &lt;&lt;
-                            </CodecDualListBtn>
+                              selectedIds={availableSelected}
+                              onToggle={toggleAvailableRouteSelect}
+                              emptyText={
+                                loading.outboundRoutes
+                                  ? "Loading routes..."
+                                  : "No routes available"
+                              }
+                              getLabel={(id) => {
+                                const item = availableOutboundList.find(
+                                  (r) => r.id === id,
+                                );
+                                return item?.name || getOutboundRouteLabel(id);
+                              }}
+                            />
                           </div>
                           <div>
                             <div
                               style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: "#30415A",
-                                textAlign: "center",
-                                marginBottom: 8,
+                                height: IVR_OUTBOUND_CODEC_LIST_LABEL_OFFSET,
                               }}
-                            >
+                              aria-hidden="true"
+                            />
+                            <div style={ivrOutboundCodecBtnColumnStyle}>
+                              <IvrOutboundCodecDualListBtn
+                                onClick={addSelectedOutboundRoutes}
+                              >
+                                &gt;
+                              </IvrOutboundCodecDualListBtn>
+                              <IvrOutboundCodecDualListBtn
+                                onClick={addAllOutboundRoutes}
+                              >
+                                &gt;&gt;
+                              </IvrOutboundCodecDualListBtn>
+                              <IvrOutboundCodecDualListBtn
+                                onClick={removeSelectedOutboundRoutes}
+                              >
+                                &lt;
+                              </IvrOutboundCodecDualListBtn>
+                              <IvrOutboundCodecDualListBtn
+                                onClick={removeAllOutboundRoutes}
+                              >
+                                &lt;&lt;
+                              </IvrOutboundCodecDualListBtn>
+                            </div>
+                          </div>
+                          <div>
+                            <div style={ivrOutboundDualListLabelStyle}>
                               Selected Routes
                             </div>
-                            <select
-                              multiple
-                              value={chosenSelected.map(String)}
-                              onChange={(e) =>
-                                setChosenSelected(
-                                  Array.from(e.target.selectedOptions, (opt) =>
-                                    Number(opt.value),
-                                  ).filter((n) => Number.isFinite(n)),
-                                )
-                              }
-                              style={codecDualListSelectStyle}
-                            >
-                              {selectedOutboundRouteIds.length === 0 ? (
-                                <option disabled>No selected routes</option>
-                              ) : (
-                                selectedOutboundRouteIds.map((id) => (
-                                  <option key={id} value={id}>
-                                    {getOutboundRouteLabel(id)}
-                                  </option>
-                                ))
-                              )}
-                            </select>
+                            <IvrOutboundCodecListBox
+                              items={selectedOutboundRouteIds}
+                              selectedIds={chosenSelected}
+                              onToggle={toggleChosenRouteSelect}
+                              emptyText="No selected routes"
+                              getLabel={getOutboundRouteLabel}
+                            />
                           </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 4,
-                              paddingTop: 28,
-                            }}
-                          >
-                            <CodecDualListBtn
-                              reorder
-                              title="Move to bottom"
-                              onClick={moveOutboundBottom}
-                            >
-                              vv
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              reorder
-                              title="Move up"
-                              onClick={moveOutboundUp}
-                            >
-                              ^
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              reorder
-                              title="Move down"
-                              onClick={moveOutboundDown}
-                            >
-                              v
-                            </CodecDualListBtn>
-                            <CodecDualListBtn
-                              reorder
-                              title="Move to top"
-                              onClick={moveOutboundTop}
-                            >
-                              ^^
-                            </CodecDualListBtn>
+                          <div>
+                            <div
+                              style={{
+                                height: IVR_OUTBOUND_CODEC_LIST_LABEL_OFFSET,
+                              }}
+                              aria-hidden="true"
+                            />
+                            <div style={ivrOutboundCodecBtnColumnStyle}>
+                              <IvrOutboundCodecDualListBtn
+                                reorder
+                                title="Move to bottom"
+                                onClick={moveOutboundBottom}
+                              >
+                                vv
+                              </IvrOutboundCodecDualListBtn>
+                              <IvrOutboundCodecDualListBtn
+                                reorder
+                                title="Move up"
+                                onClick={moveOutboundUp}
+                              >
+                                ^
+                              </IvrOutboundCodecDualListBtn>
+                              <IvrOutboundCodecDualListBtn
+                                reorder
+                                title="Move down"
+                                onClick={moveOutboundDown}
+                              >
+                                v
+                              </IvrOutboundCodecDualListBtn>
+                              <IvrOutboundCodecDualListBtn
+                                reorder
+                                title="Move to top"
+                                onClick={moveOutboundTop}
+                              >
+                                ^^
+                              </IvrOutboundCodecDualListBtn>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -2804,28 +2850,12 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label={
-  <Tooltip
-    title="The sound to play when the caller enters an invalid digit. The default setting is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Invalid Sound</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Invalid Sound" tooltipKey="invalid_sound" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={invalidSound}
                               onChange={(e) => setInvalidSound(e.target.value)}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
                               {invalidSoundOptions.map((opt) => (
                                 <MenuItem
@@ -2838,30 +2868,14 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The sound to play when the caller exits the IVR. The default setting is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Exit Sound</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Exit Sound" tooltipKey="exit_sound" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={exitSound}
                               onChange={(e) => setExitSound(e.target.value)}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
                               {exitSoundOptions.map((opt) => (
                                 <MenuItem
@@ -2874,16 +2888,9 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The action to take when the caller exits the IVR. The default setting is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Exit Action</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Exit Action" tooltipKey="exit_action" required>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={exitActionType || ""}
@@ -2897,16 +2904,7 @@ const IVRPage = () => {
                                   ? formatActionLabel(value)
                                   : "Select action"
                               }
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
                               <MenuItem value="" sx={{ fontSize: 13 }}>
                                 <em>Select action</em>
@@ -2922,7 +2920,7 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
                       </div>
 
                       {/* Advanced Right Column */}
@@ -2933,14 +2931,7 @@ const IVRPage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label={
-  <Tooltip
-    title="The sound to play when the caller is ringing back. The default setting is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Ring Back</span>
-  </Tooltip>
-} align="flex-start">
+                        <IvrFieldRow label="Ring Back" tooltipKey="ring_back" alignTop>
                           <FormControl size="small" fullWidth>
                             <MuiSelect
                               value={ringBack}
@@ -2948,16 +2939,7 @@ const IVRPage = () => {
                               MenuProps={{
                                 PaperProps: { sx: { maxHeight: 360 } },
                               }}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={ivrModalSelectSx}
                             >
                               {ringBack &&
                                 !ringBackAllValues.includes(ringBack) && (
@@ -3033,16 +3015,9 @@ const IVRPage = () => {
                               ))}
                             </MuiSelect>
                           </FormControl>
-                        </FieldRow>
+                        </IvrFieldRow>
 
-                        <FieldRow label={
-  <Tooltip
-    title="The prefix to add to the caller ID name. The default setting is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Caller ID Name Prefix</span>
-  </Tooltip>
-} required>
+                        <IvrFieldRow label="Caller ID Name Prefix" tooltipKey="caller_id_name_prefix" required>
                           <TextField
                             size="small"
                             fullWidth
@@ -3050,31 +3025,18 @@ const IVRPage = () => {
                             onChange={(e) =>
                               setCallerIdNamePrefix(e.target.value)
                             }
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                backgroundColor: "#fff",
-                              },
-                            }}
+                            sx={ivrModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </IvrFieldRow>
 
                         {exitActionType && (
-                          <FieldRow label={
-  <Tooltip
-    title="The destination to call when the caller exits the IVR. The default setting is null."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Destination</span>
-  </Tooltip>
-} required>
+                          <IvrFieldRow label="Destination" tooltipKey="exit_destination" required>
                             {renderDestinationSelect(
                               exitActionType,
                               exitActionValue,
                               setExitActionValue,
                             )}
-                          </FieldRow>
+                          </IvrFieldRow>
                         )}
                       </div>
                     </div>
@@ -3212,15 +3174,7 @@ const IVRPage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={ivrModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
@@ -3228,22 +3182,21 @@ const IVRPage = () => {
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
-              <CircularProgress
-                size={13}
-                style={{ color: "#fff", marginRight: 8 }}
-              />
-            ) : null}
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update IVR"
-                : "Create IVR"}
+              <>
+                <CircularProgress size={14} style={{ color: "#fff" }} />
+                Saving...
+              </>
+            ) : editId != null ? (
+              "Update IVR"
+            ) : (
+              "Create IVR"
+            )}
           </Btn>
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={ivrModalCancelBtnStyle}
           >
             Cancel
           </Btn>

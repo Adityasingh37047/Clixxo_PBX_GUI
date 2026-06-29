@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import Tooltip from "@mui/material/Tooltip";
-import {Alert,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
-  Select as MuiSelect,
-  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
-  Checkbox, useMediaQuery } from "@mui/material";
-
+  MenuItem,
+  Select as MuiSelect,
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   fetchBlockedList,
   createBlockedEntry,
@@ -21,27 +23,36 @@ import {
   deleteBlockedEntry,
   listConferenceExtensions,
 } from "../../../api/apiService";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  BLOCKED_LIST_DEFAULT_DIRECTION,
+  BLOCKED_LIST_DEFAULT_ENABLED,
+  BLOCKED_LIST_DEFAULT_MATCH_MODE,
+  BLOCKED_LIST_DIRECTION_OPTIONS,
+  BLOCKED_LIST_ENABLE_OPTIONS,
+  BLOCKED_LIST_FIELD_TOOLTIPS,
+  BLOCKED_LIST_MATCH_MODE_OPTIONS,
+} from "../../../constants/BlockedListConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const BLOCKED_LIST_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
 };
 
-const CARD_RADIUS = 10;
-// ── Shared: Action Button ────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -50,9 +61,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -63,11 +75,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -75,41 +83,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -127,30 +161,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -165,8 +200,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -182,32 +217,19 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const blockedListTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
- const pbxModalCancelBtnStyle = {
+const blockedListModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -215,7 +237,21 @@ const pbxPageInnerStyle = {
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
-const PbxBreadcrumb = ({ section, current, style }) => (
+
+const blockedListPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const blockedListPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const BlockedListBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -288,31 +324,330 @@ const TableListEmptyState = ({
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-const tooltipProps = {
+const BLOCKED_LIST_TABLE_CARD_RADIUS = 10;
+
+const blockedListCardStyle = {
+  background: "#ffffff",
+  borderRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const blockedListToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
+  borderTopRightRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
+};
+
+const blockedListPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const blockedListSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const blockedListCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const blockedListPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const blockedListPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const blockedListFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const blockedListEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleBlockedListEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const yesNoCellStyle = (value) => ({
+  color: value === "Yes" ? "#16a34a" : "#475569",
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: "0.01em",
+  whiteSpace: "nowrap",
+});
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const blockedListOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const blockedListModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...blockedListOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const blockedListModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...blockedListOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const blockedListModalPaperSx = {
+  width: 560,
+  maxWidth: "95vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const blockedListModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const blockedListModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const blockedListModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const BLOCKED_LIST_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
 
+const formatBlockedListTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const BlockedListFieldLabel = ({
+  tooltipKey,
+  children,
+  required,
+  style = {},
+}) => {
+  const tooltip = BLOCKED_LIST_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+      {required ? <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span> : null}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatBlockedListTooltipTitle(tooltip)}
+      {...BLOCKED_LIST_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const BLOCKED_LIST_MODAL_LABEL_WIDTH = 160;
+
+const BlockedListFieldRow = ({ label, tooltipKey, required, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    {tooltipKey ? (
+      <BlockedListFieldLabel
+        tooltipKey={tooltipKey}
+        required={required}
+        style={{
+          width: BLOCKED_LIST_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+      </BlockedListFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: BLOCKED_LIST_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+        ) : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
 const BlockedListPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(BLOCKED_LIST_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -334,11 +669,11 @@ const BlockedListPage = () => {
   // Add/Edit modal state
   const [editId, setEditId] = useState(null);
   const [name, setName] = useState("");
-  const [matchMode, setMatchMode] = useState("Exact Match");
+  const [matchMode, setMatchMode] = useState(BLOCKED_LIST_DEFAULT_MATCH_MODE);
   const [blockedNumber, setBlockedNumber] = useState("");
   const [selectedExtension, setSelectedExtension] = useState("");
-  const [direction, setDirection] = useState("Inbound");
-  const [enabled, setEnabled] = useState("Yes");
+  const [direction, setDirection] = useState(BLOCKED_LIST_DEFAULT_DIRECTION);
+  const [enabled, setEnabled] = useState(BLOCKED_LIST_DEFAULT_ENABLED);
   const [availableExtensions, setAvailableExtensions] = useState([]);
 
   const showAlert = (type, text) => {
@@ -499,11 +834,11 @@ const BlockedListPage = () => {
   const resetForm = () => {
     setEditId(null);
     setName("");
-    setMatchMode("Exact Match");
+    setMatchMode(BLOCKED_LIST_DEFAULT_MATCH_MODE);
     setBlockedNumber("");
     setSelectedExtension("");
-    setDirection("Inbound");
-    setEnabled("Yes");
+    setDirection(BLOCKED_LIST_DEFAULT_DIRECTION);
+    setEnabled(BLOCKED_LIST_DEFAULT_ENABLED);
   };
 
   const handleOpenAddModal = () => {
@@ -514,13 +849,13 @@ const BlockedListPage = () => {
   const handleOpenEditModal = (row) => {
     setEditId(row.id);
     setName(row.name || "");
-    setMatchMode(row.matchMode || "Exact Match");
+    setMatchMode(row.matchMode || BLOCKED_LIST_DEFAULT_MATCH_MODE);
     setBlockedNumber(row.blockedNumber || "");
     setSelectedExtension(
       row.matchMode === "Extension" ? row.blockedNumber || "" : "",
     );
-    setDirection(row.direction || "Inbound");
-    setEnabled(row.enabled || "Yes");
+    setDirection(row.direction || BLOCKED_LIST_DEFAULT_DIRECTION);
+    setEnabled(row.enabled || BLOCKED_LIST_DEFAULT_ENABLED);
     setShowModal(true);
   };
 
@@ -584,9 +919,13 @@ const BlockedListPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...blockedListPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={blockedListPageInnerStyle}>
         {error.text && (
           <Alert
             severity={
@@ -597,45 +936,22 @@ const BlockedListPage = () => {
                   : "info"
             }
             onClose={() => setError({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={blockedListFixedAlertSx}
           >
             {error.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Blocked List" />
+        <BlockedListBreadcrumb section="Call Features" current="Blocked List" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={blockedListCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...blockedListToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -646,17 +962,7 @@ const BlockedListPage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={blockedListSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -754,15 +1060,12 @@ const BlockedListPage = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                variant="cancel"
+                style={blockedListCancelBtnStyle}
               >
-                {" "}
+                {loading.delete && (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                )}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -770,12 +1073,7 @@ const BlockedListPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={blockedListPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -831,7 +1129,7 @@ const BlockedListPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={blockedListTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -881,7 +1179,7 @@ const BlockedListPage = () => {
                       ? { borderBottom: "none" }
                       : {};
                     const rowBg = isSelected
-                      ? "#e0f2fe"
+                      ? "#eff6ff"
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
@@ -895,7 +1193,7 @@ const BlockedListPage = () => {
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected)
-                            e.currentTarget.style.background = "#f1f5f9";
+                            e.currentTarget.style.background = "#f8fafc";
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected)
@@ -914,7 +1212,7 @@ const BlockedListPage = () => {
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={blockedListTableCheckboxSx}
                           />
                         </td>
                         <td
@@ -994,16 +1292,7 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span
-                            style={{
-                              color:
-                                row.enabled === "Yes" ? "#16a34a" : "#475569",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <span style={yesNoCellStyle(row.enabled)}>
                             {row.enabled}
                           </span>
                         </td>
@@ -1025,18 +1314,20 @@ const BlockedListPage = () => {
                               titleAccess="Edit"
                               onClick={() => handleOpenEditModal(row)}
                               style={{
-                                cursor: "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: 0.7,
-                                transition: "opacity 0.15s ease",
+                                ...blockedListEditIconStyle,
+                                cursor: loading.delete
+                                  ? "not-allowed"
+                                  : "pointer",
+                                opacity: loading.delete ? 0.4 : 0.7,
                               }}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.style.opacity = "1")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.style.opacity = "0.7")
-                              }
+                              onMouseEnter={(e) => {
+                                if (!loading.delete)
+                                  handleBlockedListEditIconHover(e, true);
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!loading.delete)
+                                  handleBlockedListEditIconHover(e, false);
+                              }}
                             />
                           </div>
                         </td>
@@ -1048,20 +1339,8 @@ const BlockedListPage = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={blockedListPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -1074,17 +1353,7 @@ const BlockedListPage = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={blockedListPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1100,320 +1369,138 @@ const BlockedListPage = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 560, maxWidth: "95vw", borderRadius: 2 } }}
+        PaperProps={{ sx: blockedListModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
+        <DialogTitle style={blockedListModalTitleStyle}>
           {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
         </DialogTitle>
 
-        <DialogContent style={{ padding: "20px 24px", background: "#ffffff" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div
-  style={{
-    background: "#f5f7fa",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 6,
-    padding: 16,
-  }}
->
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={blockedListModalFormStyle}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: 14 }}
+            >
+              <BlockedListFieldRow label="Name" tooltipKey="name" required>
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  sx={blockedListModalTextFieldFullSx}
+                />
+              </BlockedListFieldRow>
+
+              <BlockedListFieldRow
+                label="Match Mode"
+                tooltipKey="match_mode"
+                required
               >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: 12 }}
-                >
-                 <Tooltip
-  title="User-defined name of a blocked list. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_only."
-  {...tooltipProps}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: 160,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Name <span style={{ color: C.errorRed }}>*</span>
-  </label>
-</Tooltip>
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "#fff",
-                      },
+                <FormControl size="small" fullWidth>
+                  <MuiSelect
+                    value={matchMode}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setMatchMode(val);
+                      if (val === "Extension") setBlockedNumber("");
+                      else setSelectedExtension("");
                     }}
-                  />
-                </div>
+                    sx={blockedListModalSelectSx}
+                  >
+                    {BLOCKED_LIST_MATCH_MODE_OPTIONS.map((opt) => (
+                      <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
+              </BlockedListFieldRow>
 
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: 12 }}
-                >
-                     <Tooltip
-  title="Select match mode. You can select Exact Match, Regex Match, or Extension. The pattern that selects the exact match number can match the excact number, the pattern that selects the regex match mode can match the regex expression. For example, enter 888*, so can matches anythings starting with 888(include 888)."
-  {...tooltipProps}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: 160,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Match Mode <span style={{ color: C.errorRed }}>*</span>
-  </label>
-</Tooltip>
+              {matchMode === "Extension" ? (
+                <BlockedListFieldRow label="Extension" required>
                   <FormControl size="small" fullWidth>
                     <MuiSelect
-                      value={matchMode}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setMatchMode(val);
-                        if (val === "Extension") setBlockedNumber("");
-                        else setSelectedExtension("");
-                      }}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "#fff",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
+                      value={selectedExtension}
+                      onChange={(e) => setSelectedExtension(e.target.value)}
+                      displayEmpty
+                      sx={blockedListModalSelectSx}
                     >
-                      <MenuItem
-                        value="Exact Match"
-                        sx={{ fontSize: 13, fontWeight: 400 }}
-                      >
-                        Exact Match
+                      <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                        <span style={{ color: C.mutedText }}>
+                          Select Extension
+                        </span>
                       </MenuItem>
-                      <MenuItem
-                        value="Regex Match"
-                        sx={{ fontSize: 13, fontWeight: 400 }}
-                      >
-                        Regex Match
-                      </MenuItem>
-                      <MenuItem
-                        value="Extension"
-                        sx={{ fontSize: 13, fontWeight: 400 }}
-                      >
-                        Extension
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </div>
-
-                {matchMode === "Extension" ? (
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  >
-                    <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 160,
-                        flexShrink: 0,
-                      }}
-                    >
-                      Extension <span style={{ color: C.errorRed }}>*</span>
-                    </label>
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={selectedExtension}
-                        onChange={(e) => setSelectedExtension(e.target.value)}
-                        displayEmpty
-                        sx={{ fontSize: 13 }}
-                      >
-                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                          <span style={{ color: C.mutedText }}>
-                            Select Extension
-                          </span>
+                      {availableExtensions.map((ext) => (
+                        <MenuItem
+                          key={ext.value}
+                          value={ext.value}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {ext.label}
                         </MenuItem>
-                        {availableExtensions.map((ext) => (
-                          <MenuItem
-                            key={ext.value}
-                            value={ext.value}
-                            sx={{ fontSize: 13 }}
-                          >
-                            {ext.label}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </div>
-                ) : (
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 12 }}
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </BlockedListFieldRow>
+              ) : (
+                <BlockedListFieldRow
+                  label="Blocked List Number"
+                  tooltipKey="blocked_list_number"
+                  required
+                >
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={blockedNumber}
+                    onChange={(e) => setBlockedNumber(e.target.value)}
+                    sx={blockedListModalTextFieldFullSx}
+                  />
+                </BlockedListFieldRow>
+              )}
+
+              <BlockedListFieldRow
+                label="Blocked List Direction"
+                tooltipKey="direction"
+                required
+              >
+                <FormControl size="small" fullWidth>
+                  <MuiSelect
+                    value={direction}
+                    onChange={(e) => setDirection(e.target.value)}
+                    sx={blockedListModalSelectSx}
                   >
-                 <Tooltip
-  title="Enter or select the blocked list number that will be used to identify and block matching calls."
-  {...tooltipProps}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: 160,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Blocked List Number{" "}
-    <span style={{ color: C.errorRed }}>*</span>
-  </label>
-</Tooltip>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={blockedNumber}
-                      onChange={(e) => setBlockedNumber(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </div>
-                )}
+                    {BLOCKED_LIST_DIRECTION_OPTIONS.map((opt) => (
+                      <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                        {opt}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
+              </BlockedListFieldRow>
 
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: 12 }}
-                >
-                   <Tooltip
-  title="Select the call direction for which the blocked list will be applied, such as inbound, outbound, or both."
-  {...tooltipProps}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: 160,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Blocked List Direction{" "}
-    <span style={{ color: C.errorRed }}>*</span>
-  </label>
-</Tooltip>
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      value={direction}
-                      onChange={(e) => setDirection(e.target.value)}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "#fff",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
-                    >
-                      <MenuItem value="Inbound" sx={{ fontSize: 13 }}>
-                        Inbound
+              <BlockedListFieldRow label="Enable" tooltipKey="enabled" required>
+                <FormControl size="small" fullWidth>
+                  <MuiSelect
+                    value={enabled}
+                    onChange={(e) => setEnabled(e.target.value)}
+                    sx={blockedListModalSelectSx}
+                  >
+                    {BLOCKED_LIST_ENABLE_OPTIONS.map((opt) => (
+                      <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                        {opt}
                       </MenuItem>
-                      <MenuItem value="Outbound" sx={{ fontSize: 13 }}>
-                        Outbound
-                      </MenuItem>
-                      <MenuItem value="Internal" sx={{ fontSize: 13 }}>
-                        Internal
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </div>
-
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: 12 }}
-                >
-                <Tooltip
-  title="Enable or disable this configuration. When enabled, the settings in this section will be applied and become active."
-  {...tooltipProps}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: 160,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Enable <span style={{ color: C.errorRed }}>*</span>
-  </label>
-</Tooltip>
-                  <FormControl size="small" fullWidth>
-                    <MuiSelect
-                      value={enabled}
-                      onChange={(e) => setEnabled(e.target.value)}
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "#fff",
-                        height: 32,
-                        "& .MuiSelect-select": {
-                          padding: "6px 8px",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
-                    >
-                      <MenuItem value="Yes" sx={{ fontSize: 13 }}>
-                        Yes
-                      </MenuItem>
-                      <MenuItem value="No" sx={{ fontSize: 13 }}>
-                        No
-                      </MenuItem>
-                    </MuiSelect>
-                  </FormControl>
-                </div>
-              </div>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
+              </BlockedListFieldRow>
             </div>
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={blockedListModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
@@ -1421,23 +1508,21 @@ const BlockedListPage = () => {
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
             {loading.save ? (
-              <CircularProgress
-                size={13}
-                style={{ color: "#fff", marginRight: 8 }}
-              />
-            ) : null}
-
-            {loading.save
-              ? "Saving..."
-              : editId != null
-                ? "Update Entry"
-                : "Create"}
+              <>
+                <CircularProgress size={14} style={{ color: "#fff" }} />
+                Saving...
+              </>
+            ) : editId != null ? (
+              "Update Entry"
+            ) : (
+              "Create"
+            )}
           </Btn>
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={blockedListModalCancelBtnStyle}
           >
             Cancel
           </Btn>

@@ -1,34 +1,71 @@
 import React, { useState } from "react";
-import {CircularProgress,
-  FormControl,
-  Select as MuiSelect,
-  MenuItem,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
+import {
+  Alert,
   Checkbox,
-  Alert, useMediaQuery } from "@mui/material";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+  CircularProgress,
+  FormControl,
+  FormControlLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select as MuiSelect,
+  useMediaQuery,
+} from "@mui/material";
+import {
+  ORIGINATE_CALL_CONTEXT_OPTIONS,
+  ORIGINATE_CALL_DEFAULT_APP_DATA,
+  ORIGINATE_CALL_DEFAULT_APPLICATION,
+  ORIGINATE_CALL_DEFAULT_CONTEXT,
+  ORIGINATE_CALL_DEFAULT_MODE,
+  ORIGINATE_CALL_DEFAULT_PRIORITY,
+  ORIGINATE_CALL_FORM_NOTE,
+  ORIGINATE_CALL_MODE_OPTIONS,
+  ORIGINATE_CALL_TITLE,
+} from "../../../constants/OriginateCallConstants";
 
-// ── Local page UI (pilot: inlined from pbxSharedUi / sipPcmSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const ORIGINATE_CALL_COMPACT_MQ = "(max-width: 768px)";
+
+// Agar amiOriginate apiService me defined hai to isko uncomment kar lena:
+// import { amiOriginate } from "../api/apiService";
+
+// ── Color Palette ─────────────────────────────────────────────────────────────
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#6b7280",
+  strongText: "#0f172a",
+  accent: "#3E5475",
+  amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
   el.style.borderWidth = "1px";
   el.style.boxShadow = "none";
 };
+
 const setFieldHover = (el) => {
   el.style.borderColor = OUTLINED_HOVER;
   el.style.borderWidth = "1px";
   el.style.boxShadow = "none";
 };
+
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`;
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -50,49 +87,7 @@ const nativeFieldInteraction = {
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-};
-
-const CARD_RADIUS = 10;
-
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -132,18 +127,53 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -164,14 +194,27 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -179,20 +222,22 @@ const Btn = ({
   );
 };
 
-const pbxPageWrapStyle = {
+const ORIGINATE_CALL_CARD_RADIUS = 10;
+
+const originateCallPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const originateCallPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const OriginateCallBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -213,29 +258,22 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-const sipPcmFormPageWrapStyle = {
-  ...pbxPageWrapStyle,
-};
 
-const sipPcmFormPageInnerStyle = {
-  ...pbxPageInnerStyle,
-};
-
-const sipPcmFormContentStyle = {
+const originateCallFormContentStyle = {
   width: "100%",
   maxWidth: 640,
   margin: "0 auto",
   boxSizing: "border-box",
 };
 
-const originateFormRowStyle = {
+const originateCallFormRowStyle = {
   display: "flex",
   flexDirection: "row",
   alignItems: "flex-start",
   width: "100%",
 };
 
-const originateLabelColStyle = {
+const originateCallLabelColStyle = {
   fontSize: 13,
   fontWeight: 600,
   color: C.labelText,
@@ -246,7 +284,7 @@ const originateLabelColStyle = {
   lineHeight: 1.35,
 };
 
-const originateValueColStyle = {
+const originateCallValueColStyle = {
   flex: "1 1 52%",
   minWidth: 0,
   display: "flex",
@@ -254,7 +292,7 @@ const originateValueColStyle = {
   justifyContent: "flex-end",
 };
 
-const originateControlSlotStyle = {
+const originateCallControlSlotStyle = {
   width: 220,
   flexShrink: 0,
   display: "flex",
@@ -262,64 +300,54 @@ const originateControlSlotStyle = {
   justifyContent: "flex-start",
 };
 
-const originateControlSlotWideStyle = {
-  ...originateControlSlotStyle,
+const originateCallControlSlotWideStyle = {
+  ...originateCallControlSlotStyle,
   width: 280,
 };
 
-const sipPcmFormCardStyle = {
+const originateCallCardStyle = {
   background: "#ffffff",
-  borderRadius: CARD_RADIUS,
+  borderRadius: ORIGINATE_CALL_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmFormHeaderStyle = {
+const originateCallHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  borderTopLeftRadius: ORIGINATE_CALL_CARD_RADIUS,
+  borderTopRightRadius: ORIGINATE_CALL_CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
-const SIP_PCM_AUTH_FIELD_WIDTH = 200;
-const SIP_PCM_FORM_FIELD_HEIGHT = 32;
+const ORIGINATE_CALL_FIELD_HEIGHT = 36;
 
-const systemToolsFieldInputStyleSmall = {
-  padding: "6px 12px",
+const originateCallFormInputStyle = {
+  padding: "7px 10px",
   borderRadius: 6,
   border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 12,
+  fontSize: 13,
   width: "100%",
-  backgroundColor: "#f8fafc",
+  backgroundColor: "#ffffff",
   outline: "none",
-  color: "#3E5475",
+  color: C.valueText,
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   boxShadow: "none",
+  height: ORIGINATE_CALL_FIELD_HEIGHT,
+  minHeight: ORIGINATE_CALL_FIELD_HEIGHT,
+  lineHeight: 1.35,
 };
 
-const sipPcmAuthInputStyle = {
-  ...systemToolsFieldInputStyleSmall,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  height: SIP_PCM_FORM_FIELD_HEIGHT,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  padding: "0 12px",
-  lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-  textAlign: "left",
-  backgroundColor: "#ffffff",
-};
-
-const sipPcmAuthInputInteraction = {
+const originateCallFormInputInteraction = {
   onFocus: (e) => {
     if (e.target.disabled || e.target.readOnly) return;
     nativeFieldInteraction.onFocus(e);
@@ -338,69 +366,86 @@ const sipPcmAuthInputInteraction = {
   },
 };
 
-const sipPcmAuthMuiSelectSx = {
-  ...muiSelectSx,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  backgroundColor: "#ffffff",
-  borderRadius: "6px",
-  "& .MuiOutlinedInput-root": {
-    height: SIP_PCM_FORM_FIELD_HEIGHT,
-    minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-    backgroundColor: "#ffffff",
-    transition: "border-color 0.2s ease",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const originateCallOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const originateCallFormSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: ORIGINATE_CALL_FIELD_HEIGHT,
+  height: ORIGINATE_CALL_FIELD_HEIGHT,
+  ...originateCallOutlinedInputRootSx,
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
   "&:hover .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_HOVER,
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
-    padding: "0 32px 0 12px !important",
-    fontSize: 12,
-    lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-    height: "100%",
-    minHeight: "unset !important",
-    textAlign: "left",
     display: "flex",
     alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
     boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
   },
 };
 
-const sipPcmAuthFormFooterStyle = {
+const originateCallFormNoteStyle = {
+  fontSize: 12,
+  color: C.mutedText,
+  margin: "0 auto 16px",
+  padding: "0 32px",
+  textAlign: "center",
+  width: "100%",
+  maxWidth: "100%",
+  lineHeight: 1.5,
+  boxSizing: "border-box",
+};
+
+const originateCallFormFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
   justifyContent: "center",
   gap: 12,
   width: "100%",
-  padding: "10px 20px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "16px 24px",
+  borderTop: `1px solid ${C.divider}`,
+  background: "#f8fafc",
   boxSizing: "border-box",
+  borderBottomLeftRadius: ORIGINATE_CALL_CARD_RADIUS,
+  borderBottomRightRadius: ORIGINATE_CALL_CARD_RADIUS,
 };
 
-const sipPcmAuthFormBtnStyle = {
+const originateCallFormBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -410,16 +455,34 @@ const sipPcmAuthFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-// Agar amiOriginate apiService me defined hai to isko uncomment kar lena:
-// import { amiOriginate } from "../api/apiService";
+const originateCallFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 420,
+  boxShadow: 3,
+};
 
-/** Dialplan contexts for two-step originate */
-const CONTEXT_OPTIONS = [
-  "siproute",
-  "outbound-mobile",
-  "from-internal",
-  "default",
-];
+const originateCallFormCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const originateCallRadioSx = {
+  p: 0.5,
+  color: C.labelText,
+  "&.Mui-checked": { color: C.accent },
+};
+
+const originateCallFieldInputStyle = {
+  ...originateCallFormInputStyle,
+  width: "100%",
+  maxWidth: "100%",
+};
 
 /** Builds callerid string for AMI: "Name" <number> or number only */
 function buildCallerId(name, number) {
@@ -431,19 +494,7 @@ function buildCallerId(name, number) {
   return undefined;
 }
 
-const FIELD_INPUT_STYLE = {
-  ...sipPcmAuthInputStyle,
-  width: "100%",
-  maxWidth: "100%",
-};
-
-const FIELD_SELECT_SX = {
-  ...sipPcmAuthMuiSelectSx,
-  width: "100%",
-  maxWidth: "100%",
-};
-
-const FormFieldRow = ({
+const OriginateCallFieldRow = ({
   label,
   required = false,
   children,
@@ -453,21 +504,23 @@ const FormFieldRow = ({
 }) => (
   <div
     style={{
-      ...originateFormRowStyle,
+      ...originateCallFormRowStyle,
       alignItems: align === "flex-start" ? "flex-start" : "center",
     }}
   >
     {hideLabel ? (
-      <span style={originateLabelColStyle} aria-hidden="true" />
+      <span style={originateCallLabelColStyle} aria-hidden="true" />
     ) : (
-      <label style={originateLabelColStyle}>
+      <label style={originateCallLabelColStyle}>
         {label}
         {required ? <span style={{ color: C.amber }}> *</span> : null}
       </label>
     )}
-    <div style={originateValueColStyle}>
+    <div style={originateCallValueColStyle}>
       <div
-        style={wide ? originateControlSlotWideStyle : originateControlSlotStyle}
+        style={
+          wide ? originateCallControlSlotWideStyle : originateCallControlSlotStyle
+        }
       >
         {children}
       </div>
@@ -476,24 +529,21 @@ const FormFieldRow = ({
 );
 
 const OriginateCallPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
-  const [mode, setMode] = useState("simple"); // 'simple' | 'twostep'
+  const isCompact = useMediaQuery(ORIGINATE_CALL_COMPACT_MQ);
+  const [mode, setMode] = useState(ORIGINATE_CALL_DEFAULT_MODE);
 
-  // Left Column States
   const [extension, setExtension] = useState("");
   const [name, setName] = useState("");
   const [callerIdName, setCallerIdName] = useState("");
   const [callerIdNumber, setCallerIdNumber] = useState("");
 
-  // Right Column States (Simple Mode)
   const [useFixedApp, setUseFixedApp] = useState(true);
-  const [application, setApplication] = useState("Wait");
-  const [appData, setAppData] = useState("30");
+  const [application, setApplication] = useState(ORIGINATE_CALL_DEFAULT_APPLICATION);
+  const [appData, setAppData] = useState(ORIGINATE_CALL_DEFAULT_APP_DATA);
 
-  // Right Column States (Two-step Mode)
-  const [context, setContext] = useState("siproute");
+  const [context, setContext] = useState(ORIGINATE_CALL_DEFAULT_CONTEXT);
   const [exten, setExten] = useState("");
-  const [priority, setPriority] = useState("1");
+  const [priority, setPriority] = useState(ORIGINATE_CALL_DEFAULT_PRIORITY);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -548,7 +598,6 @@ const OriginateCallPage = () => {
 
     setLoading(true);
     try {
-      // Dummy check if amiOriginate is not imported
       if (typeof amiOriginate === "undefined") {
         throw new Error(
           "amiOriginate function is not imported or defined. Please check apiService.",
@@ -570,33 +619,30 @@ const OriginateCallPage = () => {
   };
 
   return (
-    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={sipPcmFormPageInnerStyle}>
+    <div
+      style={{
+        ...originateCallPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={originateCallPageInnerStyle}>
         {message.text && (
-          <div
-            style={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 420,
-            }}
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={originateCallFixedAlertSx}
           >
-            <Alert
-              severity={message.type}
-              onClose={() => setMessage({ type: "", text: "" })}
-              sx={{ boxShadow: 3 }}
-            >
-              {message.text}
-            </Alert>
-          </div>
+            {message.text}
+          </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Originate Call" />
+        <OriginateCallBreadcrumb
+          section="Call Features"
+          current={ORIGINATE_CALL_TITLE}
+        />
 
-        <div style={sipPcmFormCardStyle}>
-          <div style={sipPcmFormHeaderStyle}>
+        <div style={originateCallCardStyle}>
+          <div style={originateCallHeaderStyle}>
             <span>
               AMI Originate
               <span
@@ -613,109 +659,82 @@ const OriginateCallPage = () => {
           </div>
 
           <div style={{ padding: "24px 32px 0", boxSizing: "border-box" }}>
-            <div style={sipPcmFormContentStyle}>
+            <div style={originateCallFormContentStyle}>
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: 12,
+                  gap: 14,
                   paddingBottom: 16,
                 }}
               >
-                <FormFieldRow label="Dial Extension" required>
+                <OriginateCallFieldRow label="Dial Extension" required>
                   <input
                     type="text"
                     value={extension}
                     onChange={(e) => setExtension(e.target.value)}
                     placeholder="e.g. 1004"
-                    style={FIELD_INPUT_STYLE}
-                    {...sipPcmAuthInputInteraction}
+                    style={originateCallFieldInputStyle}
+                    {...originateCallFormInputInteraction}
                   />
-                </FormFieldRow>
+                </OriginateCallFieldRow>
 
-                <FormFieldRow label="Name (label only)">
+                <OriginateCallFieldRow label="Name (label only)">
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Optional — not sent to API"
-                    style={FIELD_INPUT_STYLE}
-                    {...sipPcmAuthInputInteraction}
+                    style={originateCallFieldInputStyle}
+                    {...originateCallFormInputInteraction}
                   />
-                </FormFieldRow>
+                </OriginateCallFieldRow>
 
-                <FormFieldRow label="Caller ID Name">
+                <OriginateCallFieldRow label="Caller ID Name">
                   <input
                     type="text"
                     value={callerIdName}
                     onChange={(e) => setCallerIdName(e.target.value)}
                     placeholder="e.g. Front Desk"
-                    style={FIELD_INPUT_STYLE}
-                    {...sipPcmAuthInputInteraction}
+                    style={originateCallFieldInputStyle}
+                    {...originateCallFormInputInteraction}
                   />
-                </FormFieldRow>
+                </OriginateCallFieldRow>
 
-                <FormFieldRow label="Caller ID Number">
+                <OriginateCallFieldRow label="Caller ID Number">
                   <input
                     type="text"
                     value={callerIdNumber}
                     onChange={(e) => setCallerIdNumber(e.target.value)}
                     placeholder="e.g. 1000"
-                    style={FIELD_INPUT_STYLE}
-                    {...sipPcmAuthInputInteraction}
+                    style={originateCallFieldInputStyle}
+                    {...originateCallFormInputInteraction}
                   />
-                </FormFieldRow>
+                </OriginateCallFieldRow>
 
-                <FormFieldRow label="Mode" required align="flex-start">
+                <OriginateCallFieldRow label="Mode" required align="flex-start">
                   <RadioGroup
                     value={mode}
                     onChange={(e) => setMode(e.target.value)}
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                   >
-                    <FormControlLabel
-                      value="simple"
-                      control={
-                        <Radio
-                          size="small"
-                          sx={{
-                            p: 0.5,
-                            color: C.accent,
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
-                      }
-                      label={
-                        <span style={{ fontSize: 13 }}>
-                          Simple (application — no context/exten)
-                        </span>
-                      }
-                      sx={{ m: 0 }}
-                    />
-                    <FormControlLabel
-                      value="twostep"
-                      control={
-                        <Radio
-                          size="small"
-                          sx={{
-                            p: 0.5,
-                            color: C.accent,
-                            "&.Mui-checked": { color: C.accent },
-                          }}
-                        />
-                      }
-                      label={
-                        <span style={{ fontSize: 13 }}>
-                          Two-step (context + exten after A answers)
-                        </span>
-                      }
-                      sx={{ m: 0 }}
-                    />
+                    {ORIGINATE_CALL_MODE_OPTIONS.map((opt) => (
+                      <FormControlLabel
+                        key={opt.value}
+                        value={opt.value}
+                        control={<Radio size="small" sx={originateCallRadioSx} />}
+                        label={
+                          <span style={{ fontSize: 13 }}>{opt.label}</span>
+                        }
+                        sx={{ m: 0 }}
+                      />
+                    ))}
                   </RadioGroup>
-                </FormFieldRow>
+                </OriginateCallFieldRow>
 
                 {mode === "simple" ? (
                   <>
-                    <FormFieldRow hideLabel>
+                    <OriginateCallFieldRow hideLabel>
                       <div
                         style={{
                           display: "flex",
@@ -729,14 +748,7 @@ const OriginateCallPage = () => {
                           checked={useFixedApp}
                           onChange={(e) => setUseFixedApp(e.target.checked)}
                           size="small"
-                          sx={{
-                            padding: "1px",
-                            color: "#3E5475",
-                            "&.Mui-checked": { color: "#0284c7" },
-                            "&.MuiCheckbox-indeterminate": {
-                              color: "#0284c7",
-                            },
-                          }}
+                          sx={originateCallFormCheckboxSx}
                         />
                         <label
                           htmlFor="fixedApp"
@@ -751,22 +763,22 @@ const OriginateCallPage = () => {
                           (recommended)
                         </label>
                       </div>
-                    </FormFieldRow>
+                    </OriginateCallFieldRow>
 
                     {!useFixedApp && (
-                      <FormFieldRow label="Application" required>
+                      <OriginateCallFieldRow label="Application" required>
                         <input
                           type="text"
                           value={application}
                           onChange={(e) => setApplication(e.target.value)}
                           placeholder="Wait"
-                          style={FIELD_INPUT_STYLE}
-                          {...sipPcmAuthInputInteraction}
+                          style={originateCallFieldInputStyle}
+                          {...originateCallFormInputInteraction}
                         />
-                      </FormFieldRow>
+                      </OriginateCallFieldRow>
                     )}
 
-                    <FormFieldRow
+                    <OriginateCallFieldRow
                       label={useFixedApp ? "App Data (s)" : "Application Data"}
                     >
                       <input
@@ -774,83 +786,66 @@ const OriginateCallPage = () => {
                         value={appData}
                         onChange={(e) => setAppData(e.target.value)}
                         placeholder={useFixedApp ? "30" : "1"}
-                        style={FIELD_INPUT_STYLE}
-                        {...sipPcmAuthInputInteraction}
+                        style={originateCallFieldInputStyle}
+                        {...originateCallFormInputInteraction}
                       />
-                    </FormFieldRow>
+                    </OriginateCallFieldRow>
                   </>
                 ) : (
                   <>
-                    <FormFieldRow label="Context" required>
+                    <OriginateCallFieldRow label="Context" required>
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={context}
                           onChange={(e) => setContext(e.target.value)}
                           variant="outlined"
                           fullWidth
-                          sx={FIELD_SELECT_SX}
+                          sx={originateCallFormSelectSx}
                         >
-                          {CONTEXT_OPTIONS.map((ctx) => (
-                            <MenuItem
-                              key={ctx}
-                              value={ctx}
-                              sx={{ fontSize: 12 }}
-                            >
+                          {ORIGINATE_CALL_CONTEXT_OPTIONS.map((ctx) => (
+                            <MenuItem key={ctx} value={ctx} sx={{ fontSize: 13 }}>
                               {ctx}
                             </MenuItem>
                           ))}
                         </MuiSelect>
                       </FormControl>
-                    </FormFieldRow>
+                    </OriginateCallFieldRow>
 
-                    <FormFieldRow label="Exten (B leg)" required>
+                    <OriginateCallFieldRow label="Exten (B leg)" required>
                       <input
                         type="text"
                         value={exten}
                         onChange={(e) => setExten(e.target.value)}
                         placeholder="e.g. 1005"
-                        style={FIELD_INPUT_STYLE}
-                        {...sipPcmAuthInputInteraction}
+                        style={originateCallFieldInputStyle}
+                        {...originateCallFormInputInteraction}
                       />
-                    </FormFieldRow>
+                    </OriginateCallFieldRow>
 
-                    <FormFieldRow label="Priority">
+                    <OriginateCallFieldRow label="Priority">
                       <input
                         type="number"
                         value={priority}
                         onChange={(e) => setPriority(e.target.value)}
                         placeholder="1"
-                        style={FIELD_INPUT_STYLE}
-                        {...sipPcmAuthInputInteraction}
+                        style={originateCallFieldInputStyle}
+                        {...originateCallFormInputInteraction}
                       />
-                    </FormFieldRow>
+                    </OriginateCallFieldRow>
                   </>
                 )}
               </div>
-
-              <p
-                style={{
-                  fontSize: 12,
-                  color: C.mutedText,
-                  marginTop: 8,
-                  marginBottom: 16,
-                  textAlign: "center",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Bearer JWT is sent automatically when logged in. Simple mode
-                sends application + appData only (no context/exten). Two-step
-                sends context, exten, and priority.
-              </p>
             </div>
+
+            <p style={originateCallFormNoteStyle}>{ORIGINATE_CALL_FORM_NOTE}</p>
           </div>
 
-          <div style={sipPcmAuthFormFooterStyle}>
+          <div style={originateCallFormFooterStyle}>
             <Btn
               variant="primary"
               disabled={loading}
               onClick={handleOriginate}
-              style={sipPcmAuthFormBtnStyle}
+              style={originateCallFormBtnStyle}
             >
               {loading ? (
                 <>

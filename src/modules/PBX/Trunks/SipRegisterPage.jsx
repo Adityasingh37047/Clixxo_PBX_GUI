@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   sipRegisterFields,
   SIP_REGISTER_INITIAL_FORM,
-  CODEC_OPTIONS,
+  SIP_REGISTER_CODEC_OPTIONS,
   SIP_REGISTER_COUNTRY_OPTIONS,
   SIP_REGISTER_TRANSPORT_OPTIONS,
   SIP_REGISTER_YES_NO,
@@ -50,21 +50,31 @@ import {
   deleteSipTrunk,
   fetchSystemInfo,
 } from "../../../api/apiService";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#9aa3b2",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBg: "#d9dde3",
+  codecBtnBorder: "#c9d0d9",
 };
 
 const Btn = ({
@@ -107,18 +117,53 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -136,18 +181,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -164,8 +223,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -184,12 +243,12 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const sipRegisterTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -203,32 +262,60 @@ const trunkFormCheckboxLabelSx = {
   alignItems: "center",
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const sipRegisterOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const sipRegisterModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": sipRegisterOutlinedInputRootSx,
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const sipRegisterModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...sipRegisterOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+};
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -245,11 +332,11 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 // ── ToolTips ──────────────────────────────────────────────────────
-const EXTENSION_GROUP_TOOLTIP_PROPS = {
+const SIP_REGISTER_FIELD_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -270,7 +357,7 @@ const EXTENSION_GROUP_TOOLTIP_PROPS = {
   },
 };
 
-const formatGroupTooltipTitle = (text) => {
+const formatSipRegisterTooltipTitle = (text) => {
   if (!text) return "";
   const normalized = text
     .replace(/<br\s*\/?>/gi, "\n")
@@ -291,7 +378,7 @@ const formatGroupTooltipTitle = (text) => {
 const TRUNK_FIELD_LABEL_CLASS =
   "text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0";
 
-const GroupFieldLabel = ({ tooltipKey, children, style = {}, className }) => {
+const SipRegisterFieldLabel = ({ tooltipKey, children, style = {}, className }) => {
   const tooltip = SIP_REGISTER_TOOLTIPS[tooltipKey] || "";
   const LabelTag = className ? "label" : "span";
 
@@ -314,8 +401,8 @@ const GroupFieldLabel = ({ tooltipKey, children, style = {}, className }) => {
 
   return (
     <Tooltip
-      title={formatGroupTooltipTitle(tooltip)}
-      {...EXTENSION_GROUP_TOOLTIP_PROPS}
+      title={formatSipRegisterTooltipTitle(tooltip)}
+      {...SIP_REGISTER_FIELD_TOOLTIP_PROPS}
     >
       {label}
     </Tooltip>
@@ -329,14 +416,14 @@ const TrunkFieldLabel = ({
   required,
   style,
 }) => (
-  <GroupFieldLabel
+  <SipRegisterFieldLabel
     tooltipKey={tooltipKey}
     className={className || TRUNK_FIELD_LABEL_CLASS}
     style={style}
   >
     {children}
     {required ? <span className="text-red-500"> *</span> : null}
-  </GroupFieldLabel>
+  </SipRegisterFieldLabel>
 );
 
 const nativeFieldInteraction = {
@@ -364,20 +451,29 @@ const nativeFieldInteraction = {
   },
 };
 
-const pbxPageWrapStyle = {
+const sipRegisterPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const sipRegisterPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const sipRegisterFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const SipRegisterBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -398,7 +494,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-const TableListLoading = () => (
+const SipRegisterTableListLoading = () => (
   <div
     style={{
       display: "flex",
@@ -411,7 +507,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({
+const SipRegisterTableListEmptyState = ({
   message,
   onAddNew,
   buttonLabel = "+ Add New",
@@ -450,39 +546,39 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_MODAL_TAB_BAR_STYLE = {
+const SIP_REGISTER_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",
   background: "#ffffff",
 };
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+const SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const SIP_REGISTER_MODAL_TAB_INACTIVE_COLOR = "#374151";
 
-const pbxModalTabsSx = {
+const sipRegisterModalTabsSx = {
   minHeight: 45,
   "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    color: SIP_REGISTER_MODAL_TAB_INACTIVE_COLOR,
     fontSize: 12,
     fontWeight: 500,
     textTransform: "none",
     minHeight: 45,
   },
   "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    color: SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR,
     fontWeight: 700,
   },
 };
 
-const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
-  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+const SipRegisterModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={SIP_REGISTER_MODAL_TAB_BAR_STYLE}>
     <Tabs
       value={value}
       onChange={(_, next) => onChange(next)}
       variant={fullWidth ? "fullWidth" : "standard"}
       TabIndicatorProps={{
-        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+        style: { backgroundColor: SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR, height: 2 },
       }}
-      sx={pbxModalTabsSx}
+      sx={sipRegisterModalTabsSx}
     >
       {tabs.map((t) => (
         <Tab key={t.id} label={t.label} value={t.id} />
@@ -493,7 +589,7 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
 
 const TRUNK_SECTION_HEADING_COLOR = "#30415A";
 const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
-const PBX_MODAL_SECTION_BG = "#f8fafc";
+const SIP_REGISTER_MODAL_SECTION_BG = "#f8fafc";
 
 const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
   <div
@@ -509,7 +605,7 @@ const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: SIP_REGISTER_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
@@ -521,58 +617,171 @@ const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const codecDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
+const SIP_REGISTER_CODEC_LIST_BOX_HEIGHT = 188;
+const SIP_REGISTER_CODEC_BTN_COL_WIDTH = 40;
+const SIP_REGISTER_CODEC_BTN_GAP = 6;
+const SIP_REGISTER_CODEC_BTN_HEIGHT =
+  (SIP_REGISTER_CODEC_LIST_BOX_HEIGHT - SIP_REGISTER_CODEC_BTN_GAP * 3) / 4;
+const SIP_REGISTER_CODEC_LIST_LABEL_OFFSET = 28;
+
+const sipRegisterCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
 };
 
-const codecDualListBtnStyle = {
-  height: 36,
+const getSipRegisterCodecListBoxStyle = (isEmpty) => ({
   width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
+  minHeight: SIP_REGISTER_CODEC_LIST_BOX_HEIGHT,
+  height: SIP_REGISTER_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const sipRegisterCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const sipRegisterCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const sipRegisterCodecDualListBtnStyle = {
+  width: SIP_REGISTER_CODEC_BTN_COL_WIDTH,
+  height: SIP_REGISTER_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
   color: "#111827",
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
   fontFamily: "inherit",
   lineHeight: 1,
   padding: 0,
   margin: 0,
   cursor: "pointer",
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   boxSizing: "border-box",
-  textAlign: "center",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
 };
 
-const codecDualListReorderBtnStyle = {
-  ...codecDualListBtnStyle,
-  fontWeight: 400,
+const sipRegisterCodecDualListReorderBtnStyle = {
+  ...sipRegisterCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
 };
 
-const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const sipRegisterCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: SIP_REGISTER_CODEC_BTN_GAP,
+  height: SIP_REGISTER_CODEC_LIST_BOX_HEIGHT,
+  width: SIP_REGISTER_CODEC_BTN_COL_WIDTH,
+};
+
+const SipRegisterCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    style={
+      reorder ? sipRegisterCodecDualListReorderBtnStyle : sipRegisterCodecDualListBtnStyle
+    }
     onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.background = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
     }}
   >
     {children}
   </button>
 );
+
+const SipRegisterCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getSipRegisterCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={sipRegisterCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={sipRegisterCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 const parseCodecList = (value) =>
   (value || "")
@@ -609,10 +818,16 @@ const trunkModalPaperSx = {
   maxWidth: "95vw",
   mx: "auto",
   p: 0,
-  borderRadius: 2,
+  borderRadius: "8px",
   overflow: "hidden",
   boxShadow:
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const sipRegisterModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
 };
 
 const trunkModalTitleStyle = {
@@ -644,7 +859,7 @@ const trunkModalActionsStyle = {
   justifyContent: "center",
   gap: 16,
   padding: "16px 24px",
-  background: C.pageBg,
+  background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
@@ -668,20 +883,7 @@ const trunkModalCancelBtnStyle = {
 const trunkAdaptRowGridColumns = "1fr 1fr 1fr 32px";
 
 const trunkAdaptTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-    fontSize: 12,
-  },
-  "& .MuiOutlinedInput-input": {
-    fontSize: 12,
-    padding: "6px 8px",
-    "&::placeholder": {
-      fontSize: 12,
-      opacity: 0.65,
-    },
-  },
+  ...sipRegisterModalTextFieldSx,
 };
 
 const trunkAdaptRowActionBtnSx = {
@@ -700,10 +902,10 @@ const trunkAdaptRowActionBtnSx = {
 const trunkDodCompactInputStyle = {
   height: 28,
   width: "100%",
-  padding: "0 8px",
+  padding: "8px 12px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 6,
+  borderRadius: 4,
   outline: "none",
   backgroundColor: "#fff",
   color: "#0f172a",
@@ -720,99 +922,43 @@ const trunkDodToolbarBtnStyle = {
   borderRadius: 10,
 };
 
-const pbxDualListLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "#3E5475",
-  textAlign: "center",
-  marginBottom: 8,
-};
+const SIP_REGISTER_TABLE_CARD_RADIUS = 10;
 
-const pbxDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
-
-const pbxDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const PbxDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={pbxDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
-
-const sipPcmCardStyle = {
+const sipRegisterCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const sipRegisterToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const sipRegisterPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const sipRegisterSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -822,7 +968,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const sipRegisterCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -830,14 +976,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const sipRegisterPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const sipRegisterPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -847,7 +993,7 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const SipRegisterPagination = ({
   page,
   totalPages,
   recordCount,
@@ -855,7 +1001,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...sipRegisterPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -868,7 +1014,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={sipRegisterPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -881,8 +1027,6 @@ const SipPcmPagination = ({
     </div>
   </div>
 );
-
-const DOD_DUAL_LIST_LABEL_OFFSET = 28;
 
 const Pill = ({ text, bg, color }) => (
   <span
@@ -1159,7 +1303,7 @@ const scheduleSipRegisterZoomMeasure = (measure) => {
 };
 
 const useSipRegisterBrowserZoom110 = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(SIP_REGISTER_COMPACT_MQ);
   const [highZoom, setHighZoom] = useState(false);
 
   useEffect(() => {
@@ -1265,7 +1409,7 @@ const SipRegisterPage = () => {
   );
   const tableScrollRef = useRef(null);
   const [tableContainerWidth, setTableContainerWidth] = useState(0);
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(SIP_REGISTER_COMPACT_MQ);
   const allowHorizontalScroll = useSipRegisterBrowserZoom110();
   const tableMinWidth = allowHorizontalScroll
     ? Math.max(
@@ -1309,12 +1453,22 @@ const SipRegisterPage = () => {
   );
 
   const availableCodecList = useMemo(
-    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    () => SIP_REGISTER_CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
     [selectedCodecList],
   );
 
   const getCodecLabel = (value) =>
-    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+    SIP_REGISTER_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const toggleCodecAvailableSelect = (id) =>
+    setCodecAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const toggleCodecChosenSelect = (id) =>
+    setCodecChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const updateCodecList = (newList) => {
     const newCodecsString = newList.join(",");
@@ -1345,7 +1499,7 @@ const SipRegisterPage = () => {
   };
 
   const addAllCodecs = () => {
-    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    updateCodecList(SIP_REGISTER_CODEC_OPTIONS.map((c) => c.value));
     setCodecAvailableSelected([]);
   };
 
@@ -1539,6 +1693,16 @@ const SipRegisterPage = () => {
     setDodMemberExtensions([]);
     setDodChosenSelected([]);
   };
+
+  const toggleDodAvailableSelect = (id) =>
+    setDodAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const toggleDodChosenSelect = (id) =>
+    setDodChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const handleConfirmDodAdd = () => {
     const name = dodAddName.trim();
@@ -1946,7 +2110,7 @@ const SipRegisterPage = () => {
     );
 
     const codecs = {};
-    CODEC_OPTIONS.forEach((c) => {
+    SIP_REGISTER_CODEC_OPTIONS.forEach((c) => {
       codecs[c.value] = selectedCodecsSet.has(c.value);
     });
 
@@ -2679,32 +2843,51 @@ const SipRegisterPage = () => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
   };
 
+  const sipRegisterCodecTransferActions = [
+    { onClick: addSelectedCodecs, title: "Add selected", label: ">" },
+    { onClick: addAllCodecs, title: "Add all", label: ">>" },
+    { onClick: removeSelectedCodecs, title: "Remove selected", label: "<" },
+    { onClick: removeAllCodecs, title: "Remove all", label: "<<" },
+  ];
+
+  const sipRegisterCodecReorderActions = [
+    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
+    { onClick: moveCodecUp, title: "Move up", label: "^" },
+    { onClick: moveCodecDown, title: "Move down", label: "v" },
+    { onClick: moveCodecToBottom, title: "Move to bottom", label: "vv" },
+  ];
+
+  const sipRegisterDodTransferActions = [
+    { onClick: dodAddSelectedMembers, title: "Add selected", label: ">" },
+    { onClick: dodAddAllMembers, title: "Add all", label: ">>" },
+    { onClick: dodRemoveSelectedMembers, title: "Remove selected", label: "<" },
+    { onClick: dodRemoveAllMembers, title: "Remove all", label: "<<" },
+  ];
+
+  const dodAvailableEmptyText =
+    dodAvailableExtensions.length === 0 && !dodHasLoadedExtensionsRef.current
+      ? "Loading extensions..."
+      : "No extensions";
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div style={{ ...sipRegisterPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={sipRegisterPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={sipRegisterFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Trunks" current="SIP Register" />
+        <SipRegisterBreadcrumb section="Trunks" current="SIP Register" />
 
-        <div style={sipPcmCardStyle}>
+        <div style={sipRegisterCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...sipRegisterToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -2712,7 +2895,7 @@ const SipRegisterPage = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={sipRegisterSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -2728,8 +2911,10 @@ const SipRegisterPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete}
-                style={sipPcmCancelBtnStyle}
+                disabled={
+                  loading.delete || loading.fetch || trunks.length === 0
+                }
+                style={sipRegisterCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -2737,7 +2922,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || trunks.length === 0}
-                style={sipPcmCancelBtnStyle}
+                style={sipRegisterCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -2745,7 +2930,7 @@ const SipRegisterPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selectedIds.length === 0}
-                style={sipPcmCancelBtnStyle}
+                style={sipRegisterCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -2760,7 +2945,7 @@ const SipRegisterPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch}
-                style={sipPcmPrimaryBtnStyle}
+                style={sipRegisterPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -2769,9 +2954,9 @@ const SipRegisterPage = () => {
 
           <div style={{ position: "relative" }}>
             {isInitialLoad ? (
-              <TableListLoading />
+              <SipRegisterTableListLoading />
             ) : dataEmpty ? (
-              <TableListEmptyState
+              <SipRegisterTableListEmptyState
                 message="No SIP register trunks found."
                 onAddNew={() => handleOpenModal()}
               />
@@ -2856,7 +3041,7 @@ const SipRegisterPage = () => {
                                 checked={allPageSelected}
                                 indeterminate={somePageSelected}
                                 onChange={handleToggleAll}
-                                sx={checkboxSx}
+                                sx={sipRegisterTableCheckboxSx}
                               />
                             </div>
                           </TH>
@@ -2977,7 +3162,7 @@ const SipRegisterPage = () => {
                                     onChange={() =>
                                       handleToggleRow(trunk.trunk_id)
                                     }
-                                    sx={checkboxSx}
+                                    sx={sipRegisterTableCheckboxSx}
                                   />
                                 </div>
                               </td>
@@ -3112,7 +3297,7 @@ const SipRegisterPage = () => {
           </div>
 
           {!isInitialLoad && filteredRows.length > 0 && (
-            <SipPcmPagination
+            <SipRegisterPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -3137,7 +3322,7 @@ const SipRegisterPage = () => {
           {editIndex !== null ? "Edit SIP Register" : "Add SIP Register"}
         </DialogTitle>
 
-        <PbxModalTabs
+        <SipRegisterModalTabs
           value={modalTab}
           onChange={setModalTab}
           tabs={[
@@ -3150,10 +3335,12 @@ const SipRegisterPage = () => {
         />
 
         <DialogContent
+          className="app-main-scroll"
           style={{
-            padding: "20px",
+            padding: "24px",
             backgroundColor: "#ffffff",
           }}
+          sx={sipRegisterModalDialogContentSx}
         >
           <style>
             {`
@@ -3162,24 +3349,35 @@ const SipRegisterPage = () => {
         .sip-reg .MuiSelect-select,
         .sip-reg .MuiInputBase-root input {
           background: #ffffff !important;
-          border-radius: 6px !important;
+        }
+
+        .sip-reg .MuiOutlinedInput-root {
+          transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
 
         .sip-reg .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
           border-color: ${OUTLINED_BORDER} !important;
           border-width: 1px !important;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         }
 
         .sip-reg .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
           border-color: ${OUTLINED_HOVER} !important;
         }
 
-        .sip-reg .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-          border-color: ${OUTLINED_FOCUS} !important;
-          border-width: 2px !important;
+        .sip-reg .MuiOutlinedInput-root.Mui-focused {
+          box-shadow: ${FOCUS_RING_SHADOW} !important;
         }
 
-        
+        .sip-reg .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline {
+          border-color: ${OUTLINED_FOCUS} !important;
+          border-width: 1px !important;
+        }
+
+        .sip-reg .MuiOutlinedInput-input {
+          font-size: 13px !important;
+          padding: 8px 12px !important;
+        }
 
         .sip-reg label,
         .sip-reg .MuiFormControlLabel-label,
@@ -3246,7 +3444,6 @@ const SipRegisterPage = () => {
                           error={!!validationErrors.trunk_id}
                           placeholder="Trunk Name"
                           disabled={editIndex !== null}
-                          inputProps={{ style: { fontSize: 13 } }}
                         />
                         {validationErrors.trunk_id && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3270,7 +3467,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_country", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3297,7 +3494,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_transport", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3321,7 +3518,7 @@ const SipRegisterPage = () => {
                                 handleChange("ui_enable_srtp", e.target.checked)
                               }
                               size="small"
-                              sx={checkboxSx}
+                              sx={sipRegisterTableCheckboxSx}
                             />
                           }
                           label=""
@@ -3340,7 +3537,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_register", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3367,7 +3564,6 @@ const SipRegisterPage = () => {
                               }
                               error={!!validationErrors.username}
                               placeholder="Username"
-                              inputProps={{ style: { fontSize: 14 } }}
                             />
                             {validationErrors.username && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3389,7 +3585,6 @@ const SipRegisterPage = () => {
                               onChange={(e) =>
                                 handleChange("auth_username", e.target.value)
                               }
-                              inputProps={{ style: { fontSize: 14 } }}
                               placeholder="Auth Username"
                             />
                           </div>
@@ -3413,7 +3608,6 @@ const SipRegisterPage = () => {
                               }
                               error={!!validationErrors.ui_reg_fail_retry}
                               placeholder="30"
-                              inputProps={{ style: { fontSize: 14 } }}
                             />
                             {validationErrors.ui_reg_fail_retry && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3439,7 +3633,7 @@ const SipRegisterPage = () => {
                               )
                             }
                             displayEmpty
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
                               (c) => (
@@ -3465,7 +3659,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_record", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3487,7 +3681,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_enabled", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -3509,7 +3703,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_eth_port", e.target.value)
                             }
-                            sx={{ fontSize: 13 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {(ethPortOptions.length
                               ? ethPortOptions
@@ -3540,7 +3734,6 @@ const SipRegisterPage = () => {
                           }
                           error={!!validationErrors.provider}
                           placeholder="host:port or domain"
-                          inputProps={{ style: { fontSize: 13 } }}
                         />
                         {validationErrors.provider && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -3566,7 +3759,7 @@ const SipRegisterPage = () => {
                                   )
                                 }
                                 size="small"
-                                sx={checkboxSx}
+                                sx={sipRegisterTableCheckboxSx}
                               />
                             }
                             label=""
@@ -3590,7 +3783,6 @@ const SipRegisterPage = () => {
                                   e.target.value,
                                 )
                               }
-                              inputProps={{ style: { fontSize: 13 } }}
                             />
                           </div>
                         </div>
@@ -3612,7 +3804,6 @@ const SipRegisterPage = () => {
                               e.target.value,
                             )
                           }
-                          inputProps={{ style: { fontSize: 13 } }}
                         />
                       </div>
                     </div>
@@ -3633,7 +3824,6 @@ const SipRegisterPage = () => {
                                 handleChange("password", e.target.value)
                               }
                               error={!!validationErrors.password}
-                              inputProps={{ style: { fontSize: 14 } }}
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
@@ -3674,7 +3864,6 @@ const SipRegisterPage = () => {
                                 handleChange("expire_in_sec", e.target.value)
                               }
                               error={!!validationErrors.expire_in_sec}
-                              inputProps={{ style: { fontSize: 14 } }}
                             />
                             {validationErrors.expire_in_sec && (
                               <div className="text-red-500 text-xs mt-0.5">
@@ -3703,7 +3892,7 @@ const SipRegisterPage = () => {
                                     e.target.value,
                                   )
                                 }
-                                sx={{ fontSize: 14 }}
+                                sx={sipRegisterModalSelectSx}
                               >
                                 {SIP_REGISTER_YES_NO.map((c) => (
                                   <MenuItem key={c} value={c}>
@@ -3737,7 +3926,7 @@ const SipRegisterPage = () => {
                                       )
                                     }
                                     size="small"
-                                    sx={checkboxSx}
+                                    sx={sipRegisterTableCheckboxSx}
                                   />
                                 }
                                 label=""
@@ -3760,7 +3949,6 @@ const SipRegisterPage = () => {
                                     handleChange("ui_proxy_ip", e.target.value)
                                   }
                                   error={!!validationErrors.ui_proxy_ip}
-                                  inputProps={{ style: { fontSize: 14 } }}
                                 />
                                 {validationErrors.ui_proxy_ip && (
                                   <div className="text-red-500 text-xs mt-0.5">
@@ -3784,149 +3972,72 @@ const SipRegisterPage = () => {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: isCompact
-                      ? "1fr"
-                      : "1fr 48px 1fr 48px",
-                    gap: 12,
+                    gridTemplateColumns: `1fr ${SIP_REGISTER_CODEC_BTN_COL_WIDTH}px 1fr ${SIP_REGISTER_CODEC_BTN_COL_WIDTH}px`,
+                    gap: 10,
+                    width: "100%",
                     maxWidth: 720,
                     margin: "0 auto",
+                    alignItems: "start",
                   }}
                 >
                   <div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: TRUNK_FIELD_LABEL_COLOR,
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Available
-                    </div>
-                    <select
-                      multiple
-                      size={6}
-                      value={codecAvailableSelected}
-                      onChange={(e) =>
-                        setCodecAvailableSelected(
-                          Array.from(
-                            e.target.selectedOptions,
-                            (opt) => opt.value,
-                          ),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {availableCodecList.length === 0 ? (
-                        <option disabled value="">
-                          No codecs
-                        </option>
-                      ) : (
-                        availableCodecList.map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.label}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: isCompact ? 0 : 28,
-                    }}
-                  >
-                    <CodecDualListBtn onClick={addSelectedCodecs}>
-                      &gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={addAllCodecs}>
-                      &gt;&gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeSelectedCodecs}>
-                      &lt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeAllCodecs}>
-                      &lt;&lt;
-                    </CodecDualListBtn>
+                    <div style={sipRegisterCodecColumnLabelStyle}>Available</div>
+                    <SipRegisterCodecListBox
+                      items={availableCodecList}
+                      selectedIds={codecAvailableSelected}
+                      onToggle={toggleCodecAvailableSelect}
+                      emptyText="Available codecs"
+                      getLabel={(id) => getCodecLabel(id)}
+                    />
                   </div>
                   <div>
                     <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: TRUNK_FIELD_LABEL_COLOR,
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Selected
-                    </div>
-                    <select
-                      multiple
-                      size={6}
-                      value={codecChosenSelected}
-                      onChange={(e) =>
-                        setCodecChosenSelected(
-                          Array.from(
-                            e.target.selectedOptions,
-                            (opt) => opt.value,
-                          ),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {selectedCodecList.length === 0 ? (
-                        <option disabled value="">
-                          No selected codecs
-                        </option>
-                      ) : (
-                        selectedCodecList.map((id) => (
-                          <option key={id} value={id}>
-                            {getCodecLabel(id)}
-                          </option>
-                        ))
+                      style={{ height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET }}
+                      aria-hidden="true"
+                    />
+                    <div style={sipRegisterCodecBtnColumnStyle}>
+                      {sipRegisterCodecTransferActions.map(
+                        ({ onClick, title, label }) => (
+                          <SipRegisterCodecDualListBtn
+                            key={title}
+                            onClick={onClick}
+                            title={title}
+                          >
+                            {label}
+                          </SipRegisterCodecDualListBtn>
+                        ),
                       )}
-                    </select>
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: isCompact ? 0 : 28,
-                    }}
-                  >
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      onClick={moveCodecToBottom}
-                    >
-                      vv
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveCodecUp}
-                    >
-                      ^
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move down"
-                      onClick={moveCodecDown}
-                    >
-                      v
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveCodecToTop}
-                    >
-                      ^^
-                    </CodecDualListBtn>
+                  <div>
+                    <div style={sipRegisterCodecColumnLabelStyle}>Selected</div>
+                    <SipRegisterCodecListBox
+                      items={selectedCodecList}
+                      selectedIds={codecChosenSelected}
+                      onToggle={toggleCodecChosenSelect}
+                      emptyText="No selected codecs"
+                      getLabel={(id) => getCodecLabel(id)}
+                    />
+                  </div>
+                  <div>
+                    <div
+                      style={{ height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET }}
+                      aria-hidden="true"
+                    />
+                    <div style={sipRegisterCodecBtnColumnStyle}>
+                      {sipRegisterCodecReorderActions.map(
+                        ({ onClick, title, label }) => (
+                          <SipRegisterCodecDualListBtn
+                            key={title}
+                            reorder
+                            title={title}
+                            onClick={onClick}
+                          >
+                            {label}
+                          </SipRegisterCodecDualListBtn>
+                        ),
+                      )}
+                    </div>
                   </div>
                 </div>
                 {validationErrors.allow_codecs && (
@@ -3958,7 +4069,6 @@ const SipRegisterPage = () => {
                           }
                           error={!!validationErrors.sip_header}
                           placeholder="+91...@sip.domain"
-                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -3989,7 +4099,6 @@ const SipRegisterPage = () => {
                             handleChange("server_domain", e.target.value)
                           }
                           error={!!validationErrors.server_domain}
-                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -4020,7 +4129,6 @@ const SipRegisterPage = () => {
                             handleChange("client_domain", e.target.value)
                           }
                           error={!!validationErrors.client_domain}
-                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -4050,7 +4158,6 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("Outbound Proxy", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -4076,7 +4183,6 @@ const SipRegisterPage = () => {
                             handleChange("identity_ip", e.target.value)
                           }
                           error={!!validationErrors.identity_ip}
-                          inputProps={{ style: { fontSize: 14 } }}
                         />
                         {validationErrors.identity_ip && (
                           <div className="text-red-500 text-xs mt-0.5">
@@ -4120,7 +4226,6 @@ const SipRegisterPage = () => {
                             fullWidth
                             value={form[key] || ""}
                             onChange={(e) => handleChange(key, e.target.value)}
-                            inputProps={{ style: { fontSize: 14 } }}
                           />
                         </div>
                       </div>
@@ -4136,7 +4241,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_send_privacy_id", e.target.value)
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4162,7 +4267,7 @@ const SipRegisterPage = () => {
                                 e.target.value,
                               )
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             <MenuItem value="">
                               <em>—</em>
@@ -4196,7 +4301,7 @@ const SipRegisterPage = () => {
                                 e.target.value,
                               )
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4219,7 +4324,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_remote_party_id", e.target.value)
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {REMOTE_PARTY_ID_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4245,7 +4350,7 @@ const SipRegisterPage = () => {
                                 e.target.value,
                               )
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4268,7 +4373,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_contact_mode", e.target.value)
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {CONTACT_MODE_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4297,7 +4402,6 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_limit_max_calls", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
                         />
                       </div>
                     </div>
@@ -4315,7 +4419,7 @@ const SipRegisterPage = () => {
                                 e.target.value,
                               )
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4340,7 +4444,7 @@ const SipRegisterPage = () => {
                                 e.target.value,
                               )
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_YES_NO.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4364,7 +4468,7 @@ const SipRegisterPage = () => {
                                 handleChange("ui_user_phone", e.target.checked)
                               }
                               size="small"
-                              sx={checkboxSx}
+                              sx={sipRegisterTableCheckboxSx}
                             />
                           }
                           label=""
@@ -4384,7 +4488,6 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_call_timeout", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
                         />
                       </div>
                     </div>
@@ -4399,7 +4502,7 @@ const SipRegisterPage = () => {
                             onChange={(e) =>
                               handleChange("ui_dtmf_transmit", e.target.value)
                             }
-                            sx={{ fontSize: 14 }}
+                            sx={sipRegisterModalSelectSx}
                           >
                             {SIP_REGISTER_DTMF_OPTIONS.map((c) => (
                               <MenuItem key={c} value={c}>
@@ -4422,7 +4525,6 @@ const SipRegisterPage = () => {
                           onChange={(e) =>
                             handleChange("ui_max_call_duration", e.target.value)
                           }
-                          inputProps={{ style: { fontSize: 14 } }}
                         />
                       </div>
                     </div>
@@ -4440,7 +4542,7 @@ const SipRegisterPage = () => {
                                 handleChange("ui_dnis", e.target.checked)
                               }
                               size="small"
-                              sx={checkboxSx}
+                              sx={sipRegisterTableCheckboxSx}
                             />
                           }
                           label=""
@@ -4517,7 +4619,6 @@ const SipRegisterPage = () => {
                                           ),
                                         )
                                       }
-                                      inputProps={{ style: { fontSize: 13 } }}
                                     />
                                   </td>
                                   <td className="p-1">
@@ -4537,7 +4638,6 @@ const SipRegisterPage = () => {
                                           ),
                                         )
                                       }
-                                      inputProps={{ style: { fontSize: 13 } }}
                                     />
                                   </td>
                                   <td className="p-1 w-[180px]">
@@ -4556,7 +4656,7 @@ const SipRegisterPage = () => {
                                             ),
                                           )
                                         }
-                                        sx={{ fontSize: 14 }}
+                                        sx={sipRegisterModalSelectSx}
                                       >
                                         {SIP_REGISTER_YES_NO.map((c) => (
                                           <MenuItem key={c} value={c}>
@@ -4653,99 +4753,54 @@ const SipRegisterPage = () => {
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 48px 1fr",
-                          ...(isCompact
-                            ? { gridTemplateColumns: "1fr", gap: 12 }
-                            : {}),
-                          gap: 12,
+                          gridTemplateColumns: `1fr ${SIP_REGISTER_CODEC_BTN_COL_WIDTH}px 1fr`,
+                          gap: 10,
+                          width: "100%",
                           alignItems: "start",
                         }}
                       >
                         <div>
-                          <div style={pbxDualListLabelStyle}>Available</div>
-                          <select
-                            multiple
-                            value={dodAvailableSelectedInList}
-                            onChange={(e) =>
-                              setDodAvailableSelected(
-                                Array.from(
-                                  e.target.selectedOptions,
-                                  (opt) => opt.value,
-                                ),
-                              )
-                            }
-                            style={pbxDualListSelectStyle}
-                          >
-                            {dodAvailableExtensions.length === 0 &&
-                            !dodHasLoadedExtensionsRef.current ? (
-                              <option disabled value="">
-                                Loading extensions...
-                              </option>
-                            ) : dodAvailableList.length === 0 ? (
-                              <option disabled value="">
-                                No extensions
-                              </option>
-                            ) : (
-                              dodAvailableList.map((t) => (
-                                <option key={t.value} value={t.value}>
-                                  {getDodExtLabel(t.value)}
-                                </option>
-                              ))
-                            )}
-                          </select>
+                          <div style={sipRegisterCodecColumnLabelStyle}>
+                            Available
+                          </div>
+                          <SipRegisterCodecListBox
+                            items={dodAvailableList}
+                            selectedIds={dodAvailableSelectedInList}
+                            onToggle={toggleDodAvailableSelect}
+                            emptyText={dodAvailableEmptyText}
+                            getLabel={(id) => getDodExtLabel(id)}
+                          />
                         </div>
-
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "space-between",
-                            height: pbxDualListSelectStyle.height,
-                            paddingTop: DOD_DUAL_LIST_LABEL_OFFSET,
-                            boxSizing: "content-box",
-                          }}
-                        >
-                          <PbxDualListBtn onClick={dodAddSelectedMembers}>
-                            &gt;
-                          </PbxDualListBtn>
-                          <PbxDualListBtn onClick={dodAddAllMembers}>
-                            &gt;&gt;
-                          </PbxDualListBtn>
-                          <PbxDualListBtn onClick={dodRemoveSelectedMembers}>
-                            &lt;
-                          </PbxDualListBtn>
-                          <PbxDualListBtn onClick={dodRemoveAllMembers}>
-                            &lt;&lt;
-                          </PbxDualListBtn>
-                        </div>
-
                         <div>
-                          <div style={pbxDualListLabelStyle}>Selected</div>
-                          <select
-                            multiple
-                            value={dodChosenSelected}
-                            onChange={(e) =>
-                              setDodChosenSelected(
-                                Array.from(
-                                  e.target.selectedOptions,
-                                  (opt) => opt.value,
-                                ),
-                              )
-                            }
-                            style={pbxDualListSelectStyle}
-                          >
-                            {dodMemberExtensions.length === 0 ? (
-                              <option disabled value="">
-                                No selected extensions
-                              </option>
-                            ) : (
-                              dodMemberExtensions.map((id) => (
-                                <option key={id} value={id}>
-                                  {getDodExtLabel(id)}
-                                </option>
-                              ))
+                          <div
+                            style={{ height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET }}
+                            aria-hidden="true"
+                          />
+                          <div style={sipRegisterCodecBtnColumnStyle}>
+                            {sipRegisterDodTransferActions.map(
+                              ({ onClick, title, label }) => (
+                                <SipRegisterCodecDualListBtn
+                                  key={title}
+                                  onClick={onClick}
+                                  title={title}
+                                >
+                                  {label}
+                                </SipRegisterCodecDualListBtn>
+                              ),
                             )}
-                          </select>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={sipRegisterCodecColumnLabelStyle}>
+                            Selected
+                          </div>
+                          <SipRegisterCodecListBox
+                            items={dodMemberExtensions}
+                            selectedIds={dodChosenSelected}
+                            onToggle={toggleDodChosenSelect}
+                            emptyText="No selected extensions"
+                            getLabel={(id) => getDodExtLabel(id)}
+                          />
                         </div>
                       </div>
                     </div>
@@ -4846,8 +4901,7 @@ const SipRegisterPage = () => {
                                       ),
                                     )
                                   }
-                                  sx={muiTextFieldSx}
-                                  inputProps={{ style: { fontSize: 13 } }}
+                                  sx={sipRegisterModalTextFieldSx}
                                 />
                               </td>
                               <td className="p-1">
@@ -4864,8 +4918,7 @@ const SipRegisterPage = () => {
                                       ),
                                     )
                                   }
-                                  sx={muiTextFieldSx}
-                                  inputProps={{ style: { fontSize: 13 } }}
+                                  sx={sipRegisterModalTextFieldSx}
                                 />
                               </td>
                               <td className="p-1">
@@ -4895,8 +4948,7 @@ const SipRegisterPage = () => {
                                       ),
                                     );
                                   }}
-                                  sx={muiTextFieldSx}
-                                  inputProps={{ style: { fontSize: 13 } }}
+                                  sx={sipRegisterModalTextFieldSx}
                                 />
                               </td>
                             </tr>
@@ -4917,13 +4969,13 @@ const SipRegisterPage = () => {
                     gridTemplateColumns: trunkAdaptRowGridColumns,
                   }}
                 >
-                  <GroupFieldLabel tooltipKey="match_mode">
+                  <SipRegisterFieldLabel tooltipKey="match_mode">
                     Match Mode
-                  </GroupFieldLabel>
-                  <GroupFieldLabel tooltipKey="strip">Strip</GroupFieldLabel>
-                  <GroupFieldLabel tooltipKey="prepend">
+                  </SipRegisterFieldLabel>
+                  <SipRegisterFieldLabel tooltipKey="strip">Strip</SipRegisterFieldLabel>
+                  <SipRegisterFieldLabel tooltipKey="prepend">
                     Prepend
-                  </GroupFieldLabel>
+                  </SipRegisterFieldLabel>
                   <IconButton
                     size="small"
                     onClick={() =>

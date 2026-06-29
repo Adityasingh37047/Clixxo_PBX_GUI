@@ -19,10 +19,12 @@ import {
 } from "@mui/material";
 import axiosInstance from "../../../api/axiosInstance";
 import { listOutboundRouteExtensions } from "../../../api/apiService";
-import { OUTBOUND_RESTRICTION_FIELD_TOOLTIPS } from "../../../constants/OutboundRestrictionConstants";
+import {
+  OUTBOUND_RESTRICTION_ENABLE_OPTIONS,
+  OUTBOUND_RESTRICTION_FIELD_TOOLTIPS,
+} from "../../../constants/OutboundRestrictionConstants";
 
-const ENABLE_OPTIONS = ["Yes", "No"];
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const OUTBOUND_RESTRICTION_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Outbound Restriction API (local — does not modify apiService) ─────────────
 const orPost = async (payload) => {
@@ -48,17 +50,28 @@ const deleteOutboundRestriction = (id) =>
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
+  placeholderText: "#94a3b8",
 };
 
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -67,9 +80,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -80,53 +94,75 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -144,30 +180,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -180,8 +217,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -197,8 +234,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -209,7 +246,7 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const pbxModalCancelBtnStyle = {
+const outboundRestrictionModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -218,20 +255,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const outboundRestrictionPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const outboundRestrictionPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const OutboundRestrictionBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -305,14 +342,14 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_LIST_TRUNCATE_THRESHOLD = 10;
-const PBX_LIST_DISPLAY_LIMIT = 6;
+const OUTBOUND_RESTRICTION_LIST_TRUNCATE_THRESHOLD = 10;
+const OUTBOUND_RESTRICTION_LIST_DISPLAY_LIMIT = 6;
 
-const formatPbxItemListDisplay = (
+const formatOutboundRestrictionItemListDisplay = (
   items,
   {
-    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
-    limit = PBX_LIST_DISPLAY_LIMIT,
+    threshold = OUTBOUND_RESTRICTION_LIST_TRUNCATE_THRESHOLD,
+    limit = OUTBOUND_RESTRICTION_LIST_DISPLAY_LIMIT,
     mapItem = (x) => String(x),
     separator = ", ",
     ellipsis = "....",
@@ -327,8 +364,8 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const OUTBOUND_RESTRICTION_MODAL_SECTION_BG = "#f8fafc";
+const OUTBOUND_RESTRICTION_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const OUTBOUND_RESTRICTION_TOOLTIP_PROPS = {
   arrow: true,
@@ -392,18 +429,18 @@ const RestrictionFieldLabel = ({ tooltipKey, children, style = {} }) => {
   );
 };
 
-const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+const OutboundRestrictionModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   const heading = (
     <span
       style={{
         position: "absolute",
-        top: -12,
+        top: -10,
         left: 0,
-        background: "#f5f7fa",
+        background: OUTBOUND_RESTRICTION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: OUTBOUND_RESTRICTION_MODAL_SECTION_HEADING_COLOR,
         cursor: tooltipKey ? "help" : undefined,
       }}
     >
@@ -436,96 +473,85 @@ const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   );
 };
 
-const pbxDualListLabelStyle = {
+const outboundRestrictionDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#3E5475",
+  color: C.labelText,
   textAlign: "center",
   marginBottom: 8,
 };
 
-const pbxDualListSelectStyle = {
-  width: "340px",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const pbxDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={{
-      ...pbxDualListBtnStyle,
-      fontWeight: reorder ? 400 : 600,
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const outboundRestrictionOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const muiSelectSx = {
+const outboundRestrictionModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": outboundRestrictionOutlinedInputRootSx,
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const outboundRestrictionModalTextFieldFullSx = {
+  ...outboundRestrictionModalTextFieldSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...outboundRestrictionOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const outboundRestrictionModalSelectSx = {
   fontSize: 13,
   backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...outboundRestrictionOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -533,48 +559,12 @@ const muiSelectSx = {
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
     boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldFullSx = {
-  ...muiTextFieldSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    minHeight: 32,
-    height: 32,
     fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "5px 8px",
-    fontSize: 13,
-    boxSizing: "border-box",
     backgroundColor: "#fff",
   },
 };
 
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
-};
-
-const trunkModalPaperSx = {
+const outboundRestrictionModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
@@ -585,7 +575,7 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkModalTitleStyle = {
+const outboundRestrictionModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
   fontWeight: 600,
@@ -596,43 +586,43 @@ const trunkModalTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const outboundRestrictionCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const outboundRestrictionToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
+  borderTopRightRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const outboundRestrictionPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const outboundRestrictionSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -642,7 +632,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const outboundRestrictionCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -650,14 +640,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const outboundRestrictionPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const outboundRestrictionPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -667,7 +657,16 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const outboundRestrictionFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const OutboundRestrictionPagination = ({
   page,
   totalPages,
   recordCount,
@@ -675,7 +674,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...outboundRestrictionPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -688,7 +687,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={outboundRestrictionPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -722,8 +721,8 @@ const FieldRow = ({
         tooltipKey={tooltipKey}
         style={{
           textAlign: "left",
+          width: labelWidth,
           minWidth: labelWidth,
-          width: "auto",
           flexShrink: 0,
           paddingTop: wide ? 4 : 0,
         }}
@@ -738,8 +737,8 @@ const FieldRow = ({
           fontWeight: 600,
           whiteSpace: "nowrap",
           textAlign: "left",
+          width: labelWidth,
           minWidth: labelWidth,
-          width: "auto",
           flexShrink: 0,
           paddingTop: wide ? 4 : 0,
         }}
@@ -751,9 +750,85 @@ const FieldRow = ({
   </div>
 );
 
+const OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH = 185;
+const OUTBOUND_RESTRICTION_MODAL_FIELD_WIDTH = 210;
+const OUTBOUND_RESTRICTION_RIGHT_LABEL_PADDING_LEFT = 28;
+const OUTBOUND_RESTRICTION_LEFT_FIELD_LABEL_WIDTH = 168;
+
+/** Left column — same fill-box size as right; label position unchanged */
+const OutboundLeftField = ({ children }) => (
+  <div
+    style={{
+      width: OUTBOUND_RESTRICTION_MODAL_FIELD_WIDTH,
+      maxWidth: "100%",
+    }}
+  >
+    {children}
+  </div>
+);
+
+const OutboundRightRow = ({ label, tooltipKey, children }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      width: "100%",
+    }}
+  >
+    {tooltipKey ? (
+      <RestrictionFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          textAlign: "left",
+          width: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
+          minWidth: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          paddingLeft: OUTBOUND_RESTRICTION_RIGHT_LABEL_PADDING_LEFT,
+          boxSizing: "border-box",
+        }}
+      >
+        {label}
+      </RestrictionFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
+          minWidth: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          paddingLeft: OUTBOUND_RESTRICTION_RIGHT_LABEL_PADDING_LEFT,
+          boxSizing: "border-box",
+        }}
+      >
+        {label}
+      </label>
+    )}
+    <div
+      style={{
+        width: OUTBOUND_RESTRICTION_MODAL_FIELD_WIDTH,
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
+
+const outboundRightColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  width: "100%",
+};
+
 const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading
+    <OutboundRestrictionModalSectionHeading
       title={title}
       tooltipKey={tooltipKey}
       isFirst={isFirst}
@@ -761,6 +836,200 @@ const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
     <div>{children}</div>
   </div>
 );
+
+const outboundRestrictionModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const outboundRestrictionModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const OUTBOUND_RESTRICTION_CODEC_LIST_BOX_HEIGHT = 188;
+const OUTBOUND_RESTRICTION_CODEC_BTN_COL_WIDTH = 40;
+const OUTBOUND_RESTRICTION_CODEC_BTN_GAP = 6;
+const OUTBOUND_RESTRICTION_CODEC_BTN_HEIGHT =
+  (OUTBOUND_RESTRICTION_CODEC_LIST_BOX_HEIGHT -
+    OUTBOUND_RESTRICTION_CODEC_BTN_GAP * 3) /
+  4;
+const OUTBOUND_RESTRICTION_CODEC_LIST_LABEL_OFFSET = 28;
+
+const getOutboundRestrictionCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: OUTBOUND_RESTRICTION_CODEC_LIST_BOX_HEIGHT,
+  height: OUTBOUND_RESTRICTION_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const outboundRestrictionCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const outboundRestrictionCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const outboundRestrictionCodecDualListBtnStyle = {
+  width: OUTBOUND_RESTRICTION_CODEC_BTN_COL_WIDTH,
+  height: OUTBOUND_RESTRICTION_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const outboundRestrictionCodecDualListReorderBtnStyle = {
+  ...outboundRestrictionCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const outboundRestrictionCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: OUTBOUND_RESTRICTION_CODEC_BTN_GAP,
+  height: OUTBOUND_RESTRICTION_CODEC_LIST_BOX_HEIGHT,
+  width: OUTBOUND_RESTRICTION_CODEC_BTN_COL_WIDTH,
+};
+
+const OutboundRestrictionCodecDualListBtn = ({
+  onClick,
+  title,
+  children,
+  reorder,
+}) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={
+      reorder
+        ? outboundRestrictionCodecDualListReorderBtnStyle
+        : outboundRestrictionCodecDualListBtnStyle
+    }
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const OutboundRestrictionCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getOutboundRestrictionCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={outboundRestrictionCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id =
+            typeof item === "string" ? item : (item.value ?? item.extension);
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={outboundRestrictionCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 const toUiYesNo = (value, defaultValue = "No") => {
   if (typeof value === "string") {
@@ -813,11 +1082,10 @@ const yesNoCellStyle = (value) => ({
 });
 
 const OutboundRestrictions = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(OUTBOUND_RESTRICTION_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState({
     list: false,
     save: false,
@@ -1092,6 +1360,18 @@ const OutboundRestrictions = () => {
     });
   };
 
+  const toggleAvailableExtensionSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenExtensionSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   const handleSelectRow = (idx) => {
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
@@ -1198,31 +1478,32 @@ const OutboundRestrictions = () => {
     !isInitialLoad && rows.length > 0 && filteredRows.length === 0;
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div
+      style={{
+        ...outboundRestrictionPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={outboundRestrictionPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={outboundRestrictionFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Control" current="Outbound Restrictions" />
+        <OutboundRestrictionBreadcrumb
+          section="Call Control"
+          current="Outbound Restrictions"
+        />
 
-        <div style={sipPcmCardStyle}>
+        <div style={outboundRestrictionCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...outboundRestrictionToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1294,7 +1575,7 @@ const OutboundRestrictions = () => {
                 )}
               </div> */}
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={outboundRestrictionSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1313,7 +1594,7 @@ const OutboundRestrictions = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={outboundRestrictionCancelBtnStyle}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1325,7 +1606,7 @@ const OutboundRestrictions = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={outboundRestrictionPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1544,16 +1825,19 @@ const OutboundRestrictions = () => {
                             <span
                               title={
                                 row.memberExtensions.length >
-                                PBX_LIST_TRUNCATE_THRESHOLD
+                                OUTBOUND_RESTRICTION_LIST_TRUNCATE_THRESHOLD
                                   ? row.memberExtensions
                                       .map(getExtensionLabel)
                                       .join(", ")
                                   : undefined
                               }
                             >
-                              {formatPbxItemListDisplay(row.memberExtensions, {
-                                mapItem: getExtensionLabel,
-                              })}
+                              {formatOutboundRestrictionItemListDisplay(
+                                row.memberExtensions,
+                                {
+                                  mapItem: getExtensionLabel,
+                                },
+                              )}
                             </span>
                           ) : (
                             <span style={{ color: C.mutedText }}>—</span>
@@ -1616,7 +1900,7 @@ const OutboundRestrictions = () => {
           </div>
 
           {!isInitialLoad && filteredRows.length > 0 && (
-            <SipPcmPagination
+            <OutboundRestrictionPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1631,131 +1915,119 @@ const OutboundRestrictions = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{
-          sx: {
-            ...trunkModalPaperSx,
-            mt: 16,
-            alignSelf: "flex-start",
-          },
-        }}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: outboundRestrictionModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
+        <DialogTitle style={outboundRestrictionModalTitleStyle}>
           {editId != null
             ? "Edit Outbound Restriction"
             : "Add Outbound Restriction"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div
-            style={{
-              background: "#f5f7fa",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 6,
-              padding: 16,
-            }}
-          >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={outboundRestrictionModalFormStyle}>
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
-                gap: 14,
+                gridTemplateColumns: "1fr 1fr",
+                ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                gap: "8px 28px",
+                alignItems: "start",
               }}
             >
-              <FieldRow label="Name *" tooltipKey="name">
-                <TextField
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  sx={{
-                    ...modalTextFieldFullSx,
-                    width: "95%",
-                    ml: 0.9,
-                  }}
-                />
-              </FieldRow>
-              <FieldRow label="Time Limit *" tooltipKey="time_limit">
-                <TextField
-                  value={timeLimit}
-                  onChange={(e) => setTimeLimit(e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  placeholder="e.g. 30 min"
-                  sx={{
-                    ...modalTextFieldFullSx,
-                    width: "95%",
-                    ml: 1.9, // 8px left margin
-                  }}
-                />
-              </FieldRow>
-              <FieldRow
-                label="Number of Calls Limit *"
-                tooltipKey="calls_limit"
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
               >
-                <TextField
-                  value={callsLimit}
-                  onChange={(e) => setCallsLimit(e.target.value)}
-                  size="small"
-                  fullWidth
-                  variant="outlined"
-                  sx={{
-                    ...modalTextFieldFullSx,
-                    width: "95%",
-                    ml: 0.9,
-                  }}
-                />
-              </FieldRow>
-              <FieldRow
-                label="Auto Cancel Restriction *"
-                tooltipKey="auto_cancel_restriction"
-              >
-                <FormControl size="small" fullWidth>
-                  <Select
-                    value={autoCancelRestriction}
-                    onChange={(e) => setAutoCancelRestriction(e.target.value)}
-                    sx={modalSelectSx}
-                  >
-                    {ENABLE_OPTIONS.map((o) => (
-                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
-                        {o}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </FieldRow>
-              <FieldRow label="Enabled *" tooltipKey="enabled">
-                <FormControl size="small" fullWidth>
-                  <Select
-                    value={enabled}
-                    onChange={(e) => setEnabled(e.target.value)}
-                    sx={{
-                      ...modalTextFieldFullSx,
-                      width: "95%",
-                      ml: 0.9,
-                    }}
-                  >
-                    {ENABLE_OPTIONS.map((o) => (
-                      <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
-                        {o}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </FieldRow>
+                <FieldRow
+                  label="Name *"
+                  tooltipKey="name"
+                  labelWidth={OUTBOUND_RESTRICTION_LEFT_FIELD_LABEL_WIDTH}
+                >
+                  <OutboundLeftField>
+                    <TextField
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      size="small"
+                      fullWidth
+                      sx={outboundRestrictionModalTextFieldFullSx}
+                    />
+                  </OutboundLeftField>
+                </FieldRow>
+                <FieldRow
+                  label="Time Limit *"
+                  tooltipKey="time_limit"
+                  labelWidth={OUTBOUND_RESTRICTION_LEFT_FIELD_LABEL_WIDTH}
+                >
+                  <OutboundLeftField>
+                    <TextField
+                      value={timeLimit}
+                      onChange={(e) => setTimeLimit(e.target.value)}
+                      size="small"
+                      fullWidth
+                      placeholder="e.g. 30 min"
+                      sx={outboundRestrictionModalTextFieldFullSx}
+                    />
+                  </OutboundLeftField>
+                </FieldRow>
+                <FieldRow
+                  label="Number of Calls Limit *"
+                  tooltipKey="calls_limit"
+                  labelWidth={OUTBOUND_RESTRICTION_LEFT_FIELD_LABEL_WIDTH}
+                >
+                  <OutboundLeftField>
+                    <TextField
+                      value={callsLimit}
+                      onChange={(e) => setCallsLimit(e.target.value)}
+                      size="small"
+                      fullWidth
+                      sx={outboundRestrictionModalTextFieldFullSx}
+                    />
+                  </OutboundLeftField>
+                </FieldRow>
+              </div>
+
+              <div style={outboundRightColStyle}>
+                <OutboundRightRow
+                  label="Auto Cancel Restriction *"
+                  tooltipKey="auto_cancel_restriction"
+                >
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={autoCancelRestriction}
+                      onChange={(e) =>
+                        setAutoCancelRestriction(e.target.value)
+                      }
+                      sx={outboundRestrictionModalSelectSx}
+                    >
+                      {OUTBOUND_RESTRICTION_ENABLE_OPTIONS.map((o) => (
+                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                          {o}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </OutboundRightRow>
+                <OutboundRightRow label="Enabled *" tooltipKey="enabled">
+                  <FormControl size="small" fullWidth>
+                    <Select
+                      value={enabled}
+                      onChange={(e) => setEnabled(e.target.value)}
+                      sx={outboundRestrictionModalSelectSx}
+                    >
+                      {OUTBOUND_RESTRICTION_ENABLE_OPTIONS.map((o) => (
+                        <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
+                          {o}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </OutboundRightRow>
+              </div>
             </div>
 
             <SectionCard
@@ -1765,138 +2037,114 @@ const OutboundRestrictions = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: isCompact
-                    ? "1fr"
-                    : "340px 48px 340px 48px",
-                  gap: 12,
+                  gridTemplateColumns: `1fr ${OUTBOUND_RESTRICTION_CODEC_BTN_COL_WIDTH}px 1fr ${OUTBOUND_RESTRICTION_CODEC_BTN_COL_WIDTH}px`,
+                  gap: 10,
+                  width: "100%",
+                  alignItems: "start",
                 }}
               >
                 <div>
-                  <div style={pbxDualListLabelStyle}>Available</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={availableSelected}
-                    onChange={(e) =>
-                      setAvailableSelected(
-                        Array.from(e.target.selectedOptions, (o) => o.value),
-                      )
-                    }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {availableList.length === 0 ? (
-                      <option disabled value="">
-                        No extensions
-                      </option>
-                    ) : (
-                      availableList.map((item) => (
-                        <option key={item.extension} value={item.extension}>
-                          {item.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                {!isCompact && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
-                    }}
-                  >
-                    <PbxDualListBtn onClick={addSelectedExtensions}>
-                      &gt;
-                    </PbxDualListBtn>
-                    <PbxDualListBtn onClick={addAllExtensions}>
-                      &gt;&gt;
-                    </PbxDualListBtn>
-                    <PbxDualListBtn onClick={removeSelectedExtensions}>
-                      &lt;
-                    </PbxDualListBtn>
-                    <PbxDualListBtn onClick={removeAllExtensions}>
-                      &lt;&lt;
-                    </PbxDualListBtn>
+                  <div style={outboundRestrictionDualListLabelStyle}>
+                    Available
                   </div>
-                )}
-                <div>
-                  <div style={pbxDualListLabelStyle}>Selected</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(e.target.selectedOptions, (o) => o.value),
-                      )
-                    }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {memberExtensions.length === 0 ? (
-                      <option disabled value="">
-                        No selected extensions
-                      </option>
-                    ) : (
-                      memberExtensions.map((ext) => (
-                        <option key={ext} value={ext}>
-                          {getExtensionLabel(ext)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <OutboundRestrictionCodecListBox
+                    items={availableList}
+                    selectedIds={availableSelected}
+                    onToggle={toggleAvailableExtensionSelect}
+                    emptyText="No extensions"
+                    getLabel={(id) => {
+                      const item = availableList.find(
+                        (x) => x.extension === id,
+                      );
+                      return item?.label || getExtensionLabel(id);
+                    }}
+                  />
                 </div>
-                {!isCompact && (
+                <div>
                   <div
                     style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
+                      height: OUTBOUND_RESTRICTION_CODEC_LIST_LABEL_OFFSET,
                     }}
-                  >
-                    <PbxDualListBtn
+                    aria-hidden="true"
+                  />
+                  <div style={outboundRestrictionCodecBtnColumnStyle}>
+                    <OutboundRestrictionCodecDualListBtn
+                      onClick={addSelectedExtensions}
+                    >
+                      &gt;
+                    </OutboundRestrictionCodecDualListBtn>
+                    <OutboundRestrictionCodecDualListBtn
+                      onClick={addAllExtensions}
+                    >
+                      &gt;&gt;
+                    </OutboundRestrictionCodecDualListBtn>
+                    <OutboundRestrictionCodecDualListBtn
+                      onClick={removeSelectedExtensions}
+                    >
+                      &lt;
+                    </OutboundRestrictionCodecDualListBtn>
+                    <OutboundRestrictionCodecDualListBtn
+                      onClick={removeAllExtensions}
+                    >
+                      &lt;&lt;
+                    </OutboundRestrictionCodecDualListBtn>
+                  </div>
+                </div>
+                <div>
+                  <div style={outboundRestrictionDualListLabelStyle}>
+                    Selected
+                  </div>
+                  <OutboundRestrictionCodecListBox
+                    items={memberExtensions}
+                    selectedIds={chosenSelected}
+                    onToggle={toggleChosenExtensionSelect}
+                    emptyText="No selected extensions"
+                    getLabel={getExtensionLabel}
+                  />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      height: OUTBOUND_RESTRICTION_CODEC_LIST_LABEL_OFFSET,
+                    }}
+                    aria-hidden="true"
+                  />
+                  <div style={outboundRestrictionCodecBtnColumnStyle}>
+                    <OutboundRestrictionCodecDualListBtn
                       reorder
                       title="Move to bottom"
                       onClick={moveExtToBottom}
                     >
                       vv
-                    </PbxDualListBtn>
-                    <PbxDualListBtn reorder title="Move up" onClick={moveExtUp}>
+                    </OutboundRestrictionCodecDualListBtn>
+                    <OutboundRestrictionCodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveExtUp}
+                    >
                       ^
-                    </PbxDualListBtn>
-                    <PbxDualListBtn
+                    </OutboundRestrictionCodecDualListBtn>
+                    <OutboundRestrictionCodecDualListBtn
                       reorder
                       title="Move down"
                       onClick={moveExtDown}
                     >
                       v
-                    </PbxDualListBtn>
-                    <PbxDualListBtn
+                    </OutboundRestrictionCodecDualListBtn>
+                    <OutboundRestrictionCodecDualListBtn
                       reorder
                       title="Move to top"
                       onClick={moveExtToTop}
                     >
                       ^^
-                    </PbxDualListBtn>
+                    </OutboundRestrictionCodecDualListBtn>
                   </div>
-                )}
+                </div>
               </div>
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={outboundRestrictionModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
@@ -1916,7 +2164,7 @@ const OutboundRestrictions = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={outboundRestrictionModalCancelBtnStyle}
           >
             Cancel
           </Btn>

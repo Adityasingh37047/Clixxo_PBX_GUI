@@ -129,7 +129,6 @@ const C = {
   accentDark: "#3a4a5e",
   codecBoxBorder: "#c5ccd6",
   codecBoxAvailableBg: "#f8fafc",
-  codecBoxSelectedBg: "#ffffff",
   codecStripBg: "#ffffff",
   codecStripBorder: "#ced4de",
   codecStripSelectedBg: "#f1f5f9",
@@ -511,8 +510,7 @@ const getCodecListBoxStyle = (variant, isEmpty) => ({
   minHeight: CODEC_LIST_BOX_HEIGHT,
   height: CODEC_LIST_BOX_HEIGHT,
   border: `1px solid ${C.codecBoxBorder}`,
-  background:
-    variant === "available" ? C.codecBoxAvailableBg : C.codecBoxSelectedBg,
+  background: C.codecBoxAvailableBg,
   borderRadius: 6,
   padding: isEmpty ? 0 : "8px 8px",
   boxSizing: "border-box",
@@ -573,7 +571,8 @@ const codecDualListBtnStyle = {
   boxSizing: "border-box",
   flexShrink: 0,
   boxShadow: "none",
-  transition: "background 0.12s ease",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
 };
 
 const codecDualListReorderBtnStyle = {
@@ -603,6 +602,18 @@ const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
     }}
   >
     {children}

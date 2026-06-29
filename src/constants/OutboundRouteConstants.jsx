@@ -1,3 +1,22 @@
+export const OUTBOUND_ROUTE_ENABLE_OPTIONS = ["Yes", "No"];
+export const OUTBOUND_ROUTE_PASSWORD_OPTIONS = ["None", "Single Pin"];
+export const OUTBOUND_ROUTE_REMEMORY_HUNT_OPTIONS = ["No", "Yes"];
+export const OUTBOUND_ROUTE_TIME_CONDITION_OPTIONS = ["WorkTime", "Holiday", "All"];
+
+export const OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN = {
+  pattern: "",
+  strip: "",
+  front: "",
+  suffix: "",
+  delay: "",
+};
+
+export const OUTBOUND_ROUTE_DEFAULT_CALLER_CONVERSION = {
+  strip: "",
+  front: "",
+  suffix: "",
+};
+
 /** Field tooltips for Outbound Routes — concise, 1–4 lines */
 export const OUTBOUND_ROUTE_FIELD_TOOLTIPS = {
   name:

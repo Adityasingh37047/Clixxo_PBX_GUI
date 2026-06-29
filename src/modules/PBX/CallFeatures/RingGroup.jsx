@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import {Alert,
-  Button,
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -13,8 +13,10 @@ import {Alert,
   ListSubheader,
   MenuItem,
   Select as MuiSelect,
-  Checkbox,
-  TextField, useMediaQuery } from "@mui/material";
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   createRingGroup,
   deleteRingGroup,
@@ -25,103 +27,47 @@ import {
   listRingGroups,
   updateRingGroup,
 } from "../../../api/apiService";
-import { RING_GROUP_ITEMS_PER_PAGE } from "../../../constants/RingGroupConstants";
-const ENABLE_OPTIONS = ["Yes", "No"];
-const RING_STRATEGY_OPTIONS = ["simultaneous", "sequential", "random"];
-const EXTENSION_ANSWER_CONFIRM_OPTIONS = ["Yes", "No"];
-const RING_TIMEOUT_OPTIONS = Array.from({ length: 20 }, (_, i) =>
-  String((i + 1) * 5),
-);
-const TIMEOUT_DESTINATION_OPTIONS = [
-  { label: "Call Queue", value: "call_queue" },
-  { label: "CallBacks", value: "callbacks" },
-  { label: "Conference Rooms", value: "conference_rooms" },
-  { label: "DISA", value: "disa" },
-  { label: "Extensions", value: "extensions" },
-  { label: "Fax To Mail", value: "faxtoemail" },
-  { label: "IVR Menus", value: "ivr_menus" },
-  { label: "Ring Group", value: "ring_groups" },
-  { label: "Voicemails", value: "voicemail" },
-  { label: "Other", value: "other" },
-];
+import {
+  RING_GROUP_EMPTY_RING_BACK_OPTIONS,
+  RING_GROUP_ENABLE_OPTIONS,
+  RING_GROUP_EXTENSION_ANSWER_CONFIRM_OPTIONS,
+  RING_GROUP_FIELD_TOOLTIPS,
+  RING_GROUP_ITEMS_PER_PAGE,
+  RING_GROUP_RING_BACK_MENU_PROPS,
+  RING_GROUP_RING_STRATEGY_OPTIONS,
+  RING_GROUP_RING_TIMEOUT_OPTIONS,
+  RING_GROUP_TIMEOUT_DESTINATION_OPTIONS,
+  RING_GROUP_TITLE,
+} from "../../../constants/RingGroupConstants";
 
-const RING_BACK_MENU_PROPS = {
-  PaperProps: { sx: { maxHeight: 360 } },
-};
+const RING_GROUP_COMPACT_MQ = "(max-width: 768px)";
 
-const EMPTY_RING_BACK_OPTIONS = {
-  moh_categories: [],
-  custom_prompts: [],
-  country_tones: [],
-};
-
-const PBX_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color Palette (CDR Style) ─────────────────────────────────────────────────
+// ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
-};
-const CARD_RADIUS = 10;
-
-const codecDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
 };
 
-const codecDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const CodecDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={codecDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -130,9 +76,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -143,11 +90,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -155,41 +98,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -207,30 +176,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -243,8 +213,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -255,37 +225,39 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
+const ringGroupTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
-  padding: "1px", 
+
+const ringGroupTableCheckboxSx = {
+  padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const RING_GROUP_TABLE_CARD_RADIUS = 10;
+
+const ringGroupPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const ringGroupPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const RingGroupBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -306,6 +278,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -358,94 +331,549 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  tooltip,
-}) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 170,
-          flexShrink: 0,
-          paddingTop: align === "flex-start" ? 8 : 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const ringGroupCardStyle = {
+  background: "#ffffff",
+  borderRadius: RING_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
+const ringGroupToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: RING_GROUP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: RING_GROUP_TABLE_CARD_RADIUS,
+};
 
+const ringGroupPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: RING_GROUP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: RING_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
 
-const tooltipProps = {
+const ringGroupSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const ringGroupCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const ringGroupPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const ringGroupPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const ringGroupFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const ringGroupEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleRingGroupEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const ringGroupOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const ringGroupModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...ringGroupOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const ringGroupModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...ringGroupOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const ringGroupModalPaperSx = {
+  width: 880,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const ringGroupModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const ringGroupModalSectionStyle = {
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+  marginTop: 24,
+};
+
+const ringGroupModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const ringGroupModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const ringGroupModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const RING_GROUP_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
-const PBX_MODAL_SECTION_BG = "#f5f7fa";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const SectionHeading = ({ title, isFirst = false, required }) => (
+const formatRingGroupTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const RING_GROUP_MODAL_LABEL_WIDTH = 150;
+const RING_GROUP_MODAL_SECTION_BG = "#f8fafc";
+const RING_GROUP_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const RingGroupFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = RING_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatRingGroupTooltipTitle(tooltip)}
+      {...RING_GROUP_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const RingGroupFieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  required = false,
+  alignTop = false,
+  labelWidth = RING_GROUP_MODAL_LABEL_WIDTH,
+}) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
+      display: "flex",
+      alignItems: alignTop ? "flex-start" : "center",
+      gap: 12,
+      minHeight: alignTop ? undefined : 32,
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    {tooltipKey ? (
+      <RingGroupFieldLabel
+        tooltipKey={tooltipKey}
+        style={{
+          width: labelWidth,
+          flexShrink: 0,
+          marginTop: alignTop ? 4 : 0,
+        }}
+      >
+        {label}
+        {required ? <span style={{ color: C.errorRed }}> *</span> : null}
+      </RingGroupFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: labelWidth,
+          flexShrink: 0,
+          marginTop: alignTop ? 4 : 0,
+        }}
+      >
+        {label}
+        {required ? <span style={{ color: C.errorRed }}> *</span> : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const RingGroupSectionHeading = ({
+  title,
+  isFirst = false,
+  required = false,
+  tooltipKey,
+}) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: RING_GROUP_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: RING_GROUP_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
     </span>
-  </div>
+  );
+  const tooltip = tooltipKey ? RING_GROUP_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatRingGroupTooltipTitle(tooltip)}
+          {...RING_GROUP_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
+
+const RING_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT = 188;
+const RING_GROUP_MEMBER_CODEC_BTN_COL_WIDTH = 40;
+const RING_GROUP_MEMBER_CODEC_BTN_GAP = 6;
+const RING_GROUP_MEMBER_CODEC_BTN_HEIGHT =
+  (RING_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT -
+    RING_GROUP_MEMBER_CODEC_BTN_GAP * 3) /
+  4;
+const RING_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET = 28;
+
+const ringGroupMemberCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getRingGroupMemberCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: RING_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  height: RING_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const ringGroupMemberCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const ringGroupMemberCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const ringGroupMemberCodecDualListBtnStyle = {
+  width: RING_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
+  height: RING_GROUP_MEMBER_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const ringGroupMemberCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: RING_GROUP_MEMBER_CODEC_BTN_GAP,
+  height: RING_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  width: RING_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
+};
+
+const RingGroupMemberCodecDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={ringGroupMemberCodecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
 );
+
+const RingGroupMemberCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getRingGroupMemberCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={ringGroupMemberCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={ringGroupMemberCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RingGroup = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(RING_GROUP_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -476,7 +904,7 @@ const RingGroup = () => {
   const [alertInfo, setAlertInfo] = useState("");
   const [ringBack, setRingBack] = useState("us-ring");
   const [ringBackOptions, setRingBackOptions] = useState(
-    EMPTY_RING_BACK_OPTIONS,
+    RING_GROUP_EMPTY_RING_BACK_OPTIONS,
   );
   const [cidNamePrefix, setCidNamePrefix] = useState("");
   const [extensionAnswerConfirm, setExtensionAnswerConfirm] = useState("No");
@@ -526,14 +954,14 @@ const RingGroup = () => {
             ? res.message
             : "Failed to load ring back options.",
         );
-        setRingBackOptions(EMPTY_RING_BACK_OPTIONS);
+        setRingBackOptions(RING_GROUP_EMPTY_RING_BACK_OPTIONS);
         return;
       }
       const msg = res?.message;
       const normalized =
         msg && typeof msg === "object" && !Array.isArray(msg)
           ? msg
-          : EMPTY_RING_BACK_OPTIONS;
+          : RING_GROUP_EMPTY_RING_BACK_OPTIONS;
       setRingBackOptions({
         moh_categories: Array.isArray(normalized.moh_categories)
           ? normalized.moh_categories
@@ -546,7 +974,7 @@ const RingGroup = () => {
           : [],
       });
     } catch (err) {
-      setRingBackOptions(EMPTY_RING_BACK_OPTIONS);
+      setRingBackOptions(RING_GROUP_EMPTY_RING_BACK_OPTIONS);
     } finally {
       setLoading((prev) => ({ ...prev, ringBackOptions: false }));
     }
@@ -895,6 +1323,17 @@ const RingGroup = () => {
     setChosenSelected([]);
   };
 
+  const toggleAvailableMemberSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+  const toggleChosenMemberSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   // ── Destination Options ──
   const getTimeoutValueOptions = () => {
     switch (timeoutDestinationType) {
@@ -935,10 +1374,18 @@ const RingGroup = () => {
     [ringBackOptions],
   );
 
+  const availableMemberEmptyText = loading.members
+    ? "Loading..."
+    : "No extension";
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...ringGroupPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={ringGroupPageInnerStyle}>
         {message.text && (
           <Alert
             severity={
@@ -949,45 +1396,25 @@ const RingGroup = () => {
                   : "info"
             }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={ringGroupFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Ring Group" />
+        <RingGroupBreadcrumb
+          section="Call Features"
+          current={RING_GROUP_TITLE}
+        />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={ringGroupCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...ringGroupToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -998,17 +1425,7 @@ const RingGroup = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={ringGroupSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1028,14 +1445,8 @@ const RingGroup = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={ringGroupCancelBtnStyle}
               >
-                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -1043,20 +1454,23 @@ const RingGroup = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={ringGroupPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "hidden",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
@@ -1090,7 +1504,7 @@ const RingGroup = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={ringGroupTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1141,6 +1555,11 @@ const RingGroup = () => {
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
+                    const lastRowCellStyle = {
+                      borderBottom: isLastRow
+                        ? "none"
+                        : ringGroupTdStyle.borderBottom,
+                    };
 
                     return (
                       <tr
@@ -1158,92 +1577,76 @@ const RingGroup = () => {
                             e.currentTarget.style.background = rowBg;
                         }}
                       >
-
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
                             borderLeft: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
-
-                   
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={ringGroupTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.ringGroupNumber}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
-                       <span
-  style={{
-    color: "#334155",
-    padding: "4px 11px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 500,
-    letterSpacing: "0",
-    whiteSpace: "nowrap",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  {row.ringStrategy}
-</span>
+                          <span
+                            style={{
+                              color: "#334155",
+                              padding: "4px 11px",
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 500,
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {row.ringStrategy}
+                          </span>
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
@@ -1261,46 +1664,39 @@ const RingGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.members.length}
                         </td>
                         <td
                           style={{
-                            textAlign: "center",
-                            padding: "7px 8px",
-                            ...tdStyle,
+                            ...ringGroupTdStyle,
                             background: rowBg,
-                            
                             borderRight: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                            
+                            ...lastRowCellStyle,
                           }}
                         >
-                                                    <EditDocumentIcon
-                            titleAccess="Edit"
-                            onClick={() => handleOpenEditModal(row)}
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={ringGroupEditIconStyle}
+                              onMouseEnter={(e) =>
+                                handleRingGroupEditIconHover(e, true)
+                              }
+                              onMouseLeave={(e) =>
+                                handleRingGroupEditIconHover(e, false)
+                              }
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1310,20 +1706,8 @@ const RingGroup = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={ringGroupPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -1336,17 +1720,7 @@ const RingGroup = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={ringGroupPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1362,533 +1736,384 @@ const RingGroup = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: ringGroupModalPaperSx }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          {editId != null ? "Edit Ring Group" : "Add Ring Group"}
+        <DialogTitle style={ringGroupModalTitleStyle}>
+          {editId != null
+            ? `Edit ${RING_GROUP_TITLE}`
+            : `Add ${RING_GROUP_TITLE}`}
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+          className="app-main-scroll"
+          sx={{
+            ...ringGroupModalDialogContentSx,
+            padding: "0 24px 20px",
+            backgroundColor: "#ffffff",
+          }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ background: "#ffffff" }}>
+            <div style={ringGroupModalSectionStyle}>
             <div
               style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                gap: "16px 32px",
               }}
             >
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
-                  gap: "16px 32px",
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                {/* ── LEFT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                <RingGroupFieldRow label="Name" tooltipKey="name" required>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    sx={ringGroupModalTextFieldFullSx}
+                  />
+                </RingGroupFieldRow>
+
+                <RingGroupFieldRow
+                  label="Ring Strategy"
+                  tooltipKey="ring_strategy"
+                  required
                 >
-                  <FieldRow label="Name" required tooltip="User-defined name of a ring group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={ringStrategy}
+                      onChange={(e) => setRingStrategy(e.target.value)}
+                      sx={ringGroupModalSelectSx}
+                    >
+                      {RING_GROUP_RING_STRATEGY_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </RingGroupFieldRow>
 
-                    <FieldRow label="Ring Strategy" required
-                    tooltip="Select the ring strategy for this ring group. Simultaneous: All available extensions ring simultaneously. Sequential: The extensions ring in the order already configured. Random: All available extensions ring randomly.">
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={ringStrategy}
-                          onChange={(e) => setRingStrategy(e.target.value)}
-                          sx={{
-                            fontSize: 13,
-                            backgroundColor: "#fff",
-                            height: 32,
-                            "& .MuiSelect-select": {
-                              padding: "6px 8px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
-                        >
-                          {RING_STRATEGY_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </FieldRow>
-
-                    <FieldRow label="Ring Timeout (s)"
-                    tooltip="The timeout time to ring next extension, and also the timeout time to enter Timeout destination if all extensions are unavailable. The default value is 30s.">
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={ringTimeout}
-                        onChange={(e) => setRingTimeout(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        {RING_TIMEOUT_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </FieldRow>
-
-                  <FieldRow label="Alert Info"
-                  tooltip="Set the content of the alert-info field. By default it is null.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={alertInfo}
-                      onChange={(e) => setAlertInfo(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
-
-                    <FieldRow label="Extension Answer Confirm" required
-                  tooltip="If set to Yes, the extension user will hear the following prompts upon picking up the call: Press 1 to answer: press 2 to reject. The default setting is No.">
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={extensionAnswerConfirm}
-                        onChange={(e) =>
-                          setExtensionAnswerConfirm(e.target.value)
-                        }
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        {EXTENSION_ANSWER_CONFIRM_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </FieldRow>
-                </div>
-
-                {/* ── RIGHT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                <RingGroupFieldRow
+                  label="Ring Timeout (s)"
+                  tooltipKey="ring_timeout"
                 >
-                  <FieldRow label="Ring Group Number" required
-                  tooltip="The number dialed to reach this ring group. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      type="number"
-                      value={ringGroupNumber}
-                      onChange={(e) => setRingGroupNumber(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={ringTimeout}
+                      onChange={(e) => setRingTimeout(e.target.value)}
+                      sx={ringGroupModalSelectSx}
+                    >
+                      {RING_GROUP_RING_TIMEOUT_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </RingGroupFieldRow>
 
-                  <FieldRow label="Timeout Destination" required
-                  tooltip="Select the destination to ring when the timeout period is reached. Call Queue: Ring the call queue. CallBacks: Ring the callbacks. Conference Rooms: Ring the conference rooms. DISA: Ring the DISA. Extensions: Ring the extensions. Fax To Mail: Ring the fax to mail. IVR Menus: Ring the IVR menus. Ring Group: Ring the ring group. Voicemails: Ring the voicemails. Other: Hang up the call.">
-                    <div style={{ display: "flex", gap: 12 }}>
+                <RingGroupFieldRow label="Alert Info" tooltipKey="alert_info">
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={alertInfo}
+                    onChange={(e) => setAlertInfo(e.target.value)}
+                    sx={ringGroupModalTextFieldFullSx}
+                  />
+                </RingGroupFieldRow>
+
+                <RingGroupFieldRow
+                  label="Extension Answer Confirm"
+                  tooltipKey="extension_answer_confirm"
+                  required
+                >
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={extensionAnswerConfirm}
+                      onChange={(e) =>
+                        setExtensionAnswerConfirm(e.target.value)
+                      }
+                      sx={ringGroupModalSelectSx}
+                    >
+                      {RING_GROUP_EXTENSION_ANSWER_CONFIRM_OPTIONS.map(
+                        (opt) => (
+                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                            {opt}
+                          </MenuItem>
+                        ),
+                      )}
+                    </MuiSelect>
+                  </FormControl>
+                </RingGroupFieldRow>
+              </div>
+
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <RingGroupFieldRow
+                  label="Ring Group Number"
+                  tooltipKey="ring_group_number"
+                  required
+                >
+                  <TextField
+                    size="small"
+                    fullWidth
+                    type="number"
+                    value={ringGroupNumber}
+                    onChange={(e) => setRingGroupNumber(e.target.value)}
+                    sx={ringGroupModalTextFieldFullSx}
+                  />
+                </RingGroupFieldRow>
+
+                <RingGroupFieldRow
+                  label="Timeout Destination"
+                  tooltipKey="timeout_destination"
+                  required
+                >
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <FormControl size="small" sx={{ flex: 1 }}>
+                      <MuiSelect
+                        value={timeoutDestinationType}
+                        displayEmpty
+                        onChange={(e) => {
+                          setTimeoutDestinationType(e.target.value);
+                          setTimeoutDestinationValue("");
+                        }}
+                        sx={ringGroupModalSelectSx}
+                      >
+                        <MenuItem value="" sx={{ fontSize: 13 }}>
+                          <em>Select type</em>
+                        </MenuItem>
+                        {RING_GROUP_TIMEOUT_DESTINATION_OPTIONS.map((opt) => (
+                          <MenuItem
+                            key={opt.value}
+                            value={opt.value}
+                            sx={{ fontSize: 13 }}
+                          >
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </MuiSelect>
+                    </FormControl>
+
+                    {shouldShowTimeoutValue && (
                       <FormControl size="small" sx={{ flex: 1 }}>
                         <MuiSelect
-                          value={timeoutDestinationType}
+                          value={timeoutDestinationValue}
                           displayEmpty
-                          onChange={(e) => {
-                            setTimeoutDestinationType(e.target.value);
-                            setTimeoutDestinationValue("");
-                          }}
-                          sx={{
-                            fontSize: 13,
-                            backgroundColor: "#fff",
-                            height: 32,
-                            "& .MuiSelect-select": {
-                              padding: "6px 8px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
+                          onChange={(e) =>
+                            setTimeoutDestinationValue(e.target.value)
+                          }
+                          sx={ringGroupModalSelectSx}
                         >
                           <MenuItem value="" sx={{ fontSize: 13 }}>
-                            <em>Select type</em>
+                            <em>Select value</em>
                           </MenuItem>
-                          {TIMEOUT_DESTINATION_OPTIONS.map((opt) => (
+                          {timeoutValueOptions.map((opt) => (
                             <MenuItem
                               key={opt.value}
                               value={opt.value}
-                              sx={{
-                                fontSize: 13,
-                                backgroundColor: "#fff",
-                                height: 32,
-                                "& .MuiSelect-select": {
-                                  padding: "6px 8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                },
-                              }}
+                              sx={{ fontSize: 13 }}
                             >
                               {opt.label}
                             </MenuItem>
                           ))}
                         </MuiSelect>
                       </FormControl>
+                    )}
+                  </div>
+                </RingGroupFieldRow>
 
-                      {shouldShowTimeoutValue && (
-                        <FormControl size="small" sx={{ flex: 1 }}>
-                          <MuiSelect
-                            value={timeoutDestinationValue}
-                            displayEmpty
-                            onChange={(e) =>
-                              setTimeoutDestinationValue(e.target.value)
-                            }
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
-                          >
-                            <MenuItem value="" sx={{ fontSize: 13 }}>
-                              <em>Select value</em>
-                            </MenuItem>
-                            {timeoutValueOptions.map((opt) => (
-                              <MenuItem
-                                key={opt.value}
-                                value={opt.value}
-                                sx={{
-                                  fontSize: 13,
-                                  backgroundColor: "#fff",
-                                  height: 32,
-                                  "& .MuiSelect-select": {
-                                    padding: "6px 8px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                  },
-                                }}
-                              >
-                                {opt.label}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
+                <RingGroupFieldRow label="Enable" tooltipKey="enabled" required>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={enabled}
+                      onChange={(e) => setEnabled(e.target.value)}
+                      sx={ringGroupModalSelectSx}
+                    >
+                      {RING_GROUP_ENABLE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </RingGroupFieldRow>
+
+                <RingGroupFieldRow
+                  label="Ring Back"
+                  tooltipKey="ring_back"
+                  alignTop
+                >
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={ringBack}
+                      onChange={(e) => setRingBack(e.target.value)}
+                      MenuProps={RING_GROUP_RING_BACK_MENU_PROPS}
+                      sx={ringGroupModalSelectSx}
+                    >
+                      {ringBack && !ringBackAllValues.includes(ringBack) && (
+                        <MenuItem value={ringBack} sx={{ fontSize: 13 }}>
+                          {ringBack}
+                        </MenuItem>
                       )}
-                    </div>
-                  </FieldRow>
+                      {ringBackOptions.moh_categories.length > 0 && (
+                        <ListSubheader
+                          disableSticky
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: 12,
+                            lineHeight: "24px",
+                          }}
+                        >
+                          Music on Hold
+                        </ListSubheader>
+                      )}
+                      {ringBackOptions.moh_categories.map((opt) => (
+                        <MenuItem
+                          key={`moh-${opt}`}
+                          value={opt}
+                          sx={{ pl: 3, fontSize: 13 }}
+                        >
+                          {opt}
+                        </MenuItem>
+                      ))}
+                      {ringBackOptions.custom_prompts.length > 0 && (
+                        <ListSubheader
+                          disableSticky
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: 12,
+                            lineHeight: "24px",
+                          }}
+                        >
+                          Custom Prompt
+                        </ListSubheader>
+                      )}
+                      {ringBackOptions.custom_prompts.map((opt) => (
+                        <MenuItem
+                          key={`prompt-${opt}`}
+                          value={opt}
+                          sx={{ pl: 3, fontSize: 13 }}
+                        >
+                          {opt}
+                        </MenuItem>
+                      ))}
+                      {ringBackOptions.country_tones.length > 0 && (
+                        <ListSubheader
+                          disableSticky
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: 12,
+                            lineHeight: "24px",
+                          }}
+                        >
+                          Ring Back
+                        </ListSubheader>
+                      )}
+                      {ringBackOptions.country_tones.map((opt) => (
+                        <MenuItem
+                          key={`tone-${opt}`}
+                          value={opt}
+                          sx={{ pl: 3, fontSize: 13 }}
+                        >
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </RingGroupFieldRow>
 
-                  <FieldRow label="Enable" required
-                  tooltip="Set whether to enable this ring group. Yes: The ring group is enabled. No: The ring group is disabled.">
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={enabled}
-                        onChange={(e) => setEnabled(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        {ENABLE_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </FieldRow>
-
-                  <FieldRow label="Ring Back" align="flex-start"
-                  tooltip="Select the ring back to play when the ring group rings. By default it is null.">
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={ringBack}
-                        onChange={(e) => setRingBack(e.target.value)}
-                        MenuProps={RING_BACK_MENU_PROPS}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        {ringBack && !ringBackAllValues.includes(ringBack) && (
-                          <MenuItem value={ringBack} sx={{ fontSize: 13 }}>
-                            {ringBack}
-                          </MenuItem>
-                        )}
-                        {ringBackOptions.moh_categories.length > 0 && (
-                          <ListSubheader
-                            disableSticky
-                            sx={{
-                              fontWeight: 700,
-                              fontSize: 12,
-                              lineHeight: "24px",
-                            }}
-                          >
-                            Music on Hold
-                          </ListSubheader>
-                        )}
-                        {ringBackOptions.moh_categories.map((opt) => (
-                          <MenuItem
-                            key={`moh-${opt}`}
-                            value={opt}
-                            sx={{ pl: 3, fontSize: 13 }}
-                          >
-                            {opt}
-                          </MenuItem>
-                        ))}
-                        {ringBackOptions.custom_prompts.length > 0 && (
-                          <ListSubheader
-                            disableSticky
-                            sx={{
-                              fontWeight: 700,
-                              fontSize: 12,
-                              lineHeight: "24px",
-                            }}
-                          >
-                            Custom Prompt
-                          </ListSubheader>
-                        )}
-                        {ringBackOptions.custom_prompts.map((opt) => (
-                          <MenuItem
-                            key={`prompt-${opt}`}
-                            value={opt}
-                            sx={{ pl: 3, fontSize: 13 }}
-                          >
-                            {opt}
-                          </MenuItem>
-                        ))}
-                        {ringBackOptions.country_tones.length > 0 && (
-                          <ListSubheader
-                            disableSticky
-                            sx={{
-                              fontWeight: 700,
-                              fontSize: 12,
-                              lineHeight: "24px",
-                            }}
-                          >
-                            Ring Back
-                          </ListSubheader>
-                        )}
-                        {ringBackOptions.country_tones.map((opt) => (
-                          <MenuItem
-                            key={`tone-${opt}`}
-                            value={opt}
-                            sx={{ pl: 3, fontSize: 13 }}
-                          >
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </FieldRow>
-
-                  <FieldRow label="Caller ID Name Prefix"
-                  tooltip="The prefix of a caller ID name sent when the ring group rings. By default it is null.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={cidNamePrefix}
-                      onChange={(e) => setCidNamePrefix(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
-                </div>
+                <RingGroupFieldRow
+                  label="Caller ID Name Prefix"
+                  tooltipKey="caller_id_name_prefix"
+                >
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={cidNamePrefix}
+                    onChange={(e) => setCidNamePrefix(e.target.value)}
+                    sx={ringGroupModalTextFieldFullSx}
+                  />
+                </RingGroupFieldRow>
               </div>
+            </div>
 
-              {/* Members Dual-Listbox Section */}
-              <div style={{ marginTop: 8 }}>
-                <SectionHeading title="Member Extensions" required />
+            <RingGroupSectionHeading title="Member Extensions" required />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `1fr ${RING_GROUP_MEMBER_CODEC_BTN_COL_WIDTH}px 1fr`,
+                gap: 10,
+                width: "100%",
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <div style={ringGroupMemberCodecColumnLabelStyle}>Available</div>
+                <RingGroupMemberCodecListBox
+                  items={loading.members ? [] : availableList}
+                  selectedIds={availableSelected}
+                  onToggle={toggleAvailableMemberSelect}
+                  emptyText={availableMemberEmptyText}
+                  getLabel={(id) => {
+                    const item = availableList.find((x) => x.value === id);
+                    return item?.label || getExtLabel(id);
+                  }}
+                />
+              </div>
+              <div>
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
-                    gap: 12,
+                    height: RING_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET,
                   }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#3e5475",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Available
-                    </div>
-                    <select
-                      multiple
-                      value={availableSelected}
-                      onChange={(e) =>
-                        setAvailableSelected(
-                          Array.from(
-                            e.target.selectedOptions,
-                            (opt) => opt.value,
-                          ),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {loading.members ? (
-                        <option disabled>Loading extensions...</option>
-                      ) : availableList.length === 0 ? (
-                        <option disabled>No extensions available</option>
-                      ) : (
-                        availableList.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 28,
-                    }}
+                  aria-hidden="true"
+                />
+                <div style={ringGroupMemberCodecBtnColumnStyle}>
+                  <RingGroupMemberCodecDualListBtn
+                    onClick={addSelectedMembers}
                   >
-                    <CodecDualListBtn onClick={addSelectedMembers}>
-                      &gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={addAllMembers}>
-                      &gt;&gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeSelectedMembers}>
-                      &lt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeAllMembers}>
-                      &lt;&lt;
-                    </CodecDualListBtn>
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#3e5475",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      Selected
-                    </div>
-                    <select
-                      multiple
-                      value={chosenSelected}
-                      onChange={(e) =>
-                        setChosenSelected(
-                          Array.from(
-                            e.target.selectedOptions,
-                            (opt) => opt.value,
-                          ),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {memberExtensions.length === 0 ? (
-                        <option disabled>No selected members</option>
-                      ) : (
-                        memberExtensions.map((id) => (
-                          <option key={id} value={id}>
-                            {getExtLabel(id)}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
+                    &gt;
+                  </RingGroupMemberCodecDualListBtn>
+                  <RingGroupMemberCodecDualListBtn onClick={addAllMembers}>
+                    &gt;&gt;
+                  </RingGroupMemberCodecDualListBtn>
+                  <RingGroupMemberCodecDualListBtn
+                    onClick={removeSelectedMembers}
+                  >
+                    &lt;
+                  </RingGroupMemberCodecDualListBtn>
+                  <RingGroupMemberCodecDualListBtn onClick={removeAllMembers}>
+                    &lt;&lt;
+                  </RingGroupMemberCodecDualListBtn>
                 </div>
+              </div>
+              <div>
+                <div style={ringGroupMemberCodecColumnLabelStyle}>Selected</div>
+                <RingGroupMemberCodecListBox
+                  items={memberExtensions}
+                  selectedIds={chosenSelected}
+                  onToggle={toggleChosenMemberSelect}
+                  emptyText="No selected member"
+                  getLabel={getExtLabel}
+                />
               </div>
             </div>
           </div>
+          </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={ringGroupModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
@@ -1897,7 +2122,7 @@ const RingGroup = () => {
           >
             {loading.save ? (
               <>
-                <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+                <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
                 Saving...
               </>
             ) : editId != null ? (
@@ -1910,7 +2135,7 @@ const RingGroup = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={ringGroupModalCancelBtnStyle}
           >
             Cancel
           </Btn>

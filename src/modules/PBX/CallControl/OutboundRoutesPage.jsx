@@ -17,6 +17,15 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import {
+  OUTBOUND_ROUTE_DEFAULT_CALLER_CONVERSION,
+  OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN,
+  OUTBOUND_ROUTE_ENABLE_OPTIONS,
+  OUTBOUND_ROUTE_FIELD_TOOLTIPS,
+  OUTBOUND_ROUTE_PASSWORD_OPTIONS,
+  OUTBOUND_ROUTE_REMEMORY_HUNT_OPTIONS,
+  OUTBOUND_ROUTE_TIME_CONDITION_OPTIONS,
+} from "../../../constants/OutboundRouteConstants";
+import {
   createOutboundRoute,
   deleteOutboundRoute,
   fetchSipAccounts,
@@ -24,36 +33,35 @@ import {
   listSipRegistrations,
   updateOutboundRoute,
 } from "../../../api/apiService";
-import { OUTBOUND_ROUTE_FIELD_TOOLTIPS } from "../../../constants/OutboundRouteConstants";
-const ENABLE_OPTIONS = ["Yes", "No"];
-const PASSWORD_OPTIONS = ["None", "Single Pin"];
-const REMEMORY_HUNT_OPTIONS = ["No", "Yes"];
-const TIME_CONDITION_OPTIONS = ["WorkTime", "Holiday", "All"];
 
-const DEFAULT_DIAL_PATTERN = {
-  pattern: "",
-  strip: "",
-  front: "",
-  suffix: "",
-  delay: "",
-};
-const DEFAULT_CALLER_CONVERSION = { strip: "", front: "", suffix: "" };
+const OUTBOUND_ROUTE_COMPACT_MQ = "(max-width: 768px)";
 
+// ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   successGreen: "#16a34a",
   errorRed: "#dc2626",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
+  placeholderText: "#94a3b8",
 };
 
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -62,9 +70,8 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -75,49 +82,69 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -135,30 +162,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -175,8 +204,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -192,22 +221,22 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const outboundRouteTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const getOutboundRouteRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
-// ── Local page UI (inlined from pbxSharedUi) ──
-const pbxModalCancelBtnStyle = {
+const outboundRouteModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -216,20 +245,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const outboundRoutePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const outboundRoutePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const OutboundRouteBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -302,14 +331,14 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_LIST_TRUNCATE_THRESHOLD = 10;
-const PBX_LIST_DISPLAY_LIMIT = 6;
+const OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD = 10;
+const OUTBOUND_ROUTE_LIST_DISPLAY_LIMIT = 6;
 
-const formatPbxItemListDisplay = (
+const formatOutboundRouteItemListDisplay = (
   items,
   {
-    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
-    limit = PBX_LIST_DISPLAY_LIMIT,
+    threshold = OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD,
+    limit = OUTBOUND_ROUTE_LIST_DISPLAY_LIMIT,
     mapItem = (x) => String(x),
     separator = ", ",
     ellipsis = "....",
@@ -324,8 +353,8 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const OUTBOUND_ROUTE_MODAL_SECTION_BG = "#f8fafc";
+const OUTBOUND_ROUTE_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const OUTBOUND_ROUTE_TOOLTIP_PROPS = {
   arrow: true,
@@ -389,18 +418,18 @@ const OutboundFieldLabel = ({ tooltipKey, children, style = {} }) => {
   );
 };
 
-const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+const OutboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: OUTBOUND_ROUTE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: OUTBOUND_ROUTE_MODAL_SECTION_HEADING_COLOR,
         cursor: tooltipKey ? "help" : undefined,
       }}
     >
@@ -431,123 +460,56 @@ const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   );
 };
 
-const pbxDualListLabelStyle = {
+const outboundRouteDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#3E5475",
+  color: C.labelText,
   textAlign: "center",
   marginBottom: 8,
 };
 
-const pbxDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const pbxDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const PbxDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={pbxDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
+const outboundRouteOutlinedInputRootSx = {
   backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
     borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
+  "&:hover fieldset": {
     borderColor: OUTLINED_HOVER,
   },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const modalTextFieldFullSx = {
-  ...muiTextFieldSx,
+const outboundRouteModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": outboundRouteOutlinedInputRootSx,
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const outboundRouteModalTextFieldFullSx = {
+  ...outboundRouteModalTextFieldSx,
   width: "100%",
   "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    ...outboundRouteOutlinedInputRootSx,
     minHeight: 36,
     height: 36,
     fontSize: 13,
@@ -560,12 +522,31 @@ const modalTextFieldFullSx = {
   },
 };
 
-const modalSelectSx = {
-  ...muiSelectSx,
+const outboundRouteModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
+  minHeight: 36,
+  height: 36,
+  ...outboundRouteOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
     backgroundColor: "#fff",
   },
 };
@@ -585,8 +566,6 @@ const nativeFieldInputStyle = {
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
-
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
   el.style.borderWidth = "1px";
@@ -602,7 +581,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -633,7 +612,7 @@ const nativeFieldInteraction = {
 const getNativeFieldInteraction = (disabled) =>
   disabled ? {} : nativeFieldInteraction;
 
-const trunkModalPaperSx = {
+const outboundRouteModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
@@ -644,7 +623,13 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkModalTitleStyle = {
+const outboundRouteModalDialogContentSx = {
+  maxHeight: "calc(100vh - 180px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const outboundRouteModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
   fontWeight: 600,
@@ -655,43 +640,43 @@ const trunkModalTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const OUTBOUND_ROUTE_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const outboundRouteCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: OUTBOUND_ROUTE_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const outboundRouteToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: OUTBOUND_ROUTE_TABLE_CARD_RADIUS,
+  borderTopRightRadius: OUTBOUND_ROUTE_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const outboundRoutePaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: OUTBOUND_ROUTE_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: OUTBOUND_ROUTE_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const outboundRouteSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -701,7 +686,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const outboundRouteCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -709,14 +694,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const outboundRoutePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const outboundRoutePageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -726,7 +711,41 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const outboundRouteFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const outboundRouteModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const outboundRouteModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const OutboundRoutePagination = ({
   page,
   totalPages,
   recordCount,
@@ -734,7 +753,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...outboundRoutePaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -747,7 +766,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={outboundRoutePageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -761,9 +780,170 @@ const SipPcmPagination = ({
   </div>
 );
 
-const OUTBOUND_MODAL_LABEL_WIDTH = 185;
-const OUTBOUND_MODAL_FIELD_WIDTH = 210;
-const OUTBOUND_RIGHT_LABEL_PADDING_LEFT = 28;
+const OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
+const OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH = 40;
+const OUTBOUND_ROUTE_CODEC_BTN_GAP = 6;
+const OUTBOUND_ROUTE_CODEC_BTN_HEIGHT =
+  (OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT - OUTBOUND_ROUTE_CODEC_BTN_GAP * 3) / 4;
+const OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
+
+const getOutboundRouteCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  height: OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const outboundRouteCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const outboundRouteCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const outboundRouteCodecDualListBtnStyle = {
+  width: OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
+  height: OUTBOUND_ROUTE_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const outboundRouteCodecDualListReorderBtnStyle = {
+  ...outboundRouteCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const outboundRouteCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: OUTBOUND_ROUTE_CODEC_BTN_GAP,
+  height: OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  width: OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
+};
+
+const OutboundRouteCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={
+      reorder
+        ? outboundRouteCodecDualListReorderBtnStyle
+        : outboundRouteCodecDualListBtnStyle
+    }
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const OutboundRouteCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getOutboundRouteCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={outboundRouteCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id =
+            typeof item === "string" ? item : (item.value ?? item.id);
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={outboundRouteCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const OUTBOUND_ROUTE_MODAL_LABEL_WIDTH = 185;
+const OUTBOUND_ROUTE_MODAL_FIELD_WIDTH = 210;
+const OUTBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT = 28;
 
 const FieldRow = ({
   label,
@@ -815,10 +995,10 @@ const FieldRow = ({
   </div>
 );
 
-const outboundModalControlSx = {
-  ...modalTextFieldFullSx,
+const outboundRouteModalControlSx = {
+  ...outboundRouteModalTextFieldFullSx,
   "& .MuiOutlinedInput-root": {
-    ...modalTextFieldFullSx["& .MuiOutlinedInput-root"],
+    ...outboundRouteModalTextFieldFullSx["& .MuiOutlinedInput-root"],
     height: 36,
     minHeight: 36,
   },
@@ -827,7 +1007,7 @@ const outboundModalControlSx = {
 const OutboundLeftField = ({ children }) => (
   <div
     style={{
-      width: OUTBOUND_MODAL_FIELD_WIDTH,
+      width: OUTBOUND_ROUTE_MODAL_FIELD_WIDTH,
       maxWidth: "100%",
       minHeight: 36,
       display: "flex",
@@ -842,7 +1022,7 @@ const OutboundRightRow = ({
   label,
   tooltipKey,
   children,
-  fieldWidth = OUTBOUND_MODAL_FIELD_WIDTH,
+  fieldWidth = OUTBOUND_ROUTE_MODAL_FIELD_WIDTH,
 }) => (
   <div
     style={{
@@ -858,10 +1038,10 @@ const OutboundRightRow = ({
         tooltipKey={tooltipKey}
         style={{
           textAlign: "left",
-          width: OUTBOUND_MODAL_LABEL_WIDTH,
-          minWidth: OUTBOUND_MODAL_LABEL_WIDTH,
+          width: OUTBOUND_ROUTE_MODAL_LABEL_WIDTH,
+          minWidth: OUTBOUND_ROUTE_MODAL_LABEL_WIDTH,
           flexShrink: 0,
-          paddingLeft: OUTBOUND_RIGHT_LABEL_PADDING_LEFT,
+          paddingLeft: OUTBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT,
           boxSizing: "border-box",
         }}
       >
@@ -875,10 +1055,10 @@ const OutboundRightRow = ({
           fontWeight: 600,
           whiteSpace: "nowrap",
           textAlign: "left",
-          width: OUTBOUND_MODAL_LABEL_WIDTH,
-          minWidth: OUTBOUND_MODAL_LABEL_WIDTH,
+          width: OUTBOUND_ROUTE_MODAL_LABEL_WIDTH,
+          minWidth: OUTBOUND_ROUTE_MODAL_LABEL_WIDTH,
           flexShrink: 0,
-          paddingLeft: OUTBOUND_RIGHT_LABEL_PADDING_LEFT,
+          paddingLeft: OUTBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT,
           boxSizing: "border-box",
         }}
       >
@@ -898,7 +1078,7 @@ const outboundRightColStyle = {
 
 const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading
+    <OutboundRouteModalSectionHeading
       title={title}
       tooltipKey={tooltipKey}
       isFirst={isFirst}
@@ -929,7 +1109,7 @@ const outboundPatternActionBtnStyle = {
 };
 
 const OutboundRoutesPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(OUTBOUND_ROUTE_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -955,10 +1135,10 @@ const OutboundRoutesPage = () => {
   const [rememoryHunt, setRememoryHunt] = useState("No");
   const [timeConditions, setTimeConditions] = useState([]);
   const [dialPatterns, setDialPatterns] = useState([
-    { ...DEFAULT_DIAL_PATTERN },
+    { ...OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN },
   ]);
   const [callerConversion, setCallerConversion] = useState({
-    ...DEFAULT_CALLER_CONVERSION,
+    ...OUTBOUND_ROUTE_DEFAULT_CALLER_CONVERSION,
   });
 
   const [availableExtensions, setAvailableExtensions] = useState([]);
@@ -1075,7 +1255,7 @@ const OutboundRoutesPage = () => {
               suffix: String(d?.suffix ?? ""),
               delay: String(d?.delay_ms ?? 0),
             }))
-          : [{ ...DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" }],
+          : [{ ...OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" }],
     };
   };
 
@@ -1194,8 +1374,8 @@ const OutboundRoutesPage = () => {
     setSinglePin("");
     setRememoryHunt("No");
     setTimeConditions([]);
-    setDialPatterns([{ ...DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" }]);
-    setCallerConversion({ ...DEFAULT_CALLER_CONVERSION });
+    setDialPatterns([{ ...OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" }]);
+    setCallerConversion({ ...OUTBOUND_ROUTE_DEFAULT_CALLER_CONVERSION });
     setMemberExtensions([]);
     setMemberTrunks([]);
     setAvailableExtensionSelected([]);
@@ -1241,10 +1421,10 @@ const OutboundRoutesPage = () => {
     setDialPatterns(
       Array.isArray(row.dialPatterns) && row.dialPatterns.length > 0
         ? row.dialPatterns
-        : [{ ...DEFAULT_DIAL_PATTERN }],
+        : [{ ...OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN }],
     );
     setCallerConversion(
-      row.callerConversion || { ...DEFAULT_CALLER_CONVERSION },
+      row.callerConversion || { ...OUTBOUND_ROUTE_DEFAULT_CALLER_CONVERSION },
     );
     setMemberExtensions(
       Array.isArray(row.memberExtensions) ? row.memberExtensions : [],
@@ -1425,7 +1605,7 @@ const OutboundRoutesPage = () => {
   const addDialPattern = () =>
     setDialPatterns((prev) => [
       ...prev,
-      { ...DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" },
+      { ...OUTBOUND_ROUTE_DEFAULT_DIAL_PATTERN, pattern: "^\\d*$" },
     ]);
   const removeDialPatternAt = (index) =>
     setDialPatterns((prev) =>
@@ -1454,6 +1634,18 @@ const OutboundRoutesPage = () => {
   const removeAllExtensions = () => {
     setMemberExtensions([]);
     setChosenExtensionSelected([]);
+  };
+
+  const toggleAvailableExtensionSelect = (id) => {
+    setAvailableExtensionSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenExtensionSelect = (id) => {
+    setChosenExtensionSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   };
 
   const moveExtToBottom = () => {
@@ -1525,6 +1717,18 @@ const OutboundRoutesPage = () => {
     setChosenTrunkSelected([]);
   };
 
+  const toggleAvailableTrunkSelect = (id) => {
+    setAvailableTrunkSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenTrunkSelect = (id) => {
+    setChosenTrunkSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   const moveTrunkToBottom = () => {
     if (!chosenTrunkSelected.length) return;
     setMemberTrunks((prev) => {
@@ -1576,31 +1780,24 @@ const OutboundRoutesPage = () => {
     rows.some((_, index) => selected.includes(index)) && !allRowsSelected;
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div style={{ ...outboundRoutePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={outboundRoutePageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={outboundRouteFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Control" current="Outbound Routes" />
+        <OutboundRouteBreadcrumb section="Call Control" current="Outbound Routes" />
 
-        <div style={sipPcmCardStyle}>
+        <div style={outboundRouteCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...outboundRouteToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1616,7 +1813,7 @@ const OutboundRoutesPage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={outboundRouteSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1633,7 +1830,7 @@ const OutboundRoutesPage = () => {
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={outboundRouteCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1642,7 +1839,7 @@ const OutboundRoutesPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save || loading.list}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={outboundRoutePrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1695,7 +1892,7 @@ const OutboundRoutesPage = () => {
                             ? handleUncheckAll()
                             : handleCheckAll()
                         }
-                        sx={checkboxSx}
+                        sx={outboundRouteTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1782,7 +1979,7 @@ const OutboundRoutesPage = () => {
                             checked={isSelected}
                             onChange={() => handleSelectRow(realIdx)}
                             disabled={loading.delete}
-                            sx={checkboxSx}
+                            sx={outboundRouteTableCheckboxSx}
                           />
                         </td>
                         <td
@@ -1861,14 +2058,14 @@ const OutboundRoutesPage = () => {
                             <span
                               title={
                                 row.memberExtensions.length >
-                                PBX_LIST_TRUNCATE_THRESHOLD
+                                OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD
                                   ? row.memberExtensions
                                       .map(getExtensionLabel)
                                       .join(", ")
                                   : undefined
                               }
                             >
-                              {formatPbxItemListDisplay(row.memberExtensions, {
+                              {formatOutboundRouteItemListDisplay(row.memberExtensions, {
                                 mapItem: getExtensionLabel,
                               })}
                             </span>
@@ -1890,14 +2087,14 @@ const OutboundRoutesPage = () => {
                             <span
                               title={
                                 row.memberTrunks.length >
-                                PBX_LIST_TRUNCATE_THRESHOLD
+                                OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD
                                   ? row.memberTrunks
                                       .map(getTrunkLabel)
                                       .join(", ")
                                   : undefined
                               }
                             >
-                              {formatPbxItemListDisplay(row.memberTrunks, {
+                              {formatOutboundRouteItemListDisplay(row.memberTrunks, {
                                 mapItem: getTrunkLabel,
                               })}
                             </span>
@@ -1951,7 +2148,7 @@ const OutboundRoutesPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <SipPcmPagination
+            <OutboundRoutePagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1968,29 +2165,19 @@ const OutboundRoutesPage = () => {
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
-        PaperProps={{ sx: trunkModalPaperSx }}
+        PaperProps={{ sx: outboundRouteModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle style={trunkModalTitleStyle}>
+        <DialogTitle style={outboundRouteModalTitleStyle}>
           {editId != null ? "Edit Outbound Route" : "Add Outbound Route"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              width: "100%",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-              overflow: "hidden",
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+        <DialogContent
+          className="app-main-scroll"
+          style={{ padding: "24px", backgroundColor: "#ffffff" }}
+          sx={outboundRouteModalDialogContentSx}
+        >
+          <div style={outboundRouteModalFormStyle}>
             <div
               style={{
                 display: "grid",
@@ -2014,7 +2201,7 @@ const OutboundRoutesPage = () => {
                       fullWidth
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      sx={outboundModalControlSx}
+                      sx={outboundRouteModalControlSx}
                     />
                   </OutboundLeftField>
                 </FieldRow>
@@ -2025,7 +2212,7 @@ const OutboundRoutesPage = () => {
                       fullWidth
                       value={priority}
                       onChange={(e) => setPriority(e.target.value)}
-                      sx={outboundModalControlSx}
+                      sx={outboundRouteModalControlSx}
                     />
                   </OutboundLeftField>
                 </FieldRow>
@@ -2036,7 +2223,7 @@ const OutboundRoutesPage = () => {
                       fullWidth
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      sx={outboundModalControlSx}
+                      sx={outboundRouteModalControlSx}
                     />
                   </OutboundLeftField>
                 </FieldRow>
@@ -2046,9 +2233,9 @@ const OutboundRoutesPage = () => {
                       <Select
                         value={rememoryHunt}
                         onChange={(e) => setRememoryHunt(e.target.value)}
-                        sx={modalSelectSx}
+                        sx={outboundRouteModalSelectSx}
                       >
-                        {REMEMORY_HUNT_OPTIONS.map((opt) => (
+                        {OUTBOUND_ROUTE_REMEMORY_HUNT_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                             {opt}
                           </MenuItem>
@@ -2065,7 +2252,7 @@ const OutboundRoutesPage = () => {
                     checked={nextRoute}
                     onChange={(e) => setNextRoute(e.target.checked)}
                     size="small"
-                    sx={checkboxSx}
+                    sx={outboundRouteTableCheckboxSx}
                   />
                 </OutboundRightRow>
                 <OutboundRightRow label="Enabled *" tooltipKey="enabled">
@@ -2073,9 +2260,9 @@ const OutboundRoutesPage = () => {
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={modalSelectSx}
+                      sx={outboundRouteModalSelectSx}
                     >
-                      {ENABLE_OPTIONS.map((opt) => (
+                      {OUTBOUND_ROUTE_ENABLE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
@@ -2091,9 +2278,9 @@ const OutboundRoutesPage = () => {
                         setPasswordType(e.target.value);
                         if (e.target.value !== "Single Pin") setSinglePin("");
                       }}
-                      sx={modalSelectSx}
+                      sx={outboundRouteModalSelectSx}
                     >
-                      {PASSWORD_OPTIONS.map((opt) => (
+                      {OUTBOUND_ROUTE_PASSWORD_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
@@ -2111,7 +2298,7 @@ const OutboundRoutesPage = () => {
                       fullWidth
                       value={singlePin}
                       onChange={(e) => setSinglePin(e.target.value)}
-                      sx={outboundModalControlSx}
+                      sx={outboundRouteModalControlSx}
                     />
                   </OutboundRightRow>
                 )}
@@ -2128,7 +2315,7 @@ const OutboundRoutesPage = () => {
                       flexWrap: "wrap",
                     }}
                   >
-                    {TIME_CONDITION_OPTIONS.map((opt) => (
+                    {OUTBOUND_ROUTE_TIME_CONDITION_OPTIONS.map((opt) => (
                       <label
                         key={opt}
                         style={{
@@ -2157,7 +2344,7 @@ const OutboundRoutesPage = () => {
             </div>
 
             <div style={{ marginTop: 12 }}>
-              <PbxModalSectionHeading
+              <OutboundRouteModalSectionHeading
                 title="Dial Patterns"
                 tooltipKey="dial_patterns"
               />
@@ -2239,7 +2426,7 @@ const OutboundRoutesPage = () => {
             </div>
 
             <div style={{ marginTop: 8 }}>
-              <PbxModalSectionHeading
+              <OutboundRouteModalSectionHeading
                 title="Caller Number Conversion"
                 tooltipKey="caller_number_conversion"
               />
@@ -2295,119 +2482,92 @@ const OutboundRoutesPage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
+                  gridTemplateColumns: `1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px`,
+                  gap: 10,
+                  width: "100%",
+                  alignItems: "start",
                 }}
               >
                 <div>
-                  <div style={pbxDualListLabelStyle}>Available</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={availableExtensionSelected}
-                    onChange={(e) =>
-                      setAvailableExtensionSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
+                  <div style={outboundRouteDualListLabelStyle}>Available</div>
+                  <OutboundRouteCodecListBox
+                    items={loading.members ? [] : extensionAvailableList}
+                    selectedIds={availableExtensionSelected}
+                    onToggle={toggleAvailableExtensionSelect}
+                    emptyText={
+                      loading.members ? "Loading extensions..." : "No extensions"
                     }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {loading.members ? (
-                      <option>Loading extensions...</option>
-                    ) : extensionAvailableList.length === 0 ? (
-                      <option disabled>No extensions</option>
-                    ) : (
-                      extensionAvailableList.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <PbxDualListBtn onClick={addSelectedExtensions}>
-                    &gt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={addAllExtensions}>
-                    &gt;&gt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeSelectedExtensions}>
-                    &lt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeAllExtensions}>
-                    &lt;&lt;
-                  </PbxDualListBtn>
+                    getLabel={(id) => {
+                      const item = extensionAvailableList.find((x) => x.id === id);
+                      return item?.label || getExtensionLabel(id);
+                    }}
+                  />
                 </div>
                 <div>
-                  <div style={pbxDualListLabelStyle}>Selected</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={chosenExtensionSelected}
-                    onChange={(e) =>
-                      setChosenExtensionSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {memberExtensions.length === 0 ? (
-                      <option disabled>No selected extensions</option>
-                    ) : (
-                      memberExtensions.map((id) => (
-                        <option key={id} value={id}>
-                          {getExtensionLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div
+                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={outboundRouteCodecBtnColumnStyle}>
+                    <OutboundRouteCodecDualListBtn onClick={addSelectedExtensions}>
+                      &gt;
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn onClick={addAllExtensions}>
+                      &gt;&gt;
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn onClick={removeSelectedExtensions}>
+                      &lt;
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn onClick={removeAllExtensions}>
+                      &lt;&lt;
+                    </OutboundRouteCodecDualListBtn>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <PbxDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveExtToBottom}
-                  >
-                    vv
-                  </PbxDualListBtn>
-                  <PbxDualListBtn reorder title="Move up" onClick={moveExtUp}>
-                    ^
-                  </PbxDualListBtn>
-                  <PbxDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveExtDown}
-                  >
-                    v
-                  </PbxDualListBtn>
-                  <PbxDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveExtToTop}
-                  >
-                    ^^
-                  </PbxDualListBtn>
+                <div>
+                  <div style={outboundRouteDualListLabelStyle}>Selected</div>
+                  <OutboundRouteCodecListBox
+                    items={memberExtensions}
+                    selectedIds={chosenExtensionSelected}
+                    onToggle={toggleChosenExtensionSelect}
+                    emptyText="No selected extensions"
+                    getLabel={getExtensionLabel}
+                  />
+                </div>
+                <div>
+                  <div
+                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={outboundRouteCodecBtnColumnStyle}>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveExtToBottom}
+                    >
+                      vv
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveExtUp}
+                    >
+                      ^
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveExtDown}
+                    >
+                      v
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveExtToTop}
+                    >
+                      ^^
+                    </OutboundRouteCodecDualListBtn>
+                  </div>
                 </div>
               </div>
             </SectionCard>
@@ -2416,136 +2576,98 @@ const OutboundRoutesPage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
+                  gridTemplateColumns: `1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px`,
+                  gap: 10,
+                  width: "100%",
+                  alignItems: "start",
                 }}
               >
                 <div>
-                  <div style={pbxDualListLabelStyle}>Available</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={availableTrunkSelected}
-                    onChange={(e) =>
-                      setAvailableTrunkSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
+                  <div style={outboundRouteDualListLabelStyle}>Available</div>
+                  <OutboundRouteCodecListBox
+                    items={loading.trunks ? [] : trunkAvailableList}
+                    selectedIds={availableTrunkSelected}
+                    onToggle={toggleAvailableTrunkSelect}
+                    emptyText={
+                      loading.trunks ? "Loading trunks..." : "No trunks"
                     }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {loading.trunks ? (
-                      <option>Loading trunks...</option>
-                    ) : trunkAvailableList.length === 0 ? (
-                      <option disabled>No trunks</option>
-                    ) : (
-                      trunkAvailableList.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <PbxDualListBtn onClick={addSelectedTrunks}>
-                    &gt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={addAllTrunks}>
-                    &gt;&gt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeSelectedTrunks}>
-                    &lt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeAllTrunks}>
-                    &lt;&lt;
-                  </PbxDualListBtn>
+                    getLabel={(id) => {
+                      const item = trunkAvailableList.find((x) => x.id === id);
+                      return item?.label || getTrunkLabel(id);
+                    }}
+                  />
                 </div>
                 <div>
-                  <div style={pbxDualListLabelStyle}>Selected</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={chosenTrunkSelected}
-                    onChange={(e) =>
-                      setChosenTrunkSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {memberTrunks.length === 0 ? (
-                      <option disabled>No selected trunks</option>
-                    ) : (
-                      memberTrunks.map((id) => (
-                        <option key={id} value={id}>
-                          {getTrunkLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div
+                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={outboundRouteCodecBtnColumnStyle}>
+                    <OutboundRouteCodecDualListBtn onClick={addSelectedTrunks}>
+                      &gt;
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn onClick={addAllTrunks}>
+                      &gt;&gt;
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn onClick={removeSelectedTrunks}>
+                      &lt;
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn onClick={removeAllTrunks}>
+                      &lt;&lt;
+                    </OutboundRouteCodecDualListBtn>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <PbxDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveTrunkToBottom}
-                  >
-                    vv
-                  </PbxDualListBtn>
-                  <PbxDualListBtn reorder title="Move up" onClick={moveTrunkUp}>
-                    ^
-                  </PbxDualListBtn>
-                  <PbxDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveTrunkDown}
-                  >
-                    v
-                  </PbxDualListBtn>
-                  <PbxDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveTrunkToTop}
-                  >
-                    ^^
-                  </PbxDualListBtn>
+                <div>
+                  <div style={outboundRouteDualListLabelStyle}>Selected</div>
+                  <OutboundRouteCodecListBox
+                    items={memberTrunks}
+                    selectedIds={chosenTrunkSelected}
+                    onToggle={toggleChosenTrunkSelect}
+                    emptyText="No selected trunks"
+                    getLabel={getTrunkLabel}
+                  />
+                </div>
+                <div>
+                  <div
+                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={outboundRouteCodecBtnColumnStyle}>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveTrunkToBottom}
+                    >
+                      vv
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveTrunkUp}
+                    >
+                      ^
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveTrunkDown}
+                    >
+                      v
+                    </OutboundRouteCodecDualListBtn>
+                    <OutboundRouteCodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveTrunkToTop}
+                    >
+                      ^^
+                    </OutboundRouteCodecDualListBtn>
+                  </div>
                 </div>
               </div>
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={outboundRouteModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
@@ -2559,7 +2681,7 @@ const OutboundRoutesPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={pbxModalCancelBtnStyle}
+            style={outboundRouteModalCancelBtnStyle}
           >
             Close
           </Btn>

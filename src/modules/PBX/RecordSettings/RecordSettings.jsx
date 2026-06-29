@@ -1,27 +1,42 @@
-import React, { useState, useEffect } from "react";
-import { useMediaQuery } from "@mui/material";
-import Tooltip from "@mui/material/Tooltip";
+import React, { useEffect, useState } from "react";
+import {
+  FormControl,
+  MenuItem,
+  Select as MuiSelect,
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import { listIvrDestinations } from "../../../api/apiService";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+import {
+  RECORD_SETTINGS_DUAL_LIST_SECTIONS,
+  RECORD_SETTINGS_FIELD_TOOLTIPS,
+  RECORD_SETTINGS_FORM_FIELDS,
+  RECORD_SETTINGS_TITLE,
+} from "../../../constants/RecordSettingsConstants";
 
-// ── Local page UI (aligned with FeatureCodePage / pbxSharedUi) ──
+const RECORD_SETTINGS_COMPACT_MQ = "(max-width: 768px)";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   accent: "#3E5475",
-  sectionBlue: "#1976d2",
+  sectionHeading: "#30415A",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#d8dde5",
+  codecStripSelectedBg: "#eff6ff",
+  codecStripSelectedBorder: "#93c5fd",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#e5e7eb",
 };
-const fieldInteraction = {
-  onFocus: (e) => { e.target.style.borderColor = OUTLINED_FOCUS; e.target.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`; },
-  onBlur: (e) => { e.target.style.borderColor = OUTLINED_BORDER; e.target.style.boxShadow = "none"; },
-  onMouseEnter: (e) => { if (document.activeElement !== e.target) e.target.style.borderColor = "rgba(0,0,0,0.87)"; },
-  onMouseLeave: (e) => { if (document.activeElement !== e.target) { e.target.style.borderColor = OUTLINED_BORDER; e.target.style.boxShadow = "none"; } },
-};
-const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -64,7 +79,32 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <button
       type={type || "button"}
@@ -84,6 +124,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -91,7 +132,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -99,58 +152,82 @@ const Btn = ({
   );
 };
 
-const sipPcmFormPageWrapStyle = {
+const RECORD_SETTINGS_CARD_RADIUS = 10;
+
+const recordSettingsPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
 };
 
-const sipPcmFormPageInnerStyle = {
+const recordSettingsPageInnerStyle = {
   width: "100%",
-  maxWidth: 1000,
+  maxWidth: "100%",
   margin: "0 auto",
 };
 
-const sipPcmFormCardStyle = {
-  background: "#ffffff",
-  borderRadius: 10,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+const recordSettingsFormBodyStyle = {
+  width: "100%",
+  maxWidth: 920,
+  margin: "0 auto",
+  boxSizing: "border-box",
 };
 
-const sipPcmFormHeaderStyle = {
+const recordSettingsFormGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "16px 24px",
+  width: "100%",
+  marginBottom: 8,
+};
+
+const recordSettingsFormColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  minWidth: 0,
+};
+
+const recordSettingsCardStyle = {
+  background: "#ffffff",
+  borderRadius: RECORD_SETTINGS_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const recordSettingsHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  borderTopLeftRadius: RECORD_SETTINGS_CARD_RADIUS,
+  borderTopRightRadius: RECORD_SETTINGS_CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
-const sipPcmAuthFormFooterStyle = {
+const recordSettingsFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
   justifyContent: "center",
   gap: 12,
   width: "100%",
-  padding: "10px 20px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "12px 20px",
+  borderTop: `1px solid ${C.divider}`,
   boxSizing: "border-box",
+  background: "#ffffff",
+  borderBottomLeftRadius: RECORD_SETTINGS_CARD_RADIUS,
+  borderBottomRightRadius: RECORD_SETTINGS_CARD_RADIUS,
 };
 
-const sipPcmAuthFormBtnStyle = {
+const recordSettingsFooterBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -160,7 +237,7 @@ const sipPcmAuthFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const PbxBreadcrumb = ({ section, current }) => (
+const RecordSettingsBreadcrumb = ({ section, current }) => (
   <div
     style={{
       fontSize: 12,
@@ -181,243 +258,372 @@ const PbxBreadcrumb = ({ section, current }) => (
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
-};
-
-const sipPcmAuthInputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
+const recordSettingsOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
   },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) setFieldFocus(e.target);
-    else setFieldHover(e.target);
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
   },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) setFieldFocus(e.target);
-    else setFieldDefault(e.target);
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const SIP_PCM_AUTH_FIELD_WIDTH = 260;
-const SIP_PCM_FORM_FIELD_HEIGHT = 32;
+const recordSettingsFieldControlFullSx = {
+  width: "100%",
+  maxWidth: "100%",
+  ...recordSettingsOutlinedInputRootSx,
+  "& .MuiInputBase-input": {
+    fontSize: 13,
+    padding: "7px 10px",
+    color: C.valueText,
+  },
+};
 
-const GRID_LABEL_STYLE = {
+const recordSettingsSelectFullSx = {
+  width: "100%",
+  maxWidth: "100%",
   fontSize: 13,
+  backgroundColor: "#fff",
+  height: 34,
+  ...recordSettingsOutlinedInputRootSx,
+  "& .MuiSelect-select": {
+    padding: "7px 32px 7px 10px !important",
+    display: "flex",
+    alignItems: "center",
+    color: C.valueText,
+  },
+};
+
+const RECORD_SETTINGS_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
+const RECORD_SETTINGS_FIELD_LABEL_WIDTH = 220;
+
+const RecordSettingsFieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  isCompact,
+  stacked = false,
+}) => {
+  const vertical = isCompact || stacked;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: vertical ? "column" : "row",
+        alignItems: vertical ? "stretch" : "center",
+        padding: "8px 0",
+        gap: vertical ? 6 : 12,
+      }}
+    >
+      <Tooltip
+        title={RECORD_SETTINGS_FIELD_TOOLTIPS[tooltipKey] || ""}
+        {...RECORD_SETTINGS_TOOLTIP_PROPS}
+      >
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: C.labelText,
+            textAlign: "left",
+            width: vertical ? "100%" : RECORD_SETTINGS_FIELD_LABEL_WIDTH,
+            flexShrink: 0,
+            lineHeight: 1.4,
+            cursor: tooltipKey ? "help" : "default",
+          }}
+        >
+          {label}
+        </span>
+      </Tooltip>
+      <div style={{ minWidth: 0, width: vertical ? "100%" : undefined }}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const RecordSettingsSectionHeading = ({
+  title,
+  isFirst = false,
+  onClick,
+  expanded,
+}) => {
+  const inner = (
+    <div
+      style={{
+        margin: isFirst ? "20px 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: 0,
+          background: C.cardBg,
+          paddingRight: 8,
+          fontSize: 14,
+          fontWeight: 600,
+          color: C.sectionHeading,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+        }}
+      >
+        {onClick ? (
+          <span
+            style={{
+              display: "inline-block",
+              fontSize: 10,
+              color: C.accent,
+              transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
+              transition: "transform 0.15s ease",
+            }}
+          >
+            ▶
+          </span>
+        ) : null}
+        {title}
+      </span>
+    </div>
+  );
+
+  if (!onClick) return inner;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "block",
+        width: "100%",
+        margin: 0,
+        padding: 0,
+        border: "none",
+        background: "none",
+        cursor: "pointer",
+        fontFamily: "inherit",
+        textAlign: "left",
+      }}
+    >
+      {inner}
+    </button>
+  );
+};
+
+const RECORD_CODEC_LIST_BOX_HEIGHT = 188;
+const RECORD_CODEC_BTN_COL_WIDTH = 40;
+const RECORD_CODEC_BTN_GAP = 6;
+const RECORD_CODEC_BTN_HEIGHT =
+  (RECORD_CODEC_LIST_BOX_HEIGHT - RECORD_CODEC_BTN_GAP * 3) / 4;
+const RECORD_CODEC_LIST_LABEL_OFFSET = 28;
+
+const recordCodecColumnLabelStyle = {
+  fontSize: 12,
   fontWeight: 600,
   color: C.labelText,
-  textAlign: "left",
-  width: 320,
-  marginRight: 10,
-  lineHeight: 1.4,
-  flexShrink: 0,
-};
-
-const GRID_INPUT_STYLE = {
-  borderRadius: 4,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 12,
-  width: SIP_PCM_AUTH_FIELD_WIDTH,
-  maxWidth: SIP_PCM_AUTH_FIELD_WIDTH,
-  backgroundColor: "#ffffff",
-  outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  boxSizing: "border-box",
-  boxShadow: "none",
-  height: SIP_PCM_FORM_FIELD_HEIGHT,
-  minHeight: SIP_PCM_FORM_FIELD_HEIGHT,
-  padding: "0 12px",
-  lineHeight: `${SIP_PCM_FORM_FIELD_HEIGHT - 2}px`,
-  textAlign: "left",
-};
-
-const pbxDualListLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "#3E5475",
   textAlign: "center",
   marginBottom: 8,
 };
 
-const pbxDualListSelectStyle = {
+const getRecordCodecListBoxStyle = (isEmpty) => ({
   width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
+  minHeight: RECORD_CODEC_LIST_BOX_HEIGHT,
+  height: RECORD_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
   boxSizing: "border-box",
   overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const recordCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
 };
 
-const pbxDualListBtnStyle = {
-  height: 36,
+const recordCodecStripStyle = (isSelected) => ({
+  display: "block",
   width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const recordCodecDualListBtnStyle = {
+  width: RECORD_CODEC_BTN_COL_WIDTH,
+  height: RECORD_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
   color: "#111827",
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
   fontFamily: "inherit",
   lineHeight: 1,
   padding: 0,
   margin: 0,
   cursor: "pointer",
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   boxSizing: "border-box",
-  textAlign: "center",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition:
+    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
 };
 
-const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
+const recordCodecDualListReorderBtnStyle = {
+  ...recordCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const recordCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: RECORD_CODEC_BTN_GAP,
+  height: RECORD_CODEC_LIST_BOX_HEIGHT,
+  width: RECORD_CODEC_BTN_COL_WIDTH,
+};
+
+const RecordCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={{
-      ...pbxDualListBtnStyle,
-      fontWeight: reorder ? 400 : 600,
+    style={
+      reorder ? recordCodecDualListReorderBtnStyle : recordCodecDualListBtnStyle
+    }
+    onMouseDown={(e) => {
+      e.currentTarget.style.transform = "translateY(1px) scale(0.98)";
     }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+    onMouseUp={(e) => {
+      e.currentTarget.style.transform = "";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.transform = "";
     }}
   >
     {children}
   </button>
 );
 
-const PROMPT_OPTIONS = [
-  { value: "none", label: "None" },
-  { value: "default", label: "Default" },
-  { value: "blank", label: "Blank" },
-  { value: "busy", label: "Busy" },
-  { value: "thankyou", label: "Thankyou" },
-  { value: "welcome", label: "WELCOME" },
-];
+const getItemValue = (item) =>
+  typeof item === "object" && item !== null ? item.value : item;
 
-const FORM_FIELDS = [
-  {
-    key: "internalPrompt",
-    label: "Internal Call Being Recorded Prompt",
-    tooltip: "The prompt that will be played to both the caller and the callee before the recording of internal calls. The default setting in None.",
-    options: PROMPT_OPTIONS,
-    defaultValue: "none",
-  },
-  {
-    key: "outboundInboundPrompt",
-    label: "Outbound/Inbound Calls Being Recorded Prompt",
-    tooltip: "The prompt that will be played to both the caller and the callee before the recording of outbound or inbound calls. The default setting in None.",
-    options: PROMPT_OPTIONS,
-    defaultValue: "none",
-  },
-  {
-    key: "recordStart",
-    label: "Record Start",
-    tooltip: `Set recordind time, recording time can be set after ringback of after answer, default is after answer.`,
-    options: [
-      { value: "after_media", label: "After Media" },
-      { value: "after_answer", label: "After Answer" },
-    ],
-    defaultValue: "after_media",
-  },
-  {
-    key: "recordMode",
-    label: "Record Mode",
-    tooltip: `Record mode, default is recording on one side: recording on one side: just one recording is profuced for a talk: recording on both side: two recording files are produced for a talk.`,
-    options: [
-      { value: "both", label: "Recording On both side" },
-      { value: "one", label: "Recording On one side" },
-    
-    ],
-    defaultValue: "both",
-  },
-  {
-    key: "recordDirection",
-    label: "Record Direction",
-    tooltip: `The direction of recording,default is incoming and outgoing recording: outgoing and incoming wrote to a recording file, incoming: just incoming wrote to a recording file: outgoing: just outgoing wrote to a recording file.`,
-    options: [
-      {
-        value: "both",
-        label: "Incoming and Outgoing Recording",
-      },
-      { value: "incoming", label: "Incoming Recording" },
-      { value: "outgoing", label: "Outgoing Recording" },
-    ],
-    defaultValue: "both",
-  },
-  {
-    key: "recordSampleRate",
-    label: "Record Sample Rate",
-    tooltip: `The sample rate of the recording, default is 8000.`,
-    options: [
-      { value: "8000", label: "8000" },
-      { value: "16000", label: "16000" },
-    ],
-    defaultValue: "8000",
-  },
-  {
-    key: "recordingFileFormat",
-    label: "Recording File Format",
-    tooltip: `The format of the recording file, default is WAV.`,
-    options: [
-      { value: "wav", label: "WAV" },
-     
-      { value: "mp3", label: "MP3" },
-    ],
-    defaultValue: "wav",
-  },
+const getItemLabel = (item, available = []) => {
+  if (typeof item === "object" && item !== null) {
+    return item.label || item.value;
+  }
+  const found = available.find((entry) => getItemValue(entry) === item);
+  return found?.label || String(item);
+};
 
-  {
-    key: "recordpath",
-    label: "Record Path",
-    tooltip: "The path to the recording file, default is local.",
-    type: "text",
-    defaultValue: "",
-  },
-];
-
-const MOCK_TRUNKS = [
-  
-];
-
-const MOCK_EXTENSIONS = [
-
-];
-
-const MOCK_CONFERENCES = [];
+const RecordCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+  getSelectId = getItemValue,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getRecordCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={recordCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const selectId = getSelectId(item);
+          const label = getLabel ? getLabel(item) : getItemLabel(item);
+          const isSelected = selectedIds.includes(selectId);
+          return (
+            <div
+              key={String(selectId)}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(selectId)}
+              style={recordCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 const buildInitialForm = () => {
   const form = {};
-  FORM_FIELDS.forEach((field) => {
+  RECORD_SETTINGS_FORM_FIELDS.forEach((field) => {
     form[field.key] = field.defaultValue;
   });
   return form;
@@ -429,11 +635,23 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
 
   const availableList = available.filter((item) => !selected.includes(item));
 
+  const toggleAvailableSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   const addSelected = () => {
     if (!availableSelected.length) return;
     onChange([
       ...selected,
-      ...availableSelected.filter((item) => !selected.includes(item)),
+      ...availableSelected.filter((id) => !selected.includes(id)),
     ]);
     setAvailableSelected([]);
   };
@@ -509,153 +727,112 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
     ]);
   };
 
+  if (isCompact) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div>
+          <div style={recordCodecColumnLabelStyle}>Available</div>
+          <RecordCodecListBox
+            items={availableList}
+            selectedIds={availableSelected}
+            onToggle={toggleAvailableSelect}
+            emptyText="No available items"
+            getSelectId={getItemValue}
+            getLabel={(item) => getItemLabel(item, available)}
+          />
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
+          <RecordCodecDualListBtn onClick={addSelected}>&gt;</RecordCodecDualListBtn>
+          <RecordCodecDualListBtn onClick={addAll}>&gt;&gt;</RecordCodecDualListBtn>
+          <RecordCodecDualListBtn onClick={removeSelected}>&lt;</RecordCodecDualListBtn>
+          <RecordCodecDualListBtn onClick={removeAll}>&lt;&lt;</RecordCodecDualListBtn>
+        </div>
+        <div>
+          <div style={recordCodecColumnLabelStyle}>Selected</div>
+          <RecordCodecListBox
+            items={selected}
+            selectedIds={chosenSelected}
+            onToggle={toggleChosenSelect}
+            emptyText="No selected items"
+            getSelectId={(item) => item}
+            getLabel={(item) => getItemLabel(item, available)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: isCompact
-        ? "1fr"
-        : "1fr 48px 1fr 48px",
-        gap: 12,
+        gridTemplateColumns: `1fr ${RECORD_CODEC_BTN_COL_WIDTH}px 1fr ${RECORD_CODEC_BTN_COL_WIDTH}px`,
+        gap: 10,
+        width: "100%",
+        alignItems: "start",
       }}
     >
       <div>
-        <div style={pbxDualListLabelStyle}>Available</div>
-        <select
-          multiple
-          size={6}
-          value={availableSelected}
-          onChange={(e) =>
-            setAvailableSelected(
-              Array.from(e.target.selectedOptions, (o) => o.value),
-            )
-          }
-          style={pbxDualListSelectStyle}
-        >
-         {availableList.map((item) => (
-  <option
-    key={item.value}
-    value={item.value}
-  >
-    {item.label}
-  </option>
-))}
-        </select>
+        <div style={recordCodecColumnLabelStyle}>Available</div>
+        <RecordCodecListBox
+          items={availableList}
+          selectedIds={availableSelected}
+          onToggle={toggleAvailableSelect}
+          emptyText="No available items"
+          getSelectId={getItemValue}
+          getLabel={(item) => getItemLabel(item, available)}
+        />
       </div>
-
-      {!isCompact && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            paddingTop: 28,
-          }}
-        >
-          <PbxDualListBtn onClick={addSelected}>&gt;</PbxDualListBtn>
-          <PbxDualListBtn onClick={addAll}>&gt;&gt;</PbxDualListBtn>
-          <PbxDualListBtn onClick={removeSelected}>&lt;</PbxDualListBtn>
-          <PbxDualListBtn onClick={removeAll}>&lt;&lt;</PbxDualListBtn>
-        </div>
-      )}
-
       <div>
-        <div style={pbxDualListLabelStyle}>Selected</div>
-        <select
-          multiple
-          size={6}
-          value={chosenSelected}
-          onChange={(e) =>
-            setChosenSelected(
-              Array.from(e.target.selectedOptions, (o) => o.value),
-            )
-          }
-          style={pbxDualListSelectStyle}
-        >
-          {selected.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {!isCompact && (
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            paddingTop: 28,
-          }}
-        >
-          <PbxDualListBtn reorder title="Move to bottom" onClick={moveToBottom}>
-            vv
-          </PbxDualListBtn>
-          <PbxDualListBtn reorder title="Move up" onClick={moveUp}>
-            ^
-          </PbxDualListBtn>
-          <PbxDualListBtn reorder title="Move down" onClick={moveDown}>
-            v
-          </PbxDualListBtn>
-          <PbxDualListBtn reorder title="Move to top" onClick={moveToTop}>
-            ^^
-          </PbxDualListBtn>
+          style={{ height: RECORD_CODEC_LIST_LABEL_OFFSET }}
+          aria-hidden="true"
+        />
+        <div style={recordCodecBtnColumnStyle}>
+          <RecordCodecDualListBtn onClick={addSelected}>&gt;</RecordCodecDualListBtn>
+          <RecordCodecDualListBtn onClick={addAll}>&gt;&gt;</RecordCodecDualListBtn>
+          <RecordCodecDualListBtn onClick={removeSelected}>&lt;</RecordCodecDualListBtn>
+          <RecordCodecDualListBtn onClick={removeAll}>&lt;&lt;</RecordCodecDualListBtn>
         </div>
-      )}
+      </div>
+      <div>
+        <div style={recordCodecColumnLabelStyle}>Selected</div>
+        <RecordCodecListBox
+          items={selected}
+          selectedIds={chosenSelected}
+          onToggle={toggleChosenSelect}
+          emptyText="No selected items"
+          getSelectId={(item) => item}
+          getLabel={(item) => getItemLabel(item, available)}
+        />
+      </div>
+      <div>
+        <div
+          style={{ height: RECORD_CODEC_LIST_LABEL_OFFSET }}
+          aria-hidden="true"
+        />
+        <div style={recordCodecBtnColumnStyle}>
+          <RecordCodecDualListBtn
+            reorder
+            title="Move to bottom"
+            onClick={moveToBottom}
+          >
+            vv
+          </RecordCodecDualListBtn>
+          <RecordCodecDualListBtn reorder title="Move up" onClick={moveUp}>
+            ^
+          </RecordCodecDualListBtn>
+          <RecordCodecDualListBtn reorder title="Move down" onClick={moveDown}>
+            v
+          </RecordCodecDualListBtn>
+          <RecordCodecDualListBtn reorder title="Move to top" onClick={moveToTop}>
+            ^^
+          </RecordCodecDualListBtn>
+        </div>
+      </div>
     </div>
   );
 };
-
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
-
-const PbxModalSectionHeading = ({ title, isFirst = false, onClick, expanded }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-      background: "none",
-      border: "none",
-      padding: 0,
-      cursor: "pointer",
-      fontFamily: "inherit",
-      textAlign: "left",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -12,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-      }}
-    >
-      <span
-        style={{
-          display: "inline-block",
-          fontSize: 10,
-          color: C.sectionBlue,
-          transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
-          transition: "transform 0.15s ease",
-        }}
-      >
-        ▶
-      </span>
-      {title}
-    </span>
-  </button>
-);
 
 const CollapsibleSection = ({
   title,
@@ -667,31 +844,32 @@ const CollapsibleSection = ({
   isCompact,
   isFirst = false,
 }) => (
-  <div style={{ marginBottom: 8, padding: "0 16px" }}>
-    <PbxModalSectionHeading
+  <div style={{ marginBottom: 8 }}>
+    <RecordSettingsSectionHeading
       title={title}
       isFirst={isFirst}
       onClick={onToggle}
       expanded={expanded}
     />
     {expanded && (
-      <RecordDualList
-        available={available}
-        selected={selected}
-        onChange={onChange}
-        isCompact={isCompact}
-      />
+      <div style={{ marginTop: 8 }}>
+        <RecordDualList
+          available={available}
+          selected={selected}
+          onChange={onChange}
+          isCompact={isCompact}
+        />
+      </div>
     )}
   </div>
 );
 
 const RecordSettings = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(RECORD_SETTINGS_COMPACT_MQ);
   const [form, setForm] = useState(buildInitialForm);
   const [selectedTrunks, setSelectedTrunks] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
   const [selectedConferences, setSelectedConferences] = useState([]);
-  const [Destinations, setDestinations] = useState([]);
 
   const [expandedSections] = useState({
     trunks: true,
@@ -707,161 +885,145 @@ const RecordSettings = () => {
       try {
         const data = await listIvrDestinations();
         setAvailableTrunks(data.message?.Trunks || []);
-setAvailableExtensions(data.message?.Extensions || []);
-setAvailableConferences(data.message?.Conferences || []);
-console.log("Trunks:", availableTrunks);
-console.log("Extensions:", availableExtensions);
-console.log("Conferences:", availableConferences);
-
-  
-        console.log("Destinations:", data);
-        console.log("Message:", data.message);
-        console.log("Keys:", Object.keys(data.message || {}));
-        setDestinations(data);
+        setAvailableExtensions(data.message?.Extensions || []);
+        setAvailableConferences(data.message?.Conferences || []);
       } catch (error) {
         console.error("Failed to load destinations:", error);
       }
     };
-  
+
     loadDestinations();
   }, []);
+
+  const dualListConfig = {
+    trunks: {
+      available: availableTrunks,
+      selected: selectedTrunks,
+      onChange: setSelectedTrunks,
+      expanded: expandedSections.trunks,
+    },
+    extensions: {
+      available: availableExtensions,
+      selected: selectedExtensions,
+      onChange: setSelectedExtensions,
+      expanded: expandedSections.extensions,
+    },
+    conferences: {
+      available: availableConferences,
+      selected: selectedConferences,
+      onChange: setSelectedConferences,
+      expanded: expandedSections.conferences,
+    },
+  };
+
   const handleChange = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
-  // const toggleSection = (key) =>
-  //   setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  const recordSettingsLeftFields = RECORD_SETTINGS_FORM_FIELDS.slice(0, 4);
+  const recordSettingsRightFields = RECORD_SETTINGS_FORM_FIELDS.slice(4, 8);
+
+  const renderRecordSettingsField = (field, stacked = false) => (
+    <RecordSettingsFieldRow
+      key={field.key}
+      label={field.label}
+      tooltipKey={field.tooltipKey}
+      isCompact={isCompact}
+      stacked={stacked}
+    >
+      {field.type === "text" ? (
+        <TextField
+          size="small"
+          fullWidth
+          value={form[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.value)}
+          sx={recordSettingsFieldControlFullSx}
+        />
+      ) : (
+        <FormControl size="small" fullWidth>
+          <MuiSelect
+            value={form[field.key]}
+            onChange={(e) => handleChange(field.key, e.target.value)}
+            sx={recordSettingsSelectFullSx}
+          >
+            {field.options.map((opt) => (
+              <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: 13 }}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </MuiSelect>
+        </FormControl>
+      )}
+    </RecordSettingsFieldRow>
+  );
 
   return (
     <div
       style={{
-        ...sipPcmFormPageWrapStyle,
+        ...recordSettingsPageWrapStyle,
         ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      <div style={sipPcmFormPageInnerStyle}>
-        <PbxBreadcrumb section="Record Settings" current="Record Settings" />
+      <div style={recordSettingsPageInnerStyle}>
+        <RecordSettingsBreadcrumb
+          section={RECORD_SETTINGS_TITLE}
+          current={RECORD_SETTINGS_TITLE}
+        />
 
-        <div style={sipPcmFormCardStyle}>
-          <div style={sipPcmFormHeaderStyle}>
-            <span>Record Settings</span>
+        <div style={recordSettingsCardStyle}>
+          <div style={recordSettingsHeaderStyle}>
+            <span>{RECORD_SETTINGS_TITLE}</span>
           </div>
 
-          <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
-            <div style={{ paddingBottom: 8 }}>
-              {FORM_FIELDS.map((field) => (
-                <div
-                  key={field.key}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "8px 16px",
-                    gap: 12,
-                    ...(isCompact
-                      ? { flexDirection: "column", alignItems: "stretch" }
-                      : {}),
-                  }}
-                >
-<Tooltip
-  title={field.tooltip || ""}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: "13px",
-        maxWidth: 500,
-        p: 1.5,
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-        "&:before": {
-          border: "1px solid #d1d5db",
-        },
-      },
-    },
-  }}
->
-  <label style={GRID_LABEL_STYLE}>
-    {field.label}
-  </label>
-</Tooltip>
-                  <div
-  style={{
-    flex: isCompact ? undefined : 1,
-    display: "flex",
-    justifyContent: isCompact ? "stretch" : "flex-end",
-    minWidth: 0,
-  }}
->
-{field.type === "text" ? (
-  <input
-    value={form[field.key]}
-    onChange={(e) => handleChange(field.key, e.target.value)}
-    style={GRID_INPUT_STYLE}
-    {...fieldInteraction}
-  />
-) : (
-  <select
-    value={form[field.key]}
-    onChange={(e) => handleChange(field.key, e.target.value)}
-    style={GRID_INPUT_STYLE}
-    {...fieldInteraction}
-  >
-    {field.options.map((opt) => (
-      <option key={opt.value} value={opt.value}>
-        {opt.label}
-      </option>
-    ))}
-  </select>
-)}
+          <div style={{ padding: "20px 20px 0", boxSizing: "border-box" }}>
+            <div
+              style={{
+                ...recordSettingsFormBodyStyle,
+                paddingTop: 4,
+                paddingBottom: 16,
+              }}
+            >
+              {isCompact ? (
+                RECORD_SETTINGS_FORM_FIELDS.map((field) =>
+                  renderRecordSettingsField(field, true),
+                )
+              ) : (
+                <div style={recordSettingsFormGridStyle}>
+                  <div style={recordSettingsFormColumnStyle}>
+                    {recordSettingsLeftFields.map((field) =>
+                      renderRecordSettingsField(field, true),
+                    )}
+                  </div>
+                  <div style={recordSettingsFormColumnStyle}>
+                    {recordSettingsRightFields.map((field) =>
+                      renderRecordSettingsField(field, true),
+                    )}
                   </div>
                 </div>
-              ))}
+              )}
 
-              <CollapsibleSection
-                title="Record Trunks"
-                isFirst
-                expanded={expandedSections.trunks}
-                // onToggle={() => toggleSection("trunks")}
-                available={availableTrunks}
-                selected={selectedTrunks}
-                onChange={setSelectedTrunks}
-                isCompact={isCompact}
-              />
-
-              <CollapsibleSection
-                title="Record Extensions"
-                expanded={expandedSections.extensions}
-                // onToggle={() => toggleSection("extensions")}
-              available={availableExtensions}
-                selected={selectedExtensions}
-                onChange={setSelectedExtensions}
-                isCompact={isCompact}
-              />
-
-              <CollapsibleSection
-                title="Record Conferences"
-                expanded={expandedSections.conferences}
-                // onToggle={() => toggleSection("conferences")}
-                available={availableConferences}
-                selected={selectedConferences}
-                onChange={setSelectedConferences}
-                isCompact={isCompact}
-              />
+              {RECORD_SETTINGS_DUAL_LIST_SECTIONS.map((section, idx) => {
+                const config = dualListConfig[section.key];
+                return (
+                  <CollapsibleSection
+                    key={section.key}
+                    title={section.title}
+                    isFirst={idx === 0}
+                    expanded={config.expanded}
+                    available={config.available}
+                    selected={config.selected}
+                    onChange={config.onChange}
+                    isCompact={isCompact}
+                  />
+                );
+              })}
             </div>
           </div>
 
-          <div style={sipPcmAuthFormFooterStyle}>
-            <Btn variant="cancel" style={sipPcmAuthFormBtnStyle}>
+          <div style={recordSettingsFooterStyle}>
+            <Btn variant="cancel" style={recordSettingsFooterBtnStyle}>
               Set Storage
             </Btn>
-            <Btn variant="primary" style={sipPcmAuthFormBtnStyle}>
+            <Btn variant="primary" style={recordSettingsFooterBtnStyle}>
               Save
             </Btn>
           </div>

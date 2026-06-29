@@ -72,7 +72,7 @@ export const SIP_REGISTER_TABLE_COLUMNS = [
 
 export const SIP_REGISTER_DEFAULT_CODECS = "ulaw,alaw";
 
-export const CODEC_OPTIONS = [
+export const SIP_REGISTER_CODEC_OPTIONS = [
   { value: "ulaw", label: "ulaw" },
   { value: "alaw", label: "alaw" },
   { value: "gsm", label: "gsm" },

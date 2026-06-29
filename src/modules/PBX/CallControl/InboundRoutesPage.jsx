@@ -3,7 +3,6 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
-  Button,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -18,6 +17,18 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import {
+  INBOUND_ROUTE_DESTINATION_NEEDS_TARGET,
+  INBOUND_ROUTE_DESTINATION_OPTIONS,
+  INBOUND_ROUTE_DEST_TYPE_TO_UI,
+  INBOUND_ROUTE_ENABLE_OPTIONS,
+  INBOUND_ROUTE_FIELD_TOOLTIPS,
+  INBOUND_ROUTE_MOBILITY_OPTIONS,
+  INBOUND_ROUTE_SEND_RINGTONE_OPTIONS,
+  INBOUND_ROUTE_T38_OPTIONS,
+  INBOUND_ROUTE_TIME_CONDITION_OPTIONS,
+  INBOUND_ROUTE_UI_TO_DEST_TYPE,
+} from "../../../constants/InboundRouteConstants";
+import {
   createInboundRoute,
   deleteInboundRoute,
   listInboundRoutes,
@@ -25,114 +36,35 @@ import {
   listSipRegistrations,
   updateInboundRoute,
 } from "../../../api/apiService";
-import { INBOUND_ROUTE_FIELD_TOOLTIPS } from "../../../constants/InboundRouteConstants";
-const ENABLE_OPTIONS = ["Yes", "No"];
-const T38_OPTIONS = ["Yes", "No"];
-const TIME_CONDITION_OPTIONS = ["Yes", "No"];
-const MOBILITY_OPTIONS = ["Yes", "No"];
-const SEND_RINGTONE_OPTIONS = ["Remote", "Local"];
 
-const DESTINATION_OPTIONS = [
-  "Call Queue",
-  "CallBacks",
-  "Conference Rooms",
-  "DISA",
-  "Extensions",
-  "Fax To Mail",
-  "IVR Menus",
-  "Ring Groups",
-  "Trunks",
-  "Outbound",
-  "Voicemails",
-  "Extension_Range",
-  "Other",
-];
-
-const DEST_TYPE_TO_UI = {
-  extensions: "Extensions",
-  voicemail: "Voicemails",
-  fax_to_email: "Fax To Mail",
-  ring_group: "Ring Groups",
-  conference: "Conference Rooms",
-  ivr_menu: "IVR Menus",
-  extension_range: "Extension_Range",
-  other: "Other",
-  call_queue: "Call Queue",
-  callbacks: "CallBacks",
-  disa: "DISA",
-  trunk: "Trunks",
-  outbound_route: "Outbound",
-};
-
-const UI_TO_DEST_TYPE = {
-  Extensions: "extensions",
-  Voicemails: "voicemail",
-  "Fax To Mail": "fax_to_email",
-  "Ring Groups": "ring_group",
-  "Conference Rooms": "conference",
-  "IVR Menus": "ivr_menu",
-  Extension_Range: "extension_range",
-  Other: "other",
-  "Call Queue": "call_queue",
-  CallBacks: "callbacks",
-  DISA: "disa",
-  Trunks: "trunk",
-  Outbound: "outbound_route",
-};
-
-const OTHER_DESTINATION_OPTIONS = ["Hangup", "Hold Music"];
-const DESTINATION_NEEDS_EXTENSION = new Set([
-  "Extensions",
-  "Fax To Mail",
-  "Voicemails",
-]);
-const DESTINATION_NEEDS_TARGET = new Set([
-  "Extensions",
-  "Fax To Mail",
-  "Voicemails",
-  "Conference Rooms",
-  "Ring Groups",
-  "IVR Menus",
-  "Call Queue",
-  "CallBacks",
-  "DISA",
-  "Trunks",
-  "Outbound",
-  "Other",
-]);
-
-/** Dial / route number for a ring group (matches RingGroup.jsx: rg_number). */
-const getRingGroupDialNumber = (item) => {
-  if (!item || typeof item !== "object") return "";
-  const n =
-    item.rg_number ??
-    item.ring_group_no ??
-    item.group_no ??
-    item.group ??
-    item.page_number;
-  if (n !== undefined && n !== null && String(n).trim() !== "")
-    return String(n).trim();
-  return "";
-};
-
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const INBOUND_ROUTE_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
+  placeholderText: "#94a3b8",
 };
-const CARD_RADIUS = 10;
 
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -141,9 +73,8 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -154,49 +85,69 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -214,30 +165,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -254,8 +207,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -271,19 +224,22 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
+
+const inboundRouteTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page UI (inlined from pbxSharedUi) ──
-const pbxModalCancelBtnStyle = {
+const getInboundRouteRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const inboundRouteModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -292,20 +248,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const inboundRoutePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const inboundRoutePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const InboundRouteBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -378,14 +334,14 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_LIST_TRUNCATE_THRESHOLD = 10;
-const PBX_LIST_DISPLAY_LIMIT = 6;
+const INBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD = 10;
+const INBOUND_ROUTE_LIST_DISPLAY_LIMIT = 6;
 
-const formatPbxItemListDisplay = (
+const formatInboundRouteItemListDisplay = (
   items,
   {
-    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
-    limit = PBX_LIST_DISPLAY_LIMIT,
+    threshold = INBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD,
+    limit = INBOUND_ROUTE_LIST_DISPLAY_LIMIT,
     mapItem = (x) => String(x),
     separator = ", ",
     ellipsis = "....",
@@ -400,8 +356,8 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const INBOUND_ROUTE_MODAL_SECTION_BG = "#f8fafc";
+const INBOUND_ROUTE_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const INBOUND_ROUTE_TOOLTIP_PROPS = {
   arrow: true,
@@ -465,18 +421,18 @@ const InboundFieldLabel = ({ tooltipKey, children, style = {} }) => {
   );
 };
 
-const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+const InboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: INBOUND_ROUTE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: INBOUND_ROUTE_MODAL_SECTION_HEADING_COLOR,
         cursor: tooltipKey ? "help" : undefined,
       }}
     >
@@ -507,123 +463,56 @@ const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   );
 };
 
-const pbxDualListLabelStyle = {
+const inboundRouteDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#3E5475",
+  color: C.labelText,
   textAlign: "center",
   marginBottom: 8,
 };
 
-const pbxDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const pbxDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const PbxDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={pbxDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
+const inboundRouteOutlinedInputRootSx = {
   backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
     borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
+  "&:hover fieldset": {
     borderColor: OUTLINED_HOVER,
   },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const modalTextFieldFullSx = {
-  ...muiTextFieldSx,
+const inboundRouteModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": inboundRouteOutlinedInputRootSx,
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const inboundRouteModalTextFieldFullSx = {
+  ...inboundRouteModalTextFieldSx,
   width: "100%",
   "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    ...inboundRouteOutlinedInputRootSx,
     minHeight: 36,
     height: 36,
     fontSize: 13,
@@ -636,17 +525,36 @@ const modalTextFieldFullSx = {
   },
 };
 
-const modalSelectSx = {
-  ...muiSelectSx,
+const inboundRouteModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
+  minHeight: 36,
+  height: 36,
+  ...inboundRouteOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
     backgroundColor: "#fff",
   },
 };
 
-const trunkModalPaperSx = {
+const inboundRouteModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
@@ -657,7 +565,13 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkModalTitleStyle = {
+const inboundRouteModalDialogContentSx = {
+  maxHeight: "calc(100vh - 180px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const inboundRouteModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
   fontWeight: 600,
@@ -668,43 +582,43 @@ const trunkModalTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const INBOUND_ROUTE_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const inboundRouteCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: INBOUND_ROUTE_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const inboundRouteToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: INBOUND_ROUTE_TABLE_CARD_RADIUS,
+  borderTopRightRadius: INBOUND_ROUTE_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const inboundRoutePaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: INBOUND_ROUTE_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: INBOUND_ROUTE_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const inboundRouteSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -714,7 +628,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const inboundRouteCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -722,14 +636,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const inboundRoutePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const inboundRoutePageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -739,7 +653,41 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const inboundRouteFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const inboundRouteModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const inboundRouteModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const InboundRoutePagination = ({
   page,
   totalPages,
   recordCount,
@@ -747,7 +695,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...inboundRoutePaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -760,7 +708,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={inboundRoutePageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -774,9 +722,170 @@ const SipPcmPagination = ({
   </div>
 );
 
-const INBOUND_MODAL_LABEL_WIDTH = 185;
-const INBOUND_MODAL_FIELD_WIDTH = 210;
-const INBOUND_RIGHT_LABEL_PADDING_LEFT = 28;
+const INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
+const INBOUND_ROUTE_CODEC_BTN_COL_WIDTH = 40;
+const INBOUND_ROUTE_CODEC_BTN_GAP = 6;
+const INBOUND_ROUTE_CODEC_BTN_HEIGHT =
+  (INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT - INBOUND_ROUTE_CODEC_BTN_GAP * 3) / 4;
+const INBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
+
+const getInboundRouteCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  height: INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const inboundRouteCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const inboundRouteCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const inboundRouteCodecDualListBtnStyle = {
+  width: INBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
+  height: INBOUND_ROUTE_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const inboundRouteCodecDualListReorderBtnStyle = {
+  ...inboundRouteCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const inboundRouteCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: INBOUND_ROUTE_CODEC_BTN_GAP,
+  height: INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  width: INBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
+};
+
+const InboundRouteCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={
+      reorder
+        ? inboundRouteCodecDualListReorderBtnStyle
+        : inboundRouteCodecDualListBtnStyle
+    }
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const InboundRouteCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getInboundRouteCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={inboundRouteCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id =
+            typeof item === "string" ? item : (item.value ?? item.id);
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={inboundRouteCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const INBOUND_ROUTE_MODAL_LABEL_WIDTH = 185;
+const INBOUND_ROUTE_MODAL_FIELD_WIDTH = 210;
+const INBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT = 28;
 
 const FieldRow = ({
   label,
@@ -829,7 +938,7 @@ const FieldRow = ({
 
 /** Left column — same fill-box size as right; label position unchanged */
 const InboundLeftField = ({ children }) => (
-  <div style={{ width: INBOUND_MODAL_FIELD_WIDTH, maxWidth: "100%" }}>
+  <div style={{ width: INBOUND_ROUTE_MODAL_FIELD_WIDTH, maxWidth: "100%" }}>
     {children}
   </div>
 );
@@ -848,10 +957,10 @@ const InboundRightRow = ({ label, tooltipKey, children }) => (
         tooltipKey={tooltipKey}
         style={{
           textAlign: "left",
-          width: INBOUND_MODAL_LABEL_WIDTH,
-          minWidth: INBOUND_MODAL_LABEL_WIDTH,
+          width: INBOUND_ROUTE_MODAL_LABEL_WIDTH,
+          minWidth: INBOUND_ROUTE_MODAL_LABEL_WIDTH,
           flexShrink: 0,
-          paddingLeft: INBOUND_RIGHT_LABEL_PADDING_LEFT,
+          paddingLeft: INBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT,
           boxSizing: "border-box",
         }}
       >
@@ -865,17 +974,17 @@ const InboundRightRow = ({ label, tooltipKey, children }) => (
           fontWeight: 600,
           whiteSpace: "nowrap",
           textAlign: "left",
-          width: INBOUND_MODAL_LABEL_WIDTH,
-          minWidth: INBOUND_MODAL_LABEL_WIDTH,
+          width: INBOUND_ROUTE_MODAL_LABEL_WIDTH,
+          minWidth: INBOUND_ROUTE_MODAL_LABEL_WIDTH,
           flexShrink: 0,
-          paddingLeft: INBOUND_RIGHT_LABEL_PADDING_LEFT,
+          paddingLeft: INBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT,
           boxSizing: "border-box",
         }}
       >
         {label}
       </label>
     )}
-    <div style={{ width: INBOUND_MODAL_FIELD_WIDTH, flexShrink: 0 }}>
+    <div style={{ width: INBOUND_ROUTE_MODAL_FIELD_WIDTH, flexShrink: 0 }}>
       {children}
     </div>
   </div>
@@ -890,7 +999,7 @@ const inboundRightColStyle = {
 
 const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading
+    <InboundRouteModalSectionHeading
       title={title}
       tooltipKey={tooltipKey}
       isFirst={isFirst}
@@ -900,7 +1009,7 @@ const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
 );
 
 const InboundRoutesPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(INBOUND_ROUTE_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -975,8 +1084,9 @@ const InboundRoutesPage = () => {
   };
 
   const mapDestTypeToUi = (destType) =>
-    DEST_TYPE_TO_UI[String(destType || "").toLowerCase()] || "";
-  const mapUiToDestType = (uiDest) => UI_TO_DEST_TYPE[uiDest] || "call_queue";
+    INBOUND_ROUTE_DEST_TYPE_TO_UI[String(destType || "").toLowerCase()] || "";
+  const mapUiToDestType = (uiDest) =>
+    INBOUND_ROUTE_UI_TO_DEST_TYPE[uiDest] || "call_queue";
 
   /** Ring-group list API uses `rg_number` (same as Ring Group page); do not use DB id as dial target. */
   const getRingGroupDialNumber = (g) => {
@@ -1131,7 +1241,8 @@ const InboundRoutesPage = () => {
   };
 
   const destinationChoices = getDestinationChoices();
-  const needsDestinationTarget = DESTINATION_NEEDS_TARGET.has(destination);
+  const needsDestinationTarget =
+    INBOUND_ROUTE_DESTINATION_NEEDS_TARGET.has(destination);
 
   const resetForm = () => {
     setEditId(null);
@@ -1235,6 +1346,18 @@ const InboundRoutesPage = () => {
   const removeAllTrunks = () => {
     setSelectedTrunks([]);
     setChosenSelected([]);
+  };
+
+  const toggleAvailableTrunkSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenTrunkSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   };
 
   const moveTrunkToBottom = () => {
@@ -1441,32 +1564,24 @@ const InboundRoutesPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Alert */}
+    <div style={{ ...inboundRoutePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={inboundRoutePageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={inboundRouteFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Control" current="Inbound Routes" />
+        <InboundRouteBreadcrumb section="Call Control" current="Inbound Routes" />
 
-        <div style={sipPcmCardStyle}>
+        <div style={inboundRouteCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...inboundRouteToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1474,7 +1589,7 @@ const InboundRoutesPage = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={inboundRouteSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1493,7 +1608,7 @@ const InboundRoutesPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={inboundRouteCancelBtnStyle}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1505,7 +1620,7 @@ const InboundRoutesPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={inboundRoutePrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1559,7 +1674,7 @@ const InboundRoutesPage = () => {
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
                         disabled={loading.delete}
-                        sx={checkboxSx}
+                        sx={inboundRouteTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1611,11 +1726,7 @@ const InboundRoutesPage = () => {
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
-                    const rowBg = isSelected
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getInboundRouteRowBg(isSelected, idx);
                     const destinationStr =
                       row.destination === "Extension_Range"
                         ? `${row.destination}: ${row.extensionRange || ""}`
@@ -1652,7 +1763,7 @@ const InboundRoutesPage = () => {
                             checked={isSelected}
                             onChange={() => handleSelectRow(realIdx)}
                             disabled={loading.delete}
-                            sx={checkboxSx}
+                            sx={inboundRouteTableCheckboxSx}
                           />
                         </td>
                         <td
@@ -1745,14 +1856,14 @@ const InboundRoutesPage = () => {
                             <span
                               title={
                                 row.memberTrunks.length >
-                                PBX_LIST_TRUNCATE_THRESHOLD
+                                INBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD
                                   ? row.memberTrunks
                                       .map(getTrunkLabel)
                                       .join(", ")
                                   : undefined
                               }
                             >
-                              {formatPbxItemListDisplay(row.memberTrunks, {
+                              {formatInboundRouteItemListDisplay(row.memberTrunks, {
                                 mapItem: getTrunkLabel,
                               })}
                             </span>
@@ -1806,7 +1917,7 @@ const InboundRoutesPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <SipPcmPagination
+            <InboundRoutePagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1823,29 +1934,19 @@ const InboundRoutesPage = () => {
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
-        PaperProps={{ sx: trunkModalPaperSx }}
+        PaperProps={{ sx: inboundRouteModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle style={trunkModalTitleStyle}>
+        <DialogTitle style={inboundRouteModalTitleStyle}>
           {editId != null ? "Edit Inbound Route" : "Add Inbound Route"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              width: "100%",
-              maxWidth: "100%",
-              boxSizing: "border-box",
-              overflow: "hidden",
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+        <DialogContent
+          className="app-main-scroll"
+          style={{ padding: "24px", backgroundColor: "#ffffff" }}
+          sx={inboundRouteModalDialogContentSx}
+        >
+          <div style={inboundRouteModalFormStyle}>
             <div
               style={{
                 display: "grid",
@@ -1869,7 +1970,7 @@ const InboundRoutesPage = () => {
                       fullWidth
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      sx={modalTextFieldFullSx}
+                      sx={inboundRouteModalTextFieldFullSx}
                     />
                   </InboundLeftField>
                 </FieldRow>
@@ -1880,7 +1981,7 @@ const InboundRoutesPage = () => {
                       fullWidth
                       value={didPattern}
                       onChange={(e) => setDidPattern(e.target.value)}
-                      sx={modalTextFieldFullSx}
+                      sx={inboundRouteModalTextFieldFullSx}
                     />
                   </InboundLeftField>
                 </FieldRow>
@@ -1894,7 +1995,7 @@ const InboundRoutesPage = () => {
                       fullWidth
                       value={callerIdPattern}
                       onChange={(e) => setCallerIdPattern(e.target.value)}
-                      sx={modalTextFieldFullSx}
+                      sx={inboundRouteModalTextFieldFullSx}
                     />
                   </InboundLeftField>
                 </FieldRow>
@@ -1908,7 +2009,7 @@ const InboundRoutesPage = () => {
                       fullWidth
                       value={distinctiveRingTone}
                       onChange={(e) => setDistinctiveRingTone(e.target.value)}
-                      sx={modalTextFieldFullSx}
+                      sx={inboundRouteModalTextFieldFullSx}
                     />
                   </InboundLeftField>
                 </FieldRow>
@@ -1918,9 +2019,9 @@ const InboundRoutesPage = () => {
                       <Select
                         value={enableT38}
                         onChange={(e) => setEnableT38(e.target.value)}
-                        sx={modalSelectSx}
+                        sx={inboundRouteModalSelectSx}
                       >
-                        {T38_OPTIONS.map((opt) => (
+                        {INBOUND_ROUTE_T38_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                             {opt}
                           </MenuItem>
@@ -1940,12 +2041,12 @@ const InboundRoutesPage = () => {
                           setExtensionRange("");
                         }}
                         displayEmpty
-                        sx={modalSelectSx}
+                        sx={inboundRouteModalSelectSx}
                       >
                         <MenuItem value="">
                           <em>Select</em>
                         </MenuItem>
-                        {DESTINATION_OPTIONS.map((opt) => (
+                        {INBOUND_ROUTE_DESTINATION_OPTIONS.map((opt) => (
                           <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                             {opt}
                           </MenuItem>
@@ -1962,9 +2063,9 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enabled}
                       onChange={(e) => setEnabled(e.target.value)}
-                      sx={modalSelectSx}
+                      sx={inboundRouteModalSelectSx}
                     >
-                      {ENABLE_OPTIONS.map((opt) => (
+                      {INBOUND_ROUTE_ENABLE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
@@ -1979,7 +2080,7 @@ const InboundRoutesPage = () => {
                     fullWidth
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    sx={modalTextFieldFullSx}
+                    sx={inboundRouteModalTextFieldFullSx}
                   />
                 </InboundRightRow>
 
@@ -1993,9 +2094,9 @@ const InboundRoutesPage = () => {
                       onChange={(e) =>
                         setEnableMobilityExtension(e.target.value)
                       }
-                      sx={modalSelectSx}
+                      sx={inboundRouteModalSelectSx}
                     >
-                      {MOBILITY_OPTIONS.map((opt) => (
+                      {INBOUND_ROUTE_MOBILITY_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
@@ -2012,9 +2113,9 @@ const InboundRoutesPage = () => {
                     <Select
                       value={sendRingTone}
                       onChange={(e) => setSendRingTone(e.target.value)}
-                      sx={modalSelectSx}
+                      sx={inboundRouteModalSelectSx}
                     >
-                      {SEND_RINGTONE_OPTIONS.map((opt) => (
+                      {INBOUND_ROUTE_SEND_RINGTONE_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
@@ -2031,9 +2132,9 @@ const InboundRoutesPage = () => {
                     <Select
                       value={enableTimeCondition}
                       onChange={(e) => setEnableTimeCondition(e.target.value)}
-                      sx={modalSelectSx}
+                      sx={inboundRouteModalSelectSx}
                     >
-                      {TIME_CONDITION_OPTIONS.map((opt) => (
+                      {INBOUND_ROUTE_TIME_CONDITION_OPTIONS.map((opt) => (
                         <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                           {opt}
                         </MenuItem>
@@ -2053,7 +2154,7 @@ const InboundRoutesPage = () => {
                       value={extensionRange}
                       onChange={(e) => setExtensionRange(e.target.value)}
                       placeholder="100-136"
-                      sx={modalTextFieldFullSx}
+                      sx={inboundRouteModalTextFieldFullSx}
                     />
                   </InboundRightRow>
                 ) : needsDestinationTarget ? (
@@ -2066,7 +2167,7 @@ const InboundRoutesPage = () => {
                         value={destinationTarget}
                         onChange={(e) => setDestinationTarget(e.target.value)}
                         displayEmpty
-                        sx={modalSelectSx}
+                        sx={inboundRouteModalSelectSx}
                       >
                         <MenuItem
                           value=""
@@ -2100,136 +2201,98 @@ const InboundRoutesPage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
+                  gridTemplateColumns: `1fr ${INBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${INBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px`,
+                  gap: 10,
+                  width: "100%",
+                  alignItems: "start",
                 }}
               >
                 <div>
-                  <div style={pbxDualListLabelStyle}>Available</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={availableSelected}
-                    onChange={(e) =>
-                      setAvailableSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
+                  <div style={inboundRouteDualListLabelStyle}>Available</div>
+                  <InboundRouteCodecListBox
+                    items={loading.trunks ? [] : availableList}
+                    selectedIds={availableSelected}
+                    onToggle={toggleAvailableTrunkSelect}
+                    emptyText={
+                      loading.trunks ? "Loading trunks..." : "No trunks"
                     }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {loading.trunks ? (
-                      <option>Loading trunks...</option>
-                    ) : availableList.length === 0 ? (
-                      <option disabled>No trunks</option>
-                    ) : (
-                      availableList.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <PbxDualListBtn onClick={addSelectedTrunks}>
-                    &gt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={addAllTrunks}>
-                    &gt;&gt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeSelectedTrunks}>
-                    &lt;
-                  </PbxDualListBtn>
-                  <PbxDualListBtn onClick={removeAllTrunks}>
-                    &lt;&lt;
-                  </PbxDualListBtn>
+                    getLabel={(id) => {
+                      const item = availableList.find((t) => t.id === id);
+                      return item?.label || getTrunkLabel(id);
+                    }}
+                  />
                 </div>
                 <div>
-                  <div style={pbxDualListLabelStyle}>Selected</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={pbxDualListSelectStyle}
-                  >
-                    {selectedTrunks.length === 0 ? (
-                      <option disabled>No selected trunks</option>
-                    ) : (
-                      selectedTrunks.map((id) => (
-                        <option key={id} value={id}>
-                          {getTrunkLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div
+                    style={{ height: INBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={inboundRouteCodecBtnColumnStyle}>
+                    <InboundRouteCodecDualListBtn onClick={addSelectedTrunks}>
+                      &gt;
+                    </InboundRouteCodecDualListBtn>
+                    <InboundRouteCodecDualListBtn onClick={addAllTrunks}>
+                      &gt;&gt;
+                    </InboundRouteCodecDualListBtn>
+                    <InboundRouteCodecDualListBtn onClick={removeSelectedTrunks}>
+                      &lt;
+                    </InboundRouteCodecDualListBtn>
+                    <InboundRouteCodecDualListBtn onClick={removeAllTrunks}>
+                      &lt;&lt;
+                    </InboundRouteCodecDualListBtn>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <PbxDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveTrunkToBottom}
-                  >
-                    vv
-                  </PbxDualListBtn>
-                  <PbxDualListBtn reorder title="Move up" onClick={moveTrunkUp}>
-                    ^
-                  </PbxDualListBtn>
-                  <PbxDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveTrunkDown}
-                  >
-                    v
-                  </PbxDualListBtn>
-                  <PbxDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveTrunkToTop}
-                  >
-                    ^^
-                  </PbxDualListBtn>
+                <div>
+                  <div style={inboundRouteDualListLabelStyle}>Selected</div>
+                  <InboundRouteCodecListBox
+                    items={selectedTrunks}
+                    selectedIds={chosenSelected}
+                    onToggle={toggleChosenTrunkSelect}
+                    emptyText="No selected trunks"
+                    getLabel={getTrunkLabel}
+                  />
+                </div>
+                <div>
+                  <div
+                    style={{ height: INBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={inboundRouteCodecBtnColumnStyle}>
+                    <InboundRouteCodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveTrunkToBottom}
+                    >
+                      vv
+                    </InboundRouteCodecDualListBtn>
+                    <InboundRouteCodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveTrunkUp}
+                    >
+                      ^
+                    </InboundRouteCodecDualListBtn>
+                    <InboundRouteCodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveTrunkDown}
+                    >
+                      v
+                    </InboundRouteCodecDualListBtn>
+                    <InboundRouteCodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveTrunkToTop}
+                    >
+                      ^^
+                    </InboundRouteCodecDualListBtn>
+                  </div>
                 </div>
               </div>
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={inboundRouteModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
@@ -2249,7 +2312,7 @@ const InboundRoutesPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={inboundRouteModalCancelBtnStyle}
           >
             Close
           </Btn>

@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import {Button,
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -11,12 +13,12 @@ import {Button,
   FormControl,
   MenuItem,
   Select as MuiSelect,
-  Checkbox,
   TextField,
   InputAdornment,
   IconButton,
-  Alert, useMediaQuery } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   createDisa,
   deleteDisa,
@@ -25,9 +27,14 @@ import {
   listOutboundRoutes,
   updateDisa,
 } from "../../../api/apiService";
-const SECOND_DIAL_OPTIONS = ["Enable", "Disable"];
-const TRANSPARENT_OPTIONS = ["Enable", "Disable"];
-const ENABLE_OPTIONS = ["Yes", "No"];
+import {
+  DISA_ENABLE_OPTIONS,
+  DISA_FIELD_TOOLTIPS,
+  DISA_ITEMS_PER_PAGE,
+  DISA_SECOND_DIAL_OPTIONS,
+  DISA_TITLE,
+  DISA_TRANSPARENT_OPTIONS,
+} from "../../../constants/DisaConstants";
 
 const INITIAL_FORM = {
   name: "",
@@ -41,77 +48,31 @@ const INITIAL_FORM = {
   enabled: true,
 };
 
-// Color palette aligned with OutboundRoutesPage design system
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
 };
 
-const CARD_RADIUS = 10;
-
-const codecDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
-
-const codecDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const codecDualListReorderBtnStyle = {
-  ...codecDualListBtnStyle,
-  fontWeight: 400,
-};
-
-const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-// Shared Btn component copied/adapted from OutboundRoutesPage for visual parity
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -120,9 +81,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -133,11 +95,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -145,41 +103,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -197,30 +181,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -233,8 +218,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -244,40 +229,40 @@ const TH = ({ children, style: extra }) => (
     {children}
   </th>
 );
-const tdStyle = {
+
+const disaTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const disaTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const DISA_TABLE_CARD_RADIUS = 10;
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const disaPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const disaPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const DisaBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -298,6 +283,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -350,89 +336,594 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  tooltip,
-}) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 150,
-          flexShrink: 0,
-          paddingTop: align === "flex-start" ? 8 : 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const disaCardStyle = {
+  background: "#ffffff",
+  borderRadius: DISA_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
+const disaToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: DISA_TABLE_CARD_RADIUS,
+  borderTopRightRadius: DISA_TABLE_CARD_RADIUS,
+};
 
-const tooltipProps = {
+const disaPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: DISA_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: DISA_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const disaSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const disaCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const disaPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const disaPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const disaFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const disaEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleDisaEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const disaOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const disaModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...disaOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const disaModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...disaOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const disaModalPaperSx = {
+  width: 900,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const disaModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const disaModalSectionStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: "20px 24px 24px",
+  marginTop: 24,
+};
+
+const disaModalContentWrapStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  paddingBottom: 4,
+};
+
+const disaModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const disaModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const disaModalDialogContainerSx = {
+  "& .MuiDialog-container": {
+    alignItems: "flex-start",
+    pt: 5,
+  },
+};
+
+const disaModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const DISA_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
 
-const PBX_MODAL_SECTION_BG = "#f5f7fa";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const formatDisaTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
 
-const SectionHeading = ({ title, isFirst = false, required }) => (
+const DISA_MODAL_LABEL_WIDTH = 150;
+
+const DisaFieldLabel = ({
+  tooltipKey,
+  children,
+  required,
+  style = {},
+}) => {
+  const tooltip = DISA_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+      {required ? (
+        <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+      ) : null}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatDisaTooltipTitle(tooltip)}
+      {...DISA_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const DisaFieldRow = ({ label, tooltipKey, required, children, alignTop }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
+      display: "flex",
+      alignItems: alignTop ? "flex-start" : "center",
+      gap: 12,
+      minHeight: alignTop ? undefined : 32,
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    {tooltipKey ? (
+      <DisaFieldLabel
+        tooltipKey={tooltipKey}
+        required={required}
+        style={{
+          width: DISA_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          marginTop: alignTop ? 4 : 0,
+        }}
+      >
+        {label}
+      </DisaFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: DISA_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+          marginTop: alignTop ? 4 : 0,
+        }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+        ) : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const DISA_MODAL_SECTION_BG = "#f8fafc";
+const DISA_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const DisaSectionHeading = ({
+  title,
+  isFirst = false,
+  required = false,
+  tooltipKey,
+}) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: DISA_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: DISA_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
     </span>
-  </div>
+  );
+  const tooltip = tooltipKey ? DISA_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatDisaTooltipTitle(tooltip)}
+          {...DISA_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
+
+const DISA_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
+const DISA_ROUTE_CODEC_BTN_COL_WIDTH = 40;
+const DISA_ROUTE_CODEC_BTN_GAP = 6;
+const DISA_ROUTE_CODEC_BTN_HEIGHT =
+  (DISA_ROUTE_CODEC_LIST_BOX_HEIGHT - DISA_ROUTE_CODEC_BTN_GAP * 3) / 4;
+const DISA_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
+
+const disaRouteCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getDisaRouteCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: DISA_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  height: DISA_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const disaRouteCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const disaRouteCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const disaRouteCodecDualListBtnStyle = {
+  width: DISA_ROUTE_CODEC_BTN_COL_WIDTH,
+  height: DISA_ROUTE_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const disaRouteCodecDualListReorderBtnStyle = {
+  ...disaRouteCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const disaRouteCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: DISA_ROUTE_CODEC_BTN_GAP,
+  height: DISA_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  width: DISA_ROUTE_CODEC_BTN_COL_WIDTH,
+};
+
+const DisaRouteCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={
+      reorder
+        ? disaRouteCodecDualListReorderBtnStyle
+        : disaRouteCodecDualListBtnStyle
+    }
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
 );
+
+const DisaRouteCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+  getId,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getDisaRouteCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={disaRouteCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = getId
+            ? getId(item)
+            : typeof item === "object"
+              ? item.id
+              : item;
+          const label = getLabel
+            ? getLabel(id, item)
+            : typeof item === "object"
+              ? item.name || id
+              : id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={disaRouteCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const enableDisableCellStyle = (value) => ({
+  color: value === "Enable" ? "#16a34a" : "#dc2626",
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: "0.01em",
+  whiteSpace: "nowrap",
+});
+
+const DISA_COMPACT_MQ = "(max-width: 768px)";
 
 // ── API Helpers ───────────────────────────────────────────────────────────────
 const normalizeList = (raw) => {
@@ -487,7 +978,7 @@ const mapDisaFromApi = (item) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DisaPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(DISA_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -505,7 +996,7 @@ const DisaPage = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   // Search & Pagination
-  const itemsPerPage = 20;
+  const itemsPerPage = DISA_ITEMS_PER_PAGE;
   const [page, setPage] = useState(1);
   // Outbound routes state
   const [allOutboundRoutes, setAllOutboundRoutes] = useState([]);
@@ -815,53 +1306,52 @@ const DisaPage = () => {
     setForm((f) => ({ ...f, outboundRoutes: [...rest, ...sel] }));
   };
 
+  const toggleAvailableRouteSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenRouteSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...disaPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={disaPageInnerStyle}>
         {message.text && (
           <Alert
-            severity={message.type}
+            severity={
+              message.type === "error"
+                ? "error"
+                : message.type === "success"
+                  ? "success"
+                  : "info"
+            }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={disaFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="DISA" />
+        <DisaBreadcrumb section="Call Features" current={DISA_TITLE} />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={disaCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...disaToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -872,17 +1362,7 @@ const DisaPage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={disaSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -902,15 +1382,8 @@ const DisaPage = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                  
-                   style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={disaCancelBtnStyle}
               >
-                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -918,12 +1391,7 @@ const DisaPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={disaPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -974,7 +1442,7 @@ const DisaPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={disaTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1053,120 +1521,98 @@ const DisaPage = () => {
                       >
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderLeft: "none",
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={disaTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           {row.name}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           {row.responseTimeout}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           {row.digitTimeout}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
-                          <span
-                            style={{
-                              color:
-                                row.secondDial === "Enable"
-                                  ? "#16a34a"
-                                  : "#dc2626",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <span style={enableDisableCellStyle(row.secondDial)}>
                             {row.secondDial}
                           </span>
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
-                          <span
-                            style={{
-                              color:
-                                row.transparent === "Enable"
-                                  ? "#16a34a"
-                                  : "#dc2626",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <span style={enableDisableCellStyle(row.transparent)}>
                             {row.transparent}
                           </span>
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           <span
@@ -1183,11 +1629,11 @@ const DisaPage = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                           }}
                         >
                           {routeNames.slice(0, 3).join(", ")}
@@ -1197,31 +1643,25 @@ const DisaPage = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...disaTdStyle,
                             background: rowBg,
                             borderRight: "none",
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : disaTdStyle.borderBottom,
                            
                           }}
                         >
-                                                    <EditDocumentIcon
+                          <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
-                            style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
+                            style={disaEditIconStyle}
+                            onMouseEnter={(e) =>
+                              handleDisaEditIconHover(e, true)
+                            }
+                            onMouseLeave={(e) =>
+                              handleDisaEditIconHover(e, false)
+                            }
                           />
                         </td>
                       </tr>
@@ -1232,25 +1672,13 @@ const DisaPage = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={disaPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.list || page <= 1}
@@ -1258,17 +1686,7 @@ const DisaPage = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={disaPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1284,46 +1702,24 @@ const DisaPage = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
-  open={showModal}
-  onClose={loading.save || loading.get ? null : handleCloseModal}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-      pt: 5,
-    },
-  }}
-  PaperProps={{
-    sx: {
-      width: 900,
-      maxWidth: "96vw",
-      mx: "auto",
-      p: 0,
-      borderRadius: "8px",
-      overflow: "hidden",
-      boxShadow:
-        "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-    },
-  }}
->
-        <DialogTitle
-          style={{
-            background: "rgb(30, 45, 62)",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-            boxShadow: "0 2px 8px 0 rgba(80,160,255,0.10)",
-          }}
-        >
-          {editId != null ? "Edit DISA" : "Add DISA"}
+        open={showModal}
+        onClose={loading.save || loading.get ? null : handleCloseModal}
+        maxWidth={false}
+        sx={disaModalDialogContainerSx}
+        PaperProps={{ sx: disaModalPaperSx }}
+      >
+        <DialogTitle style={disaModalTitleStyle}>
+          {editId != null ? `Edit ${DISA_TITLE}` : `Add ${DISA_TITLE}`}
         </DialogTitle>
 
         <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
+          className="app-main-scroll"
+          sx={{
+            ...disaModalDialogContentSx,
+            padding: "0 24px 24px",
+            backgroundColor: "#ffffff",
+          }}
         >
           {loading.get ? (
             <div
@@ -1337,23 +1733,20 @@ const DisaPage = () => {
               <CircularProgress size={30} style={{ color: C.accent }} />
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div
-                style={{
-                  background: "#f5f7fa",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "20px 24px 16px",
-                }}
-              >
-                <SectionHeading title="General Settings" isFirst />
+            <div style={disaModalContentWrapStyle}>
+              <div style={{ background: "#ffffff" }}>
+                <div style={disaModalSectionStyle}>
+                <DisaSectionHeading title="General Settings" isFirst />
 
-                {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
                 <div
                   style={{
+                    marginTop: 8,
+                    width: "100%",
+                    maxWidth: 720,
+                    margin: "0 auto",
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
-                    gap: "16px 32px",
+                    gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+                    gap: isCompact ? "16px" : "16px 20px",
                   }}
                 >
                   {/* ── LEFT COLUMN ── */}
@@ -1364,7 +1757,7 @@ const DisaPage = () => {
                       gap: 16,
                     }}
                   >
-                    <FieldRow label="Name" required tooltip="User-defined name of a DISA. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
+                    <DisaFieldRow label="Name" tooltipKey="name" required>
                       <TextField
                         size="small"
                         fullWidth
@@ -1372,17 +1765,15 @@ const DisaPage = () => {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, name: e.target.value }))
                         }
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            padding: "6px 8px",
-                            backgroundColor: "#fff",
-                          },
-                        }}
+                        sx={disaModalTextFieldFullSx}
                       />
-                    </FieldRow>
+                    </DisaFieldRow>
 
-                    <FieldRow label="Response Timeout (s)" required tooltip="The timeout time to ring next extension, and also the timeout time to enter Timeout destination if all extensions are unavailable. The default value is 10s.">
+                    <DisaFieldRow
+                      label="Response Timeout (s)"
+                      tooltipKey="response_timeout"
+                      required
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -1394,18 +1785,12 @@ const DisaPage = () => {
                             responseTimeout: e.target.value,
                           }))
                         }
-                        inputProps={{
-                          min: 1,
-                          style: {
-                            fontSize: 13,
-                            padding: "6px 8px",
-                            backgroundColor: "#fff",
-                          },
-                        }}
+                        inputProps={{ min: 1 }}
+                        sx={disaModalTextFieldFullSx}
                       />
-                    </FieldRow>
+                    </DisaFieldRow>
 
-                    <FieldRow label="Second Dial" tooltip="Select the action to perform when the second dial is received. Enable: The second dial is enabled. Disable: The second dial is disabled.">
+                    <DisaFieldRow label="Second Dial" tooltipKey="second_dial">
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={form.secondDial}
@@ -1415,31 +1800,22 @@ const DisaPage = () => {
                               secondDial: e.target.value,
                             }))
                           }
-                          sx={{
-                            fontSize: 13,
-                            backgroundColor: "#fff",
-                            height: 32,
-                            "& .MuiSelect-select": {
-                              padding: "6px 8px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
+                          sx={disaModalSelectSx}
                         >
-                          {SECOND_DIAL_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13, backgroundColor: "#fff" }}
-                            >
+                          {DISA_SECOND_DIAL_OPTIONS.map((opt) => (
+                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                               {opt}
                             </MenuItem>
                           ))}
                         </MuiSelect>
                       </FormControl>
-                    </FieldRow>
+                    </DisaFieldRow>
 
-                    <FieldRow label="Pin Type" tooltip="Select the type of PIN. None: No PIN is required. Single Pin: A single PIN is required.">
+                    <DisaFieldRow
+                      label="Pin Type"
+                      tooltipKey="pin_type"
+                      alignTop
+                    >
                       <div
                         style={{
                           display: "flex",
@@ -1524,13 +1900,7 @@ const DisaPage = () => {
                               onChange={(e) =>
                                 setForm((f) => ({ ...f, pin: e.target.value }))
                               }
-                              inputProps={{
-                                style: {
-                                  fontSize: 13,
-                                  padding: "6px 8px",
-                                  backgroundColor: "#fff",
-                                },
-                              }}
+                              sx={disaModalTextFieldFullSx}
                               InputProps={{
                                 endAdornment: (
                                   <InputAdornment position="end">
@@ -1553,7 +1923,7 @@ const DisaPage = () => {
                           </div>
                         )}
                       </div>
-                    </FieldRow>
+                    </DisaFieldRow>
                   </div>
 
                   {/* ── RIGHT COLUMN ── */}
@@ -1564,7 +1934,11 @@ const DisaPage = () => {
                       gap: 16,
                     }}
                   >
-                    <FieldRow label="Digit Timeout (s)" required tooltip="The timeout time to ring next extension, and also the timeout time to enter Timeout destination if all extensions are unavailable. The default value is 5s.">
+                    <DisaFieldRow
+                      label="Digit Timeout (s)"
+                      tooltipKey="digit_timeout"
+                      required
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -1576,18 +1950,12 @@ const DisaPage = () => {
                             digitTimeout: e.target.value,
                           }))
                         }
-                        inputProps={{
-                          min: 1,
-                          style: {
-                            fontSize: 13,
-                            padding: "6px 8px",
-                            backgroundColor: "#fff",
-                          },
-                        }}
+                        inputProps={{ min: 1 }}
+                        sx={disaModalTextFieldFullSx}
                       />
-                    </FieldRow>
+                    </DisaFieldRow>
 
-                    <FieldRow label="Transparent" tooltip="Select the action to perform when the transparent is received. Enable: The transparent is enabled. Disable: The transparent is disabled.">
+                    <DisaFieldRow label="Transparent" tooltipKey="transparent">
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={form.transparent}
@@ -1597,31 +1965,18 @@ const DisaPage = () => {
                               transparent: e.target.value,
                             }))
                           }
-                          sx={{
-                            fontSize: 13,
-                            backgroundColor: "#fff",
-                            height: 32,
-                            "& .MuiSelect-select": {
-                              padding: "6px 8px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
+                          sx={disaModalSelectSx}
                         >
-                          {TRANSPARENT_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
+                          {DISA_TRANSPARENT_OPTIONS.map((opt) => (
+                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                               {opt}
                             </MenuItem>
                           ))}
                         </MuiSelect>
                       </FormControl>
-                    </FieldRow>
+                    </DisaFieldRow>
 
-                    <FieldRow label="Enabled" tooltip="Set whether to enable this DISA. Yes: The DISA is enabled. No: The DISA is disabled."    >
+                    <DisaFieldRow label="Enabled" tooltipKey="enabled">
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={form.enabled ? "Yes" : "No"}
@@ -1631,183 +1986,126 @@ const DisaPage = () => {
                               enabled: e.target.value === "Yes",
                             }))
                           }
-                          sx={{
-                            fontSize: 13,
-                            backgroundColor: "#fff",
-                            height: 32,
-                            "& .MuiSelect-select": {
-                              padding: "6px 8px",
-                              display: "flex",
-                              alignItems: "center",
-                            },
-                          }}
+                          sx={disaModalSelectSx}
                         >
-                          {ENABLE_OPTIONS.map((opt) => (
-                            <MenuItem
-                              key={opt}
-                              value={opt}
-                              sx={{ fontSize: 13 }}
-                            >
+                          {DISA_ENABLE_OPTIONS.map((opt) => (
+                            <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
                               {opt}
                             </MenuItem>
                           ))}
                         </MuiSelect>
                       </FormControl>
-                    </FieldRow>
+                    </DisaFieldRow>
                   </div>
                 </div>
 
-                <SectionHeading title="Outbound Routes" />
+                <DisaSectionHeading
+                  title="Outbound Routes"
+                  tooltipKey="outbound_routes"
+                />
 
                 <div
                   style={{
+                    marginTop: 8,
                     display: "grid",
-                    gridTemplateColumns: "1fr 48px 1fr 48px",
-                    gap: 12,
+                    gridTemplateColumns: `1fr ${DISA_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${DISA_ROUTE_CODEC_BTN_COL_WIDTH}px`,
+                    gap: 10,
+                    width: "100%",
+                    alignItems: "start",
                   }}
                 >
                   <div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#3e5475",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
+                    <div style={disaRouteCodecColumnLabelStyle}>
                       Available Routes
                     </div>
-                    <select
-                      multiple
-                      value={availableSelected.map(String)}
-                      onChange={(e) =>
-                        setAvailableSelected(
-                          Array.from(e.target.selectedOptions, (opt) =>
-                            Number(opt.value),
-                          ).filter((n) => Number.isFinite(n)),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {availableRoutes.length === 0 ? (
-                        <option disabled>No routes available</option>
-                      ) : (
-                        availableRoutes.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 24,
-                    }}
-                  >
-                    <CodecDualListBtn onClick={addSelectedToChosen}>
-                      &gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={addAllToChosen}>
-                      &gt;&gt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeSelectedFromChosen}>
-                      &lt;
-                    </CodecDualListBtn>
-                    <CodecDualListBtn onClick={removeAllFromChosen}>
-                      &lt;&lt;
-                    </CodecDualListBtn>
+                    <DisaRouteCodecListBox
+                      items={availableRoutes}
+                      selectedIds={availableSelected}
+                      onToggle={toggleAvailableRouteSelect}
+                      emptyText="No routes available"
+                    />
                   </div>
                   <div>
                     <div
                       style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#3e5475",
-                        textAlign: "center",
-                        marginBottom: 6,
+                        height: DISA_ROUTE_CODEC_LIST_LABEL_OFFSET,
                       }}
-                    >
+                      aria-hidden="true"
+                    />
+                    <div style={disaRouteCodecBtnColumnStyle}>
+                      <DisaRouteCodecDualListBtn onClick={addSelectedToChosen}>
+                        &gt;
+                      </DisaRouteCodecDualListBtn>
+                      <DisaRouteCodecDualListBtn onClick={addAllToChosen}>
+                        &gt;&gt;
+                      </DisaRouteCodecDualListBtn>
+                      <DisaRouteCodecDualListBtn
+                        onClick={removeSelectedFromChosen}
+                      >
+                        &lt;
+                      </DisaRouteCodecDualListBtn>
+                      <DisaRouteCodecDualListBtn onClick={removeAllFromChosen}>
+                        &lt;&lt;
+                      </DisaRouteCodecDualListBtn>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={disaRouteCodecColumnLabelStyle}>
                       Selected Routes
                     </div>
-                    <select
-                      multiple
-                      value={chosenSelected.map(String)}
-                      onChange={(e) =>
-                        setChosenSelected(
-                          Array.from(e.target.selectedOptions, (opt) =>
-                            Number(opt.value),
-                          ).filter((n) => Number.isFinite(n)),
-                        )
-                      }
-                      style={codecDualListSelectStyle}
-                    >
-                      {chosenRoutes.length === 0 ? (
-                        <option disabled>No selected routes</option>
-                      ) : (
-                        chosenRoutes.map((id) => (
-                          <option key={id} value={id}>
-                            {routeNameById.get(id) || `ID:${id}`}
-                          </option>
-                        ))
-                      )}
-                    </select>
+                    <DisaRouteCodecListBox
+                      items={chosenRoutes}
+                      selectedIds={chosenSelected}
+                      onToggle={toggleChosenRouteSelect}
+                      emptyText="No selected routes"
+                      getLabel={(id) => routeNameById.get(id) || `ID:${id}`}
+                    />
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                      paddingTop: 24,
-                    }}
-                  >
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      onClick={moveChosenBottom}
-                    >
-                      vv
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveChosenUp}
-                    >
-                      ^
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move down"
-                      onClick={moveChosenDown}
-                    >
-                      v
-                    </CodecDualListBtn>
-                    <CodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveChosenTop}
-                    >
-                      ^^
-                    </CodecDualListBtn>
+                  <div>
+                    <div
+                      style={{
+                        height: DISA_ROUTE_CODEC_LIST_LABEL_OFFSET,
+                      }}
+                      aria-hidden="true"
+                    />
+                    <div style={disaRouteCodecBtnColumnStyle}>
+                      <DisaRouteCodecDualListBtn
+                        reorder
+                        title="Move to bottom"
+                        onClick={moveChosenBottom}
+                      >
+                        vv
+                      </DisaRouteCodecDualListBtn>
+                      <DisaRouteCodecDualListBtn
+                        reorder
+                        title="Move up"
+                        onClick={moveChosenUp}
+                      >
+                        ^
+                      </DisaRouteCodecDualListBtn>
+                      <DisaRouteCodecDualListBtn
+                        reorder
+                        title="Move down"
+                        onClick={moveChosenDown}
+                      >
+                        v
+                      </DisaRouteCodecDualListBtn>
+                      <DisaRouteCodecDualListBtn
+                        reorder
+                        title="Move to top"
+                        onClick={moveChosenTop}
+                      >
+                        ^^
+                      </DisaRouteCodecDualListBtn>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            </div>
           )}
         </DialogContent>
-        <DialogActions
-          style={{
-            justifyContent: "center",
-            gap: 12,
-            padding: 16,
-            background: "#f5f7fa",
-            borderTop: "1px solid #d1d5db",
-          }}
-        >
+        <DialogActions style={disaModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
@@ -1825,7 +2123,7 @@ const DisaPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save || loading.get}
-            style={{ minWidth: 100, height: 33 }}
+            style={disaModalCancelBtnStyle}
           >
             Cancel
           </Btn>

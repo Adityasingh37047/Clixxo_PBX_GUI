@@ -15,15 +15,15 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import {
-  TC_TITLE,
-  TC_TYPES,
-  TC_DAYS_OF_WEEK,
-  TC_MONTHS,
-  TC_HOURS,
-  TC_MINUTES,
-  TC_DAYS_OF_MONTH,
-  TC_TABLE_COLUMNS,
-  TC_INITIAL_FORM,
+  TIME_CONDITION_TITLE,
+  TIME_CONDITION_TYPES,
+  TIME_CONDITION_DAYS_OF_WEEK,
+  TIME_CONDITION_MONTHS,
+  TIME_CONDITION_HOURS,
+  TIME_CONDITION_MINUTES,
+  TIME_CONDITION_DAYS_OF_MONTH,
+  TIME_CONDITION_TABLE_COLUMNS,
+  TIME_CONDITION_INITIAL_FORM,
   TIME_CONDITION_FIELD_TOOLTIPS,
 } from "../../../constants/TimeConditionConstants";
 import {
@@ -33,23 +33,27 @@ import {
   deleteTimeCondition,
   deleteAllTimeConditions,
 } from "../../../api/apiService";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Local page UI (inlined from pbxSharedUi) ──
+const TIME_CONDITION_COMPACT_MQ = "(max-width: 768px)";
+
+// ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
 };
 
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -90,18 +94,53 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -123,14 +162,27 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -147,8 +199,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -167,19 +219,19 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const timeConditionTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const pbxModalCancelBtnStyle = {
+const timeConditionModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -188,20 +240,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const timeConditionPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const timeConditionPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const TimeConditionBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -274,43 +326,43 @@ const TableListEmptyState = ({
   </div>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const TIME_CONDITION_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const timeConditionCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: TIME_CONDITION_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const timeConditionToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: TIME_CONDITION_TABLE_CARD_RADIUS,
+  borderTopRightRadius: TIME_CONDITION_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const timeConditionPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: TIME_CONDITION_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: TIME_CONDITION_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const timeConditionSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -320,7 +372,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const timeConditionCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -328,14 +380,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const timeConditionPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const timeConditionPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -345,7 +397,28 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const timeConditionFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const timeConditionEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleTimeConditionEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const TimeConditionPagination = ({
   page,
   totalPages,
   recordCount,
@@ -353,7 +426,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...timeConditionPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -366,7 +439,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={timeConditionPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -380,36 +453,38 @@ const SipPcmPagination = ({
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const timeConditionOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const modalTextFieldFullSx = {
-  ...muiTextFieldSx,
+const timeConditionModalTextFieldFullSx = {
   width: "100%",
   "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    ...timeConditionOutlinedInputRootSx,
     minHeight: 36,
     height: 36,
     fontSize: 13,
@@ -422,7 +497,53 @@ const modalTextFieldFullSx = {
   },
 };
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const timeConditionModalPaperSx = {
+  width: "fit-content",
+  minWidth: 650,
+  maxWidth: "90vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const timeConditionModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const timeConditionModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const timeConditionModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -439,7 +560,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -467,15 +588,15 @@ const nativeFieldInteraction = {
   },
 };
 
-const TC_TIME_SELECT_HEIGHT = 26;
-const TC_TIME_SELECT_WIDTH = 42;
+const TIME_CONDITION_TIME_SELECT_HEIGHT = 26;
+const TIME_CONDITION_TIME_SELECT_WIDTH = 42;
 
-const timeSelectStyle = {
-  width: TC_TIME_SELECT_WIDTH,
-  minWidth: TC_TIME_SELECT_WIDTH,
-  maxWidth: TC_TIME_SELECT_WIDTH,
-  minHeight: TC_TIME_SELECT_HEIGHT,
-  height: TC_TIME_SELECT_HEIGHT,
+const timeConditionTimeSelectStyle = {
+  width: TIME_CONDITION_TIME_SELECT_WIDTH,
+  minWidth: TIME_CONDITION_TIME_SELECT_WIDTH,
+  maxWidth: TIME_CONDITION_TIME_SELECT_WIDTH,
+  minHeight: TIME_CONDITION_TIME_SELECT_HEIGHT,
+  height: TIME_CONDITION_TIME_SELECT_HEIGHT,
   padding: "3px 10px 3px 3px",
   fontSize: 12,
   lineHeight: 1.35,
@@ -492,7 +613,8 @@ const timeSelectStyle = {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const pad = (n) => String(n ?? 0).padStart(2, "0");
-const typeLabel = (v) => TC_TYPES.find((t) => t.value === v)?.label ?? v;
+const typeLabel = (v) =>
+  TIME_CONDITION_TYPES.find((t) => t.value === v)?.label ?? v;
 
 const settingsSummary = (row) => {
   if (row.type === "worktime") {
@@ -600,7 +722,7 @@ const TimeConditionFieldLabel = ({
       style={{
         fontSize: 13,
         fontWeight: 600,
-        color: "#30415A",
+        color: C.labelText,
         cursor: tooltip ? "help" : undefined,
         ...style,
       }}
@@ -648,7 +770,7 @@ const FieldRow = ({ label, tooltipKey, required, children, fitContent }) => (
           flexShrink: 0,
           fontSize: 13,
           fontWeight: 600,
-          color: "#30415A",
+          color: C.labelText,
           paddingTop: 4,
         }}
       >
@@ -660,18 +782,18 @@ const FieldRow = ({ label, tooltipKey, required, children, fitContent }) => (
   </div>
 );
 
-const modalCheckboxLabelSx = {
+const timeConditionModalCheckboxLabelSx = {
   margin: 0,
   whiteSpace: "nowrap",
   "& .MuiFormControlLabel-label": {
     fontSize: 13,
-    color: "#30415A",
+    color: C.labelText,
     lineHeight: 1.2,
   },
 };
 
-const modalCheckboxAllLabelSx = {
-  ...modalCheckboxLabelSx,
+const timeConditionModalCheckboxAllLabelSx = {
+  ...timeConditionModalCheckboxLabelSx,
   "& .MuiFormControlLabel-label": {
     fontSize: 13,
     fontWeight: 600,
@@ -708,11 +830,11 @@ const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
                 size="small"
                 checked={checked.includes(val)}
                 onChange={() => onChange(val)}
-                sx={checkboxSx}
+                sx={timeConditionTableCheckboxSx}
               />
             }
             label={lbl}
-            sx={modalCheckboxLabelSx}
+            sx={timeConditionModalCheckboxLabelSx}
           />
         );
       })}
@@ -723,11 +845,11 @@ const CheckGroup = ({ items, checked, onChange, cols = 7 }) => {
             checked={allChecked}
             indeterminate={someChecked}
             onChange={() => onChange("__ALL__")}
-            sx={checkboxSx}
+            sx={timeConditionTableCheckboxSx}
           />
         }
         label="All"
-        sx={modalCheckboxAllLabelSx}
+        sx={timeConditionModalCheckboxAllLabelSx}
       />
     </div>
   );
@@ -742,10 +864,10 @@ const TIME_COL_LABEL_STYLE = {
   minHeight: 15,
 };
 
-const TIME_ROW_LABEL_STYLE = {
+const TIME_CONDITION_TIME_ROW_LABEL_STYLE = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#30415A",
+  color: C.labelText,
   flexShrink: 0,
   paddingBottom: 2,
 };
@@ -796,7 +918,7 @@ const TimeColon = () => (
         display: "flex",
         alignItems: "center",
         alignSelf: "center",
-        height: TC_TIME_SELECT_HEIGHT,
+        height: TIME_CONDITION_TIME_SELECT_HEIGHT,
       }}
     >
       :
@@ -836,7 +958,7 @@ const TimeSelect = ({ value, onChange, options }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    style={timeSelectStyle}
+    style={timeConditionTimeSelectStyle}
     {...nativeFieldInteraction}
   >
     {options.map((o) => (
@@ -849,12 +971,12 @@ const TimeSelect = ({ value, onChange, options }) => (
 
 // ─── main component ──────────────────────────────────────────────────────────
 const TimeCondition = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(TIME_CONDITION_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ ...TC_INITIAL_FORM });
+  const [form, setForm] = useState({ ...TIME_CONDITION_INITIAL_FORM });
   const [loading, setLoading] = useState({
     fetch: false,
     save: false,
@@ -938,7 +1060,7 @@ const TimeCondition = () => {
   // ── modal ─────────────────────────────────────────────────────────────────
   const openAdd = () => {
     setForm({
-      ...TC_INITIAL_FORM,
+      ...TIME_CONDITION_INITIAL_FORM,
       timeRanges: [
         { startHour: "09", startMinute: "00", endHour: "18", endMinute: "00" },
       ],
@@ -975,9 +1097,9 @@ const TimeCondition = () => {
   };
 
   // ── form helpers ──────────────────────────────────────────────────────────
-  const allDayValues = TC_DAYS_OF_WEEK.map((d) => d.value);
-  const allMonthValues = TC_MONTHS.map((m) => m.value);
-  const allDomValues = TC_DAYS_OF_MONTH.map(String);
+  const allDayValues = TIME_CONDITION_DAYS_OF_WEEK.map((d) => d.value);
+  const allMonthValues = TIME_CONDITION_MONTHS.map((m) => m.value);
+  const allDomValues = TIME_CONDITION_DAYS_OF_MONTH.map(String);
 
   const toggleCheck = (key, value, allValues) => {
     setForm((prev) => {
@@ -1088,31 +1210,32 @@ const TimeCondition = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div
+      style={{
+        ...timeConditionPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={timeConditionPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type === "error" ? "error" : "success"}
             onClose={() => setToast({ msg: "", type: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={timeConditionFixedAlertSx}
           >
             {toast.msg}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Control" current={TC_TITLE} />
+        <TimeConditionBreadcrumb
+          section="Call Control"
+          current={TIME_CONDITION_TITLE}
+        />
 
-        <div style={sipPcmCardStyle}>
+        <div style={timeConditionCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...timeConditionToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1127,7 +1250,7 @@ const TimeCondition = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={timeConditionSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1147,7 +1270,7 @@ const TimeCondition = () => {
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={timeConditionCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} />
@@ -1160,7 +1283,7 @@ const TimeCondition = () => {
                 onClick={openAdd}
                 disabled={loading.save || loading.fetch}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={timeConditionPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1217,7 +1340,7 @@ const TimeCondition = () => {
                             : handleCheckAll()
                         }
                         disabled={loading.delete || loading.fetch}
-                        sx={checkboxSx}
+                        sx={timeConditionTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1230,7 +1353,7 @@ const TimeCondition = () => {
                     >
                       ID
                     </TH>
-                    {TC_TABLE_COLUMNS.map((c) => (
+                    {TIME_CONDITION_TABLE_COLUMNS.map((c) => (
                       <TH
                         key={c.key}
                         style={{ position: "sticky", top: 0, zIndex: 10 }}
@@ -1295,7 +1418,7 @@ const TimeCondition = () => {
                             checked={isSelected}
                             onChange={() => handleSelectRow(realIdx)}
                             disabled={loading.delete}
-                            sx={checkboxSx}
+                            sx={timeConditionTableCheckboxSx}
                           />
                         </td>
                         <td
@@ -1358,21 +1481,19 @@ const TimeCondition = () => {
                               titleAccess="Edit"
                               onClick={() => openEdit(row)}
                               style={{
+                                ...timeConditionEditIconStyle,
                                 cursor: loading.delete
                                   ? "not-allowed"
                                   : "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
                                 opacity: loading.delete ? 0.4 : 0.7,
-                                transition: "opacity 0.15s ease",
                               }}
                               onMouseEnter={(e) => {
                                 if (!loading.delete)
-                                  e.currentTarget.style.opacity = "1";
+                                  handleTimeConditionEditIconHover(e, true);
                               }}
                               onMouseLeave={(e) => {
                                 if (!loading.delete)
-                                  e.currentTarget.style.opacity = "0.7";
+                                  handleTimeConditionEditIconHover(e, false);
                               }}
                             />
                           </div>
@@ -1386,7 +1507,7 @@ const TimeCondition = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <SipPcmPagination
+            <TimeConditionPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1399,64 +1520,21 @@ const TimeCondition = () => {
       </div>
 
       <Dialog
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            paddingTop: "80px",
-          },
-        }}
         open={showModal}
         onClose={() => {
           if (loading.save) return;
           closeModal();
         }}
         maxWidth={false}
-        className="z-50"
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        PaperProps={{
-          sx: {
-            width: "fit-content",
-            minWidth: 650,
-            maxWidth: "90vw",
-            borderRadius: "8px",
-          },
-        }}
+        PaperProps={{ sx: timeConditionModalPaperSx }}
         disableRestoreFocus
       >
-        <DialogTitle
-          sx={{
-            fontWeight: 600,
-            fontSize: "16px",
-            color: "#ffffff",
-            backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.cardBorder}`,
-            px: 3,
-            py: 2,
-            textAlign: "center",
-            borderTopLeftRadius: "8px",
-            borderTopRightRadius: "8px",
-          }}
-        >
+        <DialogTitle style={timeConditionModalTitleStyle}>
           {editId !== null ? "Edit Time Condition" : "Add Time Condition"}
         </DialogTitle>
 
-        <DialogContent sx={{ p: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-              marginTop: 22,
-              width: "100%",
-              boxSizing: "border-box",
-            }}
-          >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={timeConditionModalFormStyle}>
             {/* Name */}
             <FieldRow label="Name" tooltipKey="name" required>
               <TextField
@@ -1467,15 +1545,14 @@ const TimeCondition = () => {
                 placeholder="Enter name"
                 size="small"
                 fullWidth
-                variant="outlined"
-                sx={modalTextFieldFullSx}
+                sx={timeConditionModalTextFieldFullSx}
               />
             </FieldRow>
 
             {/* Type */}
             <FieldRow label="Type" tooltipKey="type" required>
               <div style={{ display: "flex", gap: 20 }}>
-                {TC_TYPES.map((t) => (
+                {TIME_CONDITION_TYPES.map((t) => (
                   <label
                     key={t.value}
                     style={{
@@ -1485,6 +1562,7 @@ const TimeCondition = () => {
                       fontSize: 13,
                       cursor: "pointer",
                       fontWeight: form.type === t.value ? 600 : 400,
+                      color: C.valueText,
                     }}
                   >
                     <input
@@ -1493,7 +1571,7 @@ const TimeCondition = () => {
                       value={t.value}
                       checked={form.type === t.value}
                       onChange={() => setForm((p) => ({ ...p, type: t.value }))}
-                      style={{ accentColor: "#3b82f6" }}
+                      style={{ accentColor: C.accent }}
                     />
                     {t.label}
                   </label>
@@ -1526,7 +1604,12 @@ const TimeCondition = () => {
                           gap: 8,
                         }}
                       >
-                        <span style={{ ...TIME_ROW_LABEL_STYLE, width: 70 }}>
+                        <span
+                          style={{
+                            ...TIME_CONDITION_TIME_ROW_LABEL_STYLE,
+                            width: 70,
+                          }}
+                        >
                           StartTime
                         </span>
                         <TimeGroup
@@ -1539,11 +1622,14 @@ const TimeCondition = () => {
                           onMinuteChange={(v) =>
                             updateTimeRange(i, "startMinute", v)
                           }
-                          hourOptions={TC_HOURS}
-                          minuteOptions={TC_MINUTES}
+                          hourOptions={TIME_CONDITION_HOURS}
+                          minuteOptions={TIME_CONDITION_MINUTES}
                         />
                         <span
-                          style={{ ...TIME_ROW_LABEL_STYLE, marginLeft: 4 }}
+                          style={{
+                            ...TIME_CONDITION_TIME_ROW_LABEL_STYLE,
+                            marginLeft: 4,
+                          }}
                         >
                           EndTime
                         </span>
@@ -1555,8 +1641,8 @@ const TimeCondition = () => {
                           onMinuteChange={(v) =>
                             updateTimeRange(i, "endMinute", v)
                           }
-                          hourOptions={TC_HOURS}
-                          minuteOptions={TC_MINUTES}
+                          hourOptions={TIME_CONDITION_HOURS}
+                          minuteOptions={TIME_CONDITION_MINUTES}
                         />
                         {i === form.timeRanges.length - 1 ? (
                           <button
@@ -1604,7 +1690,7 @@ const TimeCondition = () => {
 
                 <FieldRow label="Day of Week" tooltipKey="day_of_week" required>
                   <CheckGroup
-                    items={TC_DAYS_OF_WEEK}
+                    items={TIME_CONDITION_DAYS_OF_WEEK}
                     checked={form.daysOfWeek}
                     onChange={(v) => toggleCheck("daysOfWeek", v, allDayValues)}
                     cols={4}
@@ -1618,7 +1704,7 @@ const TimeCondition = () => {
               <>
                 <FieldRow label="Month" tooltipKey="month" required>
                   <CheckGroup
-                    items={TC_MONTHS}
+                    items={TIME_CONDITION_MONTHS}
                     checked={form.months}
                     onChange={(v) => toggleCheck("months", v, allMonthValues)}
                     cols={6}
@@ -1631,7 +1717,7 @@ const TimeCondition = () => {
                   required
                 >
                   <CheckGroup
-                    items={TC_DAYS_OF_MONTH.map(String)}
+                    items={TIME_CONDITION_DAYS_OF_MONTH.map(String)}
                     checked={form.daysOfMonth.map(String)}
                     onChange={(v) => {
                       if (v === "__ALL__") {
@@ -1662,16 +1748,7 @@ const TimeCondition = () => {
           </div>
         </DialogContent>
 
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            gap: 2,
-            py: "10px",
-            px: "16px",
-            borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "#f8fafc",
-          }}
-        >
+        <DialogActions style={timeConditionModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
@@ -1680,7 +1757,7 @@ const TimeCondition = () => {
           >
             {loading.save ? (
               <>
-                <CircularProgress size={14} sx={{ color: "#fff" }} />
+                <CircularProgress size={14} style={{ color: "#fff" }} />
                 Saving...
               </>
             ) : (
@@ -1691,7 +1768,7 @@ const TimeCondition = () => {
             variant="cancel"
             onClick={closeModal}
             disabled={loading.save}
-            style={pbxModalCancelBtnStyle}
+            style={timeConditionModalCancelBtnStyle}
           >
             Close
           </Btn>

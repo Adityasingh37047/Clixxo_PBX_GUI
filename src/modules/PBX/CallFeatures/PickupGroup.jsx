@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import Tooltip from "@mui/material/Tooltip";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import {Alert,
-  Button,
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
-  Checkbox, useMediaQuery } from "@mui/material";
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   createPickupGroup,
   deletePickupGroup,
@@ -18,74 +20,40 @@ import {
   listPickupGroups,
   updatePickupGroup,
 } from "../../../api/apiService";
-import { PICKUP_GROUP_ITEMS_PER_PAGE } from "../../../constants/PickupGroupConstants";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+import {
+  PICKUP_GROUP_FIELD_TOOLTIPS,
+  PICKUP_GROUP_ITEMS_PER_PAGE,
+  PICKUP_GROUP_TITLE,
+} from "../../../constants/PickupGroupConstants";
 
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+const PICKUP_GROUP_COMPACT_MQ = "(max-width: 768px)";
+
+// ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
 };
 
-const codecDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
-
-const codecDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const CodecDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={codecDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const CARD_RADIUS = 10;
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -94,9 +62,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -107,11 +76,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -119,41 +84,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return"#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -171,30 +162,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -203,53 +195,55 @@ const TH = ({ children, style: extra }) => (
     style={{
       background: "#F8FAFC",
       color: C.labelText,
-      fontWeight: 600,
-      fontSize: 12,
+      fontWeight: 700,
+      fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
-      fontFamily: "Inter, sans-serif",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
     {children}
   </th>
 );
-const tdStyle = {
+
+const pickupGroupTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
+
+const pickupGroupTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const PICKUP_GROUP_TABLE_CARD_RADIUS = 10;
+
+const pickupGroupPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const pickupGroupPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const PickupGroupBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -270,6 +264,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -322,101 +317,536 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required, tooltip }) => (
-  <div
-    style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
-  >
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 140,
-          flexShrink: 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const pickupGroupCardStyle = {
+  background: "#ffffff",
+  borderRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-const tooltipProps = {
+const pickupGroupToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
+};
+
+const pickupGroupPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const pickupGroupSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const pickupGroupCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pickupGroupPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const pickupGroupPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const pickupGroupFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const pickupGroupEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handlePickupGroupEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const pickupGroupOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const pickupGroupModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...pickupGroupOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const pickupGroupModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...pickupGroupOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const pickupGroupModalPaperSx = {
+  width: 900,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const pickupGroupModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const pickupGroupModalSectionStyle = {
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const pickupGroupModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const pickupGroupModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PICKUP_GROUP_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
 
-const PBX_MODAL_SECTION_BG = "#f5f7fa";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const formatPickupGroupTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
 
-const SectionHeading = ({
-  title,
-  isFirst = false,
+const PICKUP_GROUP_MODAL_LABEL_WIDTH = 140;
+const PICKUP_GROUP_MODAL_SECTION_BG = "#f8fafc";
+const PICKUP_GROUP_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PickupGroupFieldLabel = ({
+  tooltipKey,
+  children,
   required,
-  tooltip,
-}) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
+  style = {},
+}) => {
+  const tooltip = PICKUP_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
     >
-      <span
+      {children}
+      {required ? (
+        <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+      ) : null}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatPickupGroupTooltipTitle(tooltip)}
+      {...PICKUP_GROUP_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const PickupGroupFieldRow = ({ label, tooltipKey, required, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    {tooltipKey ? (
+      <PickupGroupFieldLabel
+        tooltipKey={tooltipKey}
+        required={required}
         style={{
-          position: "absolute",
-          top: -10,
-          left: 0,
-          background: PBX_MODAL_SECTION_BG,
-          paddingRight: 8,
-          fontSize: 14,
-          fontWeight: 600,
-          color: "#30415A",
-          cursor: tooltip ? "help" : "default",
+          width: PICKUP_GROUP_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
         }}
       >
-        {title}
-        {required && <span style={{ color: C.errorRed }}> *</span>}
-      </span>
-    </Tooltip>
+        {label}
+      </PickupGroupFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: PICKUP_GROUP_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+        ) : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
+
+const PickupGroupSectionHeading = ({
+  title,
+  isFirst = false,
+  required = false,
+  tooltipKey,
+}) => {
+  const heading = (
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: PICKUP_GROUP_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: PICKUP_GROUP_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
+      }}
+    >
+      {title}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
+    </span>
+  );
+  const tooltip = tooltipKey ? PICKUP_GROUP_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatPickupGroupTooltipTitle(tooltip)}
+          {...PICKUP_GROUP_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
+
+const PICKUP_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT = 188;
+const PICKUP_GROUP_MEMBER_CODEC_BTN_COL_WIDTH = 40;
+const PICKUP_GROUP_MEMBER_CODEC_BTN_GAP = 6;
+const PICKUP_GROUP_MEMBER_CODEC_BTN_HEIGHT =
+  (PICKUP_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT -
+    PICKUP_GROUP_MEMBER_CODEC_BTN_GAP * 3) /
+  4;
+const PICKUP_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET = 28;
+
+const pickupGroupMemberCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getPickupGroupMemberCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: PICKUP_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  height: PICKUP_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const pickupGroupMemberCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const pickupGroupMemberCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const pickupGroupMemberCodecDualListBtnStyle = {
+  width: PICKUP_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
+  height: PICKUP_GROUP_MEMBER_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const pickupGroupMemberCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: PICKUP_GROUP_MEMBER_CODEC_BTN_GAP,
+  height: PICKUP_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  width: PICKUP_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
+};
+
+const PickupGroupMemberCodecDualListBtn = ({ onClick, title, children }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={pickupGroupMemberCodecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const PickupGroupMemberCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getPickupGroupMemberCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={pickupGroupMemberCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={pickupGroupMemberCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PickupGroup = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(PICKUP_GROUP_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -728,10 +1158,29 @@ const PickupGroup = () => {
     setChosenSelected([]);
   };
 
+  const toggleAvailableMemberSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+  const toggleChosenMemberSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const availableMemberEmptyText = loading.extensions
+    ? "Loading..."
+    : "No extension";
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...pickupGroupPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={pickupGroupPageInnerStyle}>
         {message.text && (
           <Alert
             severity={
@@ -742,45 +1191,25 @@ const PickupGroup = () => {
                   : "info"
             }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={pickupGroupFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Pickup Group" />
+        <PickupGroupBreadcrumb
+          section="Call Features"
+          current={PICKUP_GROUP_TITLE}
+        />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={pickupGroupCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...pickupGroupToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -791,17 +1220,7 @@ const PickupGroup = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pickupGroupSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -821,14 +1240,8 @@ const PickupGroup = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={pickupGroupCancelBtnStyle}
               >
-                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -836,19 +1249,13 @@ const PickupGroup = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={pickupGroupPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
           <div
             style={{
               overflowX: "hidden",
@@ -892,7 +1299,7 @@ const PickupGroup = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={pickupGroupTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -934,6 +1341,9 @@ const PickupGroup = () => {
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
+                    const lastRowCellStyle = {
+                      borderBottom: isLastRow ? "none" : pickupGroupTdStyle.borderBottom,
+                    };
 
                     return (
                       <tr
@@ -953,50 +1363,42 @@ const PickupGroup = () => {
                       >
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pickupGroupTdStyle,
                             background: rowBg,
                             borderLeft: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={pickupGroupTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pickupGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pickupGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pickupGroupTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {(row.members || [])
@@ -1009,32 +1411,30 @@ const PickupGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pickupGroupTdStyle,
                             background: rowBg,
-                            borderRight: "none", 
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                           
+                            borderRight: "none",
+                            ...lastRowCellStyle,
                           }}
                         >
-                                                    <EditDocumentIcon
-                            titleAccess="Edit"
-                            onClick={() => handleOpenEditModal(row)}
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={pickupGroupEditIconStyle}
+                              onMouseEnter={(e) =>
+                                handlePickupGroupEditIconHover(e, true)
+                              }
+                              onMouseLeave={(e) =>
+                                handlePickupGroupEditIconHover(e, false)
+                              }
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1044,20 +1444,8 @@ const PickupGroup = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={pickupGroupPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -1070,17 +1458,7 @@ const PickupGroup = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={pickupGroupPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1096,194 +1474,106 @@ const PickupGroup = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { width: 900, maxWidth: "96vw", borderRadius: 2 } }}
+        PaperProps={{ sx: pickupGroupModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          {editId != null ? "Edit Pickup Group" : "Add Pickup Group"}
+        <DialogTitle style={pickupGroupModalTitleStyle}>
+          {editId != null ? `Edit ${PICKUP_GROUP_TITLE}` : `Add ${PICKUP_GROUP_TITLE}`}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={pickupGroupModalSectionStyle}>
+            <PickupGroupFieldRow label="Name" tooltipKey="name" required>
+              <TextField
+                size="small"
+                fullWidth
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                sx={pickupGroupModalTextFieldFullSx}
+              />
+            </PickupGroupFieldRow>
+
+            <PickupGroupSectionHeading
+              title="Member"
+              required
+              tooltipKey="member"
+            />
+
             <div
               style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
+                display: "grid",
+                gridTemplateColumns: `1fr ${PICKUP_GROUP_MEMBER_CODEC_BTN_COL_WIDTH}px 1fr`,
+                gap: 10,
+                width: "100%",
+                alignItems: "start",
               }}
             >
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr",
-                  gap: "16px 32px",
-                }}
-              >
-                <FieldRow label="Name" required  tooltip="User-defined name of a pickup group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
-                  <TextField
-                    size="small"
-                    fullWidth
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        padding: "6px 8px",
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  />
-                </FieldRow>
-
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                >
-                  <SectionHeading title="Member" required tooltip="Select the members to add to the pickup group. By default it is null." />
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 48px 1fr", ...(isCompact ? { gridTemplateColumns: "1fr", gap: 12 } : {}),
-                      gap: 12,
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: "#30415A",
-                          textAlign: "center",
-                          marginBottom: 8,
-                        }}
-                      >
-                        Available
-                      </div>
-                      <select
-                        multiple
-                        value={availableSelected}
-                        onChange={(e) =>
-                          setAvailableSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                        style={codecDualListSelectStyle}
-                      >
-                        {loading.extensions ? (
-                          <option disabled>Loading...</option>
-                        ) : availableList.length === 0 ? (
-                          <option disabled>No extensions</option>
-                        ) : (
-                          availableList.map((t) => (
-                            <option key={t.value} value={t.value}>
-                              {t.label}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        paddingTop: 28,
-                      }}
-                    >
-                      <CodecDualListBtn onClick={addSelectedMembers}>
-                        &gt;
-                      </CodecDualListBtn>
-                      <CodecDualListBtn onClick={addAllMembers}>
-                        &gt;&gt;
-                      </CodecDualListBtn>
-                      <CodecDualListBtn onClick={removeSelectedMembers}>
-                        &lt;
-                      </CodecDualListBtn>
-                      <CodecDualListBtn onClick={removeAllMembers}>
-                        &lt;&lt;
-                      </CodecDualListBtn>
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: "#30415A",
-                          textAlign: "center",
-                          marginBottom: 8,
-                        }}
-                      >
-                        Selected
-                      </div>
-                      <select
-                        multiple
-                        value={chosenSelected}
-                        onChange={(e) =>
-                          setChosenSelected(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (opt) => opt.value,
-                            ),
-                          )
-                        }
-                        style={codecDualListSelectStyle}
-                      >
-                        {memberExtensions.length === 0 ? (
-                          <option disabled>No selected members</option>
-                        ) : (
-                          memberExtensions.map((id) => (
-                            <option key={id} value={id}>
-                              {getExtLabel(id)}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
-                  </div>
+              <div>
+                <div style={pickupGroupMemberCodecColumnLabelStyle}>
+                  Available
                 </div>
+                <PickupGroupMemberCodecListBox
+                  items={loading.extensions ? [] : availableList}
+                  selectedIds={availableSelected}
+                  onToggle={toggleAvailableMemberSelect}
+                  emptyText={availableMemberEmptyText}
+                  getLabel={(id) => {
+                    const item = availableList.find((x) => x.value === id);
+                    return item?.label || getExtLabel(id);
+                  }}
+                />
+              </div>
+              <div>
+                <div
+                  style={{
+                    height: PICKUP_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET,
+                  }}
+                  aria-hidden="true"
+                />
+                <div style={pickupGroupMemberCodecBtnColumnStyle}>
+                  <PickupGroupMemberCodecDualListBtn
+                    onClick={addSelectedMembers}
+                  >
+                    &gt;
+                  </PickupGroupMemberCodecDualListBtn>
+                  <PickupGroupMemberCodecDualListBtn onClick={addAllMembers}>
+                    &gt;&gt;
+                  </PickupGroupMemberCodecDualListBtn>
+                  <PickupGroupMemberCodecDualListBtn
+                    onClick={removeSelectedMembers}
+                  >
+                    &lt;
+                  </PickupGroupMemberCodecDualListBtn>
+                  <PickupGroupMemberCodecDualListBtn onClick={removeAllMembers}>
+                    &lt;&lt;
+                  </PickupGroupMemberCodecDualListBtn>
+                </div>
+              </div>
+              <div>
+                <div style={pickupGroupMemberCodecColumnLabelStyle}>
+                  Selected
+                </div>
+                <PickupGroupMemberCodecListBox
+                  items={memberExtensions}
+                  selectedIds={chosenSelected}
+                  onToggle={toggleChosenMemberSelect}
+                  emptyText="No selected member"
+                  getLabel={getExtLabel}
+                />
               </div>
             </div>
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={pickupGroupModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{
-              minWidth: 100,
-              height: 36,
-              fontSize: 13,
-            }}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             {loading.save ? (
               <>
@@ -1300,7 +1590,7 @@ const PickupGroup = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={pickupGroupModalCancelBtnStyle}
           >
             Cancel
           </Btn>

@@ -3,7 +3,6 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
-  Button,
   CircularProgress,
   Checkbox,
   Dialog,
@@ -16,7 +15,14 @@ import {
   Tooltip,
   useMediaQuery,
 } from "@mui/material";
-import { CC_ROUTE_FIELD_TOOLTIPS } from "../../../constants/CCRouteConstants";
+import {
+  CC_ROUTE_ENABLE_OPTIONS,
+  CC_ROUTE_FIELD_TOOLTIPS,
+  CC_ROUTE_INTERVAL_OPTIONS,
+  CC_ROUTE_KEEP_MINUTES_TO_LABEL,
+  CC_ROUTE_RECORD_KEEP_OPTIONS,
+  CC_ROUTE_THROUGH_OPTIONS,
+} from "../../../constants/CCRouteConstants";
 import {
   createCCRoute,
   deleteCCRoute,
@@ -24,44 +30,16 @@ import {
   fetchCCRoutes,
   updateCCRoute,
 } from "../../../api/apiService";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const CC_ROUTE_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const CC_INTERVAL_OPTIONS = [
-  { value: "10", label: "10s" },
-  { value: "30", label: "30s" },
-  { value: "60", label: "1 min" },
-  { value: "120", label: "2 min" },
-  { value: "300", label: "5 min" },
-];
-const CC_INTERVAL_VALUE_SET = new Set(CC_INTERVAL_OPTIONS.map((o) => o.value));
-const getCcIntervalLabel = (value) => {
-  const found = CC_INTERVAL_OPTIONS.find((o) => o.value === String(value));
+const CC_ROUTE_INTERVAL_VALUE_SET = new Set(
+  CC_ROUTE_INTERVAL_OPTIONS.map((o) => o.value),
+);
+const getCcRouteIntervalLabel = (value) => {
+  const found = CC_ROUTE_INTERVAL_OPTIONS.find(
+    (o) => o.value === String(value),
+  );
   return found ? found.label : `${value}s`;
-};
-const THROUGH_OPTIONS = ["Auto", "From Come In"];
-const RECORD_KEEP_OPTIONS = [
-  "8 hours",
-  "16 hours",
-  "1 day",
-  "2 day",
-  "3 day",
-  "1 week",
-  "2 week",
-  "3 week",
-  "4 week",
-];
-const ENABLE_OPTIONS = ["Yes", "No"];
-const KEEP_MINUTES_TO_LABEL = {
-  480: "8 hours",
-  960: "16 hours",
-  1440: "1 day",
-  2880: "2 day",
-  4320: "3 day",
-  10080: "1 week",
-  20160: "2 week",
-  30240: "3 week",
-  40320: "4 week",
 };
 
 // ── Normalization Helpers ─────────────────────────────────────────────────────
@@ -79,7 +57,7 @@ function normalizeEnabledFromApi(value) {
 function normalizeRecordKeepTime(route) {
   if (route?.record_keep_time) return String(route.record_keep_time);
   const minutes = Number(route?.keep_minutes);
-  return KEEP_MINUTES_TO_LABEL[minutes] || "8 hours";
+  return CC_ROUTE_KEEP_MINUTES_TO_LABEL[minutes] || "8 hours";
 }
 function normalizeRoute(item) {
   const rawInterval = Number(item.interval_minutes ?? item.cc_interval_time);
@@ -89,7 +67,7 @@ function normalizeRoute(item) {
         ? rawInterval * 60
         : rawInterval
       : 10;
-  const ccIntervalTime = CC_INTERVAL_VALUE_SET.has(String(normalizedInterval))
+  const ccIntervalTime = CC_ROUTE_INTERVAL_VALUE_SET.has(String(normalizedInterval))
     ? String(normalizedInterval)
     : "10";
   return {
@@ -108,19 +86,28 @@ function normalizeRoute(item) {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
+  placeholderText: "#94a3b8",
 };
-const CARD_RADIUS = 10;
 
-// ── Local page UI (inlined from pbxSharedUi) ──
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -161,18 +148,53 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -190,18 +212,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -209,7 +245,7 @@ const Btn = ({
   );
 };
 
-const pbxModalCancelBtnStyle = {
+const ccRouteModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -218,20 +254,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const ccRoutePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const ccRoutePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const CcRouteBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -304,14 +340,14 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_LIST_TRUNCATE_THRESHOLD = 10;
-const PBX_LIST_DISPLAY_LIMIT = 6;
+const CC_ROUTE_LIST_TRUNCATE_THRESHOLD = 10;
+const CC_ROUTE_LIST_DISPLAY_LIMIT = 6;
 
-const formatPbxItemListDisplay = (
+const formatCcRouteItemListDisplay = (
   items,
   {
-    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
-    limit = PBX_LIST_DISPLAY_LIMIT,
+    threshold = CC_ROUTE_LIST_TRUNCATE_THRESHOLD,
+    limit = CC_ROUTE_LIST_DISPLAY_LIMIT,
     mapItem = (x) => String(x),
     separator = ", ",
     ellipsis = "....",
@@ -326,8 +362,8 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const CC_ROUTE_MODAL_SECTION_BG = "#f8fafc";
+const CC_ROUTE_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
 const CC_ROUTE_TOOLTIP_PROPS = {
   arrow: true,
@@ -413,18 +449,18 @@ const ThWithTooltip = ({ tooltipKey, children, style: extra }) => {
   );
 };
 
-const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+const CcRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: CC_ROUTE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: CC_ROUTE_MODAL_SECTION_HEADING_COLOR,
         cursor: tooltipKey ? "help" : undefined,
       }}
     >
@@ -455,22 +491,59 @@ const PbxModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
   );
 };
 
-const pbxDualListLabelStyle = {
+const ccRouteDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
-  color: "#3E5475",
+  color: C.labelText,
   textAlign: "center",
   marginBottom: 8,
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
+const ccRouteOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const ccRouteModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...ccRouteOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -478,37 +551,12 @@ const muiSelectInnerSx = {
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
     boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
+    fontSize: 13,
     backgroundColor: "#fff",
   },
 };
 
-const trunkModalPaperSx = {
+const ccRouteModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
@@ -519,7 +567,7 @@ const trunkModalPaperSx = {
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
 
-const trunkModalTitleStyle = {
+const ccRouteModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
   fontWeight: 600,
@@ -530,43 +578,43 @@ const trunkModalTitleStyle = {
   borderTopRightRadius: 8,
 };
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const CC_ROUTE_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const ccRouteCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: CC_ROUTE_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const ccRouteToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: CC_ROUTE_TABLE_CARD_RADIUS,
+  borderTopRightRadius: CC_ROUTE_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const ccRoutePaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: CC_ROUTE_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: CC_ROUTE_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const ccRouteSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -576,7 +624,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const ccRouteCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -584,14 +632,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const ccRoutePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const ccRoutePageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -601,7 +649,16 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const ccRouteFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const CcRoutePagination = ({
   page,
   totalPages,
   recordCount,
@@ -609,7 +666,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...ccRoutePaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -622,7 +679,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={ccRoutePageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -646,8 +703,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -662,15 +719,59 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
+const ccRouteTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const ccRouteEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleCcRouteEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const getCcRouteTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const getCcRouteRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const ccRouteModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const ccRouteModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
 };
 const FieldRow = ({
   label,
@@ -722,7 +823,7 @@ const FieldRow = ({
 
 const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading
+    <CcRouteModalSectionHeading
       title={title}
       tooltipKey={tooltipKey}
       isFirst={isFirst}
@@ -731,62 +832,168 @@ const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
   </div>
 );
 
-const ccDualListSelectStyle = {
+const CC_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
+const CC_ROUTE_CODEC_BTN_COL_WIDTH = 40;
+const CC_ROUTE_CODEC_BTN_GAP = 6;
+const CC_ROUTE_CODEC_BTN_HEIGHT =
+  (CC_ROUTE_CODEC_LIST_BOX_HEIGHT - CC_ROUTE_CODEC_BTN_GAP * 3) / 4;
+const CC_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
+
+const getCcRouteCodecListBoxStyle = (isEmpty) => ({
   width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
+  minHeight: CC_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  height: CC_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
   boxSizing: "border-box",
   overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const ccRouteCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
 };
 
-const ccDualListBtnStyle = {
-  height: 36,
+const ccRouteCodecStripStyle = (isSelected) => ({
+  display: "block",
   width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const ccRouteCodecDualListBtnStyle = {
+  width: CC_ROUTE_CODEC_BTN_COL_WIDTH,
+  height: CC_ROUTE_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
   color: "#111827",
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
   fontFamily: "inherit",
   lineHeight: 1,
   padding: 0,
   margin: 0,
   cursor: "pointer",
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   boxSizing: "border-box",
-  textAlign: "center",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
 };
 
-const ccDualListReorderBtnStyle = {
-  ...ccDualListBtnStyle,
-  fontWeight: 400,
+const ccRouteCodecDualListReorderBtnStyle = {
+  ...ccRouteCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
 };
 
-const CcDualListBtn = ({ onClick, title, children, reorder = false }) => (
+const ccRouteCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: CC_ROUTE_CODEC_BTN_GAP,
+  height: CC_ROUTE_CODEC_LIST_BOX_HEIGHT,
+  width: CC_ROUTE_CODEC_BTN_COL_WIDTH,
+};
+
+const CcRouteCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={reorder ? ccDualListReorderBtnStyle : ccDualListBtnStyle}
+    style={
+      reorder ? ccRouteCodecDualListReorderBtnStyle : ccRouteCodecDualListBtnStyle
+    }
     onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.background = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
     }}
   >
     {children}
   </button>
 );
 
+const CcRouteCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getCcRouteCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={ccRouteCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id =
+            typeof item === "string" ? item : (item.value ?? item.extension);
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={ccRouteCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
 // ── Main Component ────────────────────────────────────────────────────────────
 const CCRoutePage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(CC_ROUTE_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -955,6 +1162,18 @@ const CCRoutePage = () => {
     setChosenSelected([]);
   };
 
+  const toggleAvailableExtensionSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleChosenExtensionSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   // ── Sorting Logic ───────────────────────────────────────────────────────────
   const moveExtensionToBottom = () => {
     if (!chosenSelected.length) return;
@@ -1077,32 +1296,24 @@ const CCRoutePage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* ── Error / Success Floating Banner ── */}
+    <div style={{ ...ccRoutePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={ccRoutePageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={ccRouteFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Control" current="CC Route" />
+        <CcRouteBreadcrumb section="Call Control" current="CC Route" />
 
-        <div style={sipPcmCardStyle}>
+        <div style={ccRouteCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...ccRouteToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1117,7 +1328,7 @@ const CCRoutePage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={ccRouteSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1129,7 +1340,7 @@ const CCRoutePage = () => {
                   loading.delete || loading.fetch || selected.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={ccRouteCancelBtnStyle}
               >
                 {loading.delete && (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1141,7 +1352,7 @@ const CCRoutePage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.save || loading.fetch}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={ccRoutePrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1194,7 +1405,7 @@ const CCRoutePage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={ccRouteTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1255,11 +1466,10 @@ const CCRoutePage = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getCcRouteRowBg(isSelected, idx);
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
                     return (
                       <tr
                         key={row.id}
@@ -1276,133 +1486,69 @@ const CCRoutePage = () => {
                             e.currentTarget.style.background = rowBg;
                         }}
                       >
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleSelectRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={ccRouteTableCheckboxSx}
                           />
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
                           {realIdx + 1}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
-                          {getCcIntervalLabel(row.ccIntervalTime)}
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
+                          {getCcRouteIntervalLabel(row.ccIntervalTime)}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
                           {row.through}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
                           {row.recordKeepTime}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
-                          <span style={{}}>{row.enabled}</span>
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
+                          {row.enabled}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
+                        <td style={getCcRouteTdStyle(rowBg, lastRowCellStyle)}>
                           {row.memberExtensions?.length > 0 ? (
                             <span
                               title={
                                 row.memberExtensions.length >
-                                PBX_LIST_TRUNCATE_THRESHOLD
+                                CC_ROUTE_LIST_TRUNCATE_THRESHOLD
                                   ? row.memberExtensions
                                       .map(getExtensionLabel)
                                       .join(", ")
                                   : undefined
                               }
                             >
-                              {formatPbxItemListDisplay(row.memberExtensions, {
-                                mapItem: getExtensionLabel,
-                              })}
+                              {formatCcRouteItemListDisplay(
+                                row.memberExtensions,
+                                {
+                                  mapItem: getExtensionLabel,
+                                },
+                              )}
                             </span>
                           ) : (
                             <span style={{ color: C.mutedText }}>—</span>
                           )}
                         </td>
                         <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
+                          style={getCcRouteTdStyle(rowBg, lastRowCellStyle, {
                             textAlign: "center",
                             padding: "7px 8px",
                             borderRight: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
+                          })}
                         >
                           <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
-                            style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
+                            style={ccRouteEditIconStyle}
+                            onMouseEnter={(e) =>
+                              handleCcRouteEditIconHover(e, true)
+                            }
+                            onMouseLeave={(e) =>
+                              handleCcRouteEditIconHover(e, false)
+                            }
                           />
                         </td>
                       </tr>
@@ -1414,7 +1560,7 @@ const CCRoutePage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && (
-            <SipPcmPagination
+            <CcRoutePagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedRows.length}
@@ -1432,24 +1578,13 @@ const CCRoutePage = () => {
         onClose={handleCloseModal}
         maxWidth={false}
         sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
-        PaperProps={{ sx: trunkModalPaperSx }}
+        PaperProps={{ sx: ccRouteModalPaperSx }}
       >
-        <DialogTitle style={trunkModalTitleStyle}>
+        <DialogTitle style={ccRouteModalTitleStyle}>
           {editId != null ? "Edit CC Route" : "Add CC Route"}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              width: "100%",
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+          <div style={ccRouteModalFormStyle}>
             <div
               style={{
                 display: "grid",
@@ -1466,9 +1601,9 @@ const CCRoutePage = () => {
                   <Select
                     value={ccIntervalTime}
                     onChange={(e) => setCcIntervalTime(e.target.value)}
-                    sx={modalSelectSx}
+                    sx={ccRouteModalSelectSx}
                   >
-                    {CC_INTERVAL_OPTIONS.map((o) => (
+                    {CC_ROUTE_INTERVAL_OPTIONS.map((o) => (
                       <MenuItem
                         key={o.value}
                         value={o.value}
@@ -1488,9 +1623,9 @@ const CCRoutePage = () => {
                   <Select
                     value={recordKeepTime}
                     onChange={(e) => setRecordKeepTime(e.target.value)}
-                    sx={modalSelectSx}
+                    sx={ccRouteModalSelectSx}
                   >
-                    {RECORD_KEEP_OPTIONS.map((o) => (
+                    {CC_ROUTE_RECORD_KEEP_OPTIONS.map((o) => (
                       <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
                         {o}
                       </MenuItem>
@@ -1503,9 +1638,9 @@ const CCRoutePage = () => {
                   <Select
                     value={through}
                     onChange={(e) => setThrough(e.target.value)}
-                    sx={modalSelectSx}
+                    sx={ccRouteModalSelectSx}
                   >
-                    {THROUGH_OPTIONS.map((o) => (
+                    {CC_ROUTE_THROUGH_OPTIONS.map((o) => (
                       <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
                         {o}
                       </MenuItem>
@@ -1518,9 +1653,9 @@ const CCRoutePage = () => {
                   <Select
                     value={enabled}
                     onChange={(e) => setEnabled(e.target.value)}
-                    sx={modalSelectSx}
+                    sx={ccRouteModalSelectSx}
                   >
-                    {ENABLE_OPTIONS.map((o) => (
+                    {CC_ROUTE_ENABLE_OPTIONS.map((o) => (
                       <MenuItem key={o} value={o} sx={{ fontSize: 13 }}>
                         {o}
                       </MenuItem>
@@ -1537,136 +1672,98 @@ const CCRoutePage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
+                  gridTemplateColumns: `1fr ${CC_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${CC_ROUTE_CODEC_BTN_COL_WIDTH}px`,
+                  gap: 10,
+                  width: "100%",
+                  alignItems: "start",
                 }}
               >
                 <div>
-                  <div style={pbxDualListLabelStyle}>Available</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={availableSelected}
-                    onChange={(e) =>
-                      setAvailableSelected(
-                        Array.from(e.target.selectedOptions, (o) => o.value),
-                      )
-                    }
-                    style={ccDualListSelectStyle}
-                  >
-                    {availableList.length === 0 ? (
-                      <option disabled value="">
-                        No extensions
-                      </option>
-                    ) : (
-                      availableList.map((item) => (
-                        <option key={item.extension} value={item.extension}>
-                          {item.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <CcDualListBtn onClick={addSelectedExtensions}>
-                    &gt;
-                  </CcDualListBtn>
-                  <CcDualListBtn onClick={addAllExtensions}>
-                    &gt;&gt;
-                  </CcDualListBtn>
-                  <CcDualListBtn onClick={removeSelectedExtensions}>
-                    &lt;
-                  </CcDualListBtn>
-                  <CcDualListBtn onClick={removeAllExtensions}>
-                    &lt;&lt;
-                  </CcDualListBtn>
+                  <div style={ccRouteDualListLabelStyle}>Available</div>
+                  <CcRouteCodecListBox
+                    items={availableList}
+                    selectedIds={availableSelected}
+                    onToggle={toggleAvailableExtensionSelect}
+                    emptyText="No extensions"
+                    getLabel={(id) => {
+                      const item = availableList.find(
+                        (x) => x.extension === id,
+                      );
+                      return item?.label || getExtensionLabel(id);
+                    }}
+                  />
                 </div>
                 <div>
-                  <div style={pbxDualListLabelStyle}>Selected</div>
-                  <select
-                    multiple
-                    size={6}
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(e.target.selectedOptions, (o) => o.value),
-                      )
-                    }
-                    style={ccDualListSelectStyle}
-                  >
-                    {selectedExtensions.length === 0 ? (
-                      <option disabled value="">
-                        No selected extensions
-                      </option>
-                    ) : (
-                      selectedExtensions.map((ext) => (
-                        <option key={ext} value={ext}>
-                          {getExtensionLabel(ext)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div
+                    style={{ height: CC_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={ccRouteCodecBtnColumnStyle}>
+                    <CcRouteCodecDualListBtn onClick={addSelectedExtensions}>
+                      &gt;
+                    </CcRouteCodecDualListBtn>
+                    <CcRouteCodecDualListBtn onClick={addAllExtensions}>
+                      &gt;&gt;
+                    </CcRouteCodecDualListBtn>
+                    <CcRouteCodecDualListBtn onClick={removeSelectedExtensions}>
+                      &lt;
+                    </CcRouteCodecDualListBtn>
+                    <CcRouteCodecDualListBtn onClick={removeAllExtensions}>
+                      &lt;&lt;
+                    </CcRouteCodecDualListBtn>
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
-                  }}
-                >
-                  <CcDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveExtensionToBottom}
-                  >
-                    vv
-                  </CcDualListBtn>
-                  <CcDualListBtn
-                    reorder
-                    title="Move up"
-                    onClick={moveExtensionUp}
-                  >
-                    ^
-                  </CcDualListBtn>
-                  <CcDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveExtensionDown}
-                  >
-                    v
-                  </CcDualListBtn>
-                  <CcDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveExtensionToTop}
-                  >
-                    ^^
-                  </CcDualListBtn>
+                <div>
+                  <div style={ccRouteDualListLabelStyle}>Selected</div>
+                  <CcRouteCodecListBox
+                    items={selectedExtensions}
+                    selectedIds={chosenSelected}
+                    onToggle={toggleChosenExtensionSelect}
+                    emptyText="No selected extensions"
+                    getLabel={getExtensionLabel}
+                  />
+                </div>
+                <div>
+                  <div
+                    style={{ height: CC_ROUTE_CODEC_LIST_LABEL_OFFSET }}
+                    aria-hidden="true"
+                  />
+                  <div style={ccRouteCodecBtnColumnStyle}>
+                    <CcRouteCodecDualListBtn
+                      reorder
+                      title="Move to bottom"
+                      onClick={moveExtensionToBottom}
+                    >
+                      vv
+                    </CcRouteCodecDualListBtn>
+                    <CcRouteCodecDualListBtn
+                      reorder
+                      title="Move up"
+                      onClick={moveExtensionUp}
+                    >
+                      ^
+                    </CcRouteCodecDualListBtn>
+                    <CcRouteCodecDualListBtn
+                      reorder
+                      title="Move down"
+                      onClick={moveExtensionDown}
+                    >
+                      v
+                    </CcRouteCodecDualListBtn>
+                    <CcRouteCodecDualListBtn
+                      reorder
+                      title="Move to top"
+                      onClick={moveExtensionToTop}
+                    >
+                      ^^
+                    </CcRouteCodecDualListBtn>
+                  </div>
                 </div>
               </div>
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={ccRouteModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
@@ -1679,7 +1776,7 @@ const CCRoutePage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={ccRouteModalCancelBtnStyle}
           >
             Close
           </Btn>

@@ -1,13 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import VerticalAlignBottomIcon from "@mui/icons-material/VerticalAlignBottom";
-import VerticalAlignTopIcon from "@mui/icons-material/VerticalAlignTop";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import {Alert,
-  Button,
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -16,8 +12,10 @@ import {Alert,
   FormControl,
   MenuItem,
   Select as MuiSelect,
-  Checkbox,
-  TextField, useMediaQuery } from "@mui/material";
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   createPagingGroup,
   deletePagingGroup,
@@ -25,83 +23,41 @@ import {
   listPagingGroups,
   updatePagingGroup,
 } from "../../../api/apiService";
-// Verify this matches your actual import path
-const PAGING_ITEMS_PER_PAGE = 20;
-const PAGING_TYPE_OPTIONS = ["one-way", "two-way"];
+import {
+  PAGING_FIELD_TOOLTIPS,
+  PAGING_ITEMS_PER_PAGE,
+  PAGING_TITLE,
+  PAGING_TYPE_OPTIONS,
+} from "../../../constants/PagingConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const PAGING_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// ── Color palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBorder: "#9ca3af",
+  codecBtnBg: "#d9dde3",
 };
 
-const codecDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
-
-const codecDualListBtnStyle = {
-  height: 36,
-  width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "block",
-  boxSizing: "border-box",
-  textAlign: "center",
-};
-
-const codecDualListReorderBtnStyle = {
-  ...codecDualListBtnStyle,
-  fontWeight: 400,
-};
-
-const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
-  <button
-    type="button"
-    title={title}
-    onClick={onClick}
-    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const CARD_RADIUS = 10;
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -110,9 +66,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -123,11 +80,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -135,41 +88,67 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return"#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -187,30 +166,31 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -223,8 +203,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -235,37 +215,39 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
+const pagingTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
+
+const pagingTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const PAGING_TABLE_CARD_RADIUS = 10;
+
+const pagingPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const pagingPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const PagingBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -286,6 +268,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -338,100 +321,547 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  tooltip,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: align,
-      gap: 12,
-      minHeight: 32,
-    }}
-  >
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 150,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const pagingCardStyle = {
+  background: "#ffffff",
+  borderRadius: PAGING_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
+const pagingToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PAGING_TABLE_CARD_RADIUS,
+  borderTopRightRadius: PAGING_TABLE_CARD_RADIUS,
+};
 
-const tooltipProps = {
+const pagingPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PAGING_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: PAGING_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const pagingSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const pagingCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pagingPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const pagingPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const pagingFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const pagingEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handlePagingEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const pagingOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const pagingModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...pagingOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const pagingModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...pagingOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const pagingModalPaperSx = {
+  width: 900,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const pagingModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const pagingModalSectionStyle = {
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const pagingModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const pagingModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PAGING_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
 
-const PBX_MODAL_SECTION_BG = "#f5f7fa";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const formatPagingTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
 
-const SectionHeading = ({ title, isFirst = false, required }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+const PAGING_MODAL_LABEL_WIDTH = 140;
+const PAGING_MODAL_SECTION_BG = "#f8fafc";
+const PAGING_MODAL_SECTION_HEADING_COLOR = "#30415A";
+
+const PagingFieldLabel = ({
+  tooltipKey,
+  children,
+  required,
+  style = {},
+}) => {
+  const tooltip = PAGING_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+      {required ? (
+        <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+      ) : null}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatPagingTooltipTitle(tooltip)}
+      {...PAGING_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const PagingFieldRow = ({ label, tooltipKey, required, children }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    {tooltipKey ? (
+      <PagingFieldLabel
+        tooltipKey={tooltipKey}
+        required={required}
+        style={{
+          width: PAGING_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+      </PagingFieldLabel>
+    ) : (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          width: PAGING_MODAL_LABEL_WIDTH,
+          flexShrink: 0,
+        }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
+        ) : null}
+      </label>
+    )}
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const PagingSectionHeading = ({
+  title,
+  isFirst = false,
+  required = false,
+  tooltipKey,
+}) => {
+  const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: PAGING_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: PAGING_MODAL_SECTION_HEADING_COLOR,
+        cursor: tooltipKey ? "help" : undefined,
       }}
     >
       {title}
-      {required && <span style={{ color: C.errorRed }}> *</span>}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
     </span>
-  </div>
+  );
+  const tooltip = tooltipKey ? PAGING_FIELD_TOOLTIPS[tooltipKey] : "";
+  return (
+    <div
+      style={{
+        margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      {tooltip ? (
+        <Tooltip
+          title={formatPagingTooltipTitle(tooltip)}
+          {...PAGING_TOOLTIP_PROPS}
+        >
+          {heading}
+        </Tooltip>
+      ) : (
+        heading
+      )}
+    </div>
+  );
+};
+
+const PAGING_MEMBER_CODEC_LIST_BOX_HEIGHT = 188;
+const PAGING_MEMBER_CODEC_BTN_COL_WIDTH = 40;
+const PAGING_MEMBER_CODEC_BTN_GAP = 6;
+const PAGING_MEMBER_CODEC_BTN_HEIGHT =
+  (PAGING_MEMBER_CODEC_LIST_BOX_HEIGHT -
+    PAGING_MEMBER_CODEC_BTN_GAP * 3) /
+  4;
+const PAGING_MEMBER_CODEC_LIST_LABEL_OFFSET = 28;
+
+const pagingMemberCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getPagingMemberCodecListBoxStyle = (isEmpty) => ({
+  width: "100%",
+  minHeight: PAGING_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  height: PAGING_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const pagingMemberCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const pagingMemberCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const pagingMemberCodecDualListBtnStyle = {
+  width: PAGING_MEMBER_CODEC_BTN_COL_WIDTH,
+  height: PAGING_MEMBER_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const pagingMemberCodecDualListReorderBtnStyle = {
+  ...pagingMemberCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const pagingMemberCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: PAGING_MEMBER_CODEC_BTN_GAP,
+  height: PAGING_MEMBER_CODEC_LIST_BOX_HEIGHT,
+  width: PAGING_MEMBER_CODEC_BTN_COL_WIDTH,
+};
+
+const PagingMemberCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={
+      reorder
+        ? pagingMemberCodecDualListReorderBtnStyle
+        : pagingMemberCodecDualListBtnStyle
+    }
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
 );
+
+const PagingMemberCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getPagingMemberCodecListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={pagingMemberCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={pagingMemberCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Paging = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(PAGING_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -446,7 +876,7 @@ const Paging = () => {
   const hasLoadedExtensionsRef = useRef(false);
 
   // Search & Pagination
-  const itemsPerPage = PAGING_ITEMS_PER_PAGE || 20;
+  const itemsPerPage = PAGING_ITEMS_PER_PAGE;
   const [page, setPage] = useState(1);
 
   // Modal State
@@ -456,9 +886,9 @@ const Paging = () => {
   const [pagingType, setPagingType] = useState("one-way");
   const [callerIdNamePrefix, setCallerIdNamePrefix] = useState("");
 
-  // Dual list state (Available vs Selected)
-  const [availableExtensions, setAvailableExtensions] = useState([]); // { value, label }
-  const [memberExtensions, setMemberExtensions] = useState([]); // string[] of extension values
+  // Dual list state
+  const [availableExtensions, setAvailableExtensions] = useState([]);
+  const [memberExtensions, setMemberExtensions] = useState([]);
   const [availableSelected, setAvailableSelected] = useState([]);
   const [chosenSelected, setChosenSelected] = useState([]);
 
@@ -577,12 +1007,10 @@ const Paging = () => {
   const somePageSelected =
     pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
 
-  const handleToggleRow = (idx) => {
+  const handleToggleRow = (idx) =>
     setSelected((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
-  };
-
   const handleToggleAll = () => {
     if (!pageIndices.length) return;
     setSelected((prev) =>
@@ -607,9 +1035,7 @@ const Paging = () => {
   const handleOpenAddModal = async () => {
     resetForm();
     setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) {
-      await loadExtensions();
-    }
+    if (!hasLoadedExtensionsRef.current) await loadExtensions();
   };
 
   const handleOpenEditModal = async (row) => {
@@ -622,9 +1048,7 @@ const Paging = () => {
     setAvailableSelected([]);
     setChosenSelected([]);
     setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) {
-      await loadExtensions();
-    }
+    if (!hasLoadedExtensionsRef.current) await loadExtensions();
   };
 
   const handleCloseModal = () => {
@@ -634,10 +1058,8 @@ const Paging = () => {
   };
 
   const handleDelete = () => {
-    if (selected.length === 0) {
-      showMessage("error", "Please select at least one row to delete.");
-      return;
-    }
+    if (selected.length === 0)
+      return showMessage("error", "Please select at least one row to delete.");
     if (
       !window.confirm(
         `Are you sure you want to delete ${selected.length} records?`,
@@ -690,41 +1112,30 @@ const Paging = () => {
     setLoading((prev) => ({ ...prev, save: true }));
     (async () => {
       try {
+        const payload = {
+          name: trimmedName,
+          page_number: Number(trimmedNumber),
+          pagingMode: pagingType,
+          page_type: pagingType,
+          paging_type: pagingType,
+          cid_name_prefix: callerIdNamePrefix.trim(),
+          members: memberExtensions.map(String),
+        };
         if (editId != null) {
-          const res = await updatePagingGroup(editId, {
-            name: trimmedName,
-            page_number: Number(trimmedNumber),
-            pagingMode: pagingType,
-            page_type: pagingType,
-            paging_type: pagingType,
-            cid_name_prefix: callerIdNamePrefix.trim(),
-            members: memberExtensions.map(String),
-          });
-          if (res?.response === false) {
-            showMessage(
+          const res = await updatePagingGroup(editId, payload);
+          if (res?.response === false)
+            return showMessage(
               "error",
               res?.message || "Failed to update paging group.",
             );
-            return;
-          }
           showMessage("success", "Paging group updated successfully.");
         } else {
-          const res = await createPagingGroup({
-            name: trimmedName,
-            page_number: Number(trimmedNumber),
-            pagingMode: pagingType,
-            page_type: pagingType,
-            paging_type: pagingType,
-            cid_name_prefix: callerIdNamePrefix.trim(),
-            members: memberExtensions.map(String),
-          });
-          if (res?.response === false) {
-            showMessage(
+          const res = await createPagingGroup(payload);
+          if (res?.response === false)
+            return showMessage(
               "error",
               res?.message || "Failed to create paging group.",
             );
-            return;
-          }
           showMessage("success", "Paging group created successfully.");
         }
         await refreshPagingGroups();
@@ -775,6 +1186,17 @@ const Paging = () => {
     setChosenSelected([]);
   };
 
+  const toggleAvailableMemberSelect = (id) => {
+    setAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+  const toggleChosenMemberSelect = (id) => {
+    setChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
   const handleReorderSelected = (action) => {
     if (chosenSelected.length !== 1) {
       showMessage(
@@ -803,10 +1225,18 @@ const Paging = () => {
     });
   };
 
+  const availableMemberEmptyText = loading.extensions
+    ? "Loading..."
+    : "No extension";
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...pagingPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={pagingPageInnerStyle}>
         {message.text && (
           <Alert
             severity={
@@ -817,45 +1247,25 @@ const Paging = () => {
                   : "info"
             }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={pagingFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Paging" />
+        <PagingBreadcrumb
+          section="Call Features"
+          current={PAGING_TITLE}
+        />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={pagingCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...pagingToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -866,17 +1276,7 @@ const Paging = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pagingSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -896,12 +1296,7 @@ const Paging = () => {
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={pagingCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -910,19 +1305,13 @@ const Paging = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={pagingPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
           <div
             style={{
               overflowX: "hidden",
@@ -966,7 +1355,7 @@ const Paging = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={pagingTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -980,8 +1369,7 @@ const Paging = () => {
                       ID
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      {" "}
-                      Name{" "}
+                      Name
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       Number
@@ -1018,6 +1406,9 @@ const Paging = () => {
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
+                    const lastRowCellStyle = {
+                      borderBottom: isLastRow ? "none" : pagingTdStyle.borderBottom,
+                    };
 
                     return (
                       <tr
@@ -1037,50 +1428,42 @@ const Paging = () => {
                       >
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
                             borderLeft: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={pagingTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.name}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           <span
@@ -1102,33 +1485,27 @@ const Paging = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.type}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {row.callerIdNamePrefix || "—"}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            ...lastRowCellStyle,
                           }}
                         >
                           {(row.members || [])
@@ -1141,32 +1518,30 @@ const Paging = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...pagingTdStyle,
                             background: rowBg,
                             borderRight: "none",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          
+                            ...lastRowCellStyle,
                           }}
                         >
-                                                    <EditDocumentIcon
-                            titleAccess="Edit"
-                            onClick={() => handleOpenEditModal(row)}
+                          <div
                             style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
+                              display: "flex",
+                              justifyContent: "center",
                             }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
-                          />
+                          >
+                            <EditDocumentIcon
+                              titleAccess="Edit"
+                              onClick={() => handleOpenEditModal(row)}
+                              style={pagingEditIconStyle}
+                              onMouseEnter={(e) =>
+                                handlePagingEditIconHover(e, true)
+                              }
+                              onMouseLeave={(e) =>
+                                handlePagingEditIconHover(e, false)
+                              }
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1176,25 +1551,13 @@ const Paging = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={pagingPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.list || page <= 1}
@@ -1202,17 +1565,7 @@ const Paging = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pagingPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1228,304 +1581,206 @@ const Paging = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: 800,
-            maxWidth: "96vw",
-
-            borderRadius: 2,
-          },
-        }}
+        PaperProps={{ sx: pagingModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
-          }}
-        >
-          {editId != null ? "Edit Paging Group" : "Add Paging Group"}
+        <DialogTitle style={pagingModalTitleStyle}>
+          {editId != null ? `Edit ${PAGING_TITLE}` : `Add ${PAGING_TITLE}`}
         </DialogTitle>
 
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={pagingModalSectionStyle}>
+            <PagingSectionHeading title="General Settings" isFirst />
+
             <div
               style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: "20px 24px 16px",
+                display: "grid",
+                gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+                gap: "16px 32px",
               }}
             >
-              <SectionHeading title="General Settings" isFirst />
-
-              {/* TOP-TO-BOTTOM GRID FOR FORM FIELDS */}
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
-                  gap: "16px 32px",
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                {/* ── LEFT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <FieldRow label="Name" required tooltip="User-defined name of a paging group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
+                <PagingFieldRow label="Name" tooltipKey="name" required>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    sx={pagingModalTextFieldFullSx}
+                  />
+                </PagingFieldRow>
 
-                  <FieldRow label="Number" required tooltip="The number dialed to reach this paging group. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      type="number"
-                      value={number}
-                      onChange={(e) => setNumber(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
-                </div>
-
-                {/* ── RIGHT COLUMN ── */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 16 }}
-                >
-                  <FieldRow label="Type" required tooltip="Select the type of paging group. One-way: The paging group rings the selected extensions one by one. Two-way: The paging group rings the selected extensions one by one and the extensions can also ring back to the paging group.">
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={pagingType}
-                        onChange={(e) => setPagingType(e.target.value)}
-                        sx={{
-                          fontSize: 13,
-                          backgroundColor: "#fff",
-                          height: 32,
-                          "& .MuiSelect-select": {
-                            padding: "6px 8px",
-                            display: "flex",
-                            alignItems: "center",
-                          },
-                        }}
-                      >
-                        {PAGING_TYPE_OPTIONS.map((opt) => (
-                          <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                            {opt}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  </FieldRow>
-
-                  <FieldRow label="CallerID Name Prefix" tooltip="The prefix of a caller ID name sent when the paging group rings. By default it is null.">
-                    <TextField
-                      size="small"
-                      fullWidth
-                      value={callerIdNamePrefix}
-                      onChange={(e) => setCallerIdNamePrefix(e.target.value)}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </FieldRow>
-                </div>
+                <PagingFieldRow label="Number" tooltipKey="number" required>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    type="number"
+                    value={number}
+                    onChange={(e) => setNumber(e.target.value)}
+                    sx={pagingModalTextFieldFullSx}
+                  />
+                </PagingFieldRow>
               </div>
 
-              <SectionHeading title="Member Extensions" />
-
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 48px 1fr 48px",
-                  gap: 12,
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
               >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#3e5475",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Available
-                  </div>
-                  <select
-                    multiple
-                    value={availableSelected}
-                    onChange={(e) =>
-                      setAvailableSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={codecDualListSelectStyle}
-                  >
-                    {loading.extensions ? (
-                      <option disabled>Loading...</option>
-                    ) : availableList.length === 0 ? (
-                      <option disabled>No extensions</option>
-                    ) : (
-                      availableList.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                <PagingFieldRow label="Type" tooltipKey="type" required>
+                  <FormControl size="small" fullWidth>
+                    <MuiSelect
+                      value={pagingType}
+                      onChange={(e) => setPagingType(e.target.value)}
+                      sx={pagingModalSelectSx}
+                    >
+                      {PAGING_TYPE_OPTIONS.map((opt) => (
+                        <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </MuiSelect>
+                  </FormControl>
+                </PagingFieldRow>
+
+                <PagingFieldRow
+                  label="CallerID Name Prefix"
+                  tooltipKey="caller_id_name_prefix"
+                >
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={callerIdNamePrefix}
+                    onChange={(e) => setCallerIdNamePrefix(e.target.value)}
+                    sx={pagingModalTextFieldFullSx}
+                  />
+                </PagingFieldRow>
+              </div>
+            </div>
+
+            <PagingSectionHeading
+              title="Member Extensions"
+              required
+              tooltipKey="member"
+            />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `1fr ${PAGING_MEMBER_CODEC_BTN_COL_WIDTH}px 1fr ${PAGING_MEMBER_CODEC_BTN_COL_WIDTH}px`,
+                gap: 10,
+                width: "100%",
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <div style={pagingMemberCodecColumnLabelStyle}>
+                  Available
                 </div>
+                <PagingMemberCodecListBox
+                  items={loading.extensions ? [] : availableList}
+                  selectedIds={availableSelected}
+                  onToggle={toggleAvailableMemberSelect}
+                  emptyText={availableMemberEmptyText}
+                  getLabel={(id) => {
+                    const item = availableList.find((x) => x.value === id);
+                    return item?.label || getExtLabel(id);
+                  }}
+                />
+              </div>
+              <div>
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
+                    height: PAGING_MEMBER_CODEC_LIST_LABEL_OFFSET,
                   }}
-                >
-                  <CodecDualListBtn onClick={addSelectedMembers}>
+                  aria-hidden="true"
+                />
+                <div style={pagingMemberCodecBtnColumnStyle}>
+                  <PagingMemberCodecDualListBtn
+                    onClick={addSelectedMembers}
+                  >
                     &gt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={addAllMembers}>
+                  </PagingMemberCodecDualListBtn>
+                  <PagingMemberCodecDualListBtn onClick={addAllMembers}>
                     &gt;&gt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={removeSelectedMembers}>
+                  </PagingMemberCodecDualListBtn>
+                  <PagingMemberCodecDualListBtn
+                    onClick={removeSelectedMembers}
+                  >
                     &lt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={removeAllMembers}>
+                  </PagingMemberCodecDualListBtn>
+                  <PagingMemberCodecDualListBtn onClick={removeAllMembers}>
                     &lt;&lt;
-                  </CodecDualListBtn>
+                  </PagingMemberCodecDualListBtn>
                 </div>
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#3e5475",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    Selected
-                  </div>
-                  <select
-                    multiple
-                    value={chosenSelected}
-                    onChange={(e) =>
-                      setChosenSelected(
-                        Array.from(
-                          e.target.selectedOptions,
-                          (opt) => opt.value,
-                        ),
-                      )
-                    }
-                    style={codecDualListSelectStyle}
-                  >
-                    {memberExtensions.length === 0 ? (
-                      <option disabled>No selected members</option>
-                    ) : (
-                      memberExtensions.map((id) => (
-                        <option key={id} value={id}>
-                          {getExtLabel(id)}
-                        </option>
-                      ))
-                    )}
-                  </select>
+              </div>
+              <div>
+                <div style={pagingMemberCodecColumnLabelStyle}>
+                  Selected
                 </div>
+                <PagingMemberCodecListBox
+                  items={memberExtensions}
+                  selectedIds={chosenSelected}
+                  onToggle={toggleChosenMemberSelect}
+                  emptyText="No selected member"
+                  getLabel={getExtLabel}
+                />
+              </div>
+              <div>
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                    paddingTop: 28,
+                    height: PAGING_MEMBER_CODEC_LIST_LABEL_OFFSET,
                   }}
-                >
-                  <CodecDualListBtn
+                  aria-hidden="true"
+                />
+                <div style={pagingMemberCodecBtnColumnStyle}>
+                  <PagingMemberCodecDualListBtn
                     reorder
                     title="Move to bottom"
                     onClick={() => handleReorderSelected("bottom")}
                   >
                     vv
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
+                  </PagingMemberCodecDualListBtn>
+                  <PagingMemberCodecDualListBtn
                     reorder
                     title="Move up"
                     onClick={() => handleReorderSelected("up")}
                   >
                     ^
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
+                  </PagingMemberCodecDualListBtn>
+                  <PagingMemberCodecDualListBtn
                     reorder
                     title="Move down"
                     onClick={() => handleReorderSelected("down")}
                   >
                     v
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
+                  </PagingMemberCodecDualListBtn>
+                  <PagingMemberCodecDualListBtn
                     reorder
                     title="Move to top"
                     onClick={() => handleReorderSelected("top")}
                   >
                     ^^
-                  </CodecDualListBtn>
+                  </PagingMemberCodecDualListBtn>
                 </div>
               </div>
             </div>
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={pagingModalActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 36, fontSize: 13 }}
           >
             {loading.save ? (
               <>
-                <CircularProgress size={14} sx={{ color: "#fff", mr: 1 }} />
+                <CircularProgress size={13} sx={{ color: "#fff", mr: 1 }} />
                 Saving...
               </>
             ) : editId != null ? (
@@ -1538,7 +1793,7 @@ const Paging = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={pagingModalCancelBtnStyle}
           >
             Cancel
           </Btn>

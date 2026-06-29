@@ -6,10 +6,8 @@ import React, {
   useMemo,
 } from "react";
 import {
-  SIP_ACCOUNT_FIELDS,
-  SIP_ACCOUNT_TABLE_COLUMNS,
-  SIP_ACCOUNT_INITIAL_FORM,
-  CODEC_OPTIONS,
+  EXTENSION_INITIAL_FORM,
+  EXTENSION_CODEC_OPTIONS,
   EXTENSION_FIELD_TOOLTIPS,
 } from "../../../constants/ExtensionsConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
@@ -48,7 +46,7 @@ import {
   exportSipAccountsCsv,
   importSipAccountsCsv,
 } from "../../../api/apiService";
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const EXTENSION_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
@@ -58,12 +56,21 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#9aa3b2",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBg: "#d9dde3",
+  codecBtnBorder: "#c9d0d9",
 };
 
 const Btn = ({
@@ -106,11 +113,19 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
@@ -119,6 +134,7 @@ const Btn = ({
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
       cancel: "#a3b1c2",
       danger: "#f87171",
       outline: "#d1d9e6",
@@ -136,7 +152,7 @@ const Btn = ({
     el.style.background = activeBg;
     el.style.transform = "translateY(1px) scale(0.98)";
     el.style.boxShadow =
-      variant === "primary"
+      variant === "primary" || variant === "accent"
         ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
         : variant === "cancel"
           ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
@@ -194,7 +210,7 @@ const Btn = ({
   );
 };
 
-const pbxModalCancelBtnStyle = {
+const extensionModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -237,20 +253,76 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const pbxPageWrapStyle = {
+const extensionFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const getExtensionTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const getExtensionRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const extensionCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const extensionNoResultsRowStyle = {
+  textAlign: "center",
+  padding: "36px 0",
+  color: C.mutedText,
+  fontSize: 13,
+};
+
+const ExtensionEditIcon = ({ disabled, onClick }) => (
+  <EditDocumentIcon
+    titleAccess="Edit"
+    onClick={() => {
+      if (!disabled) onClick();
+    }}
+    style={{
+      cursor: disabled ? "not-allowed" : "pointer",
+      color: "#2563eb",
+      fontSize: 22,
+      opacity: disabled ? 0.4 : 0.7,
+      transition: "opacity 0.15s ease",
+    }}
+    onMouseEnter={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "1";
+    }}
+    onMouseLeave={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "0.7";
+    }}
+  />
+);
+
+const extensionPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const extensionPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const ExtensionBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -271,7 +343,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-const TableListLoading = () => (
+const ExtensionTableListLoading = () => (
   <div
     style={{
       display: "flex",
@@ -284,7 +356,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({
+const ExtensionTableListEmptyState = ({
   message,
   onAddNew,
   buttonLabel = "+ Add New",
@@ -323,39 +395,39 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_MODAL_TAB_BAR_STYLE = {
+const EXTENSION_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",
   background: "#ffffff",
 };
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+const EXTENSION_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const EXTENSION_MODAL_TAB_INACTIVE_COLOR = "#374151";
 
-const pbxModalTabsSx = {
+const extensionModalTabsSx = {
   minHeight: 45,
   "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    color: EXTENSION_MODAL_TAB_INACTIVE_COLOR,
     fontSize: 12,
     fontWeight: 500,
     textTransform: "none",
     minHeight: 45,
   },
   "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    color: EXTENSION_MODAL_TAB_ACTIVE_COLOR,
     fontWeight: 700,
   },
 };
 
-const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
-  <div style={PBX_MODAL_TAB_BAR_STYLE}>
+const ExtensionModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={EXTENSION_MODAL_TAB_BAR_STYLE}>
     <Tabs
       value={value}
       onChange={(_, next) => onChange(next)}
       variant={fullWidth ? "fullWidth" : "standard"}
       TabIndicatorProps={{
-        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+        style: { backgroundColor: EXTENSION_MODAL_TAB_ACTIVE_COLOR, height: 2 },
       }}
-      sx={pbxModalTabsSx}
+      sx={extensionModalTabsSx}
     >
       {tabs.map((t) => (
         <Tab key={t.id} label={t.label} value={t.id} />
@@ -364,10 +436,10 @@ const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
   </div>
 );
 
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
+const EXTENSION_MODAL_SECTION_BG = "#f8fafc";
+const EXTENSION_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
+const ExtensionModalSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
       margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
@@ -381,11 +453,11 @@ const PbxModalSectionHeading = ({ title, isFirst = false }) => (
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: EXTENSION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: EXTENSION_MODAL_SECTION_HEADING_COLOR,
       }}
     >
       {title}
@@ -401,11 +473,11 @@ const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
         position: "absolute",
         top: -10,
         left: 0,
-        background: PBX_MODAL_SECTION_BG,
+        background: EXTENSION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: PBX_MODAL_SECTION_HEADING_COLOR,
+        color: EXTENSION_MODAL_SECTION_HEADING_COLOR,
         display: "inline-flex",
         alignItems: "center",
         gap: 0,
@@ -413,7 +485,7 @@ const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
     >
       <ExtensionTooltipLabel
         tooltipKey={tooltipKey}
-        style={{ fontSize: 14, color: PBX_MODAL_SECTION_HEADING_COLOR }}
+        style={{ fontSize: 14, color: EXTENSION_MODAL_SECTION_HEADING_COLOR }}
       >
         Allow Codecs
       </ExtensionTooltipLabel>
@@ -422,17 +494,17 @@ const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
   </div>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const EXTENSION_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const extensionCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: EXTENSION_TABLE_CARD_RADIUS,
   overflow: "hidden",
   border: `1px solid ${C.cardBorder}`,
   boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const extensionToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -442,23 +514,23 @@ const sipPcmToolbarStyle = {
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: EXTENSION_TABLE_CARD_RADIUS,
+  borderTopRightRadius: EXTENSION_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const extensionPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
   borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderBottomLeftRadius: EXTENSION_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: EXTENSION_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const extensionSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -468,7 +540,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const extensionCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -476,14 +548,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const extensionPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const extensionPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -493,7 +565,7 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const ExtensionPagination = ({
   page,
   totalPages,
   recordCount,
@@ -501,7 +573,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...extensionPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -514,7 +586,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={extensionPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -528,26 +600,27 @@ const SipPcmPagination = ({
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
-const PBX_TOOLBAR_SEARCH_WIDTH = 168;
-const PBX_SEARCH_ICON_SLOT = 18;
-const PBX_SEARCH_BAR_PADDING_FIT = 16;
-const PBX_SEARCH_BAR_PADDING_DEFAULT = 20;
-const PBX_TOOLBAR_SEARCH_FOCUS_RING = `0 0 0 1px ${OUTLINED_FOCUS}`;
-const PBX_TOOLBAR_SEARCH_INPUT_FONT = {
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+const EXTENSION_TOOLBAR_SEARCH_HEIGHT = 30;
+const EXTENSION_TOOLBAR_SEARCH_WIDTH = 168;
+const EXTENSION_SEARCH_ICON_SLOT = 18;
+const EXTENSION_SEARCH_BAR_PADDING_FIT = 16;
+const EXTENSION_SEARCH_BAR_PADDING_DEFAULT = 20;
+const EXTENSION_TOOLBAR_SEARCH_FOCUS_RING = FOCUS_RING_SHADOW;
+const EXTENSION_TOOLBAR_SEARCH_INPUT_FONT = {
   fontSize: 12,
   fontFamily: "Inter, sans-serif",
   letterSpacing: "normal",
 };
 
-const PbxToolbarSearchBar = ({
+const ExtensionToolbarSearchBar = ({
   value,
   onChange,
   placeholder = "Search...",
-  width = PBX_TOOLBAR_SEARCH_WIDTH,
+  width = EXTENSION_TOOLBAR_SEARCH_WIDTH,
   fitPlaceholder = false,
 }) => {
   const wrapRef = useRef(null);
@@ -563,12 +636,12 @@ const PbxToolbarSearchBar = ({
 
   const resolvedWidth =
     fitPlaceholder && placeholderWidth != null
-      ? placeholderWidth + PBX_SEARCH_BAR_PADDING_FIT + PBX_SEARCH_ICON_SLOT
+      ? placeholderWidth + EXTENSION_SEARCH_BAR_PADDING_FIT + EXTENSION_SEARCH_ICON_SLOT
       : width;
 
   const horizontalPadding = fitPlaceholder
-    ? PBX_SEARCH_BAR_PADDING_FIT / 2
-    : PBX_SEARCH_BAR_PADDING_DEFAULT / 2;
+    ? EXTENSION_SEARCH_BAR_PADDING_FIT / 2
+    : EXTENSION_SEARCH_BAR_PADDING_DEFAULT / 2;
 
   const setDefault = () => {
     const el = wrapRef.current;
@@ -588,7 +661,7 @@ const PbxToolbarSearchBar = ({
     const el = wrapRef.current;
     if (!el) return;
     el.style.borderColor = OUTLINED_FOCUS;
-    el.style.boxShadow = PBX_TOOLBAR_SEARCH_FOCUS_RING;
+    el.style.boxShadow = EXTENSION_TOOLBAR_SEARCH_FOCUS_RING;
   };
 
   const handleMouseLeave = () => {
@@ -603,9 +676,9 @@ const PbxToolbarSearchBar = ({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        height: PBX_TOOLBAR_SEARCH_HEIGHT,
+        height: EXTENSION_TOOLBAR_SEARCH_HEIGHT,
         boxSizing: "border-box",
-        background: "#ffffff",
+        background: "#f8fafc",
         border: `1px solid ${OUTLINED_BORDER}`,
         borderRadius: 10,
         padding: `0 ${horizontalPadding}px`,
@@ -628,7 +701,7 @@ const PbxToolbarSearchBar = ({
             visibility: "hidden",
             whiteSpace: "pre",
             pointerEvents: "none",
-            ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+            ...EXTENSION_TOOLBAR_SEARCH_INPUT_FONT,
           }}
         />
       ) : null}
@@ -653,7 +726,7 @@ const PbxToolbarSearchBar = ({
           padding: 0,
           paddingRight: value ? 14 : 0,
           margin: 0,
-          ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+          ...EXTENSION_TOOLBAR_SEARCH_INPUT_FONT,
           color: C.valueText,
         }}
       />
@@ -690,31 +763,66 @@ const PbxToolbarSearchBar = ({
   );
 };
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const extensionOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
+const extensionModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": extensionOutlinedInputRootSx,
+  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiOutlinedInput-input": {
     backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const extensionModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...extensionOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -722,89 +830,78 @@ const muiSelectInnerSx = {
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
     boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
+    fontSize: 13,
     backgroundColor: "#fff",
   },
 };
 
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
-};
-
-const gatedModalFieldSx = (
+const extensionGatedModalFieldSx = (
   enabled,
-  baseSx = modalSelectSx,
+  baseSx = extensionModalSelectSx,
   enabledCursor = "pointer",
 ) => {
+  const disabledBg = "#f1f5f9";
+  const isTextFieldBase = Boolean(baseSx["& .MuiOutlinedInput-root"]);
   const outlinedRootSx = baseSx["& .MuiOutlinedInput-root"] || {};
   const outlinedInputSx = baseSx["& .MuiOutlinedInput-input"] || {};
-  const disabledBg = "#f1f5f9";
+  const selectSx = baseSx["& .MuiSelect-select"] || {};
+
+  const disabledOutlineSx = !enabled
+    ? {
+        "&:hover fieldset": { borderColor: OUTLINED_BORDER },
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: OUTLINED_BORDER,
+        },
+        "&.Mui-focused": { boxShadow: "none" },
+      }
+    : {};
+
+  if (isTextFieldBase) {
+    return {
+      ...baseSx,
+      backgroundColor: enabled ? "#fff" : disabledBg,
+      cursor: enabled ? enabledCursor : "not-allowed",
+      ...(!enabled && {
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: OUTLINED_BORDER,
+        },
+      }),
+      "& .MuiOutlinedInput-root": {
+        ...outlinedRootSx,
+        backgroundColor: enabled ? "#fff" : disabledBg,
+        cursor: enabled ? enabledCursor : "not-allowed",
+        ...disabledOutlineSx,
+      },
+      "& .MuiOutlinedInput-input, & .MuiInputBase-input": {
+        ...outlinedInputSx,
+        backgroundColor: enabled ? "#fff" : disabledBg,
+        cursor: enabled ? enabledCursor : "not-allowed",
+      },
+      "&.Mui-disabled, & .MuiOutlinedInput-root.Mui-disabled": {
+        cursor: "not-allowed",
+        backgroundColor: disabledBg,
+      },
+    };
+  }
 
   return {
     ...baseSx,
     backgroundColor: enabled ? "#fff" : disabledBg,
     cursor: enabled ? enabledCursor : "not-allowed",
-    ...(!enabled && {
-      "&:hover .MuiOutlinedInput-notchedOutline": {
-        borderColor: OUTLINED_BORDER,
-      },
-    }),
-    "& .MuiOutlinedInput-root": {
-      ...outlinedRootSx,
-      backgroundColor: enabled ? "#fff" : disabledBg,
-      cursor: enabled ? enabledCursor : "not-allowed",
-      ...(!enabled && {
-        "&:hover fieldset": { borderColor: OUTLINED_BORDER },
-      }),
-    },
-    "& .MuiOutlinedInput-input, & .MuiInputBase-input": {
-      ...outlinedInputSx,
-      backgroundColor: enabled ? "#fff" : disabledBg,
-      cursor: enabled ? enabledCursor : "not-allowed",
-    },
+    ...disabledOutlineSx,
     "& .MuiSelect-select": {
+      ...selectSx,
+      backgroundColor: enabled ? "#fff" : disabledBg,
       cursor: enabled ? enabledCursor : "not-allowed",
     },
-    "&.Mui-disabled, & .MuiOutlinedInput-root.Mui-disabled": {
+    "&.Mui-disabled": {
       cursor: "not-allowed",
       backgroundColor: disabledBg,
     },
   };
 };
 
-const pbxDualListLabelStyle = {
+const extensionDualListLabelStyle = {
   fontSize: 12,
   fontWeight: 600,
   color: "#3E5475",
@@ -812,7 +909,7 @@ const pbxDualListLabelStyle = {
   marginBottom: 8,
 };
 
-const pbxDualListSelectStyle = {
+const extensionDualListSelectStyle = {
   width: "100%",
   height: 160,
   border: `1px solid ${C.cardBorder}`,
@@ -825,7 +922,7 @@ const pbxDualListSelectStyle = {
   overflowY: "auto",
 };
 
-const pbxDualListBtnStyle = {
+const extensionDualListBtnStyle = {
   height: 36,
   width: "100%",
   border: "1px solid #6b7280",
@@ -843,14 +940,14 @@ const pbxDualListBtnStyle = {
   textAlign: "center",
 };
 
-const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
+const ExtensionDualListBtn = ({ onClick, title, children, reorder = false }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
     style={{
-      ...pbxDualListBtnStyle,
-      fontWeight: reorder ? 400 : pbxDualListBtnStyle.fontWeight,
+      ...extensionDualListBtnStyle,
+      fontWeight: reorder ? 400 : extensionDualListBtnStyle.fontWeight,
       transition:
         "background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
       userSelect: "none",
@@ -878,9 +975,248 @@ const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
   </button>
 );
 
-const MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
+// Same eased wheel scroll as Layout.jsx (FXS Media pages use the layout main scroll).
+const EXTENSION_MODAL_SCROLL_EASE = 0.1;
+const EXTENSION_MODAL_SCROLL_DELTA_SCALE = 0.75;
 
-const parseCodecList = (value) =>
+const getExtensionModalScrollParent = (el, root) => {
+  let node = el;
+  while (node && node !== root) {
+    const style = window.getComputedStyle(node);
+    const overflowY = style.overflowY;
+    const canScrollY =
+      (overflowY === "auto" || overflowY === "scroll") &&
+      node.scrollHeight > node.clientHeight;
+    if (canScrollY) return node;
+    node = node.parentElement;
+  }
+  return root;
+};
+
+const attachExtensionModalSmoothWheelScroll = (container) => {
+  if (!container) return () => {};
+
+  const state = new WeakMap();
+  const activeRafs = new Set();
+
+  const getState = (el) => {
+    if (!state.has(el)) {
+      state.set(el, {
+        target: el.scrollTop,
+        current: el.scrollTop,
+        rafId: null,
+      });
+    }
+    return state.get(el);
+  };
+
+  const clamp = (el, value) =>
+    Math.max(0, Math.min(value, el.scrollHeight - el.clientHeight));
+
+  const tick = (el) => {
+    const s = getState(el);
+    const diff = s.target - s.current;
+    if (Math.abs(diff) < 0.5) {
+      s.current = s.target;
+      el.scrollTop = s.current;
+      if (s.rafId != null) activeRafs.delete(s.rafId);
+      s.rafId = null;
+      return;
+    }
+    s.current += diff * EXTENSION_MODAL_SCROLL_EASE;
+    el.scrollTop = s.current;
+    const rafId = requestAnimationFrame(() => tick(el));
+    if (s.rafId != null) activeRafs.delete(s.rafId);
+    s.rafId = rafId;
+    activeRafs.add(rafId);
+  };
+
+  const onWheel = (e) => {
+    const scrollEl = getExtensionModalScrollParent(e.target, container);
+    const s = getState(scrollEl);
+
+    e.preventDefault();
+    s.target = clamp(
+      scrollEl,
+      s.target + e.deltaY * EXTENSION_MODAL_SCROLL_DELTA_SCALE,
+    );
+    if (!s.rafId) {
+      s.current = scrollEl.scrollTop;
+      const rafId = requestAnimationFrame(() => tick(scrollEl));
+      s.rafId = rafId;
+      activeRafs.add(rafId);
+    }
+  };
+
+  container.addEventListener("wheel", onWheel, { passive: false });
+
+  return () => {
+    container.removeEventListener("wheel", onWheel);
+    activeRafs.forEach((rafId) => cancelAnimationFrame(rafId));
+    activeRafs.clear();
+  };
+};
+
+const EXTENSION_MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
+
+// ── CODEC Priority style dual-list (matches FXS Media page) ──
+const EXTENSION_CODEC_LIST_BOX_HEIGHT = 188;
+const EXTENSION_CODEC_BTN_COL_WIDTH = 40;
+const EXTENSION_CODEC_BTN_GAP = 6;
+const EXTENSION_CODEC_BTN_HEIGHT = (EXTENSION_CODEC_LIST_BOX_HEIGHT - EXTENSION_CODEC_BTN_GAP * 3) / 4;
+const EXTENSION_CODEC_LIST_LABEL_OFFSET = 28;
+
+const getExtensionCodecListBoxStyle = (variant, isEmpty) => ({
+  width: "100%",
+  minHeight: EXTENSION_CODEC_LIST_BOX_HEIGHT,
+  height: EXTENSION_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const extensionCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const extensionCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const extensionCodecDualListBtnStyle = {
+  width: EXTENSION_CODEC_BTN_COL_WIDTH,
+  height: EXTENSION_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
+  color: "#111827",
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "inherit",
+  lineHeight: 1,
+  padding: 0,
+  margin: 0,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
+};
+
+const extensionCodecDualListReorderBtnStyle = {
+  ...extensionCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const extensionCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: EXTENSION_CODEC_BTN_GAP,
+  height: EXTENSION_CODEC_LIST_BOX_HEIGHT,
+  width: EXTENSION_CODEC_BTN_COL_WIDTH,
+};
+
+const ExtensionCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+  <button
+    type="button"
+    title={title}
+    onClick={onClick}
+    style={reorder ? extensionCodecDualListReorderBtnStyle : extensionCodecDualListBtnStyle}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = C.codecBtnBg;
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
+      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.background = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "none";
+    }}
+  >
+    {children}
+  </button>
+);
+
+const ExtensionCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+  variant = "available",
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getExtensionCodecListBoxStyle(variant, isEmpty)}>
+      {isEmpty ? (
+        <div style={extensionCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={extensionCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const parseExtensionCodecList = (value) =>
   (value || "")
     .split(",")
     .map((c) => c.trim())
@@ -939,11 +1275,11 @@ const statusStyle = (s) => {
   return { color: "#475569" };
 };
 // ── Constants ─────────────────────────────────────────────────────────────────
-const FOLLOW_ME_TIMEOUT_OPTIONS = [
+const EXTENSION_FOLLOW_ME_TIMEOUT_OPTIONS = [
   0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95,
   100,
 ];
-const FOLLOW_ME_DESTINATION_TYPES = [
+const EXTENSION_FOLLOW_ME_DESTINATION_TYPES = [
   "Call Queue",
   "CallBacks",
   "Conference Rooms",
@@ -958,12 +1294,12 @@ const FOLLOW_ME_DESTINATION_TYPES = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SipAccountPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+const ExtensionsPage = () => {
+  const isCompact = useMediaQuery(EXTENSION_COMPACT_MQ);
   const [accounts, setAccounts] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState(SIP_ACCOUNT_INITIAL_FORM);
+  const [form, setForm] = useState(EXTENSION_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
   const [loading, setLoading] = useState({
     fetch: false,
@@ -981,6 +1317,7 @@ const SipAccountPage = () => {
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = React.useRef(null);
+  const modalScrollRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
@@ -1002,6 +1339,22 @@ const SipAccountPage = () => {
       loadAccounts();
     }
   }, []);
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    let detach = () => {};
+    const frame = requestAnimationFrame(() => {
+      if (modalScrollRef.current) {
+        detach = attachExtensionModalSmoothWheelScroll(modalScrollRef.current);
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      detach();
+    };
+  }, [showModal, activeTab]);
 
   // ── Filter rows by search ──────────────────────────────────────────────────
   const filteredAccounts = searchQuery.trim()
@@ -1041,29 +1394,25 @@ const SipAccountPage = () => {
   // ── Select-all logic (mirrors CDR) ────────────────────────────────────────
   const allPageSelected =
     pagedAccounts.length > 0 &&
-    pagedAccounts.every((_, i) =>
-      selected.includes((page - 1) * itemsPerPage + i),
-    );
+    pagedAccounts.every((item) => selected.includes(String(item.extension)));
 
   const somePageSelected =
-    pagedAccounts.some((_, i) =>
-      selected.includes((page - 1) * itemsPerPage + i),
-    ) && !allPageSelected;
+    pagedAccounts.some((item) => selected.includes(String(item.extension))) &&
+    !allPageSelected;
 
   const handleToggleAll = () => {
-    const pageIdxs = pagedAccounts.map((_, i) => (page - 1) * itemsPerPage + i);
+    const pageKeys = pagedAccounts.map((item) => String(item.extension));
     if (allPageSelected) {
-      setSelected((prev) => prev.filter((id) => !pageIdxs.includes(id)));
+      setSelected((prev) => prev.filter((key) => !pageKeys.includes(key)));
     } else {
-      setSelected((prev) => Array.from(new Set([...prev, ...pageIdxs])));
+      setSelected((prev) => Array.from(new Set([...prev, ...pageKeys])));
     }
   };
 
-  const handleToggleRow = (realIdx) => {
+  const handleToggleRow = (extension) => {
+    const key = String(extension);
     setSelected((prev) =>
-      prev.includes(realIdx)
-        ? prev.filter((i) => i !== realIdx)
-        : [...prev, realIdx],
+      prev.includes(key) ? prev.filter((i) => i !== key) : [...prev, key],
     );
   };
 
@@ -1124,6 +1473,7 @@ const SipAccountPage = () => {
           return "audio_file_attachment";
         })(),
         voicemail_keep_local: boolToYesNo(item.voicemail_keep_local ?? true),
+        voicemail_voice: item.voicemail_voice || "system_default",
         cf_always_enabled: yesNoToToggle(
           item.cf_always_enabled ?? item.call_forward_always_enabled,
         ),
@@ -1312,6 +1662,7 @@ const SipAccountPage = () => {
       voicemail_password: uiData.voicemail_password || "",
       voicemail_file: voicemailFileForApi,
       voicemail_keep_local: uiData.voicemail_keep_local || "no",
+      voicemail_voice: uiData.voicemail_voice || "system_default",
       cf_always_enabled: toggleToBool(uiData.cf_always_enabled),
       cf_always_dest: uiData.cf_always_number || "",
       cf_always_time_condition: uiData.cf_always_time || "all",
@@ -1466,17 +1817,27 @@ const SipAccountPage = () => {
   };
 
   const selectedCodecList = useMemo(
-    () => parseCodecList(form.allow_codecs),
+    () => parseExtensionCodecList(form.allow_codecs),
     [form.allow_codecs],
   );
 
   const availableCodecList = useMemo(
-    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    () => EXTENSION_CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
     [selectedCodecList],
   );
 
   const getCodecLabel = (value) =>
-    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+    EXTENSION_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const toggleCodecAvailableSelect = (id) =>
+    setCodecAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const toggleCodecChosenSelect = (id) =>
+    setCodecChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const updateCodecList = (newList) => {
     const str = newList.join(",");
@@ -1502,7 +1863,7 @@ const SipAccountPage = () => {
   };
 
   const addAllCodecs = () => {
-    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    updateCodecList(EXTENSION_CODEC_OPTIONS.map((c) => c.value));
     setCodecAvailableSelected([]);
   };
 
@@ -1633,7 +1994,7 @@ const SipAccountPage = () => {
     setForm(
       row
         ? { ...row, allow_codecs: row.allow_codecs || "ulaw,alaw" }
-        : { ...SIP_ACCOUNT_INITIAL_FORM },
+        : { ...EXTENSION_INITIAL_FORM },
     );
     setEditIndex(row ? idx : null);
     setFormMode("single");
@@ -1644,7 +2005,7 @@ const SipAccountPage = () => {
   const openBulkModal = () => {
     setCodecAvailableSelected([]);
     setCodecChosenSelected([]);
-    setForm({ ...SIP_ACCOUNT_INITIAL_FORM });
+    setForm({ ...EXTENSION_INITIAL_FORM });
     setEditIndex(null);
     setBulkForm({
       startExtension: "",
@@ -1883,9 +2244,15 @@ const SipAccountPage = () => {
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       const results = await Promise.allSettled(
-        selected.map((idx) =>
-          deleteSipAccount(accounts[idx].extension, accounts[idx].context),
-        ),
+        selected.map((extension) => {
+          const account = accounts.find(
+            (item) => String(item.extension) === String(extension),
+          );
+          if (!account) {
+            return Promise.reject(new Error(`Extension ${extension} not found`));
+          }
+          return deleteSipAccount(account.extension, account.context);
+        }),
       );
       const ok = results.filter(
         (r) => r.status === "fulfilled" && r.value.response,
@@ -1925,7 +2292,7 @@ const SipAccountPage = () => {
           "success",
           `Import complete — Created: ${res.created_count ?? 0}, Skipped: ${(res.skipped_validation_rows ?? 0) + (res.skipped_existing ?? 0)}`,
         );
-        await loadAccounts(true);
+        await loadAccounts();
         setShowImportModal(false);
         setImportFile(null);
       } else {
@@ -1955,33 +2322,40 @@ const SipAccountPage = () => {
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
+  const codecTransferActions = [
+    { onClick: addSelectedCodecs, title: "Add selected", label: ">" },
+    { onClick: addAllCodecs, title: "Add all", label: ">>" },
+    { onClick: removeSelectedCodecs, title: "Remove selected", label: "<" },
+    { onClick: removeAllCodecs, title: "Remove all", label: "<<" },
+  ];
+
+  const codecReorderActions = [
+    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
+    { onClick: moveCodecUp, title: "Move up", label: "^" },
+    { onClick: moveCodecDown, title: "Move down", label: "v" },
+    { onClick: moveCodecToBottom, title: "Move to bottom", label: "vv" },
+  ];
+
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div style={{ ...extensionPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={extensionPageInnerStyle}>
         {/* ── Error / success banner ── */}
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={extensionFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Extensions" current="Extensions" />
+        <ExtensionBreadcrumb section="Extensions" current="Extensions" />
 
-        <div style={sipPcmCardStyle}>
+        <div style={extensionCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...extensionToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1997,7 +2371,7 @@ const SipAccountPage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={extensionSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -2012,11 +2386,12 @@ const SipAccountPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <PbxToolbarSearchBar
+              <ExtensionToolbarSearchBar
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setPage(1);
+                  setSelected([]);
                 }}
                 placeholder="Search extension, context, status..."
                 fitPlaceholder
@@ -2026,7 +2401,7 @@ const SipAccountPage = () => {
                 onClick={handleDelete}
                 disabled={loading.delete || !selected.length}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={extensionCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -2042,7 +2417,7 @@ const SipAccountPage = () => {
                 }}
                 disabled={loading.fetch}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={extensionCancelBtnStyle}
               >
                 ⬇ Import
               </Btn>
@@ -2051,7 +2426,7 @@ const SipAccountPage = () => {
                 onClick={handleExport}
                 disabled={loading.fetch}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={extensionCancelBtnStyle}
               >
                 ⬆ Export
               </Btn>
@@ -2059,7 +2434,7 @@ const SipAccountPage = () => {
                 onClick={openBulkModal}
                 disabled={loading.fetch || loading.save}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={extensionCancelBtnStyle}
               >
                 + Bulk Add
               </Btn>
@@ -2068,7 +2443,7 @@ const SipAccountPage = () => {
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={extensionPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -2076,9 +2451,9 @@ const SipAccountPage = () => {
           </div>
 
           {isInitialLoad ? (
-            <TableListLoading />
+            <ExtensionTableListLoading />
           ) : accounts.length === 0 && !searchQuery.trim() ? (
-            <TableListEmptyState
+            <ExtensionTableListEmptyState
               message="No extensions found."
               onAddNew={() => handleOpenModal()}
             />
@@ -2109,9 +2484,6 @@ const SipAccountPage = () => {
                           width: 40,
                           padding: 0,
                           borderLeft: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
                         }}
                       >
                         <Checkbox
@@ -2122,73 +2494,33 @@ const SipAccountPage = () => {
                           sx={extensionTableCheckboxSx}
                         />
                       </TH>
-                      <TH
-                        style={{
-                          width: 36,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        ID
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Extension
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Context
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Codecs
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Password
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Status
-                      </TH>
-                      <TH
-                        style={{
-                          width: 70,
-                          borderRight: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        Modify
-                      </TH>
+                      <TH style={{ width: 36 }}>ID</TH>
+                      <TH>Extension</TH>
+                      <TH>Context</TH>
+                      <TH>Codecs</TH>
+                      <TH>Password</TH>
+                      <TH>Status</TH>
+                      <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
                     </tr>
                   </thead>
                   <tbody>
                     {pagedAccounts.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={8}
-                          style={{
-                            textAlign: "center",
-                            padding: "36px 0",
-                            color: C.mutedText,
-                            fontSize: 13,
-                          }}
-                        >
+                        <td colSpan={8} style={extensionNoResultsRowStyle}>
                           {`No results for "${searchQuery}"`}
                         </td>
                       </tr>
                     ) : (
                       pagedAccounts.map((item, idx) => {
                         const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selected.includes(realIdx);
-                        const rowBg = isSelected
-                          ? "#eff6ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
+                        const isSelected = selected.includes(String(item.extension));
+                        const rowBg = getExtensionRowBg(isSelected, idx);
                         const ss = statusStyle(item.status);
                         const isLastRow = idx === pagedAccounts.length - 1;
                         const lastRowCellStyle = isLastRow
                           ? { borderBottom: "none" }
                           : {};
+                        const dataCellStyle = { fontWeight: 400 };
 
                         return (
                           <tr
@@ -2206,101 +2538,74 @@ const SipAccountPage = () => {
                                 e.currentTarget.style.background = rowBg;
                             }}
                           >
-                            {/* Checkbox */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
+                              style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                                 width: 36,
                                 borderLeft: "none",
-                                ...lastRowCellStyle,
-                              }}
+                              })}
                             >
                               <Checkbox
                                 size="small"
                                 checked={isSelected}
-                                onChange={() => handleToggleRow(realIdx)}
+                                onChange={() => handleToggleRow(item.extension)}
                                 disabled={loading.delete}
                                 sx={extensionTableCheckboxSx}
                               />
                             </td>
-
-                            {/* Row number */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                fontWeight: 400,
-                                ...lastRowCellStyle,
-                              }}
+                              style={getExtensionTdStyle(
+                                rowBg,
+                                lastRowCellStyle,
+                                dataCellStyle,
+                              )}
                             >
                               {realIdx + 1}
                             </td>
-
-                            {/* Extension */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                fontWeight: 400,
-                                ...lastRowCellStyle,
-                              }}
+                              style={getExtensionTdStyle(
+                                rowBg,
+                                lastRowCellStyle,
+                                dataCellStyle,
+                              )}
                             >
                               {item.extension || (
                                 <span style={{ color: C.mutedText }}>—</span>
                               )}
                             </td>
-
-                            {/* Context */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                fontWeight: 400,
-                                ...lastRowCellStyle,
-                              }}
+                              style={getExtensionTdStyle(
+                                rowBg,
+                                lastRowCellStyle,
+                                dataCellStyle,
+                              )}
                             >
                               {item.context || (
                                 <span style={{ color: C.mutedText }}>—</span>
                               )}
                             </td>
-
-                            {/* Codecs */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                fontWeight: 400,
-                                ...lastRowCellStyle,
-                              }}
+                              style={getExtensionTdStyle(
+                                rowBg,
+                                lastRowCellStyle,
+                                dataCellStyle,
+                              )}
                             >
                               {item.allow_codecs || (
                                 <span style={{ color: C.mutedText }}>—</span>
                               )}
                             </td>
-
-                            {/* Password (masked) */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                fontWeight: 400,
-                                ...lastRowCellStyle,
-                              }}
+                              style={getExtensionTdStyle(
+                                rowBg,
+                                lastRowCellStyle,
+                                dataCellStyle,
+                              )}
                             >
                               {"•".repeat(
                                 Math.min(item.password?.length || 0, 10),
                               )}
                             </td>
-
-                            {/* Status pill */}
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
+                            <td style={getExtensionTdStyle(rowBg, lastRowCellStyle)}>
                               {item.status ? (
                                 <Pill
                                   text={item.status}
@@ -2311,15 +2616,10 @@ const SipAccountPage = () => {
                                 <span style={{ color: C.mutedText }}>—</span>
                               )}
                             </td>
-
-                            {/* Edit */}
                             <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
+                              style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                                 borderRight: "none",
-                                ...lastRowCellStyle,
-                              }}
+                              })}
                             >
                               <div
                                 style={{
@@ -2327,29 +2627,9 @@ const SipAccountPage = () => {
                                   justifyContent: "center",
                                 }}
                               >
-                                <EditDocumentIcon
-                                  titleAccess="Edit"
-                                  onClick={() => {
-                                    if (!loading.delete)
-                                      handleOpenModal(item, realIdx);
-                                  }}
-                                  style={{
-                                    cursor: loading.delete
-                                      ? "not-allowed"
-                                      : "pointer",
-                                    color: "#2563eb",
-                                    fontSize: 22,
-                                    opacity: loading.delete ? 0.4 : 0.7,
-                                    transition: "opacity 0.15s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!loading.delete)
-                                      e.currentTarget.style.opacity = "1";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!loading.delete)
-                                      e.currentTarget.style.opacity = "0.7";
-                                  }}
+                                <ExtensionEditIcon
+                                  disabled={loading.delete}
+                                  onClick={() => handleOpenModal(item, realIdx)}
                                 />
                               </div>
                             </td>
@@ -2362,7 +2642,7 @@ const SipAccountPage = () => {
               </div>
 
               {filteredAccounts.length > 0 && (
-                <SipPcmPagination
+                <ExtensionPagination
                   page={page}
                   totalPages={totalPages}
                   recordCount={pagedAccounts.length}
@@ -2494,7 +2774,7 @@ const SipAccountPage = () => {
             }}
             disabled={importLoading}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={extensionModalCancelBtnStyle}
           >
             Cancel
           </Btn>
@@ -2549,7 +2829,7 @@ const SipAccountPage = () => {
               ? "Edit Extension"
               : "Add Extension"}
         </DialogTitle>
-        <PbxModalTabs
+        <ExtensionModalTabs
           value={activeTab}
           onChange={setActiveTab}
           tabs={[
@@ -2559,7 +2839,16 @@ const SipAccountPage = () => {
           ]}
         />
 
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent
+          ref={modalScrollRef}
+          className="app-main-scroll"
+          style={{ padding: "24px", backgroundColor: "#ffffff" }}
+          sx={{
+            maxHeight: "calc(100vh - 180px)",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
           {/* Tab content container matching PcmPstnPage styling */}
           <div
             style={{
@@ -2610,15 +2899,7 @@ const SipAccountPage = () => {
                           error={!!validationErrors.extension}
                           placeholder="e.g. 1001"
                           disabled={editIndex !== null}
-                          inputProps={{
-                            style: {
-                              fontSize: 13,
-                              height: 32,
-                              padding: "0 8px",
-                              boxSizing: "border-box",
-                            },
-                          }}
-                          sx={modalTextFieldSx}
+                          sx={extensionModalTextFieldSx}
                         />
                         {validationErrors.extension && (
                           <ErrMsg>{validationErrors.extension}</ErrMsg>
@@ -2639,15 +2920,7 @@ const SipAccountPage = () => {
                             size="small"
                             fullWidth
                             variant="outlined"
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                height: 32,
-                                padding: "0 8px",
-                                boxSizing: "border-box",
-                              },
-                            }}
-                            sx={modalTextFieldSx}
+                            sx={extensionModalTextFieldSx}
                           />
                         </FieldRow>
                         <FieldRow label="Create Number:">
@@ -2663,15 +2936,7 @@ const SipAccountPage = () => {
                             size="small"
                             fullWidth
                             variant="outlined"
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                height: 32,
-                                padding: "0 8px",
-                                boxSizing: "border-box",
-                              },
-                            }}
-                            sx={modalTextFieldSx}
+                            sx={extensionModalTextFieldSx}
                           />
                         </FieldRow>
                         <FieldRow label="Reg Password:" tooltipKey="password">
@@ -2691,7 +2956,7 @@ const SipAccountPage = () => {
                                     passwordMode: e.target.value,
                                   }))
                                 }
-                                sx={modalSelectSx}
+                                sx={extensionModalSelectSx}
                               >
                                 <MenuItem value="random">Random</MenuItem>
                                 <MenuItem value="fixed">Fixed</MenuItem>
@@ -2714,15 +2979,7 @@ const SipAccountPage = () => {
                                 fullWidth
                                 variant="outlined"
                                 placeholder="Fixed password"
-                                inputProps={{
-                                  style: {
-                                    fontSize: 13,
-                                    height: 32,
-                                    padding: "0 8px",
-                                    boxSizing: "border-box",
-                                  },
-                                }}
-                                sx={modalTextFieldSx}
+                                sx={extensionModalTextFieldSx}
                               />
                             )}
                             {bulkForm.passwordMode === "prefix" && (
@@ -2739,15 +2996,7 @@ const SipAccountPage = () => {
                                 fullWidth
                                 variant="outlined"
                                 placeholder="e.g. pw_"
-                                inputProps={{
-                                  style: {
-                                    fontSize: 13,
-                                    height: 32,
-                                    padding: "0 8px",
-                                    boxSizing: "border-box",
-                                  },
-                                }}
-                                sx={modalTextFieldSx}
+                                sx={extensionModalTextFieldSx}
                               />
                             )}
                           </div>
@@ -2767,7 +3016,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("context", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="" disabled>
                             <em>Select Context</em>
@@ -2800,15 +3049,7 @@ const SipAccountPage = () => {
                           variant="outlined"
                           error={!!validationErrors.password}
                           placeholder="Enter password"
-                          inputProps={{
-                            style: {
-                              fontSize: 13,
-                              height: 32,
-                              padding: "0 8px",
-                              boxSizing: "border-box",
-                            },
-                          }}
-                          sx={modalTextFieldSx}
+                          sx={extensionModalTextFieldSx}
                           InputProps={{
                             endAdornment: (
                               <InputAdornment position="end">
@@ -2847,15 +3088,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
 
@@ -2866,7 +3099,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("transport", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="udp">udp</MenuItem>
                           <MenuItem value="tcp">tcp</MenuItem>
@@ -2885,126 +3118,72 @@ const SipAccountPage = () => {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 48px 1fr 48px",
-                        gap: 12,
+                        gridTemplateColumns: `1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px 1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px`,
+                        gap: 10,
                         width: "100%",
+                        alignItems: "start",
                       }}
                     >
                       <div>
-                        <div style={pbxDualListLabelStyle}>Available</div>
-                        <select
-                          multiple
-                          size={6}
-                          value={codecAvailableSelected}
-                          onChange={(e) =>
-                            setCodecAvailableSelected(
-                              Array.from(
-                                e.target.selectedOptions,
-                                (opt) => opt.value,
-                              ),
-                            )
-                          }
-                          style={pbxDualListSelectStyle}
-                        >
-                          {availableCodecList.length === 0 ? (
-                            <option disabled value="">
-                              No codecs
-                            </option>
-                          ) : (
-                            availableCodecList.map((c) => (
-                              <option key={c.value} value={c.value}>
-                                {c.label}
-                              </option>
-                            ))
-                          )}
-                        </select>
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                          paddingTop: MONITOR_DUAL_LIST_LABEL_OFFSET,
-                        }}
-                      >
-                        <PbxDualListBtn onClick={addSelectedCodecs}>
-                          &gt;
-                        </PbxDualListBtn>
-                        <PbxDualListBtn onClick={addAllCodecs}>
-                          &gt;&gt;
-                        </PbxDualListBtn>
-                        <PbxDualListBtn onClick={removeSelectedCodecs}>
-                          &lt;
-                        </PbxDualListBtn>
-                        <PbxDualListBtn onClick={removeAllCodecs}>
-                          &lt;&lt;
-                        </PbxDualListBtn>
+                        <div style={extensionCodecColumnLabelStyle}>Available</div>
+                        <ExtensionCodecListBox
+                          variant="available"
+                          items={availableCodecList}
+                          selectedIds={codecAvailableSelected}
+                          onToggle={toggleCodecAvailableSelect}
+                          emptyText="Available codecs"
+                          getLabel={(id) => getCodecLabel(id)}
+                        />
                       </div>
                       <div>
-                        <div style={pbxDualListLabelStyle}>Selected</div>
-                        <select
-                          multiple
-                          size={6}
-                          value={codecChosenSelected}
-                          onChange={(e) =>
-                            setCodecChosenSelected(
-                              Array.from(
-                                e.target.selectedOptions,
-                                (opt) => opt.value,
-                              ),
-                            )
-                          }
-                          style={pbxDualListSelectStyle}
-                        >
-                          {selectedCodecList.length === 0 ? (
-                            <option disabled value="">
-                              No selected codecs
-                            </option>
-                          ) : (
-                            selectedCodecList.map((id) => (
-                              <option key={id} value={id}>
-                                {getCodecLabel(id)}
-                              </option>
-                            ))
+                        <div
+                          style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
+                          aria-hidden="true"
+                        />
+                        <div style={extensionCodecBtnColumnStyle}>
+                          {codecTransferActions.map(
+                            ({ onClick, title, label }) => (
+                              <ExtensionCodecDualListBtn
+                                key={title}
+                                onClick={onClick}
+                                title={title}
+                              >
+                                {label}
+                              </ExtensionCodecDualListBtn>
+                            ),
                           )}
-                        </select>
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                          paddingTop: MONITOR_DUAL_LIST_LABEL_OFFSET,
-                        }}
-                      >
-                        <PbxDualListBtn
-                          reorder
-                          title="Move to bottom"
-                          onClick={moveCodecToBottom}
-                        >
-                          vv
-                        </PbxDualListBtn>
-                        <PbxDualListBtn
-                          reorder
-                          title="Move up"
-                          onClick={moveCodecUp}
-                        >
-                          ^
-                        </PbxDualListBtn>
-                        <PbxDualListBtn
-                          reorder
-                          title="Move down"
-                          onClick={moveCodecDown}
-                        >
-                          v
-                        </PbxDualListBtn>
-                        <PbxDualListBtn
-                          reorder
-                          title="Move to top"
-                          onClick={moveCodecToTop}
-                        >
-                          ^^
-                        </PbxDualListBtn>
+                      <div>
+                        <div style={extensionCodecColumnLabelStyle}>Selected</div>
+                        <ExtensionCodecListBox
+                          variant="selected"
+                          items={selectedCodecList}
+                          selectedIds={codecChosenSelected}
+                          onToggle={toggleCodecChosenSelect}
+                          emptyText="No selected codecs"
+                          getLabel={(id) => getCodecLabel(id)}
+                        />
+                      </div>
+                      <div>
+                        <div
+                          style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
+                          aria-hidden="true"
+                        />
+                        <div style={extensionCodecBtnColumnStyle}>
+                          {codecReorderActions.map(
+                            ({ onClick, title, label }) => (
+                              <ExtensionCodecDualListBtn
+                                key={title}
+                                reorder
+                                title={title}
+                                onClick={onClick}
+                              >
+                                {label}
+                              </ExtensionCodecDualListBtn>
+                            ),
+                          )}
+                        </div>
                       </div>
                     </div>
                     {validationErrors.allow_codecs && (
@@ -3032,15 +3211,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="User Password:" tooltipKey="user_password">
@@ -3053,15 +3224,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Email:" tooltipKey="email">
@@ -3072,15 +3235,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Mobile Number:" tooltipKey="mobile_number">
@@ -3094,15 +3249,7 @@ const SipAccountPage = () => {
                         fullWidth
                         variant="outlined"
                         placeholder="+91XXXXXXXXXX"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                   </div>
@@ -3140,7 +3287,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_enabled", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3157,7 +3304,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_keep_local", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3174,7 +3321,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_file", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="audio_file_attachment">
                             Audio File Attachment
@@ -3198,15 +3345,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="Select Voice:" tooltipKey="select_voice">
@@ -3216,7 +3355,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("voicemail_voice", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="system_default">
                             System Default
@@ -3250,7 +3389,7 @@ const SipAccountPage = () => {
                     const cfRuleEnabled =
                       (form[`cf_${rule.key}_enabled`] || "disabled") ===
                       "enabled";
-                    const cfFieldSx = gatedModalFieldSx(cfRuleEnabled);
+                    const cfFieldSx = extensionGatedModalFieldSx(cfRuleEnabled);
 
                     return (
                       <div
@@ -3426,7 +3565,7 @@ const SipAccountPage = () => {
                         onChange={(e) =>
                           handleChange("follow_me_time", e.target.value)
                         }
-                        sx={gatedModalFieldSx(
+                        sx={extensionGatedModalFieldSx(
                           form.follow_me_enabled === "enabled",
                         )}
                       >
@@ -3507,7 +3646,7 @@ const SipAccountPage = () => {
                                   e.target.value,
                                 )
                               }
-                              sx={modalSelectSx}
+                              sx={extensionModalSelectSx}
                             >
                               <MenuItem value="">
                                 <em>Select extension</em>
@@ -3529,9 +3668,9 @@ const SipAccountPage = () => {
                                   Number(e.target.value),
                                 )
                               }
-                              sx={modalSelectSx}
+                              sx={extensionModalSelectSx}
                             >
-                              {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
+                              {EXTENSION_FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                                 <MenuItem key={v} value={v}>
                                   {v}
                                 </MenuItem>
@@ -3548,7 +3687,7 @@ const SipAccountPage = () => {
                                   e.target.value,
                                 )
                               }
-                              sx={modalSelectSx}
+                              sx={extensionModalSelectSx}
                             >
                               <MenuItem value="confirm">Confirm</MenuItem>
                               <MenuItem value="unconfirm">UnConfirm</MenuItem>
@@ -3583,12 +3722,12 @@ const SipAccountPage = () => {
                                 e.target.value,
                               )
                             }
-                            sx={modalSelectSx}
+                            sx={extensionModalSelectSx}
                           >
                             <MenuItem value="">
                               <em>Select destination</em>
                             </MenuItem>
-                            {FOLLOW_ME_DESTINATION_TYPES.map((l) => (
+                            {EXTENSION_FOLLOW_ME_DESTINATION_TYPES.map((l) => (
                               <MenuItem key={l} value={l}>
                                 {l}
                               </MenuItem>
@@ -3663,7 +3802,7 @@ const SipAccountPage = () => {
                         onChange={(e) =>
                           handleChange("dnd_time", e.target.value)
                         }
-                        sx={gatedModalFieldSx(form.dnd_enabled === "enabled")}
+                        sx={extensionGatedModalFieldSx(form.dnd_enabled === "enabled")}
                       >
                         <MenuItem value="all">All</MenuItem>
                         <MenuItem value="work_time">Work Time</MenuItem>
@@ -3728,7 +3867,7 @@ const SipAccountPage = () => {
                             onChange={(e) =>
                               handleDndNumberChange(idx, e.target.value)
                             }
-                            sx={modalSelectSx}
+                            sx={extensionModalSelectSx}
                           >
                             <MenuItem value="">
                               <em>Select extension</em>
@@ -3770,7 +3909,7 @@ const SipAccountPage = () => {
                               e.target.value,
                             )
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3788,17 +3927,9 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={gatedModalFieldSx(
+                        sx={extensionGatedModalFieldSx(
                           form.enable_mobility_extension === "yes",
-                          modalTextFieldSx,
+                          extensionModalTextFieldSx,
                           "text",
                         )}
                       />
@@ -3814,7 +3945,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("ring_simultaneously", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -3836,11 +3967,11 @@ const SipAccountPage = () => {
                               Number(e.target.value),
                             )
                           }
-                          sx={gatedModalFieldSx(
+                          sx={extensionGatedModalFieldSx(
                             form.ring_simultaneously === "yes",
                           )}
                         >
-                          {FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
+                          {EXTENSION_FOLLOW_ME_TIMEOUT_OPTIONS.map((v) => (
                             <MenuItem key={v} value={v}>
                               {v}
                             </MenuItem>
@@ -3905,7 +4036,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("secretary_extension", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="">
                             <em>Select extension</em>
@@ -3941,7 +4072,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("monitor_allow", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable_all">Enable All</MenuItem>
@@ -3956,7 +4087,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("monitor_mode", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="none">None</MenuItem>
                           <MenuItem value="all">All</MenuItem>
@@ -3968,7 +4099,7 @@ const SipAccountPage = () => {
                     </FieldRow>
                   </div>
                   {form.monitor_allow === "extensions" && (
-                    <MonitorDualListbox
+                    <ExtensionMonitorDualListbox
                       available={extensionOptions.filter(
                         (e) =>
                           !(form.monitor_allowed_extensions || []).includes(e),
@@ -4010,7 +4141,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("enable_srtp", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="no">No</MenuItem>
                           <MenuItem value="yes">Yes</MenuItem>
@@ -4027,7 +4158,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("sip_bypass_media", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="proxy_media">Proxy Media</MenuItem>
                           <MenuItem value="bypass_media">Bypass Media</MenuItem>
@@ -4060,15 +4191,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow
@@ -4084,15 +4207,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow
@@ -4105,7 +4220,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("outbound_restriction", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4127,7 +4242,7 @@ const SipAccountPage = () => {
                               e.target.value,
                             )
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="no_call">No Call</MenuItem>
                           <MenuItem value="internal_call">
@@ -4153,7 +4268,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("extension_trunk", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4192,7 +4307,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("dynamic_lock_pin", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="default">Default</MenuItem>
                           {form.dynamic_lock_pin === "user_password" && (
@@ -4210,7 +4325,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("diversion", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
                           <MenuItem value="no">No</MenuItem>
@@ -4227,7 +4342,7 @@ const SipAccountPage = () => {
                           onChange={(e) =>
                             handleChange("call_prohibition", e.target.value)
                           }
-                          sx={modalSelectSx}
+                          sx={extensionModalSelectSx}
                         >
                           <MenuItem value="disable">Disable</MenuItem>
                           <MenuItem value="enable">Enable</MenuItem>
@@ -4257,15 +4372,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                     <FieldRow label="TX Volume:" tooltipKey="tx_volume">
@@ -4278,15 +4385,7 @@ const SipAccountPage = () => {
                         size="small"
                         fullWidth
                         variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        sx={extensionModalTextFieldSx}
                       />
                     </FieldRow>
                   </div>
@@ -4320,7 +4419,7 @@ const SipAccountPage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={extensionModalCancelBtnStyle}
           >
             Close
           </Btn>
@@ -4331,8 +4430,8 @@ const SipAccountPage = () => {
 };
 
 // ── Small helper components (inline, no extra file needed) ────────────────────
-const MonitorDualListbox = ({ available, selected, onChange }) => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+const ExtensionMonitorDualListbox = ({ available, selected, onChange }) => {
+  const isCompact = useMediaQuery(EXTENSION_COMPACT_MQ);
   const [leftSel, setLeftSel] = React.useState([]);
   const [rightSel, setRightSel] = React.useState([]);
 
@@ -4367,14 +4466,14 @@ const MonitorDualListbox = ({ available, selected, onChange }) => {
       }}
     >
       <div>
-        <div style={pbxDualListLabelStyle}>Available</div>
+        <div style={extensionDualListLabelStyle}>Available</div>
         <select
           multiple
           value={leftSel}
           onChange={(e) =>
             setLeftSel(Array.from(e.target.selectedOptions, (o) => o.value))
           }
-          style={pbxDualListSelectStyle}
+          style={extensionDualListSelectStyle}
         >
           {available.length === 0 ? (
             <option disabled>No extensions available</option>
@@ -4393,26 +4492,26 @@ const MonitorDualListbox = ({ available, selected, onChange }) => {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          height: pbxDualListSelectStyle.height,
-          paddingTop: MONITOR_DUAL_LIST_LABEL_OFFSET,
+          height: extensionDualListSelectStyle.height,
+          paddingTop: EXTENSION_MONITOR_DUAL_LIST_LABEL_OFFSET,
           boxSizing: "content-box",
         }}
       >
-        <PbxDualListBtn onClick={addSelected}>&gt;</PbxDualListBtn>
-        <PbxDualListBtn onClick={addAll}>&gt;&gt;</PbxDualListBtn>
-        <PbxDualListBtn onClick={removeSelected}>&lt;</PbxDualListBtn>
-        <PbxDualListBtn onClick={removeAll}>&lt;&lt;</PbxDualListBtn>
+        <ExtensionDualListBtn onClick={addSelected}>&gt;</ExtensionDualListBtn>
+        <ExtensionDualListBtn onClick={addAll}>&gt;&gt;</ExtensionDualListBtn>
+        <ExtensionDualListBtn onClick={removeSelected}>&lt;</ExtensionDualListBtn>
+        <ExtensionDualListBtn onClick={removeAll}>&lt;&lt;</ExtensionDualListBtn>
       </div>
 
       <div>
-        <div style={pbxDualListLabelStyle}>Selected</div>
+        <div style={extensionDualListLabelStyle}>Selected</div>
         <select
           multiple
           value={rightSel}
           onChange={(e) =>
             setRightSel(Array.from(e.target.selectedOptions, (o) => o.value))
           }
-          style={pbxDualListSelectStyle}
+          style={extensionDualListSelectStyle}
         >
           {selected.length === 0 ? (
             <option disabled>No selected extensions</option>
@@ -4558,9 +4657,9 @@ const ErrMsg = ({ children }) => (
 
 const SectionCard = ({ title, children, isFirst = false }) => (
   <div style={{ marginBottom: 8 }}>
-    <PbxModalSectionHeading title={title} isFirst={isFirst} />
+    <ExtensionModalSectionHeading title={title} isFirst={isFirst} />
     <div>{children}</div>
   </div>
 );
 
-export default SipAccountPage;
+export default ExtensionsPage;

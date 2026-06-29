@@ -21,8 +21,8 @@ const getScrollParent = (el, root) => {
   return root;
 };
 
-const attachSmoothWheelScroll = (container) => {
-  if (!container) return () => {};
+const attachSmoothWheelScroll = (container, scrollRoot = container) => {
+  if (!container || !scrollRoot) return () => {};
 
   const state = new WeakMap();
   const activeRafs = new Set();
@@ -60,7 +60,10 @@ const attachSmoothWheelScroll = (container) => {
   };
 
   const onWheel = (e) => {
-    const scrollEl = getScrollParent(e.target, container);
+    const scrollEl = getScrollParent(e.target, scrollRoot);
+    const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
+    if (maxScroll <= 0) return;
+
     const s = getState(scrollEl);
 
     e.preventDefault();
@@ -113,13 +116,11 @@ const Layout = () => {
     }
   }, [location.pathname]);
 
+  // Document-level wheel easing covers main content and MUI modals (portal outside <main>).
   useEffect(() => {
-    const main = mainRef.current;
-    if (!main) return undefined;
-
     let detach = () => {};
     const frame = requestAnimationFrame(() => {
-      detach = attachSmoothWheelScroll(main);
+      detach = attachSmoothWheelScroll(document, document.body);
     });
 
     return () => {

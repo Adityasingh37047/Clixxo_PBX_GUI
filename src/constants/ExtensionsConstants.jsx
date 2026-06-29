@@ -119,7 +119,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
     "Set the volume in the direction from the SIP port to the SIP phone. The value range is -4~4 and the default value is 0.",
 };
 
-export const SIP_ACCOUNT_FIELDS = [
+export const EXTENSION_FORM_FIELDS = [
   // BASIC -> General
   { name: "extension", label: "Extension", type: "text", defaultValue: "" },
   { name: "context", label: "Context", type: "text", defaultValue: "sip1" },
@@ -512,7 +512,7 @@ export const SIP_ACCOUNT_FIELDS = [
   },
 ];
 
-export const CODEC_OPTIONS = [
+export const EXTENSION_CODEC_OPTIONS = [
   { value: "ulaw", label: "ulaw" },
   { value: "alaw", label: "alaw" },
   { value: "gsm", label: "gsm" },
@@ -524,7 +524,7 @@ export const CODEC_OPTIONS = [
   { value: "vp9", label: "vp9" },
 ];
 
-export const SIP_ACCOUNT_TABLE_COLUMNS = [
+export const EXTENSION_TABLE_COLUMNS = [
   { key: "check", label: "Check" },
   { key: "index", label: "Index" },
   { key: "extension", label: "Extension" },
@@ -535,7 +535,7 @@ export const SIP_ACCOUNT_TABLE_COLUMNS = [
   { key: "modify", label: "Modify" },
 ];
 
-export const SIP_ACCOUNT_INITIAL_FORM = SIP_ACCOUNT_FIELDS.reduce(
+export const EXTENSION_INITIAL_FORM = EXTENSION_FORM_FIELDS.reduce(
   (acc, field) => {
     acc[field.name] = field.defaultValue;
     return acc;

@@ -1,22 +1,22 @@
 import React, { useEffect, useState, useRef } from "react";
-import Tooltip from "@mui/material/Tooltip";
-import {Button,
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  Alert,
+  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  IconButton,
   MenuItem,
   Select as MuiSelect,
-  Checkbox,
-  TextField,
-
-  Alert,
+  Tab,
   Tabs,
-  Tab, useMediaQuery } from "@mui/material";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
+  TextField,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   listConferences,
   getConference,
@@ -28,99 +28,37 @@ import {
   listRingBackOptions,
   fetchExtensionGroups,
 } from "../../../api/apiService";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import {
+  CONFERENCE_DEFAULT_MAX_MEMBERS,
+  CONFERENCE_ENABLE_OPTIONS,
+  CONFERENCE_FIELD_TOOLTIPS,
+  CONFERENCE_MODAL_TABS,
+  CONFERENCE_MODERATOR_NOTE,
+  CONFERENCE_YES_NO_OPTIONS,
+} from "../../../constants/ConferenceConstants";
 
-const ENABLE_OPTIONS = ["Yes", "No"];
-const YES_NO_OPTIONS = ["Yes", "No"];
-const PBX_MODAL_TAB_BAR_STYLE = {
-  borderBottom: "1px solid #e5e7eb",
-  background: "#ffffff",
-};
+const CONFERENCE_COMPACT_MQ = "(max-width: 768px)";
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
-
-const pbxModalTabsSx = {
-  minHeight: 45,
-  "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 45,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
-    fontWeight: 700,
-  },
-};
-
-const PbxModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
-  <div style={PBX_MODAL_TAB_BAR_STYLE}>
-    <Tabs
-      value={value}
-      onChange={(_, next) => onChange(next)}
-      variant={fullWidth ? "fullWidth" : "standard"}
-      TabIndicatorProps={{
-        style: { backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR, height: 2 },
-      }}
-      sx={pbxModalTabsSx}
-    >
-      {tabs.map((t) => (
-        <Tab key={t.id} label={t.label} value={t.id} />
-      ))}
-    </Tabs>
-  </div>
-);
-
-const PBX_MODAL_SECTION_BG = "#f8fafc";
-const PBX_MODAL_SECTION_HEADING_COLOR = "#30415A";
-
-const PbxModalSectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: PBX_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#30415A",
-      }}
-    >
-      {title}
-    </span>
-  </div>
-);
-
-const PBX_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
+// ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  successGreen: "#16a34a",
   errorRed: "#dc2626",
+  successGreen: "#16a34a",
+  placeholderText: "#94a3b8",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
 };
 
-const CARD_RADIUS = 10;
-// ── Shared: Action Button ────────────────────────────────────────────────────
+// ── Local page UI ──
 const Btn = ({
   children,
   onClick,
@@ -129,9 +67,10 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
+  form,
+  component,
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -142,53 +81,75 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const Component = component || "button";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return C.errorRed;
-      case "cancel":
-        return"#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -206,34 +167,34 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
-// ── Shared: Table Header ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
@@ -243,8 +204,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -255,38 +216,37 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
+const conferenceTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
-const checkboxSx = {
+
+const conferenceTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const pbxPageWrapStyle = {
+const conferencePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const conferencePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const ConferenceBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -307,6 +267,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
+
 const TableListLoading = () => (
   <div
     style={{
@@ -359,60 +320,444 @@ const TableListEmptyState = ({
   </div>
 );
 
-const FieldRow = ({ label, children, required, tooltip }) => (
-  <div
-    style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 32 }}
-  >
-    <Tooltip
-      title={tooltip || ""}
-      {...tooltipProps}
-      disableHoverListener={!tooltip}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: 150,
-          flexShrink: 0,
-          cursor: tooltip ? "help" : "default",
-        }}
-      >
-        {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-      </label>
-    </Tooltip>
+const CONFERENCE_TABLE_CARD_RADIUS = 10;
 
-    <div style={{ flex: 1 }}>{children}</div>
-  </div>
-);
+const conferenceCardStyle = {
+  background: "#ffffff",
+  borderRadius: CONFERENCE_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
 
+const conferenceToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: CONFERENCE_TABLE_CARD_RADIUS,
+  borderTopRightRadius: CONFERENCE_TABLE_CARD_RADIUS,
+};
 
-const tooltipProps = {
+const conferencePaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: CONFERENCE_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: CONFERENCE_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const conferenceSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const conferenceCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const conferencePrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const conferencePageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const conferenceFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const conferenceEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleConferenceEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const conferenceOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const conferenceModalTextFieldFullSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...conferenceOutlinedInputRootSx,
+    minHeight: 36,
+    height: 36,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+  },
+};
+
+const conferenceModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...conferenceOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const conferenceModalPaperSx = {
+  width: 880,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const conferenceModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const conferenceModalSectionStyle = {
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+  marginTop: 24,
+};
+
+const conferenceModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const conferenceModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const conferenceModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const CONFERENCE_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
+};
+
+const formatConferenceTooltipTitle = (text) => {
+  if (!text) return "";
+  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  if (normalized.includes("\n")) {
+    return (
+      <span style={{ whiteSpace: "pre-line", display: "block" }}>
+        {normalized}
+      </span>
+    );
+  }
+  return normalized;
+};
+
+const conferenceModalTabBarStyle = {
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+};
+
+const conferenceModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: "#374151",
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: C.accent,
+    fontWeight: 700,
+  },
+};
+
+const ConferenceModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+  <div style={conferenceModalTabBarStyle}>
+    <Tabs
+      value={value}
+      onChange={(_, next) => onChange(next)}
+      variant={fullWidth ? "fullWidth" : "standard"}
+      TabIndicatorProps={{
+        style: { backgroundColor: C.accent, height: 2 },
+      }}
+      sx={conferenceModalTabsSx}
+    >
+      {tabs.map((t) => (
+        <Tab key={t.id} label={t.label} value={t.id} />
+      ))}
+    </Tabs>
+  </div>
+);
+
+const CONFERENCE_MODAL_LABEL_WIDTH = 150;
+
+const ConferenceFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = CONFERENCE_FIELD_TOOLTIPS[tooltipKey] || "";
+  const label = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return label;
+  return (
+    <Tooltip
+      title={formatConferenceTooltipTitle(tooltip)}
+      {...CONFERENCE_TOOLTIP_PROPS}
+    >
+      {label}
+    </Tooltip>
+  );
+};
+
+const ConferenceFieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  required = false,
+  alignTop = false,
+  labelWidth = CONFERENCE_MODAL_LABEL_WIDTH,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: alignTop ? "flex-start" : "center",
+      gap: 12,
+      minHeight: alignTop ? undefined : 32,
+    }}
+  >
+    <ConferenceFieldLabel
+      tooltipKey={tooltipKey}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        marginTop: alignTop ? 4 : 0,
+      }}
+    >
+      {label}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
+    </ConferenceFieldLabel>
+    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+  </div>
+);
+
+const CONFERENCE_MODAL_SECTION_BG = "#f8fafc";
+
+const ConferenceSectionHeading = ({
+  title,
+  isFirst = false,
+  required = false,
+}) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: CONFERENCE_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: "#30415A",
+      }}
+    >
+      {title}
+      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
+    </span>
+  </div>
+);
+
+const CONFERENCE_MEMBER_LIST_HEIGHT = 188;
+
+const getConferenceMemberListBoxStyle = (isEmpty) => ({
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 10px",
+  height: CONFERENCE_MEMBER_LIST_HEIGHT,
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 6,
+  boxSizing: "border-box",
+});
+
+const conferenceMemberListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const conferenceMemberListSubHeadingStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  marginBottom: 8,
+  textAlign: "center",
+};
+
+const ConferenceMemberListBox = ({ items, emptyText, renderItem }) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getConferenceMemberListBoxStyle(isEmpty)}>
+      {isEmpty ? (
+        <div style={conferenceMemberListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map(renderItem)
+      )}
+    </div>
+  );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ConferencePage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(CONFERENCE_COMPACT_MQ);
   const normalizeModeratorValue = (value) => String(value ?? "").trim();
   const normalizeExtensionValue = (value) => {
     const raw = String(value ?? "").trim();
@@ -454,7 +799,7 @@ const ConferencePage = () => {
   const [pinEnabled, setPinEnabled] = useState("No");
   const [moderatorPassword, setModeratorPassword] = useState("");
   const [participantPassword, setParticipantPassword] = useState("");
-  const [maxMembers, setMaxMembers] = useState("20");
+  const [maxMembers, setMaxMembers] = useState(CONFERENCE_DEFAULT_MAX_MEMBERS);
 
   // Available extensions for moderator member
   const [availableExtensions, setAvailableExtensions] = useState([]);
@@ -712,7 +1057,7 @@ const ConferencePage = () => {
     setPinEnabled("No");
     setModeratorPassword("");
     setParticipantPassword("");
-    setMaxMembers("20");
+    setMaxMembers(CONFERENCE_DEFAULT_MAX_MEMBERS);
     setWaitForModerator("Yes");
     setSayYourName("Yes");
     setMuteParticipant("No");
@@ -972,52 +1317,33 @@ const ConferencePage = () => {
   }, [moderatorMembers, extensionGroups]);
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...conferencePageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={conferencePageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={conferenceFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Call Features" current="Conference" />
+        <ConferenceBreadcrumb section="Call Features" current="Conference" />
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <div style={conferenceCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS, ...(isCompact ? { flexDirection: "column", alignItems: "stretch", gap: 10 } : {})}}
+              ...conferenceToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
           >
             <div
               style={{
@@ -1028,17 +1354,7 @@ const ConferencePage = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={conferenceSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1052,99 +1368,14 @@ const ConferencePage = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search conferences..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 11,
-                    color: C.valueText,
-                    outline: "none",
-                    width: 160,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div> */}
-
-              {/* <Btn
-                onClick={handlePrev}
-                disabled={loading.list || page <= 1}
-                variant="outline"
-              >
-                ← Prev
-              </Btn>
-              <Btn
-                onClick={handleNext}
-                disabled={loading.list || page >= totalPages}
-                variant="outline"
-              >
-                Next →
-              </Btn> */}
-
-              {/* <Btn
-                onClick={loadInitialData}
-                disabled={loading.list}
-                variant="default"
-              >
-                {loading.list ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
                 }
                 variant="cancel"
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "1px solid #cbd5e1",
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                }}
+                style={conferenceCancelBtnStyle}
               >
-                {" "}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -1152,12 +1383,7 @@ const ConferencePage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.list}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={conferencePrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1204,7 +1430,7 @@ const ConferencePage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={conferenceTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1271,61 +1497,61 @@ const ConferencePage = () => {
                       >
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderLeft: "none",
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={conferenceTableCheckboxSx}
                           />
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                           }}
                         >
                           {realIdx + 1}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                           }}
                         >
                           {row.roomName}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                           }}
                         >
                           {row.conferenceNumber}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                           }}
                         >
                           <span
@@ -1343,41 +1569,35 @@ const ConferencePage = () => {
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                           }}
                         >
                           {row.maxMembers}
                         </td>
                         <td
                           style={{
-                            ...tdStyle,
+                            ...conferenceTdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : tdStyle.borderBottom,
+                              : conferenceTdStyle.borderBottom,
                             borderRight: "none",
                           }}
                         >
-                                                    <EditDocumentIcon
+                          <EditDocumentIcon
                             titleAccess="Edit"
                             onClick={() => handleOpenEditModal(row)}
-                            style={{
-                              cursor: "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: 0.7,
-                              transition: "opacity 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.opacity = "0.7";
-                            }}
+                            style={conferenceEditIconStyle}
+                            onMouseEnter={(e) =>
+                              handleConferenceEditIconHover(e, true)
+                            }
+                            onMouseLeave={(e) =>
+                              handleConferenceEditIconHover(e, false)
+                            }
                           />
                         </td>
                       </tr>
@@ -1390,18 +1610,7 @@ const ConferencePage = () => {
 
           {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-              }}
-            >
+            <div style={conferencePaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -1414,17 +1623,7 @@ const ConferencePage = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={conferencePageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn
@@ -1445,54 +1644,35 @@ const ConferencePage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 6,
-          },
-        }}
-        PaperProps={{
-          sx: {
-            width: 880,
-            maxWidth: "96vw",
-            borderRadius: 2,
-          },
-        }}
+        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        PaperProps={{ sx: conferenceModalPaperSx }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
-        <DialogTitle
-          sx={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            py: 1.5,
-          }}
-        >
+        <DialogTitle style={conferenceModalTitleStyle}>
           {editId != null ? "Edit Conference" : "Add Conference"}
         </DialogTitle>
-<DialogContent
-  style={{
-    padding: "0px 24px 20px",
-    backgroundColor: "#ffffff",
-  }}
->
+        <DialogContent
+          className="app-main-scroll"
+          sx={{
+            ...conferenceModalDialogContentSx,
+            padding: "0 24px 20px",
+            backgroundColor: "#ffffff",
+          }}
+        >
           <div
             style={{
-              borderBottom: "0.5px solid #eef2f7",
+              borderBottom: `1px solid ${C.divider}`,
               background: "#ffffff",
-              marginLeft: "-24px",
-              marginRight: "-24px",
+              marginLeft: -24,
+              marginRight: -24,
             }}
           >
-           <PbxModalTabs
-  value={activeTab}
-  onChange={setActiveTab}
-  tabs={[
-    { id: "basic", label: "BASIC" },
-    { id: "advanced", label: "ADVANCED SETTINGS" },
-  ]}
-/>
+            <ConferenceModalTabs
+              value={activeTab}
+              onChange={setActiveTab}
+              tabs={CONFERENCE_MODAL_TABS}
+            />
           </div>
           <div style={{ background: "#ffffff" }}>
             <div
@@ -1505,24 +1685,14 @@ const ConferencePage = () => {
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
-                  <div
-  style={{
-    background: "#f5f7fa",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 6,
-    padding: 16,
-    marginTop: 20,
-  }}
->
-                    {/* 2-Column Grid (Top-to-Bottom) */}
+                  <div style={conferenceModalSectionStyle}>
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                        gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
                         gap: "16px 32px",
                       }}
                     >
-                      {/* Left Column */}
                       <div
                         style={{
                           display: "flex",
@@ -1530,32 +1700,24 @@ const ConferencePage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow label={<Tooltip
-    title="The number dialed to reach this conference room, with the default value ranges of 6400~6499 which can be modified in 'PBX->Preference->Extension Preferences'. It is null by default and must be filled in: otherwise the configuration will fail to be saved."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Room Name</span>
-  </Tooltip>} required>
+                        <ConferenceFieldRow
+                          label="Room Name"
+                          tooltipKey="room_name"
+                          required
+                        >
                           <TextField
                             size="small"
                             fullWidth
                             value={roomName}
                             onChange={(e) => setRoomName(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                background: "#fff",
-                              },
-                            }}
+                            sx={conferenceModalTextFieldFullSx}
                           />
-                        </FieldRow>
-                        <FieldRow label={<Tooltip
-    title="The conference number is the number that will be used to dial into the conference."
-    {...tooltipProps}
-  >
-    <span style={{ cursor: "help" }}>Conference Number</span>
-  </Tooltip>} required>
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Conference Number"
+                          tooltipKey="conference_number"
+                          required
+                        >
                           <TextField
                             size="small"
                             fullWidth
@@ -1563,20 +1725,15 @@ const ConferencePage = () => {
                             onChange={(e) =>
                               setConferenceNumber(e.target.value)
                             }
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                background: "#fff",
-                              },
-                            }}
+                            sx={conferenceModalTextFieldFullSx}
                           />
-                        </FieldRow>
-                        <FieldRow
-  label="Greeting"
-  tooltip="The greeting played upon joining this conference room. The default setting is default."
-  required
->                          <MuiSelect
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Greeting"
+                          tooltipKey="greeting"
+                          required
+                        >
+                          <MuiSelect
                             size="small"
                             fullWidth
                             value={greeting}
@@ -1584,16 +1741,7 @@ const ConferencePage = () => {
                             MenuProps={{
                               PaperProps: { sx: { maxHeight: 280 } },
                             }}
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
+                            sx={conferenceModalSelectSx}
                           >
                             {(greetingOptions.length
                               ? greetingOptions
@@ -1608,28 +1756,20 @@ const ConferencePage = () => {
                               </MenuItem>
                             ))}
                           </MuiSelect>
-                        </FieldRow>
-                        <FieldRow
-  label="Announce"
-  tooltip="If set to Yes, other members will hear prompts upon a memd=ber enters or exits this conference room: if set to No, there will be no prompt for a member's entering or exiting. The default setting is No."
-  required
->                          <MuiSelect
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Announce"
+                          tooltipKey="announce"
+                          required
+                        >
+                          <MuiSelect
                             size="small"
                             fullWidth
                             value={announce}
                             onChange={(e) => setAnnounce(e.target.value)}
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
+                            sx={conferenceModalSelectSx}
                           >
-                            {YES_NO_OPTIONS.map((opt) => (
+                            {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
                               <MenuItem
                                 key={opt}
                                 value={opt}
@@ -1639,28 +1779,20 @@ const ConferencePage = () => {
                               </MenuItem>
                             ))}
                           </MuiSelect>
-                        </FieldRow>
-                        <FieldRow
-  label="Record"
-  tooltip="Set whether to enable the recording. The default setting is No."
-  required
->                          <MuiSelect
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Record"
+                          tooltipKey="record"
+                          required
+                        >
+                          <MuiSelect
                             size="small"
                             fullWidth
                             value={record}
                             onChange={(e) => setRecord(e.target.value)}
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
+                            sx={conferenceModalSelectSx}
                           >
-                            {YES_NO_OPTIONS.map((opt) => (
+                            {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
                               <MenuItem
                                 key={opt}
                                 value={opt}
@@ -1670,10 +1802,9 @@ const ConferencePage = () => {
                               </MenuItem>
                             ))}
                           </MuiSelect>
-                        </FieldRow>
+                        </ConferenceFieldRow>
                       </div>
 
-                      {/* Right Column */}
                       <div
                         style={{
                           display: "flex",
@@ -1681,27 +1812,19 @@ const ConferencePage = () => {
                           gap: 16,
                         }}
                       >
-                        <FieldRow
-  label="Enabled"
-  tooltip="Set whether to use this conference room. The default setting is Yes."
-  required
->                          <MuiSelect
+                        <ConferenceFieldRow
+                          label="Enabled"
+                          tooltipKey="enabled"
+                          required
+                        >
+                          <MuiSelect
                             size="small"
                             fullWidth
                             value={enabled}
                             onChange={(e) => setEnabled(e.target.value)}
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
+                            sx={conferenceModalSelectSx}
                           >
-                            {ENABLE_OPTIONS.map((opt) => (
+                            {CONFERENCE_ENABLE_OPTIONS.map((opt) => (
                               <MenuItem
                                 key={opt}
                                 value={opt}
@@ -1711,48 +1834,40 @@ const ConferencePage = () => {
                               </MenuItem>
                             ))}
                           </MuiSelect>
-                        </FieldRow>
-                          <FieldRow label="Schedule Start"
-  tooltip="The start time of the conference room. The default setting is null."
-  required
->                          <TextField
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Schedule Start"
+                          tooltipKey="schedule_start"
+                          required
+                        >
+                          <TextField
                             size="small"
                             fullWidth
                             type="datetime-local"
                             value={scheduleStart}
                             onChange={(e) => setScheduleStart(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                background: "#fff",
-                              },
-                            }}
+                            sx={conferenceModalTextFieldFullSx}
                           />
-                        </FieldRow>
-                        <FieldRow label="Schedule End"
-  tooltip="The end time of the conference room. The default setting is null."
-  required
->                          <TextField
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Schedule End"
+                          tooltipKey="schedule_end"
+                          required
+                        >
+                          <TextField
                             size="small"
                             fullWidth
                             type="datetime-local"
                             value={scheduleEnd}
                             onChange={(e) => setScheduleEnd(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                background: "#fff",
-                              },
-                            }}
+                            sx={conferenceModalTextFieldFullSx}
                           />
-                        </FieldRow>
-                        <FieldRow
-  label="Pin"
-  tooltip="Enter the PIN that users must provide to access or use this feature."
-  required
->
+                        </ConferenceFieldRow>
+                        <ConferenceFieldRow
+                          label="Pin"
+                          tooltipKey="pin"
+                          required
+                        >
                           <MuiSelect
                             size="small"
                             fullWidth
@@ -1764,18 +1879,9 @@ const ConferencePage = () => {
                                 setParticipantPassword("");
                               }
                             }}
-                            sx={{
-                              fontSize: 13,
-                              backgroundColor: "#fff",
-                              height: 32,
-                              "& .MuiSelect-select": {
-                                padding: "6px 8px",
-                                display: "flex",
-                                alignItems: "center",
-                              },
-                            }}
+                            sx={conferenceModalSelectSx}
                           >
-                            {YES_NO_OPTIONS.map((opt) => (
+                            {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
                               <MenuItem
                                 key={opt}
                                 value={opt}
@@ -1785,10 +1891,10 @@ const ConferencePage = () => {
                               </MenuItem>
                             ))}
                           </MuiSelect>
-                        </FieldRow>
+                        </ConferenceFieldRow>
                         {pinEnabled === "Yes" && (
                           <>
-                            <FieldRow label="Moderator Password">
+                            <ConferenceFieldRow label="Moderator Password">
                               <TextField
                                 size="small"
                                 fullWidth
@@ -1796,16 +1902,10 @@ const ConferencePage = () => {
                                 onChange={(e) =>
                                   setModeratorPassword(e.target.value)
                                 }
-                                inputProps={{
-                                  style: {
-                                    fontSize: 13,
-                                    padding: "6px 8px",
-                                    background: "#fff",
-                                  },
-                                }}
+                                sx={conferenceModalTextFieldFullSx}
                               />
-                            </FieldRow>
-                            <FieldRow label="Participant Password">
+                            </ConferenceFieldRow>
+                            <ConferenceFieldRow label="Participant Password">
                               <TextField
                                 size="small"
                                 fullWidth
@@ -1813,158 +1913,104 @@ const ConferencePage = () => {
                                 onChange={(e) =>
                                   setParticipantPassword(e.target.value)
                                 }
-                                inputProps={{
-                                  style: {
-                                    fontSize: 13,
-                                    padding: "6px 8px",
-                                    background: "#fff",
-                                  },
-                                }}
+                                sx={conferenceModalTextFieldFullSx}
                               />
-                            </FieldRow>
+                            </ConferenceFieldRow>
                           </>
                         )}
-                       <FieldRow
-  label="Max Members"
-  tooltip="Specify the maximum number of participants allowed in the conference room."
->
+                        <ConferenceFieldRow
+                          label="Max Members"
+                          tooltipKey="max_members"
+                        >
                           <TextField
                             size="small"
                             fullWidth
                             value={maxMembers}
                             onChange={(e) => setMaxMembers(e.target.value)}
-                            inputProps={{
-                              style: {
-                                fontSize: 13,
-                                padding: "6px 8px",
-                                background: "#fff",
-                              },
-                            }}
+                            sx={conferenceModalTextFieldFullSx}
                           />
-                        </FieldRow>
+                        </ConferenceFieldRow>
                       </div>
                     </div>
 
-                    {/* Moderator Selection Full Width Row */}
+                    <ConferenceSectionHeading title="Moderator Member" required />
+
                     <div
                       style={{
-                        marginTop: 24,
-                        paddingTop: 16,
-                        
+                        display: "grid",
+                        gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+                        gap: 24,
                       }}
                     >
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
-                          gap: 24,
-                        }}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 600,
-                              color: "#30415A",
-                              marginBottom: 6,
-                              textAlign: "center",
-                            }}
-                          >
-                            Moderator Member (Extensions)
-                          </div>
-                          <div
-                            style={{
-                              border: `1px solid ${C.cardBorder}`,
-                              background: "#fff",
-                              borderRadius: 4,
-                              padding: 8,
-                              height: 160,
-                              overflowY: "auto",
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 6,
-                            }}
-                          >
-                            {availableExtensions.map((ext) => (
-                              <label
-                                key={ext.value}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={moderatorMembers.includes(ext.value)}
-                                  onChange={() =>
-                                    toggleModeratorMember(ext.value)
-                                  }
-                                  style={{ cursor: "pointer" }}
-                                />
-                                <span
-                                  style={{ fontSize: 13, color: C.labelText }}
-                                >
-                                  {ext.label}
-                                </span>
-                              </label>
-                            ))}
-                          </div>
+                      <div>
+                        <div style={conferenceMemberListSubHeadingStyle}>
+                          Extensions
                         </div>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 600,
-                              color: "#30415A",
-                              marginBottom: 6,
-                              textAlign: "center",
-                            }}
-                          >
-                            Extension Group
-                          </div>
-                          <div
-                            style={{
-                              border: `1px solid ${C.cardBorder}`,
-                              background: "#fff",
-                              borderRadius: 4,
-                              padding: 8,
-                              height: 160,
-                              overflowY: "auto",
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 6,
-                            }}
-                          >
-                            {extensionGroups.map((group) => (
-                              <label
-                                key={group.id}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  cursor: "pointer",
-                                }}
+                        <ConferenceMemberListBox
+                          items={availableExtensions}
+                          emptyText="No extension"
+                          renderItem={(ext) => (
+                            <label
+                              key={ext.value}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={moderatorMembers.includes(ext.value)}
+                                onChange={() =>
+                                  toggleModeratorMember(ext.value)
+                                }
+                                style={{ cursor: "pointer" }}
+                              />
+                              <span
+                                style={{ fontSize: 13, color: C.labelText }}
                               >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedGroupIds.includes(
-                                    String(group.id),
-                                  )}
-                                  onChange={() => toggleExtensionGroup(group)}
-                                  style={{ cursor: "pointer" }}
-                                />
-                                <span
-                                  style={{ fontSize: 13, color: C.labelText }}
-                                >
-                                  {group.name}
-                                </span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
+                                {ext.label}
+                              </span>
+                            </label>
+                          )}
+                        />
                       </div>
+                      <div>
+                        <div style={conferenceMemberListSubHeadingStyle}>
+                          Extension Group
+                        </div>
+                        <ConferenceMemberListBox
+                          items={extensionGroups}
+                          emptyText="No extension group"
+                          renderItem={(group) => (
+                            <label
+                              key={group.id}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedGroupIds.includes(
+                                  String(group.id),
+                                )}
+                                onChange={() => toggleExtensionGroup(group)}
+                                style={{ cursor: "pointer" }}
+                              />
+                              <span
+                                style={{ fontSize: 13, color: C.labelText }}
+                              >
+                                {group.name}
+                              </span>
+                            </label>
+                          )}
+                        />
+                      </div>
+                    </div>
                       <div
                         style={{
                           fontSize: 11,
@@ -1974,30 +2020,18 @@ const ConferencePage = () => {
                           textAlign: "center",
                         }}
                       >
-                        Note: Selecting an extension group will include all
-                        members in that group when a moderator dials this
-                        conference number.
+                        {CONFERENCE_MODERATOR_NOTE}
                       </div>
-                    </div>
                   </div>
                 </div>
               )}
 
-              {/* ── ADVANCED SETTINGS TAB ── */}
               {activeTab === "advanced" && (
-                      <div
-  style={{
-    background: "#f5f7fa",
-    border: `1px solid ${C.cardBorder}`,
-    borderRadius: 6,
-    padding: 16,
-    marginTop: 20,
-  }}
->
+                <div style={conferenceModalSectionStyle}>
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr", ...(isCompact ? { gridTemplateColumns: "1fr" } : {}),
+                      gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
                       gap: "16px 32px",
                     }}
                   >
@@ -2008,38 +2042,18 @@ const ConferencePage = () => {
                         gap: 16,
                       }}
                     >
-                      <FieldRow label="Wait for Moderator"
-                      tooltip="If set to Yes, the participants could not hear each other until the moderator joins the conference. the default setting is Yes."
+                      <ConferenceFieldRow
+                        label="Wait for Moderator"
+                        tooltipKey="wait_for_moderator"
                       >
                         <MuiSelect
                           size="small"
                           fullWidth
                           value={waitForModerator}
                           onChange={(e) => setWaitForModerator(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={conferenceModalSelectSx}
                         >
-                          {YES_NO_OPTIONS.map((opt) => (
-                            <MenuItem
-                                  key={opt}
-                                  value={opt}
-                                  sx={{ fontSize: 13 }}
-                            >
-                              {opt}
-                            </MenuItem>
-                          ))}
-                        </MuiSelect>
-                      </FieldRow>
-                      <FieldRow label="Say Your Name"
-                      tooltip="If set to  Yes, you will hear a propmt'Please say yur name' upon you enter a conference room, and other members will hear a prompt 'XXX enters the conference' upon you successfully join in the conference. The default setting is Yes."
-                      >
-                        <MuiSelect
-                          size="small"
-                          fullWidth
-                          value={sayYourName}
-                          onChange={(e) => setSayYourName(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
-                        >
-                          {YES_NO_OPTIONS.map((opt) => (
+                          {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
                               key={opt}
                               value={opt}
@@ -2049,7 +2063,29 @@ const ConferencePage = () => {
                             </MenuItem>
                           ))}
                         </MuiSelect>
-                      </FieldRow>
+                      </ConferenceFieldRow>
+                      <ConferenceFieldRow
+                        label="Say Your Name"
+                        tooltipKey="say_your_name"
+                      >
+                        <MuiSelect
+                          size="small"
+                          fullWidth
+                          value={sayYourName}
+                          onChange={(e) => setSayYourName(e.target.value)}
+                          sx={conferenceModalSelectSx}
+                        >
+                          {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt}
+                              value={opt}
+                              sx={{ fontSize: 13 }}
+                            >
+                              {opt}
+                            </MenuItem>
+                          ))}
+                        </MuiSelect>
+                      </ConferenceFieldRow>
                     </div>
                     <div
                       style={{
@@ -2058,17 +2094,18 @@ const ConferencePage = () => {
                         gap: 16,
                       }}
                     >
-                      <FieldRow label="Mute Participant"
-                      tooltip="If set  to Yes, the participants expect for the moderator are not allowed to speak in this conference room."The default setting is No
+                      <ConferenceFieldRow
+                        label="Mute Participant"
+                        tooltipKey="mute_participant"
                       >
                         <MuiSelect
                           size="small"
                           fullWidth
                           value={muteParticipant}
                           onChange={(e) => setMuteParticipant(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={conferenceModalSelectSx}
                         >
-                          {YES_NO_OPTIONS.map((opt) => (
+                          {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
                               key={opt}
                               value={opt}
@@ -2078,17 +2115,19 @@ const ConferencePage = () => {
                             </MenuItem>
                           ))}
                         </MuiSelect>
-                      </FieldRow>
-                      <FieldRow label="Allow Participant to Invite"
-                      tooltip="If set to Yes, all participants could press *0 to invite other users to enter this conference room, press *1 to launch an invitation with confirmation request and press 82 to kick the member they invited out of this room. The administrator could press *3 to kick out all participants in the conference. the default setting is Yes."                      >
+                      </ConferenceFieldRow>
+                      <ConferenceFieldRow
+                        label="Allow Participant to Invite"
+                        tooltipKey="allow_participant_invite"
+                      >
                         <MuiSelect
                           size="small"
                           fullWidth
                           value={allowInvite}
                           onChange={(e) => setAllowInvite(e.target.value)}
-                          sx={{ fontSize: 13, background: "#fff" }}
+                          sx={conferenceModalSelectSx}
                         >
-                          {YES_NO_OPTIONS.map((opt) => (
+                          {CONFERENCE_YES_NO_OPTIONS.map((opt) => (
                             <MenuItem
                               key={opt}
                               value={opt}
@@ -2098,7 +2137,7 @@ const ConferencePage = () => {
                             </MenuItem>
                           ))}
                         </MuiSelect>
-                      </FieldRow>
+                      </ConferenceFieldRow>
                     </div>
                   </div>
                 </div>
@@ -2106,16 +2145,7 @@ const ConferencePage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            gap: 2,
-            py: 2,
-            px: 3,
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-          }}
-        >
+        <DialogActions style={conferenceModalActionsStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
@@ -2138,7 +2168,7 @@ const ConferencePage = () => {
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={{ minWidth: 100, height: 33 }}
+            style={conferenceModalCancelBtnStyle}
           >
             Cancel
           </Btn>

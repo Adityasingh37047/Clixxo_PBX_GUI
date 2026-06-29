@@ -5,6 +5,83 @@ const INBOUND_NUMBER_PATTERN_TOOLTIP =
   "\"+\" — one or more digits; \"*\" — zero or more; \"{n}\" — repeat count; \"()\" — grouping.\n" +
   "Examples: ^123$ (exact), ^123|456$ (either), ^602\\d{7}$ (602 + 7 digits).";
 
+export const INBOUND_ROUTE_ENABLE_OPTIONS = ["Yes", "No"];
+export const INBOUND_ROUTE_T38_OPTIONS = ["Yes", "No"];
+export const INBOUND_ROUTE_TIME_CONDITION_OPTIONS = ["Yes", "No"];
+export const INBOUND_ROUTE_MOBILITY_OPTIONS = ["Yes", "No"];
+export const INBOUND_ROUTE_SEND_RINGTONE_OPTIONS = ["Remote", "Local"];
+
+export const INBOUND_ROUTE_DESTINATION_OPTIONS = [
+  "Call Queue",
+  "CallBacks",
+  "Conference Rooms",
+  "DISA",
+  "Extensions",
+  "Fax To Mail",
+  "IVR Menus",
+  "Ring Groups",
+  "Trunks",
+  "Outbound",
+  "Voicemails",
+  "Extension_Range",
+  "Other",
+];
+
+export const INBOUND_ROUTE_DEST_TYPE_TO_UI = {
+  extensions: "Extensions",
+  voicemail: "Voicemails",
+  fax_to_email: "Fax To Mail",
+  ring_group: "Ring Groups",
+  conference: "Conference Rooms",
+  ivr_menu: "IVR Menus",
+  extension_range: "Extension_Range",
+  other: "Other",
+  call_queue: "Call Queue",
+  callbacks: "CallBacks",
+  disa: "DISA",
+  trunk: "Trunks",
+  outbound_route: "Outbound",
+};
+
+export const INBOUND_ROUTE_UI_TO_DEST_TYPE = {
+  Extensions: "extensions",
+  Voicemails: "voicemail",
+  "Fax To Mail": "fax_to_email",
+  "Ring Groups": "ring_group",
+  "Conference Rooms": "conference",
+  "IVR Menus": "ivr_menu",
+  Extension_Range: "extension_range",
+  Other: "other",
+  "Call Queue": "call_queue",
+  CallBacks: "callbacks",
+  DISA: "disa",
+  Trunks: "trunk",
+  Outbound: "outbound_route",
+};
+
+export const INBOUND_ROUTE_OTHER_DESTINATION_OPTIONS = ["Hangup", "Hold Music"];
+
+export const INBOUND_ROUTE_DESTINATION_NEEDS_EXTENSION = new Set([
+  "Extensions",
+  "Fax To Mail",
+  "Voicemails",
+]);
+
+export const INBOUND_ROUTE_DESTINATION_NEEDS_TARGET = new Set([
+  "Extensions",
+  "Fax To Mail",
+  "Voicemails",
+  "Conference Rooms",
+  "Ring Groups",
+  "IVR Menus",
+  "Call Queue",
+  "CallBacks",
+  "DISA",
+  "Trunks",
+  "Outbound",
+  "Other",
+]);
+
 /** Field tooltips for Inbound Routes — concise, 1–4 lines */
 export const INBOUND_ROUTE_FIELD_TOOLTIPS = {
   name:

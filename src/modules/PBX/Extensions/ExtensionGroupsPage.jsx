@@ -22,27 +22,27 @@ import {
 } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { EXTENSION_GROUP_FIELD_TOOLTIPS } from "../../../constants/ExtensionGroupConstants";
+import { EXT_GROUP_FIELD_TOOLTIPS } from "../../../constants/ExtensionGroupConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const EXT_GROUP_COMPACT_MQ = "(max-width: 768px)";
 
-// ── Color palette (matches PBX / CDR) ────────────────────────────────────────
+// ── Color palette (matches Extensions page) ─────────────────────────────────
 
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
 };
-const CARD_RADIUS = 10;
-// ── Shared: Action Button ────────────────────────────────────────────────────
+
 const Btn = ({
   children,
   onClick,
@@ -51,9 +51,8 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
 }) => {
-  const variants = {
+  const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
@@ -64,49 +63,69 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-      case "accent":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "danger":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -124,30 +143,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -156,7 +177,7 @@ const Btn = ({
 };
 
 // ── ToolTips ──────────────────────────────────────────────────────
-const EXTENSION_GROUP_TOOLTIP_PROPS = {
+const EXT_GROUP_FIELD_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -177,7 +198,7 @@ const EXTENSION_GROUP_TOOLTIP_PROPS = {
   },
 };
 
-const formatGroupTooltipTitle = (text) => {
+const formatExtGroupTooltipTitle = (text) => {
   if (!text) return "";
   const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
   if (normalized.includes("\n")) {
@@ -190,8 +211,8 @@ const formatGroupTooltipTitle = (text) => {
   return normalized;
 };
 
-const GroupFieldLabel = ({ tooltipKey, children, style = {} }) => {
-  const tooltip = EXTENSION_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
+const ExtGroupFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = EXT_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
 
   const label = (
     <span
@@ -211,8 +232,8 @@ const GroupFieldLabel = ({ tooltipKey, children, style = {} }) => {
 
   return (
     <Tooltip
-      title={formatGroupTooltipTitle(tooltip)}
-      {...EXTENSION_GROUP_TOOLTIP_PROPS}
+      title={formatExtGroupTooltipTitle(tooltip)}
+      {...EXT_GROUP_FIELD_TOOLTIP_PROPS}
     >
       {label}
     </Tooltip>
@@ -229,11 +250,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -245,13 +269,11 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
-  lineHeight: 1.2,
-  boxSizing: "border-box",
 };
-const checkboxSx = {
+const extGroupTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -259,14 +281,14 @@ const checkboxSx = {
 };
 
 // ── Local page UI (inlined from pbxSharedUi) ──
-const PBX_LIST_TRUNCATE_THRESHOLD = 10;
-const PBX_LIST_DISPLAY_LIMIT = 6;
+const EXT_GROUP_LIST_TRUNCATE_THRESHOLD = 10;
+const EXT_GROUP_LIST_DISPLAY_LIMIT = 6;
 
-const formatPbxItemListDisplay = (
+const formatExtGroupItemListDisplay = (
   items,
   {
-    threshold = PBX_LIST_TRUNCATE_THRESHOLD,
-    limit = PBX_LIST_DISPLAY_LIMIT,
+    threshold = EXT_GROUP_LIST_TRUNCATE_THRESHOLD,
+    limit = EXT_GROUP_LIST_DISPLAY_LIMIT,
     mapItem = (x) => String(x),
     separator = ", ",
     ellipsis = "....",
@@ -281,7 +303,7 @@ const formatPbxItemListDisplay = (
   return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
 };
 
-const pbxModalCancelBtnStyle = {
+const extGroupModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -290,20 +312,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const extGroupPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const extGroupPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const ExtGroupBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -324,7 +346,7 @@ const PbxBreadcrumb = ({ section, current, style }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-const TableListLoading = () => (
+const ExtGroupTableListLoading = () => (
   <div
     style={{
       display: "flex",
@@ -337,7 +359,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({
+const ExtGroupTableListEmptyState = ({
   message,
   onAddNew,
   buttonLabel = "+ Add New",
@@ -376,43 +398,43 @@ const TableListEmptyState = ({
   </div>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const EXT_GROUP_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const extGroupCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: EXT_GROUP_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const extGroupToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: EXT_GROUP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: EXT_GROUP_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const extGroupPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: EXT_GROUP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: EXT_GROUP_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const extGroupSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -422,7 +444,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const extGroupCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -430,14 +452,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const extGroupPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const extGroupPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -447,7 +469,7 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const ExtGroupPagination = ({
   page,
   totalPages,
   recordCount,
@@ -455,7 +477,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...extGroupPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -468,7 +490,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={extGroupPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -482,10 +504,212 @@ const SipPcmPagination = ({
   </div>
 );
 
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const extGroupFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const extGroupTableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "auto",
+};
+
+const extGroupEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const handleExtGroupEditIconHover = (e, entering) => {
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+const getExtGroupTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const getExtGroupRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const extGroupModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  textAlign: "center",
+  padding: "16px 24px",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const extGroupModalFormStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const extGroupModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const extGroupDialogPaperSx = {
+  width: 500,
+  maxWidth: "95vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+};
+
+const extGroupExtensionsListStyle = {
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  overflow: "hidden",
+};
+
+const extGroupModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+    "& fieldset": {
+      borderColor: OUTLINED_BORDER,
+      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+    },
+    "&:hover fieldset": {
+      borderColor: OUTLINED_HOVER,
+    },
+    "&.Mui-focused": {
+      boxShadow: FOCUS_RING_SHADOW,
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: "1px",
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: OUTLINED_FOCUS,
+      borderWidth: "1px",
+    },
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const EXT_GROUP_MODAL_SCROLL_EASE = 0.1;
+const EXT_GROUP_MODAL_SCROLL_DELTA_SCALE = 0.75;
+
+const getExtGroupModalScrollParent = (el, root) => {
+  let node = el;
+  while (node && node !== root) {
+    const style = window.getComputedStyle(node);
+    const overflowY = style.overflowY;
+    const canScrollY =
+      (overflowY === "auto" || overflowY === "scroll") &&
+      node.scrollHeight > node.clientHeight;
+    if (canScrollY) return node;
+    node = node.parentElement;
+  }
+  return root;
+};
+
+const attachExtGroupModalSmoothWheelScroll = (container) => {
+  if (!container) return () => {};
+
+  const state = new WeakMap();
+  const activeRafs = new Set();
+
+  const getState = (el) => {
+    if (!state.has(el)) {
+      state.set(el, {
+        target: el.scrollTop,
+        current: el.scrollTop,
+        rafId: null,
+      });
+    }
+    return state.get(el);
+  };
+
+  const clamp = (el, value) =>
+    Math.max(0, Math.min(value, el.scrollHeight - el.clientHeight));
+
+  const tick = (el) => {
+    const s = getState(el);
+    const diff = s.target - s.current;
+    if (Math.abs(diff) < 0.5) {
+      s.current = s.target;
+      el.scrollTop = s.current;
+      if (s.rafId != null) activeRafs.delete(s.rafId);
+      s.rafId = null;
+      return;
+    }
+    s.current += diff * EXT_GROUP_MODAL_SCROLL_EASE;
+    el.scrollTop = s.current;
+    const rafId = requestAnimationFrame(() => tick(el));
+    if (s.rafId != null) activeRafs.delete(s.rafId);
+    s.rafId = rafId;
+    activeRafs.add(rafId);
+  };
+
+  const onWheel = (e) => {
+    const scrollEl = getExtGroupModalScrollParent(e.target, container);
+    const s = getState(scrollEl);
+
+    e.preventDefault();
+    s.target = clamp(
+      scrollEl,
+      s.target + e.deltaY * EXT_GROUP_MODAL_SCROLL_DELTA_SCALE,
+    );
+    if (!s.rafId) {
+      s.current = scrollEl.scrollTop;
+      const rafId = requestAnimationFrame(() => tick(scrollEl));
+      s.rafId = rafId;
+      activeRafs.add(rafId);
+    }
+  };
+
+  container.addEventListener("wheel", onWheel, { passive: false });
+
+  return () => {
+    container.removeEventListener("wheel", onWheel);
+    activeRafs.forEach((rafId) => cancelAnimationFrame(rafId));
+    activeRafs.clear();
+  };
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ExtensionGroupsPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(EXT_GROUP_COMPACT_MQ);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState({
     fetch: false,
@@ -503,10 +727,9 @@ const ExtensionGroupsPage = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [selectedIds, setSelectedIds] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
 
   const hasInitialLoadRef = useRef(false);
+  const modalScrollRef = useRef(null);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -547,21 +770,25 @@ const ExtensionGroupsPage = () => {
     }
   }, []);
 
-  // ── Search & Pagination ──
-  const filteredGroups = searchQuery.trim()
-    ? groups.filter(
-        (g) =>
-          g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          g.extensions.some((ext) =>
-            ext.toLowerCase().includes(searchQuery.toLowerCase()),
-          ),
-      )
-    : groups;
+  useEffect(() => {
+    if (!showModal) return undefined;
 
-  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / limit));
-  const pagedGroups = filteredGroups.slice((page - 1) * limit, page * limit);
+    let detach = () => {};
+    const frame = requestAnimationFrame(() => {
+      if (modalScrollRef.current) {
+        detach = attachExtGroupModalSmoothWheelScroll(modalScrollRef.current);
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      detach();
+    };
+  }, [showModal]);
+
+  const totalPages = Math.max(1, Math.ceil(groups.length / limit));
+  const pagedGroups = groups.slice((page - 1) * limit, page * limit);
   const dataEmpty = groups.length === 0;
-  const searchEmpty = !dataEmpty && filteredGroups.length === 0;
 
   // ── Checkbox Selection Logic ──
   const pageIds = pagedGroups.map((g) => g.id);
@@ -643,9 +870,7 @@ const ExtensionGroupsPage = () => {
   };
 
   const handleOpenAddModal = () => {
-    setEditGroupId(null);
-    setGroupName("");
-    setSelectedExtensions([]);
+    resetModalState();
     setShowModal(true);
     openExtensionList();
   };
@@ -660,11 +885,15 @@ const ExtensionGroupsPage = () => {
     openExtensionList();
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
+  const resetModalState = () => {
     setEditGroupId(null);
     setGroupName("");
     setSelectedExtensions([]);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    resetModalState();
   };
 
   const toggleExtension = (ext) => {
@@ -708,33 +937,26 @@ const ExtensionGroupsPage = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div style={{ ...extGroupPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={extGroupPageInnerStyle}>
         {/* Error Banner */}
         {/* ── Error / Success Floating Banner ── */}
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={extGroupFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Extensions" current="Extension Group" />
+        <ExtGroupBreadcrumb section="Extensions" current="Extension Group" />
 
-        <div style={sipPcmCardStyle}>
+        <div style={extGroupCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...extGroupToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -742,13 +964,12 @@ const ExtensionGroupsPage = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selectedIds.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={extGroupSelectedBadgeStyle}>
                   {selectedIds.length} selected
                 </span>
               )}
             </div>
 
-            {/* Right Toolbar Actions */}
             <div
               style={{
                 display: "flex",
@@ -757,94 +978,17 @@ const ExtensionGroupsPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* Search Box */}
-              {/* <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search group name or ext..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 11,
-                    color: C.valueText,
-                    outline: "none",
-                    width: 200,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div> */}
-
-              {/* Action Buttons */}
-              {/* <Btn
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={loading.fetch || page <= 1}
-                variant="outline"
-              >
-                ← Prev
-              </Btn>
-              <Btn
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={loading.fetch || page >= totalPages}
-                variant="outline"
-              >
-                Next →
-              </Btn> */}
-              {/* <Btn
-                onClick={loadGroups}
-                disabled={loading.fetch}
-                variant="default"
-              >
-                {loading.fetch ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.fetch || selectedIds.length === 0
                 }
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={extGroupCancelBtnStyle}
               >
+                {loading.delete ? (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -852,7 +996,7 @@ const ExtensionGroupsPage = () => {
                 onClick={handleOpenAddModal}
                 disabled={loading.fetch}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={extGroupPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -871,26 +1015,14 @@ const ExtensionGroupsPage = () => {
             }}
           >
             {isInitialLoad ? (
-              <TableListLoading />
+              <ExtGroupTableListLoading />
             ) : dataEmpty ? (
-              <TableListEmptyState
+              <ExtGroupTableListEmptyState
                 message="No extension groups found."
                 onAddNew={handleOpenAddModal}
               />
-            ) : searchEmpty ? (
-              <TableListEmptyState
-                message={`No results for "${searchQuery}"`}
-                showButton={false}
-              />
             ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  tableLayout: "auto",
-                }}
-              >
+              <table style={extGroupTableStyle}>
                 <thead>
                   <tr>
                     <TH
@@ -898,9 +1030,6 @@ const ExtensionGroupsPage = () => {
                         width: 40,
                         padding: 0,
                         borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
                       }}
                     >
                       <Checkbox
@@ -908,36 +1037,13 @@ const ExtensionGroupsPage = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={extGroupTableCheckboxSx}
                       />
                     </TH>
-                    <TH
-                      style={{
-                        width: 36,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      ID
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Group Name
-                    </TH>
-                    <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Extensions
-                    </TH>
-                    <TH
-                      style={{
-                        width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Modify
-                    </TH>
+                    <TH style={{ width: 36 }}>ID</TH>
+                    <TH>Group Name</TH>
+                    <TH>Extensions</TH>
+                    <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -947,11 +1053,7 @@ const ExtensionGroupsPage = () => {
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getExtGroupRowBg(isSelected, idx);
                     const realIndex = (page - 1) * limit + idx + 1;
 
                     return (
@@ -959,69 +1061,66 @@ const ExtensionGroupsPage = () => {
                         key={row.id}
                         style={{
                           background: rowBg,
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
                         }}
                       >
                         <td
-                          style={{
-                            ...tdStyle,
+                          style={getExtGroupTdStyle(rowBg, lastRowCellStyle, {
                             width: 36,
                             borderLeft: "none",
-                            ...lastRowCellStyle,
-                          }}
+                          })}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(row.id)}
-                            sx={checkboxSx}
+                            disabled={loading.delete}
+                            sx={extGroupTableCheckboxSx}
                           />
                         </td>
                         <td
-                          style={{
-                            ...tdStyle,
+                          style={getExtGroupTdStyle(rowBg, lastRowCellStyle, {
                             width: 36,
-                            ...lastRowCellStyle,
-                          }}
+                          })}
                         >
                           {realIndex}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            ...lastRowCellStyle,
-                          }}
-                        >
+                        <td style={getExtGroupTdStyle(rowBg, lastRowCellStyle)}>
                           {row.name}
                         </td>
                         <td
-                          style={{
-                            ...tdStyle,
+                          style={getExtGroupTdStyle(rowBg, lastRowCellStyle, {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
-                            ...lastRowCellStyle,
-                          }}
+                          })}
                         >
                           {row.extensions?.length > 0 ? (
                             <span
                               title={
                                 row.extensions.length >
-                                PBX_LIST_TRUNCATE_THRESHOLD
+                                EXT_GROUP_LIST_TRUNCATE_THRESHOLD
                                   ? row.extensions.join(", ")
                                   : undefined
                               }
                             >
-                              {formatPbxItemListDisplay(row.extensions)}
+                              {formatExtGroupItemListDisplay(row.extensions)}
                             </span>
                           ) : (
                             <span style={{ color: C.mutedText }}></span>
                           )}
                         </td>
                         <td
-                          style={{
-                            ...tdStyle,
+                          style={getExtGroupTdStyle(rowBg, lastRowCellStyle, {
                             borderRight: "none",
-                            ...lastRowCellStyle,
-                          }}
+                          })}
                         >
                           <div
                             style={{
@@ -1032,19 +1131,13 @@ const ExtensionGroupsPage = () => {
                             <EditDocumentIcon
                               titleAccess="Edit"
                               onClick={() => handleOpenEditModal(row)}
-                              style={{
-                                cursor: "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: 0.7,
-                                transition: "opacity 0.15s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.opacity = "1";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.opacity = "0.7";
-                              }}
+                              style={extGroupEditIconStyle}
+                              onMouseEnter={(e) =>
+                                handleExtGroupEditIconHover(e, true)
+                              }
+                              onMouseLeave={(e) =>
+                                handleExtGroupEditIconHover(e, false)
+                              }
                             />
                           </div>
                         </td>
@@ -1056,8 +1149,8 @@ const ExtensionGroupsPage = () => {
             )}
           </div>
 
-          {!isInitialLoad && filteredGroups.length > 0 && (
-            <SipPcmPagination
+          {!isInitialLoad && groups.length > 0 && (
+            <ExtGroupPagination
               page={page}
               totalPages={totalPages}
               recordCount={pagedGroups.length}
@@ -1074,51 +1167,34 @@ const ExtensionGroupsPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{
-          sx: {
-            width: 500,
-            maxWidth: "95vw",
-            borderRadius: "8px",
-            overflow: "hidden",
-            p: 0,
-          },
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
+        PaperProps={{ sx: extGroupDialogPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "16px 24px",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }}
-        >
+        <DialogTitle style={extGroupModalTitleStyle}>
           {editGroupId != null
             ? "Edit Extension Group"
             : "Add New Extension Group"}
         </DialogTitle>
 
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+        <DialogContent
+          ref={modalScrollRef}
+          className="app-main-scroll"
+          style={{ padding: "24px", backgroundColor: "#ffffff" }}
+          sx={{
+            maxHeight: "calc(100vh - 180px)",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <div style={extGroupModalFormStyle}>
             {/* Group Name Field */}
             <div>
               <div style={{ marginBottom: 6 }}>
-                <GroupFieldLabel tooltipKey="group_name">
+                <ExtGroupFieldLabel tooltipKey="group_name">
                   Group Name
-                </GroupFieldLabel>
+                </ExtGroupFieldLabel>
               </div>
               <TextField
                 fullWidth
@@ -1127,26 +1203,18 @@ const ExtensionGroupsPage = () => {
                 placeholder="e.g. Sales, Support"
                 size="small"
                 variant="outlined"
-                sx={{ background: "#fff" }}
-                inputProps={{ style: { fontSize: 13, padding: "8px 12px" } }}
+                sx={extGroupModalTextFieldSx}
               />
             </div>
 
             {/* Extensions Selection */}
             <div>
               <div style={{ marginBottom: 6 }}>
-                <GroupFieldLabel tooltipKey="selected_extensions">
+                <ExtGroupFieldLabel tooltipKey="selected_extensions">
                   Select Extensions
-                </GroupFieldLabel>
+                </ExtGroupFieldLabel>
               </div>
-              <div
-                style={{
-                  background: "#fff",
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 6,
-                  overflow: "hidden",
-                }}
-              >
+              <div style={extGroupExtensionsListStyle}>
                 <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
                   {loading.extensions ? (
                     <div
@@ -1186,7 +1254,7 @@ const ExtensionGroupsPage = () => {
                               checked={selectedExtensions.includes(extension)}
                               onChange={() => toggleExtension(extension)}
                               size="small"
-                              sx={checkboxSx}
+                              sx={extGroupTableCheckboxSx}
                             />
                           }
                           label={
@@ -1211,33 +1279,23 @@ const ExtensionGroupsPage = () => {
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={extGroupModalActionsStyle}>
           <Btn
             onClick={handleSaveGroup}
             disabled={loading.save}
             variant="primary"
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? <CircularProgress /> : null}
-
+            {loading.save ? (
+              <CircularProgress size={11} style={{ color: "#fff" }} />
+            ) : null}
             {loading.save ? "Saving..." : "Save Group"}
           </Btn>
           <Btn
             onClick={handleCloseModal}
             disabled={loading.save}
             variant="cancel"
-            style={pbxModalCancelBtnStyle}
+            style={extGroupModalCancelBtnStyle}
           >
             Cancel
           </Btn>

@@ -1219,6 +1219,7 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   vm_password: accountData.vm_password || accountData.voicemail_password,
   voicemail_email: accountData.voicemail_email,
   voicemail_file: accountData.voicemail_file,
+  voicemail_voice: accountData.voicemail_voice,
   voicemail_keep_local: accountData.voicemail_keep_local,
   cf_always_enabled: accountData.cf_always_enabled,
   cf_always_dest: accountData.cf_always_dest,
