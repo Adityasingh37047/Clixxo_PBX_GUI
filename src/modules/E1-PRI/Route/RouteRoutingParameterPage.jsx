@@ -509,7 +509,7 @@ const RouteRoutingParameterPage = () => {
         </Alert>
       )}
 
-      <h1 style={pageTitleStyle}>Route Settings</h1>
+      
       <RouteBreadcrumb current="Route Settings" />
 
       <div style={advancedTableContainerStyle}>

@@ -20,6 +20,7 @@ import {
   Checkbox,
   Alert,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
 import {
   listNumberManipulations,
@@ -89,18 +90,21 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-const LOCAL_STORAGE_KEY = "pstnCallInOriCalleeIdRules";
+const PSTN_CALL_IN_ORICALLEEID_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -110,6 +114,9 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -123,15 +130,12 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     danger: {
       background: "#fef2f2",
@@ -153,11 +157,39 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
-  const baseBg = s.background;
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -170,26 +202,249 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
-const CARD_RADIUS = 20;
+const PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS = 10;
+
+const pstnCallInOriCalleeIdPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pstnCallInOriCalleeIdPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const pstnCallInOriCalleeIdFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const pstnCallInOriCalleeIdCardStyle = {
+  background: "#ffffff",
+  borderRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const pstnCallInOriCalleeIdToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderTopRightRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+};
+
+const pstnCallInOriCalleeIdFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderBottomRightRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const pstnCallInOriCalleeIdSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const pstnCallInOriCalleeIdCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pstnCallInOriCalleeIdPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const pstnCallInOriCalleeIdModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pstnCallInOriCalleeIdPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const PSTNCallInOriCalleeIdBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>Num Manipulate</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      PSTN Call In OriCalleeID
+    </span>
+  </div>
+);
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const PstnCallInOriCalleeIdPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+}) => (
+  <div style={pstnCallInOriCalleeIdFooterStyle}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} record
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={pstnCallInOriCalleeIdPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -275,8 +530,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -295,12 +550,12 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const pstnCallInOriCalleeIdTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -308,6 +563,7 @@ const checkboxSx = {
 };
 
 const PSTNCallInOriCalleeID = () => {
+  const isCompact = useMediaQuery(PSTN_CALL_IN_ORICALLEEID_COMPACT_MQ);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState(
     PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM,
@@ -802,18 +1058,6 @@ const PSTNCallInOriCalleeID = () => {
     return () => window.removeEventListener("resize", update);
   }, [rules, page]);
 
-  const rootStyle = {
-    background: "#fff",
-    minHeight: "calc(100vh - 128px)",
-    padding: "40px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: rules.length === 0 ? "center" : "flex-start",
-    position: "relative",
-    boxSizing: "border-box",
-  };
-
   const thumbWidth =
     scrollState.width && scrollState.scrollWidth
       ? Math.max(
@@ -858,12 +1102,11 @@ const PSTNCallInOriCalleeID = () => {
   return (
     <div
       style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        ...pstnCallInOriCalleeIdPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+      <div style={pstnCallInOriCalleeIdPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -873,73 +1116,36 @@ const PSTNCallInOriCalleeID = () => {
               top: 20,
               right: 20,
               zIndex: 9999,
-
+              minWidth: 300,
               boxShadow: 3,
             }}
           >
             {toast.msg}
           </Alert>
         )}
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>Num Manipulate</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            PSTN Call In OriCalleeID
-          </span>
-        </div>
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
+        <PSTNCallInOriCalleeIdBreadcrumb />
+
+        <div style={pstnCallInOriCalleeIdCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+              ...pstnCallInOriCalleeIdToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pstnCallInOriCalleeIdSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -955,395 +1161,339 @@ const PSTNCallInOriCalleeID = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || rules.length === 0}
-                style={{ height: 30 }}
+                disabled={loading.fetch || loading.delete || rules.length === 0}
+                style={pstnCallInOriCalleeIdCancelBtnStyle}
               >
                 Inverse
               </Btn>
-
               <Btn
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                style={{ height: 30 }}
+                style={pstnCallInOriCalleeIdCancelBtnStyle}
               >
                 {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  <>
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
-                  </>
-                )}
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
-                disabled={loading.delete || rules.length === 0}
-                style={{ height: 30 }}
+                disabled={loading.fetch || loading.delete || rules.length === 0}
+                style={pstnCallInOriCalleeIdCancelBtnStyle}
               >
-                {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  "Clear All"
-                )}
+                Clear All
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleRefresh}
                 disabled={loading.fetch}
-                style={{ height: 30 }}
+                style={pstnCallInOriCalleeIdCancelBtnStyle}
               >
                 {loading.fetch ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  "Refresh"
-                )}
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
+                Refresh
               </Btn>
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                disabled={loading.fetch}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                disabled={loading.fetch || loading.save}
+                style={pstnCallInOriCalleeIdPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          <div style={{ position: "relative" }}>
-            {loading.fetch ? (
+          {loading.fetch ? (
+            <TableListLoading />
+          ) : rules.length === 0 ? (
+            <TableListEmptyState
+              message="No PSTN call in ori callee ID rules found."
+              onAddNew={() => handleOpenModal()}
+            />
+          ) : (
+            <>
               <div
+                ref={tableScrollRef}
+                onScroll={handleTableScroll}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 280,
-                  borderBottomLeftRadius: CARD_RADIUS,
-                  borderBottomRightRadius: CARD_RADIUS,
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
+                  maxHeight: 460,
                 }}
               >
-                <div style={{ textAlign: "center" }}>
-                  <CircularProgress size={28} style={{ color: C.accent }} />
-                  <div
-                    style={{
-                      marginTop: 12,
-                      color: "#3E5475",
-                      fontSize: 13,
-                      fontWeight: 500,
-                    }}
-                  >
-                    Loading number manipulations...
-                  </div>
-                </div>
-              </div>
-            ) : rules.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                  borderBottomLeftRadius: CARD_RADIUS,
-                  borderBottomRightRadius: CARD_RADIUS,
-                }}
-              >
-                <div
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
+                    ...(isCompact ? { minWidth: 720 } : {}),
                   }}
                 >
-                  No available number manipulation rule (PSTN Call In
-                  OriCalleeID)!
-                </div>
-                <Btn
-                  variant="cancel"
-                  onClick={() => handleOpenModal()}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New Rule
-                </Btn>
-              </div>
-            ) : (
-              <>
-                <div
-                  ref={tableScrollRef}
-                  onScroll={handleTableScroll}
-                  style={{
-                    overflowX: "auto",
-                    overflowY: "auto",
-                    maxHeight: 460,
-                  }}
-                >
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "separate",
-                      borderSpacing: 0,
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <TH
-                          style={{ width: 40, padding: 0, borderLeft: "none" }}
-                        >
-                          <Checkbox
-                            size="small"
-                            checked={
-                              rules.length > 0 &&
-                              selected.length === rules.length
-                            }
-                            indeterminate={
-                              selected.length > 0 &&
-                              selected.length < rules.length
-                            }
-                            onChange={(e) => {
-                              if (e.target.checked) handleCheckAll();
-                              else handleUncheckAll();
-                            }}
-                            sx={checkboxSx}
-                          />
-                        </TH>
-                        <TH style={{ width: 50 }}>ID</TH>
-                        <TH>Call Initiator</TH>
-                        <TH>CallerID Prefix</TH>
-                        <TH>CalleeID Prefix</TH>
-                        <TH>Stripped Digits from Right</TH>
-                        <TH>Reserved Digits from Right</TH>
-                        <TH style={{ width: 60, borderRight: "none" }}>
-                          Modify
-                        </TH>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pagedRules.map((item, idx) => {
-                        const realIdx = (page - 1) * itemsPerPage + idx;
-                        const isSelected = selected.includes(realIdx);
-                        const isLastRow = idx === pagedRules.length - 1;
-                        const rowBg = isSelected
-                          ? "#f0f9ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
+                  <thead>
+                    <tr>
+                      <TH
+                        style={{
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={
+                            rules.length > 0 &&
+                            selected.length === rules.length
+                          }
+                          indeterminate={
+                            selected.length > 0 &&
+                            selected.length < rules.length
+                          }
+                          onChange={(e) => {
+                            if (e.target.checked) handleCheckAll();
+                            else handleUncheckAll();
+                          }}
+                          sx={pstnCallInOriCalleeIdTableCheckboxSx}
+                        />
+                      </TH>
+                      <TH
+                        style={{
+                          width: 36,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        ID
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Call Initiator
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        CallerID Prefix
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        CalleeID Prefix
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Stripped Digits from Right
+                      </TH>
+                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                        Reserved Digits from Right
+                      </TH>
+                      <TH
+                        style={{
+                          width: 70,
+                          borderRight: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        Modify
+                      </TH>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedRules.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedRules.length - 1;
+                      const rowBg = isSelected
+                        ? "#eff6ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
 
-                        return (
-                          <tr
-                            key={item.id || realIdx}
+                      return (
+                        <tr
+                          key={item.id || realIdx}
+                          style={{
+                            background: rowBg,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
+                          }}
+                        >
+                          <td
                             style={{
+                              ...tdStyle,
                               background: rowBg,
-                              borderBottom: isLastRow
-                                ? "none"
-                                : `1px solid ${C.cardBorder}`,
-                              transition: "background-color 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
-                            <td
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleSelectRow(idx)}
+                              disabled={loading.delete}
+                              sx={pstnCallInOriCalleeIdTableCheckboxSx}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {realIdx + 1}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            PCM Trunk Group [
+                            {getPcmGroupIdLabel(item.call_initiator)}]
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {item.callerid_prefix}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {item.calleeid_prefix}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {item.stripped_digits_from_right}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {item.reserved_digits_from_right}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            <div
                               style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                borderLeft: "none",
-                                ...lastRowCellStyle,
-                                ...(isLastRow
-                                  ? { borderBottomLeftRadius: CARD_RADIUS }
-                                  : {}),
+                                display: "flex",
+                                justifyContent: "center",
                               }}
                             >
-                              <Checkbox
-                                size="small"
-                                checked={isSelected}
-                                onChange={() => handleSelectRow(idx)}
-                                sx={checkboxSx}
-                              />
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {realIdx + 1}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              PCM Trunk Group [
-                              {getPcmGroupIdLabel(item.call_initiator)}]
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {item.callerid_prefix}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {item.calleeid_prefix}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {item.stripped_digits_from_right}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              {item.reserved_digits_from_right}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                borderRight: "none",
-                                ...lastRowCellStyle,
-                                ...(isLastRow
-                                  ? { borderBottomRightRadius: CARD_RADIUS }
-                                  : {}),
-                              }}
-                            >
-                              <div
+                              <EditDocumentIcon
+                                titleAccess="Edit"
                                 style={{
-                                  display: "flex",
-                                  justifyContent: "center",
+                                  cursor: loading.delete
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: loading.delete ? 0.4 : 0.7,
+                                  transition: "opacity 0.15s ease",
                                 }}
-                              >
-                                <EditDocumentIcon
-                                  titleAccess="Edit"
-                                  style={{
-                                    cursor: "pointer",
-                                    color: "#2563eb",
-                                    fontSize: 22,
-                                    opacity: 0.7,
-                                    transition: "opacity 0.15s ease",
-                                  }}
-                                  onClick={() => handleOpenModal(item, realIdx)}
-                                  onMouseEnter={(e) =>
-                                    (e.currentTarget.style.opacity = "1")
-                                  }
-                                  onMouseLeave={(e) =>
-                                    (e.currentTarget.style.opacity = "0.7")
-                                  }
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                                onClick={() => {
+                                  if (!loading.delete)
+                                    handleOpenModal(item, realIdx);
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Pagination Footer */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "7px 14px",
-                    background: "#ffffff",
-                    borderTop: `1px solid ${C.cardBorder}`,
-                    borderBottomLeftRadius: CARD_RADIUS,
-                    borderBottomRightRadius: CARD_RADIUS,
-                    overflow: "hidden",
-                  }}
-                >
-                  <span style={{ fontSize: 11, color: C.mutedText }}>
-                    Showing {pagedRules.length} record
-                    {pagedRules.length !== 1 ? "s" : ""} on page {page}
-                  </span>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <Btn
-                      onClick={() => handlePageChange(page - 1)}
-                      disabled={page <= 1}
-                      variant="outline"
-                    >
-                      ← Prev
-                    </Btn>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: C.accent,
-                        background: "#e0f2fe",
-                        padding: "5px 14px",
-                        borderRadius: 6,
-                        border: `1px solid ${C.cardBorder}`,
-                      }}
-                    >
-                      Page {page} of {totalPages}
-                    </span>
-                    <Btn
-                      onClick={() => handlePageChange(page + 1)}
-                      disabled={page >= totalPages}
-                      variant="outline"
-                    >
-                      Next →
-                    </Btn>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+              <PstnCallInOriCalleeIdPagination
+                page={page}
+                totalPages={totalPages}
+                recordCount={pagedRules.length}
+                onPageChange={handlePageChange}
+              />
+            </>
+          )}
         </div>
       </div>
 
       <Dialog
         open={isModalOpen}
-        onClose={handleCloseModal}
+        onClose={() => {
+          if (loading.save) return;
+          handleCloseModal();
+        }}
         maxWidth={false}
-        className="z-50"
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
         PaperProps={{
           sx: {
             width: 600,
-            maxWidth: "95vw",
+            maxWidth: "96vw",
             mx: "auto",
             p: 0,
-            borderRadius: 2,
+            borderRadius: "8px",
             overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
         }}
         disableRestoreFocus
@@ -1366,17 +1516,7 @@ const PSTNCallInOriCalleeID = () => {
             : "Add PSTN Call In OriCalleeID"}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+          <div style={pstnCallInOriCalleeIdFormPanelStyle}>
             {getUpdatedFields().map((field) => (
               <div
                 key={field.name}
@@ -1478,7 +1618,7 @@ const PSTNCallInOriCalleeID = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={pstnCallInOriCalleeIdModalCancelBtnStyle}
           >
             Close
           </Btn>

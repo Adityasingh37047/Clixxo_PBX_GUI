@@ -5,7 +5,7 @@ import {
   PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
   PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS,
 } from "../../../constants/PcmReceptionTimeoutConstants";
-import { Alert, Tooltip } from "@mui/material";
+import { Alert, Tooltip, useMediaQuery } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -68,22 +68,235 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-// ── Color palette (same as SIPAccountGenerator) ───────────────────────────────
+const PCM_RECEPTION_TIMEOUT_COMPACT_MQ = "(max-width: 768px)";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  strongText: "#0f172a",
   mutedText: "#94a3b8",
+  strongText: "#0f172a",
   accent: "#3E5475",
+  amber: "#dc2626",
   errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
-const CARD_RADIUS = 20;
+const PCM_RECEPTION_TIMEOUT_CARD_RADIUS = 10;
+
+const pcmReceptionTimeoutPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pcmReceptionTimeoutPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const pcmReceptionTimeoutCardStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  background: "#ffffff",
+  borderRadius: PCM_RECEPTION_TIMEOUT_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const pcmReceptionTimeoutToolbarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: "#ffffff",
+  borderTopLeftRadius: PCM_RECEPTION_TIMEOUT_CARD_RADIUS,
+  borderTopRightRadius: PCM_RECEPTION_TIMEOUT_CARD_RADIUS,
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 12,
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  fontWeight: 600,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const pcmReceptionTimeoutFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const pcmReceptionTimeoutModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PcmReceptionTimeoutBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>PCM</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      Number-Receiving Timeout Info
+    </span>
+  </div>
+);
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+  form,
+  component,
+  title,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
+  return (
+    <Component
+      type={type}
+      form={form}
+      title={title}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        userSelect: "none",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
+      }}
+    >
+      {children}
+    </Component>
+  );
+};
 
 // ── Local form field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -149,122 +362,7 @@ const nativeFieldInteraction = {
   },
 };
 
-const addHostFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-
-// ── Button Component (same as SIPAccountGenerator) ────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      default:
-        return "#e2e8f0";
-    }
-  })();
-
-  const baseBg = s.background;
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 36,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  marginBottom: 24,
-};
-
-const blueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  flexWrap: "wrap",
-  gap: 12,
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
+const addHostFormPanelStyle = pcmReceptionTimeoutFormPanelStyle;
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -275,11 +373,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -292,12 +393,13 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
 const PcmReceptionTimeoutPage = () => {
+  const isCompact = useMediaQuery(PCM_RECEPTION_TIMEOUT_COMPACT_MQ);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     ...PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
@@ -346,10 +448,11 @@ const PcmReceptionTimeoutPage = () => {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
+      style={{
+        ...pcmReceptionTimeoutPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
     >
-      {/* ── Toast ── */}
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -367,31 +470,11 @@ const PcmReceptionTimeoutPage = () => {
         </Alert>
       )}
 
-      {/* ── Breadcrumb ── */}
-      <div className="w-full">
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>PCM</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Number-Receiving Timeout Info
-          </span>
-        </div>
+      <div style={pcmReceptionTimeoutPageInnerStyle}>
+        <PcmReceptionTimeoutBreadcrumb />
 
-        {/* ── Main Card ── */}
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
+        <div style={pcmReceptionTimeoutCardStyle}>
+          <div style={pcmReceptionTimeoutToolbarStyle}>
             <span>Number-Receiving Timeout Info</span>
           </div>
 
@@ -403,6 +486,7 @@ const PcmReceptionTimeoutPage = () => {
                 borderSpacing: 0,
                 tableLayout: "auto",
                 minWidth: 600,
+                ...(isCompact ? { minWidth: 480 } : {}),
               }}
             >
               <thead>
@@ -434,18 +518,35 @@ const PcmReceptionTimeoutPage = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ background: "#ffffff" }}>
+                <tr
+                  style={{
+                    background: "#ffffff",
+                    transition: "background 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#f8fafc";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#ffffff";
+                  }}
+                >
                   <td
                     style={{
                       ...tdStyle,
                       borderLeft: "none",
                       borderBottom: "none",
-                      borderBottomLeftRadius: CARD_RADIUS,
+                      fontWeight: 400,
                     }}
                   >
                     {timeoutData.interDigitTimeout ?? "—"}
                   </td>
-                  <td style={{ ...tdStyle, borderBottom: "none" }}>
+                  <td
+                    style={{
+                      ...tdStyle,
+                      borderBottom: "none",
+                      fontWeight: 400,
+                    }}
+                  >
                     {timeoutData.description ?? "—"}
                   </td>
                   <td
@@ -453,15 +554,32 @@ const PcmReceptionTimeoutPage = () => {
                       ...tdStyle,
                       borderRight: "none",
                       borderBottom: "none",
-                      borderBottomRightRadius: CARD_RADIUS,
                     }}
                   >
-                    <EditDocumentIcon
-                      className="cursor-pointer text-blue-600 opacity-70 hover:opacity-100 transition-opacity"
-                      titleAccess="Edit"
-                      onClick={handleOpenModal}
-                      style={{ fontSize: 22 }}
-                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <EditDocumentIcon
+                        titleAccess="Edit"
+                        style={{
+                          cursor: "pointer",
+                          color: "#2563eb",
+                          fontSize: 22,
+                          opacity: 0.7,
+                          transition: "opacity 0.15s ease",
+                        }}
+                        onClick={handleOpenModal}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = "1";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = "0.7";
+                        }}
+                      />
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -574,14 +692,14 @@ const PcmReceptionTimeoutPage = () => {
                 <Btn
                   variant="primary"
                   onClick={handleSave}
-                  style={{ minWidth: 100, height: 33 }}
+                  style={{ minWidth: 100, height: 33, fontSize: 13 }}
                 >
                   Save
                 </Btn>
                 <Btn
                   variant="cancel"
                   onClick={handleCloseModal}
-                  style={{ minWidth: 100, height: 33 }}
+                  style={pcmReceptionTimeoutModalCancelBtnStyle}
                 >
                   Cancel
                 </Btn>
