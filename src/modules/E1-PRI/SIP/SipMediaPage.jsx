@@ -12,8 +12,6 @@ import {
 } from "../../../api/apiService";
 
 // ── Page-local field label tooltip UI (matches SipSipPage pattern) ──
-const FIELD_LABEL_COLOR = "#374151";
-
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
@@ -51,14 +49,39 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
+// ── Local page UI (matches SipSipPage design language) ──
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
+  labelText: "#3E5475",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
+};
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+const sipFormTextStyle = {
+  fontSize: 13,
+  color: C.labelText,
+};
+
 const SipFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
   const tooltip = tooltipKey ? SIP_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
   const labelNode = (
     <label
       style={{
-        fontSize: 13,
+        ...sipFormTextStyle,
         fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
         flex: "1 1 auto",
         minWidth: 0,
         paddingRight: 16,
@@ -91,27 +114,6 @@ const SipFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
     </div>
   );
 };
-
-// ── Local page UI (matches SipSipPage design language) ──
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
-  divider: "#e2e6ec",
-  labelText: "#374151",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
-};
-
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
 
 const Btn = ({
   children,
@@ -306,7 +308,7 @@ const nativeFieldInputStyle = {
   borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: C.valueText,
+  color: C.labelText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -324,7 +326,7 @@ const nativeFieldSelectStyle = {
   borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: C.valueText,
+  color: C.labelText,
   boxSizing: "border-box",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   appearance: "auto",
@@ -402,6 +404,8 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const SIP_MEDIA_COLUMN_PAD_X = 36;
+
 const dashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
@@ -409,12 +413,37 @@ const dashboardGridStyle = {
   alignItems: "stretch",
 };
 
+const dashboardHeadersGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const dashboardHeaderCellStyle = {
+  padding: `12px ${SIP_MEDIA_COLUMN_PAD_X}px`,
+  minHeight: 44,
+  display: "flex",
+  alignItems: "center",
+  boxSizing: "border-box",
+};
+
+const dashboardHeaderDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+  flexShrink: 0,
+};
+
 const dashboardColumnStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: 10,
   minWidth: 0,
-  padding: "16px 36px 24px",
+  padding: `16px ${SIP_MEDIA_COLUMN_PAD_X}px 24px`,
   background: C.cardBg,
 };
 
@@ -422,15 +451,15 @@ const dashboardDividerStyle = {
   background: C.divider,
   width: 1,
   alignSelf: "stretch",
-  margin: "14px 0",
   flexShrink: 0,
 };
 
 const dashboardSectionTitleStyle = {
   fontSize: 14,
-  fontWeight: 700,
-  color: C.strongText,
-  marginBottom: 2,
+  fontWeight: 600,
+  color: C.labelText,
+  margin: 0,
+  lineHeight: 1.35,
   flexShrink: 0,
 };
 
@@ -693,11 +722,22 @@ const SipMediaPage = () => {
             </div>
           ) : (
             <>
-              <div style={dashboardGridStyle}>
-                <div style={dashboardColumnStyle}>
+              <div style={dashboardHeadersGridStyle}>
+                <div style={dashboardHeaderCellStyle}>
                   <div style={dashboardSectionTitleStyle}>
                     RTP &amp; DTMF Settings
                   </div>
+                </div>
+                <div style={dashboardHeaderDividerStyle} aria-hidden="true" />
+                <div style={dashboardHeaderCellStyle}>
+                  <div style={dashboardSectionTitleStyle}>
+                    Jitter &amp; CODEC Settings
+                  </div>
+                </div>
+              </div>
+
+              <div style={dashboardGridStyle}>
+                <div style={dashboardColumnStyle}>
                   <div style={dashboardFieldsStackStyle}>
                     {MEDIA_LEFT_COLUMN_FIELDS.map((field) =>
                       renderFormField(field),
@@ -708,9 +748,6 @@ const SipMediaPage = () => {
                 <div style={dashboardDividerStyle} aria-hidden="true" />
 
                 <div style={dashboardColumnStyle}>
-                  <div style={dashboardSectionTitleStyle}>
-                    Jitter &amp; CODEC Settings
-                  </div>
                   <div style={dashboardFieldsStackStyle}>
                     {MEDIA_RIGHT_COLUMN_FIELDS.map((field) =>
                       renderFormField(field),

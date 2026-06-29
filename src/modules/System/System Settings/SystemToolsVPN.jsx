@@ -6,16 +6,9 @@ import {
   VPN_RUNNING_INFO,
 } from "../../../constants/SystemToolsVPNConstants";
 import {
-  Button,
-  Select,
-  MenuItem,
-  TextField,
-  Paper,
-  Typography,
   Alert,
   CircularProgress,
   Chip,
-  IconButton,
 } from "@mui/material";
 import StartIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
@@ -45,23 +38,27 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   errorRed: "#dc2626",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -78,19 +75,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -129,7 +126,7 @@ const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
   padding: "6px 10px",
-  borderRadius: 10,
+  borderRadius: FIELD_RADIUS,
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
@@ -139,13 +136,177 @@ const systemFieldSelectStyle = {
   ...systemFieldInputStyle,
   appearance: "auto",
   minHeight: 36,
+  height: 36,
   paddingTop: 7,
   paddingBottom: 7,
   lineHeight: 1.35,
+  cursor: "pointer",
 };
 
 const inputStyle = systemFieldInputStyle;
 const selectStyle = systemFieldSelectStyle;
+
+const vpnPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const vpnPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const vpnCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const vpnTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const vpnToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const vpnContentStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 24px",
+  background: C.cardBg,
+};
+
+const vpnFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const vpnActionBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const vpnCompactBtnStyle = {
+  minWidth: 80,
+  height: 34,
+  fontSize: 13,
+  padding: "0 20px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const vpnLogTextareaStyle = {
+  width: "100%",
+  height: 200,
+  fontSize: 12,
+  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  backgroundColor: "#f8fafc",
+  color: C.valueText,
+  padding: "10px 12px",
+  borderRadius: CARD_RADIUS,
+  border: `1px solid ${C.cardBorder}`,
+  outline: "none",
+  resize: "vertical",
+  lineHeight: 1.6,
+  boxSizing: "border-box",
+};
+
+const vpnChooseFileLabelStyle = {
+  padding: "5px 12px",
+  background: "#cbd5e1",
+  border: "1px solid #cbd5e1",
+  borderRadius: 8,
+  fontSize: 12,
+  fontWeight: 600,
+  color: "#374151",
+  whiteSpace: "nowrap",
+  flexShrink: 0,
+  cursor: "pointer",
+  userSelect: "none",
+  boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+  transition:
+    "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+};
+
+const vpnUploadLabelStyle = {
+  ...vpnChooseFileLabelStyle,
+  background: "#fff",
+  border: `1px solid ${C.cardBorder}`,
+  color: C.valueText,
+  boxShadow: "none",
+};
+
+const VpnPageShell = ({ children }) => (
+  <div style={vpnPageWrapStyle} data-native-scroll>
+    <div style={vpnPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const VpnBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>VPN</span>
+  </div>
+);
 
 
 const Btn = ({
@@ -156,6 +317,7 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
+  form,
 }) => {
   const styles = {
     default: {
@@ -168,12 +330,16 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     error: {
       background: C.errorRed,
@@ -183,49 +349,90 @@ const Btn = ({
   };
 
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "error":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      error: "#b91c1c",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      error: "#991b1b",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel" || variant === "error"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize:
+          variant === "primary" || variant === "cancel" || variant === "error"
+            ? 14
+            : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height:
+          variant === "primary" || variant === "cancel" || variant === "error"
+            ? 38
+            : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {startIcon && (
@@ -1495,14 +1702,15 @@ const SystemToolsVPN = () => {
 
   const ROW = ({ label, children }) => (
     <div
-      style={{ display: "flex", alignItems: "center", gap: 16, width: "100%" }}
+      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}
     >
       <label
         style={{
           fontSize: 12,
           fontWeight: 600,
           color: C.labelText,
-          minWidth: 210,
+          width: "100%",
+          maxWidth: 220,
           flexShrink: 0,
         }}
       >
@@ -1513,92 +1721,53 @@ const SystemToolsVPN = () => {
   );
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {message.text}
-          </Alert>
-        )}
-
-        <div
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-          style={{ marginBottom: 16 }}
+    <VpnPageShell>
+      {message.text && (
+        <Alert
+          severity={message.type}
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={vpnFixedAlertSx}
         >
-          <div
-            style={{
-              fontSize: 12,
-              color: "#94a3b8",
-              fontWeight: 400,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
+          {message.text}
+        </Alert>
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 12,
+        }}
+      >
+        <VpnBreadcrumb />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}>
+            VPN Type:
+          </span>
+          <select
+            value={form.vpnType}
+            onChange={handleTypeChange}
+            style={{ ...selectStyle, width: 220 }}
+            onFocus={inputInteraction.onFocus}
+            onBlur={inputInteraction.onBlur}
+            onMouseEnter={inputInteraction.onMouseEnter}
+            onMouseLeave={inputInteraction.onMouseLeave}
           >
-            <span>System</span>
-            <span>&gt;</span>
-            <span>System Settings</span>
-            <span>&gt;</span>
-            <span style={{ color: C.strongText, fontWeight: 600 }}>VPN</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}>
-              VPN Type:
-            </span>
-            <select
-              value={form.vpnType}
-              onChange={handleTypeChange}
-              style={{ ...selectStyle, width: 220 }}
-              onFocus={inputInteraction.onFocus}
-              onBlur={inputInteraction.onBlur}
-              onMouseEnter={inputInteraction.onMouseEnter}
-              onMouseLeave={inputInteraction.onMouseLeave}
-            >
-              {VPN_TYPES.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            {VPN_TYPES.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
+      </div>
 
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
+      <div style={vpnCardShellStyle}>
+        <div style={vpnTableContainerStyle}>
+          <div style={vpnToolbarStyle}>
             <span
               style={{
                 fontSize: 13,
@@ -1611,7 +1780,7 @@ const SystemToolsVPN = () => {
             </span>
           </div>
 
-          <div style={{ padding: "28px 36px 36px" }}>
+          <div style={vpnContentStyle}>
             {/* ── OpenVPN ── */}
             {form.vpnType === "openvpn" && (
               <div>
@@ -1653,7 +1822,7 @@ const SystemToolsVPN = () => {
                             name="enableOpenVpn"
                             checked={enableChoice === "yes"}
                             onChange={() => setEnableChoice("yes")}
-                            style={{ accentColor: C.primary }}
+                            style={{ accentColor: OUTLINED_FOCUS }}
                           />
                           <span style={{ fontSize: 13, color: C.valueText }}>
                             Yes
@@ -1673,7 +1842,7 @@ const SystemToolsVPN = () => {
                             name="enableOpenVpn"
                             checked={enableChoice === "no"}
                             onChange={() => setEnableChoice("no")}
-                            style={{ accentColor: C.primary }}
+                            style={{ accentColor: OUTLINED_FOCUS }}
                           />
                           <span style={{ fontSize: 13, color: C.valueText }}>
                             No
@@ -1684,7 +1853,7 @@ const SystemToolsVPN = () => {
                         variant="primary"
                         onClick={handleSaveEnable}
                         disabled={loading.toggle}
-                        style={{ minWidth: 80 }}
+                        style={vpnCompactBtnStyle}
                       >
                         {loading.toggle ? "Saving..." : "Save"}
                       </Btn>
@@ -1693,7 +1862,7 @@ const SystemToolsVPN = () => {
 
                   {showAdvanced && (
                     <>
-                      <div style={{ height: 1, background: "#e5e7eb" }} />
+                      <div style={{ height: 1, background: C.divider }} />
 
                       <ROW label="Configuration File:">
                         <div
@@ -1722,19 +1891,7 @@ const SystemToolsVPN = () => {
                             />
                             <label
                               htmlFor="vpn-file-upload"
-                              className="cursor-pointer select-none"
-                              style={{
-                                padding: "5px 12px",
-                                background: "#cbd5e1",
-                                border: "1px solid #b6c2d3",
-                                borderRadius: 8,
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: "#374151",
-                                whiteSpace: "nowrap",
-                                flexShrink: 0,
-                                transition: "background 0.15s",
-                              }}
+                              style={vpnChooseFileLabelStyle}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.background = "#b6c2d3";
                               }}
@@ -1775,7 +1932,7 @@ const SystemToolsVPN = () => {
                                 <UploadIcon sx={{ fontSize: 13 }} />
                               )
                             }
-                            style={{ minWidth: 105, flexShrink: 0 }}
+                            style={{ ...vpnActionBtnStyle, minWidth: 105, flexShrink: 0 }}
                           >
                             {loading.upload ? "Uploading..." : "Upload File"}
                           </Btn>
@@ -1802,7 +1959,7 @@ const SystemToolsVPN = () => {
                         />
                       </ROW>
 
-                      <div style={{ height: 1, background: "#e5e7eb" }} />
+                      <div style={{ height: 1, background: C.divider }} />
 
                       <div
                         style={{
@@ -1824,7 +1981,7 @@ const SystemToolsVPN = () => {
                               <StartIcon sx={{ fontSize: 13 }} />
                             )
                           }
-                          style={{ minWidth: 120, height: 34 }}
+                          style={vpnActionBtnStyle}
                         >
                           {loading.start ? "Starting..." : "Start VPN"}
                         </Btn>
@@ -1839,7 +1996,7 @@ const SystemToolsVPN = () => {
                               <StopIcon sx={{ fontSize: 13 }} />
                             )
                           }
-                          style={{ minWidth: 120, height: 34 }}
+                          style={vpnActionBtnStyle}
                         >
                           {loading.stop ? "Stopping..." : "Stop VPN"}
                         </Btn>
@@ -1854,7 +2011,7 @@ const SystemToolsVPN = () => {
                               <CheckCircleIcon sx={{ fontSize: 13 }} />
                             )
                           }
-                          style={{ minWidth: 130, height: 34 }}
+                          style={{ ...vpnActionBtnStyle, minWidth: 130 }}
                         >
                           {loading.status ? "Checking..." : "Check Status"}
                         </Btn>
@@ -1867,7 +2024,7 @@ const SystemToolsVPN = () => {
                   <div
                     style={{
                       marginTop: 32,
-                      borderTop: `1px solid ${C.cardBorder}`,
+                      borderTop: `1px solid ${C.divider}`,
                       paddingTop: 20,
                     }}
                   >
@@ -1917,20 +2074,7 @@ const SystemToolsVPN = () => {
                     <textarea
                       value={vpnLogs || "No logs available"}
                       readOnly
-                      style={{
-                        width: "100%",
-                        height: 200,
-                        fontSize: 12,
-                        fontFamily: "monospace",
-                        backgroundColor: "#f8fafc",
-                        color: C.valueText,
-                        padding: "10px 12px",
-                        borderRadius: 8,
-                        border: `1.5px solid ${C.cardBorder}`,
-                        outline: "none",
-                        resize: "vertical",
-                        lineHeight: 1.6,
-                      }}
+                      style={vpnLogTextareaStyle}
                     />
                   </div>
                 )}
@@ -1978,7 +2122,7 @@ const SystemToolsVPN = () => {
                             name="enableSeTop"
                             checked={enableSeChoice === "yes"}
                             onChange={() => setEnableSeChoice("yes")}
-                            style={{ accentColor: C.primary }}
+                            style={{ accentColor: OUTLINED_FOCUS }}
                           />
                           <span style={{ fontSize: 13, color: C.valueText }}>
                             Yes
@@ -1998,7 +2142,7 @@ const SystemToolsVPN = () => {
                             name="enableSeTop"
                             checked={enableSeChoice === "no"}
                             onChange={() => setEnableSeChoice("no")}
-                            style={{ accentColor: C.primary }}
+                            style={{ accentColor: OUTLINED_FOCUS }}
                           />
                           <span style={{ fontSize: 13, color: C.valueText }}>
                             No
@@ -2009,7 +2153,7 @@ const SystemToolsVPN = () => {
                         variant="primary"
                         onClick={handleSaveSeEnable}
                         disabled={loading.toggle}
-                        style={{ minWidth: 80 }}
+                        style={vpnCompactBtnStyle}
                       >
                         {loading.toggle ? "Saving..." : "Save"}
                       </Btn>
@@ -2023,8 +2167,8 @@ const SystemToolsVPN = () => {
                     <div
                       style={{
                         background: "#f8fafc",
-                        borderRadius: 10,
-                        border: "1px solid #e2e8f0",
+                        borderRadius: CARD_RADIUS,
+                        border: `1px solid ${C.cardBorder}`,
                         padding: "20px 24px",
                         marginBottom: 14,
                       }}
@@ -2075,7 +2219,7 @@ const SystemToolsVPN = () => {
                       <div
                         style={{
                           height: 1,
-                          background: "#e2e8f0",
+                          background: C.divider,
                           margin: "4px 0 14px",
                         }}
                       />
@@ -2084,7 +2228,7 @@ const SystemToolsVPN = () => {
                         style={{
                           fontSize: 11,
                           fontWeight: 700,
-                          color: "#9CA3AF",
+                          color: C.mutedText,
                           textTransform: "uppercase",
                           letterSpacing: "0.07em",
                           marginBottom: 12,
@@ -2145,17 +2289,7 @@ const SystemToolsVPN = () => {
                             />
                             <label
                               htmlFor="se-cert"
-                              className="cursor-pointer select-none"
-                              style={{
-                                padding: "5px 12px",
-                                background: "#fff",
-                                border: `1.5px solid ${C.cardBorder}`,
-                                borderRadius: 8,
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.valueText,
-                                whiteSpace: "nowrap",
-                              }}
+                              style={vpnUploadLabelStyle}
                             >
                               Upload Cert (.cer)
                             </label>
@@ -2179,17 +2313,7 @@ const SystemToolsVPN = () => {
                             />
                             <label
                               htmlFor="se-key"
-                              className="cursor-pointer select-none"
-                              style={{
-                                padding: "5px 12px",
-                                background: "#fff",
-                                border: `1.5px solid ${C.cardBorder}`,
-                                borderRadius: 8,
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.valueText,
-                                whiteSpace: "nowrap",
-                              }}
+                              style={vpnUploadLabelStyle}
                             >
                               Upload Key (.key)
                             </label>
@@ -2203,7 +2327,7 @@ const SystemToolsVPN = () => {
                       <div
                         style={{
                           height: 1,
-                          background: "#e2e8f0",
+                          background: C.divider,
                           margin: "14px 0",
                         }}
                       />
@@ -2212,7 +2336,7 @@ const SystemToolsVPN = () => {
                         style={{
                           fontSize: 11,
                           fontWeight: 700,
-                          color: "#9CA3AF",
+                          color: C.mutedText,
                           textTransform: "uppercase",
                           letterSpacing: "0.07em",
                           marginBottom: 10,
@@ -2245,7 +2369,7 @@ const SystemToolsVPN = () => {
                                 : seStatus === "Stopped"
                                   ? C.errorRed
                                   : seStatus === "Connecting"
-                                    ? C.primary
+                                    ? "#2563eb"
                                     : "#ea580c",
                           }}
                         />
@@ -2266,7 +2390,7 @@ const SystemToolsVPN = () => {
                           variant="primary"
                           onClick={handleSeCreateFlow}
                           disabled={loading.seCreate || !areSeFieldsFilled()}
-                          style={{ minWidth: 130, height: 34 }}
+                          style={{ ...vpnActionBtnStyle, minWidth: 130 }}
                         >
                           {loading.seCreate
                             ? "Processing..."
@@ -2283,7 +2407,7 @@ const SystemToolsVPN = () => {
                                 loading.seDisconnect ||
                                 !seForm.connectionName.trim()
                               }
-                              style={{ minWidth: 110, height: 34 }}
+                              style={vpnActionBtnStyle}
                             >
                               {loading.seDisconnect
                                 ? "Disconnecting..."
@@ -2297,7 +2421,7 @@ const SystemToolsVPN = () => {
                                 loading.seConnect ||
                                 !seForm.connectionName.trim()
                               }
-                              style={{ minWidth: 110, height: 34 }}
+                              style={vpnActionBtnStyle}
                             >
                               {loading.seConnect ? "Connecting..." : "Connect"}
                             </Btn>
@@ -2306,7 +2430,7 @@ const SystemToolsVPN = () => {
                             variant="cancel"
                             onClick={() => handleSeStatus(false)}
                             disabled={loading.seStatus}
-                            style={{ minWidth: 110, height: 34 }}
+                            style={vpnActionBtnStyle}
                           >
                             {loading.seStatus ? "Checking..." : "Check Status"}
                           </Btn>
@@ -2314,7 +2438,7 @@ const SystemToolsVPN = () => {
                             variant="default"
                             onClick={handleSeState}
                             disabled={loading.seState}
-                            style={{ minWidth: 100, height: 34 }}
+                            style={{ ...vpnActionBtnStyle, minWidth: 100 }}
                           >
                             {loading.seState ? "Checking..." : "VPN State"}
                           </Btn>
@@ -2324,7 +2448,7 @@ const SystemToolsVPN = () => {
                               handleSeDelete(seForm.connectionName)
                             }
                             disabled={loading.seDelete}
-                            style={{ minWidth: 120, height: 34 }}
+                            style={vpnActionBtnStyle}
                           >
                             {loading.seDelete
                               ? "Deleting..."
@@ -2337,7 +2461,7 @@ const SystemToolsVPN = () => {
                     {/* SoftEther Logs */}
                     <div
                       style={{
-                        borderTop: `1px solid ${C.cardBorder}`,
+                        borderTop: `1px solid ${C.divider}`,
                         paddingTop: 20,
                       }}
                     >
@@ -2376,20 +2500,7 @@ const SystemToolsVPN = () => {
                       <textarea
                         value={seLogs || "No logs yet"}
                         readOnly
-                        style={{
-                          width: "100%",
-                          height: 200,
-                          fontSize: 12,
-                          fontFamily: "monospace",
-                          backgroundColor: "#f8fafc",
-                          color: C.valueText,
-                          padding: "10px 12px",
-                          borderRadius: 8,
-                          border: `1.5px solid ${C.cardBorder}`,
-                          outline: "none",
-                          resize: "vertical",
-                          lineHeight: 1.6,
-                        }}
+                        style={vpnLogTextareaStyle}
                       />
                     </div>
                   </>
@@ -2399,7 +2510,7 @@ const SystemToolsVPN = () => {
           </div>
         </div>
       </div>
-    </div>
+    </VpnPageShell>
   );
 };
 

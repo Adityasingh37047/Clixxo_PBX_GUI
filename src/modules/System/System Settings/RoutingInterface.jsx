@@ -19,22 +19,30 @@ const changeRouting = async (payload) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#30415A",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
   errorRed: "#dc2626",
-  primary: "#2563eb",
   gridHeaderBg: "#F8FAFC",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+// ── Local field UI (matches Network.jsx design language) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -51,19 +59,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -96,33 +104,48 @@ const inputInteraction = {
 
 const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 
-const systemFieldInputStyleNarrow = {
+const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
   padding: "6px 10px",
-  borderRadius: 10,
+  borderRadius: FIELD_RADIUS,
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
+};
+
+const systemFieldInputStyleNarrow = {
+  ...systemFieldInputStyle,
   maxWidth: "280px",
 };
 
+const systemFieldSelectStyle = {
+  ...systemFieldInputStyle,
+  appearance: "auto",
+  minHeight: 36,
+  height: 36,
+  paddingTop: 7,
+  paddingBottom: 7,
+  lineHeight: 1.35,
+  cursor: "pointer",
+};
+
 const inputStyle = systemFieldInputStyleNarrow;
+const selectStyle = systemFieldSelectStyle;
 
 const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const advancedFormBtnStyle = {
@@ -134,9 +157,6 @@ const advancedFormBtnStyle = {
   lineHeight: "34px",
   boxSizing: "border-box",
 };
-
-const SYSTEM_SETTINGS_NATIVE_FIELD_CLASS = "system-settings-native-field";
-
 
 const Btn = ({
   children,
@@ -158,6 +178,10 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -168,12 +192,35 @@ const Btn = ({
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
-    variant === "primary"
-      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
-      : variant === "cancel"
-        ? "#b6c2d3"
-        : "#e2e8f0";
-  const baseBg = s.background;
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -185,24 +232,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -217,7 +281,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       position: "relative",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
     <span
       style={{
         position: "absolute",
@@ -226,8 +290,9 @@ const SectionHeading = ({ title, isFirst = false }) => (
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontWeight: 500,
+        color: C.labelText,
+        letterSpacing: "0.01em",
       }}
     >
       {title}
@@ -235,7 +300,108 @@ const SectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const ROUTES_TABLE_RADIUS = 2;
+const routingPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const routingPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const routingCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const routingTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const routingToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const routingFieldGroupStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+  width: "100%",
+};
+
+const routingFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const RoutingPageShell = ({ children }) => (
+  <div style={routingPageWrapStyle} data-native-scroll>
+    <div style={routingPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const RoutingBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>Routing Interface</span>
+  </div>
+);
+
+const ROUTES_TABLE_RADIUS = CARD_RADIUS;
 
 /** Read-only / disabled — same as Network page */
 const disabledInputStyle = {
@@ -246,27 +412,15 @@ const disabledInputStyle = {
   borderColor: "#e2e8f0",
 };
 
-/** Select — same box as Gateway IP; appearance:none so border-radius renders on native select */
-const nativeSelectStyle = {
-  ...inputStyle,
-  borderRadius: 4,
-  cursor: "pointer",
-};
-
-/** Same width/height for Switch, Cancel, and Apply & Switch */
-const actionBtnStyle = {
-  minWidth: 190,
-  height: 30,
-  padding: "6px 16px",
-  fontSize: 12,
-  boxSizing: "border-box",
-};
+/** Select — same box as Network page */
+const nativeSelectStyle = selectStyle;
 
 const routesTableShellStyle = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: ROUTES_TABLE_RADIUS,
   overflow: "hidden",
   background: C.cardBg,
+  boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
 };
 
 const tooltipProps = {
@@ -275,47 +429,37 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
 const FieldRow = ({ label, tooltip, children }) => (
   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-    <div
-      style={{
-        width: "100%",
-        maxWidth: 220,
-        flexShrink: 0,
-      }}
-    >
-      <Tooltip title={tooltip || ""} {...tooltipProps}>
-        <span>
-          <label
-            style={{
-              fontSize: 12,
-              fontWeight: 600,
-              color: C.labelText,
-            }}
-          >
-            {label}
-          </label>
-        </span>
-      </Tooltip>
-    </div>
-
-    <div className="flex-1 w-full">{children}</div>
+    <Tooltip title={tooltip || ""} disableHoverListener={!tooltip} {...tooltipProps}>
+      <label
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: C.labelText,
+          width: "100%",
+          maxWidth: 220,
+          flexShrink: 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label}
+      </label>
+    </Tooltip>
+    <div className="flex-1 w-full max-w-[280px]">{children}</div>
   </div>
 );
 
@@ -334,8 +478,8 @@ const TH = ({ children, isLast = false }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: isLast ? "none" : `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: isLast ? "none" : `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.12em",
@@ -350,11 +494,11 @@ const TD = ({ children, highlight, isLastCol = false, isLastRow = false }) => (
     style={{
       padding: "8px 14px",
       fontSize: 12,
-      color: highlight ? C.primary : C.valueText,
+      color: highlight ? C.accent : C.valueText,
       fontWeight: highlight ? 700 : 400,
       textAlign: "center",
-      borderBottom: isLastRow ? "none" : `1px solid ${C.cardBorder}`,
-      borderRight: isLastCol ? "none" : `1px solid ${C.cardBorder}`,
+      borderBottom: isLastRow ? "none" : `1px solid ${C.divider}`,
+      borderRight: isLastCol ? "none" : `1px solid ${C.divider}`,
     }}
   >
     {children}
@@ -493,94 +637,34 @@ const RoutingInterface = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {errorMsg && (
-          <Alert
-            severity="error"
-            onClose={() => setErrorMsg("")}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {errorMsg}
-          </Alert>
-        )}
-        {successMsg && (
-          <Alert
-            severity="success"
-            onClose={() => setSuccessMsg("")}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {successMsg}
-          </Alert>
-        )}
-
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
+    <RoutingPageShell>
+      {errorMsg && (
+        <Alert
+          severity="error"
+          onClose={() => setErrorMsg("")}
+          sx={routingFixedAlertSx}
+        >
+          {errorMsg}
+        </Alert>
+      )}
+      {successMsg && (
+        <Alert
+          severity="success"
+          onClose={() => setSuccessMsg("")}
+          sx={{
+            ...routingFixedAlertSx,
+            top: errorMsg ? 88 : 20,
           }}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Routing Interface
-          </span>
-        </div>
+          {successMsg}
+        </Alert>
+      )}
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Header */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
+      <RoutingBreadcrumb />
+
+      <div style={routingCardShellStyle}>
+        <div style={routingTableContainerStyle}>
+          <div style={routingToolbarStyle}>
             <span
               style={{
                 fontSize: 13,
@@ -595,26 +679,36 @@ const RoutingInterface = () => {
               <Btn
                 variant="primary"
                 onClick={handleOpenForm}
-                style={actionBtnStyle}
+                style={advancedFormBtnStyle}
               >
                 Switch Routing Interface
               </Btn>
             )}
           </div>
 
-          {/* Card Body */}
           <div
             style={{
-              padding: showForm && !loading ? "24px 32px 0" : "24px 32px",
+              padding:
+                showForm && !loading ? "16px 36px 0" : "16px 36px 24px",
             }}
           >
             {loading ? (
-              <div className="flex flex-col items-center justify-center min-h-50">
-                <CircularProgress size={40} sx={{ color: C.primary }} />
-                <div
-                  style={{ marginTop: 12, color: C.mutedText, fontSize: 13 }}
-                >
-                  Loading routing information...
+              <div
+                className="flex items-center justify-center w-full"
+                style={{ minHeight: 400, padding: "48px 32px" }}
+              >
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontSize: 13,
+                      color: C.mutedText,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Loading routing information...
+                  </div>
                 </div>
               </div>
             ) : (
@@ -624,7 +718,7 @@ const RoutingInterface = () => {
                   <SectionHeading title="Current Active Routing" isFirst />
                   <div
                     className="flex flex-col gap-3 w-full"
-                    style={{ maxWidth: 640, margin: "0 auto" }}
+                    style={{ ...routingFieldGroupStyle, maxWidth: 640, margin: "0 auto" }}
                   >
                     <FieldRow label="Active Interface:"
                     tooltip="The interface that is currently active and being used for routing."
@@ -633,7 +727,6 @@ const RoutingInterface = () => {
                         type="text"
                         readOnly
                         value={current.interface}
-                        className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                         style={disabledInputStyle}
                       />
                     </FieldRow>
@@ -643,7 +736,6 @@ const RoutingInterface = () => {
                         type="text"
                         readOnly
                         value={current.ipAddress}
-                        className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                         style={disabledInputStyle}
                       />
                     </FieldRow>
@@ -653,7 +745,6 @@ const RoutingInterface = () => {
                         type="text"
                         readOnly
                         value={current.subnetMask}
-                        className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                         style={disabledInputStyle}
                       />
                     </FieldRow>
@@ -663,7 +754,6 @@ const RoutingInterface = () => {
                         type="text"
                         readOnly
                         value={current.gateway}
-                        className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                         style={disabledInputStyle}
                       />
                     </FieldRow>
@@ -674,7 +764,6 @@ const RoutingInterface = () => {
                         type="text"
                         readOnly
                         value={String(current.metric)}
-                        className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                         style={disabledInputStyle}
                       />
                     </FieldRow>
@@ -711,7 +800,7 @@ const RoutingInterface = () => {
                               <tr
                                 key={idx}
                                 style={{
-                                  background: isActive ? "#f0f7ff" : C.cardBg,
+                                  background: isActive ? "#f0f4f8" : C.cardBg,
                                 }}
                               >
                                 <TD highlight={isActive} isLastRow={isLastRow}>
@@ -770,7 +859,7 @@ const RoutingInterface = () => {
                     <SectionHeading title="Target Interface Configuration" />
                     <div
                       className="flex flex-col gap-3 w-full"
-                      style={{ maxWidth: 640, margin: "0 auto 12px" }}
+                      style={{ ...routingFieldGroupStyle, maxWidth: 640, margin: "0 auto 12px" }}
                     >
                       {/* Interface dropdown */}
                       <FieldRow label="Select Interface (M):"
@@ -778,7 +867,6 @@ const RoutingInterface = () => {
                         <select
                           value={form.interface}
                           onChange={(e) => handleIfaceChange(e.target.value)}
-                          className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                           style={nativeSelectStyle}
                           onFocus={inputInteraction.onFocus}
                           onBlur={inputInteraction.onBlur}
@@ -800,7 +888,6 @@ const RoutingInterface = () => {
                           type="text"
                           readOnly
                           value={formIp}
-                          className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                           style={disabledInputStyle}
                         />
                       </FieldRow>
@@ -812,7 +899,6 @@ const RoutingInterface = () => {
                           type="text"
                           readOnly
                           value={formSubnet}
-                          className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                           style={disabledInputStyle}
                         />
                       </FieldRow>
@@ -827,12 +913,11 @@ const RoutingInterface = () => {
                             handleFormChange("gateway", e.target.value)
                           }
                           placeholder="e.g. 192.168.1.1"
-                          className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                           style={{
                             ...inputStyle,
                             borderColor: errors.gateway
                               ? C.errorRed
-                              : undefined,
+                              : C.cardBorder,
                           }}
                           onFocus={inputInteraction.onFocus}
                           onBlur={inputInteraction.onBlur}
@@ -844,7 +929,7 @@ const RoutingInterface = () => {
                             style={{
                               color: C.errorRed,
                               fontSize: 11,
-                              marginTop: 3,
+                              marginTop: 4,
                             }}
                           >
                             {errors.gateway}
@@ -862,10 +947,11 @@ const RoutingInterface = () => {
                             handleFormChange("metric", e.target.value)
                           }
                           placeholder="Default: 100"
-                          className={SYSTEM_SETTINGS_NATIVE_FIELD_CLASS}
                           style={{
                             ...inputStyle,
-                            borderColor: errors.metric ? C.errorRed : undefined,
+                            borderColor: errors.metric
+                              ? C.errorRed
+                              : C.cardBorder,
                           }}
                           onFocus={inputInteraction.onFocus}
                           onBlur={inputInteraction.onBlur}
@@ -877,7 +963,7 @@ const RoutingInterface = () => {
                             style={{
                               color: C.errorRed,
                               fontSize: 11,
-                              marginTop: 3,
+                              marginTop: 4,
                             }}
                           >
                             {errors.metric}
@@ -915,7 +1001,7 @@ const RoutingInterface = () => {
           )}
         </div>
       </div>
-    </div>
+    </RoutingPageShell>
   );
 };
 

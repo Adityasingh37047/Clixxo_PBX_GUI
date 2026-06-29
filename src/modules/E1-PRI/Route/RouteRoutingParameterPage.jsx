@@ -7,7 +7,7 @@ import {
 import { CircularProgress, Alert, Tooltip } from "@mui/material";
 
 // ── Page-local field label tooltip UI ──
-const FIELD_LABEL_COLOR = "#374151";
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -103,7 +103,7 @@ const C = {
   cardShadow:
     "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
@@ -311,7 +311,7 @@ const nativeFieldSelectStyle = {
   borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: C.valueText,
+  color: C.labelText,
   boxSizing: "border-box",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   appearance: "auto",
@@ -386,15 +386,15 @@ const formColumnStyle = {
 
 const dashboardSectionTitleStyle = {
   fontSize: 14,
-  fontWeight: 700,
-  color: C.strongText,
+  fontWeight: 500,
+  color: C.labelText,
   marginBottom: 0,
 };
 
 const pageTitleStyle = {
-  fontSize: 22,
+    fontSize: 22,
   fontWeight: 700,
-  color: C.strongText,
+  color: C.labelText,
   margin: "0 0 6px 0",
   letterSpacing: "-0.02em",
   flexShrink: 0,
@@ -554,7 +554,7 @@ const RouteRoutingParameterPage = () => {
           >
             {loading ? (
               <>
-                <CircularProgress size={16} sx={{ color: "inherit" }} />
+                <CircularProgress size={16} style={{ color: C.labelText }} />
                 Saving...
               </>
             ) : (

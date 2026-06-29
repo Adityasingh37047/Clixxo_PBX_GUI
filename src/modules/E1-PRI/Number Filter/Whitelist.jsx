@@ -94,7 +94,7 @@ const C = {
   cardShadow:
     "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
@@ -212,16 +212,6 @@ const advancedPageInnerStyle = {
   display: "flex",
   flexDirection: "column",
 };
-
-const pageTitleStyle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.strongText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-  flexShrink: 0,
-};
-
 const panelCardStyle = {
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
@@ -248,8 +238,8 @@ const panelToolbarStyle = {
 
 const panelSectionTitleStyle = {
   fontSize: 14,
-  fontWeight: 700,
-  color: C.strongText,
+  fontWeight: 500,
+  color: C.labelText,
   letterSpacing: "-0.01em",
 };
 
@@ -1124,7 +1114,7 @@ const Whitelist = () => {
         </Alert>
       )}
 
-      <h1 style={pageTitleStyle}>Whitelist</h1>
+   
       <WhitelistBreadcrumb current="Whitelist" />
 
       {isInitialLoading ? (
@@ -1182,7 +1172,7 @@ const Whitelist = () => {
 
           <p
             style={{
-              color: C.amber,
+              color: C.accent,
               fontSize: 11,
               lineHeight: 1.5,
               margin: "16px 0 0",

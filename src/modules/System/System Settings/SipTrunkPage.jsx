@@ -32,28 +32,30 @@ import {
   fetchNetwork,
 } from "../../../api/apiService";
 
-// ── Local page UI (inlined from systemSharedUi) ──
+// ── Local page UI (aligned with Extensions.jsx) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#dc2626",
 };
 
-const SYSTEM_SETTINGS_CARD_RADIUS = 20;
+const SIP_TRUNK_TABLE_CARD_RADIUS = 10;
 
 const systemSettingsTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -66,11 +68,14 @@ const SystemSettingsTH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -98,12 +103,13 @@ const SystemSettingsBtn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     outline: {
       background: C.cardBg,
@@ -119,7 +125,32 @@ const SystemSettingsBtn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
-  const baseBg = s.background;
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <button
       type={type}
@@ -135,18 +166,32 @@ const SystemSettingsBtn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {startIcon && (
@@ -176,43 +221,48 @@ const systemSettingsSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
+const systemSettingsFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
 const systemSettingsPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
   boxSizing: "border-box",
 };
 
 const systemSettingsInnerStyle = {
   width: "100%",
-  maxWidth: 1000,
+  maxWidth: "100%",
   margin: "0 auto",
 };
 
 const systemSettingsCardStyle = {
-  background: C.cardBg,
-  borderRadius: 10,
+  background: "#ffffff",
+  borderRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-  marginBottom: 24,
-  border: `1.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
 const systemSettingsToolbarStyle = {
   display: "flex",
-  flexWrap: "wrap",
-  gap: 12,
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
-  borderTopLeftRadius: SYSTEM_SETTINGS_CARD_RADIUS,
-  borderTopRightRadius: SYSTEM_SETTINGS_CARD_RADIUS,
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
 };
 
 const systemSettingsPaginationStyle = {
@@ -221,9 +271,9 @@ const systemSettingsPaginationStyle = {
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SYSTEM_SETTINGS_CARD_RADIUS,
-  borderBottomRightRadius: SYSTEM_SETTINGS_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
   overflow: "hidden",
   flexWrap: "wrap",
   gap: 8,
@@ -239,6 +289,30 @@ const systemSettingsPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
+const systemSettingsCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const systemSettingsPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const systemSettingsModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
 const SystemSettingsBreadcrumb = ({ current }) => (
   <div
     style={{
@@ -249,9 +323,7 @@ const SystemSettingsBreadcrumb = ({ current }) => (
       display: "flex",
       alignItems: "center",
       gap: 4,
-      flexWrap: "nowrap",
-      whiteSpace: "nowrap",
-      lineHeight: 1.5,
+      flexWrap: "wrap",
     }}
   >
     <span>System</span>
@@ -262,10 +334,10 @@ const SystemSettingsBreadcrumb = ({ current }) => (
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -282,7 +354,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const inputInteraction = {
@@ -313,15 +385,15 @@ const inputInteraction = {
 };
 
 const { height: _nh, ...nativeFieldBase } = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: 6,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -334,21 +406,48 @@ const systemModalFieldInputStyle = {
   width: "100%",
   padding: "0 10px",
   lineHeight: 1.35,
-  color: "#1e293b",
+};
+
+const sipTrunkOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
 };
 
 const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
+  "& .MuiOutlinedInput-root": sipTrunkOutlinedInputRootSx,
+  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiOutlinedInput-input": {
     backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+    fontSize: 13,
+    padding: "8px 12px",
   },
 };
 
@@ -384,9 +483,20 @@ const tooltips = {
 const muiSelectSx = {
   fontSize: 13,
   backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...sipTrunkOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -394,17 +504,8 @@ const muiSelectSx = {
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
     boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    fontSize: 13,
+    backgroundColor: "#fff",
   },
 };
 
@@ -881,14 +982,7 @@ const SipTrunkPage = () => {
         <Alert
           severity={message.type}
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
+          sx={systemSettingsFixedAlertSx}
         >
           {message.text}
         </Alert>
@@ -918,7 +1012,7 @@ const SipTrunkPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0 || loading.delete}
-                style={{ height: 30 }}
+                style={systemSettingsCancelBtnStyle}
               >
                 <Tooltip title="Delete the selected SIP trunks." {...tooltipProps}>
                   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -929,7 +1023,7 @@ const SipTrunkPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={registers.length === 0 || loading.delete}
-                style={{ height: 30 }}
+                style={systemSettingsCancelBtnStyle}
               >
                 {loading.delete ? "Working..." : "Clear All"}
               </SystemSettingsBtn>
@@ -937,7 +1031,7 @@ const SipTrunkPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.save}
-                style={{ height: 30 }}
+                style={systemSettingsPrimaryBtnStyle}
               >
                 + Add New
               </SystemSettingsBtn>
@@ -969,14 +1063,12 @@ const SipTrunkPage = () => {
               <div
                 style={{
                   display: "flex",
+                  justifyContent: "center",
                   alignItems: "center",
-                  gap: 8,
-                  color: C.labelText,
-                  fontSize: 13,
+                  padding: 48,
                 }}
               >
-                <CircularProgress size={20} />
-                <span>Loading Global SIP settings...</span>
+                <CircularProgress size={28} style={{ color: C.accent }} />
               </div>
             ) : registers.length === 0 ? (
               <>
@@ -1062,7 +1154,7 @@ const SipTrunkPage = () => {
                     const isLastRow = idx === pagedRegisters.length - 1;
                     const isRowChecked = selected.includes(realIdx);
                     const rowBg = isRowChecked
-                      ? "#f0f9ff"
+                      ? "#eff6ff"
                       : idx % 2 === 1
                         ? "#f8fafc"
                         : "#ffffff";
@@ -1096,7 +1188,7 @@ const SipTrunkPage = () => {
                             ...(isLastRow
                               ? {
                                   borderBottomLeftRadius:
-                                    SYSTEM_SETTINGS_CARD_RADIUS,
+                                    SIP_TRUNK_TABLE_CARD_RADIUS,
                                 }
                               : {}),
                           }}
@@ -1132,7 +1224,7 @@ const SipTrunkPage = () => {
                             ...(isLastRow
                               ? {
                                   borderBottomRightRadius:
-                                    SYSTEM_SETTINGS_CARD_RADIUS,
+                                    SIP_TRUNK_TABLE_CARD_RADIUS,
                                 }
                               : {}),
                           }}
@@ -1215,51 +1307,41 @@ const SipTrunkPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
         PaperProps={{
           sx: {
             width: 600,
-            maxWidth: "95vw",
+            maxWidth: "96vw",
             mx: "auto",
+            p: 0,
             borderRadius: "8px",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
-            backgroundImage: "none",
-            maxHeight: "90vh",
-            display: "flex",
-            flexDirection: "column",
+            overflow: "hidden",
           },
         }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
-          sx={{
-            fontWeight: 600,
-            fontSize: "16px",
+          style={{
+            background: "#1e2d42",
             color: "#ffffff",
-            backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.cardBorder}`,
-            px: 3,
-            py: 2,
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: "8px",
-            borderTopRightRadius: "8px",
-            flexShrink: 0,
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {editIndex !== null ? "Edit Global SIP" : "Add Global SIP"}
         </DialogTitle>
         <DialogContent
-          sx={{
-            p: "24px",
+          style={{
+            padding: "24px",
             backgroundColor: "#ffffff",
             overflowY: "auto",
-            flex: "1 1 auto",
           }}
         >
           <div
@@ -1271,7 +1353,7 @@ const SipTrunkPage = () => {
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
-              marginTop: 22,
+              marginTop: 0,
             }}
           >
             {SIP_TRUNK_FIELDS.map((field) => {
@@ -1351,7 +1433,7 @@ const SipTrunkPage = () => {
                             ...(field.name === "local_ip"
                               ? localIpSelectSx
                               : systemModalSelectSx),
-                            borderRadius: "4px",
+                            borderRadius: "6px",
                             fontSize: 13,
                           }}
                           MenuProps={{
@@ -1506,6 +1588,7 @@ const SipTrunkPage = () => {
                             },
                           }}
                           sx={{
+                            ...muiTextFieldSx,
                             "& .MuiOutlinedInput-root": { height: 32 },
                           }}
                           InputProps={{
@@ -1567,14 +1650,15 @@ const SipTrunkPage = () => {
           </div>
         </DialogContent>
         <DialogActions
-          sx={{
+          style={{
+            display: "flex",
             justifyContent: "center",
-            gap: 2,
-            py: "10px",
-            px: "16px",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
             borderTop: `1px solid ${C.cardBorder}`,
-            backgroundColor: "#f8fafc",
-            flexShrink: 0,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <SystemSettingsBtn
@@ -1589,7 +1673,7 @@ const SipTrunkPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={systemSettingsModalCancelBtnStyle}
           >
             Close
           </SystemSettingsBtn>

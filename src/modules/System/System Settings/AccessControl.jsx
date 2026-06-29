@@ -2,42 +2,42 @@ import React, { useState, useRef, useEffect } from "react";
 import { Tooltip } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Alert,
   CircularProgress,
   Checkbox,
 } from "@mui/material";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { postLinuxCmd } from "../../../api/apiService";
 import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  gridHeaderBg: "#F8FAFC",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   errorRed: "#dc2626",
-  footerBg: "#ffffff",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -54,19 +54,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -101,35 +101,200 @@ const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 
 const systemModalFieldInputStyle = {
   ...nativeFieldBase,
-  minHeight: 32,
-  height: 32,
+  minHeight: 34,
+  height: 34,
   width: "100%",
-  padding: "0 10px",
-  lineHeight: 1.35,
-  color: "#1e293b",
+  padding: "6px 10px",
+  lineHeight: 1.4,
+  color: C.valueText,
+  borderRadius: FIELD_RADIUS,
 };
 
+const disabledInputStyle = {
+  ...systemModalFieldInputStyle,
+  background: "#f1f5f9",
+  color: "#94a3b8",
+  cursor: "not-allowed",
+  borderColor: "#e2e8f0",
+};
 
-const CARD_RADIUS = 20;
+const accessControlPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const accessControlPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const accessControlCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const accessControlTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const accessControlToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const accessControlFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const accessControlToolbarBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 8,
+};
+
+const accessControlFooterBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const accessControlSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const accessControlFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const accessControlLogSectionStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  marginTop: 16,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+};
+
+const accessControlLogTitleStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  marginBottom: 8,
+  textAlign: "center",
+  letterSpacing: "0.01em",
+};
+
+const accessControlLogBoxStyle = {
+  width: "100%",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflowY: "auto",
+  padding: 12,
+  resize: "vertical",
+  minHeight: 140,
+  maxHeight: 320,
+  boxSizing: "border-box",
+};
+
+const accessControlLogPreStyle = {
+  width: "100%",
+  minHeight: 120,
+  maxHeight: 260,
+  background: C.cardBg,
+  color: C.valueText,
+  fontSize: 11,
+  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  whiteSpace: "pre-wrap",
+  margin: 0,
+  padding: 0,
+};
+
+const accessControlLogNotesStyle = {
+  marginTop: 8,
+  fontSize: 11,
+  textAlign: "center",
+  color: C.errorRed,
+  lineHeight: 1.5,
+};
+
 const tooltipProps = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
   
@@ -149,11 +314,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -166,17 +334,112 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
 const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  padding: "4px",
+  color: OUTLINED_BORDER,
+  "&.Mui-checked": { color: OUTLINED_FOCUS },
+  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
+
+const getAccessControlTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const getAccessControlRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const AccessControlPageShell = ({ children }) => (
+  <div style={accessControlPageWrapStyle} data-native-scroll>
+    <div style={accessControlPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const AccessControlBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>Access Control</span>
+  </div>
+);
+
+const AccessControlTableEmptyState = ({ onAddNew, disabled }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: C.labelText,
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: 16,
+      }}
+    >
+      No command configured!
+    </div>
+    <Btn
+      variant="cancel"
+      onClick={onAddNew}
+      disabled={disabled}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+    >
+      + Add New Command
+    </Btn>
+  </div>
+);
+
+const AccessControlEditIcon = ({ disabled, onClick }) => (
+  <EditDocumentIcon
+    titleAccess="Edit"
+    onClick={() => {
+      if (!disabled) onClick();
+    }}
+    style={{
+      cursor: disabled ? "not-allowed" : "pointer",
+      color: "#2563eb",
+      fontSize: 22,
+      opacity: disabled ? 0.4 : 0.7,
+      transition: "opacity 0.15s ease",
+      pointerEvents: disabled ? "none" : "auto",
+    }}
+    onMouseEnter={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "1";
+    }}
+    onMouseLeave={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "0.7";
+    }}
+  />
+);
 
 const Btn = ({
   children,
@@ -198,61 +461,57 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     error: {
       background: C.errorRed,
       color: C.cardBg,
       border: `1px solid ${C.errorRed}`,
     },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
   };
 
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "error":
-        return "#b91c1c";
-      case "delete":
-        return "#fecaca";
-      case "edit":
-        return "#bbf7d0";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-        return "#e2e8f0";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      error: "#b91c1c",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      error: "#991b1b",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-
-
-
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -263,24 +522,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {startIcon && (
@@ -685,457 +961,270 @@ const AccessControl = () => {
       : 0;
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      {/* ── Alerts ── */}
+    <AccessControlPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
           onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
+          sx={{ ...accessControlFixedAlertSx, whiteSpace: "pre-line" }}
         >
           {toast.msg}
         </Alert>
       )}
 
-      {/* ── Breadcrumbs ── */}
-      <div className="w-full" style={{ maxWidth: 1000, margin: "0 auto" }}>
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Access Control{" "}
-          </span>
-        </div>
-      </div>
+      <AccessControlBreadcrumb />
 
-      {/* Main Content */}
-      <div
-        className="w-full mx-auto"
-        style={{
-          maxWidth: 1000,
-          background: C.cardBg,
-          borderRadius: 10,
-          overflow: "hidden",
-          boxShadow: C.cardShadow,
-          marginBottom: 24,
-          border: `1.5px solid ${C.cardBorder}`,
-        }}
-      >
-        {/* ── Toolbar ── */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 12,
-            alignItems: "center",
-            justifyContent: "space-between",
-            minHeight: 44,
-            padding: "7px 14px",
-            borderBottom: `1px solid ${C.cardBorder}`,
-            background: "#ffffff",
-            borderTopLeftRadius: CARD_RADIUS,
-            borderTopRightRadius: CARD_RADIUS,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {selected.length > 0 && (
-              <span
-                style={{
-                  background: "#eff6ff",
-                  color: C.accent,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 12px",
-                  borderRadius: 999,
-                  border: `1px solid ${C.accent}`,
-                }}
-              >
-                {selected.length} selected
-              </span>
-            )}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <Btn
-              variant="cancel"
-              onClick={handleInverse}
-              disabled={loading.delete || commands.length === 0}
-              style={{ height: 30 }}
-            >
-              Inverse
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleDelete}
-              disabled={selected.length === 0 || loading.delete}
-              style={{ height: 30 }}
-            >
-              <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-              {loading.delete ? "Deleting..." : "Delete"}
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleClearAll}
-              disabled={commands.length === 0 || loading.delete}
-              style={{ height: 30 }}
-            >
-              {loading.delete ? "Clearing..." : "Clear All"}
-            </Btn>
-            <Btn
-              variant="primary"
-              onClick={() => handleOpenModal()}
-              disabled={loading.save}
-              style={{ height: 30 }}
-            >
-              + Add New
-            </Btn>
-          </div>
-        </div>
-
-        <div
-          ref={commands.length > 0 ? tableScrollRef : undefined}
-          className={commands.length > 0 ? "scrollbar-hide w-full" : "w-full"}
-          style={
-            commands.length === 0
-              ? {
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 150,
-                  padding: 24,
-                  textAlign: "center",
-                }
-              : {
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  flex: 1,
-                }
-          }
-          onScroll={
-            commands.length > 0
-              ? () => {
-                  if (tableScrollRef.current) {
-                    const el = tableScrollRef.current;
-                    setScrollState({
-                      left: el.scrollLeft,
-                      width: el.clientWidth,
-                      scrollWidth: el.scrollWidth,
-                    });
-                    setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-                  }
-                }
-              : undefined
-          }
-        >
-          {commands.length === 0 ? (
-            <>
-              <div
-                style={{
-                  color: "#3E5475",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  marginBottom: 16,
-                }}
-              >
-                No command configured!
-              </div>
-              <Btn
-                onClick={() => handleOpenModal()}
-                variant="cancel"
-                disabled={loading.save}
-                style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-              >
-                + Add New Command
-              </Btn>
-            </>
-          ) : (
-            <table
+      <div style={accessControlCardShellStyle}>
+        <div style={accessControlTableContainerStyle}>
+          <div style={accessControlToolbarStyle}>
+            <div
               style={{
-                width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
-                minWidth: 900,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
               }}
             >
-              <thead>
-                <tr>
-                  <TH
-                    style={{
-                      width: 40,
-                      padding: 0,
-                      borderLeft: "none",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={
-                        commands.length > 0 &&
-                        selected.length === commands.length
-                      }
-                      indeterminate={
-                        selected.length > 0 && selected.length < commands.length
-                      }
-                      onChange={(e) =>
-                        e.target.checked ? handleCheckAll() : handleUncheckAll()
-                      }
-                      sx={checkboxSx}
-                    />
-                  </TH>
-                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>Id</TH>
-                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                    Command
-                  </TH>
-                  <TH
-                    style={{
-                      width: 70,
-                      borderRight: "none",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    Modify
-                  </TH>
-                </tr>
-              </thead>
-              <tbody>
-                {pagedCommands.map((cmd, pageIdx) => {
-                  const rowIdx = (page - 1) * itemsPerPage + pageIdx;
-                  const isLastRow = pageIdx === pagedCommands.length - 1;
-                  const isSelected = selected.includes(rowIdx);
-                  const rowBg = isSelected
-                    ? "#f0f9ff"
-                    : pageIdx % 2 === 1
-                      ? "#f8fafc"
-                      : "#ffffff";
-                  const lastRowCellStyle = isLastRow
-                    ? { borderBottom: "none" }
-                    : {};
+              {selected.length > 0 && (
+                <span style={accessControlSelectedBadgeStyle}>
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={loading.delete || commands.length === 0}
+                style={accessControlToolbarBtnStyle}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={selected.length === 0 || loading.delete}
+                style={accessControlToolbarBtnStyle}
+              >
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                {loading.delete ? "Deleting..." : "Delete"}
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={commands.length === 0 || loading.delete}
+                style={accessControlToolbarBtnStyle}
+              >
+                {loading.delete ? "Clearing..." : "Clear All"}
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                disabled={loading.save}
+                style={accessControlToolbarBtnStyle}
+              >
+                + Add New
+              </Btn>
+            </div>
+          </div>
 
-                  return (
-                    <tr
-                      key={rowIdx}
+          {commands.length === 0 ? (
+            <AccessControlTableEmptyState
+              onAddNew={() => handleOpenModal()}
+              disabled={loading.save}
+            />
+          ) : (
+            <div
+              ref={tableScrollRef}
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                flex: 1,
+              }}
+              onScroll={() => {
+                if (tableScrollRef.current) {
+                  const el = tableScrollRef.current;
+                  setScrollState({
+                    left: el.scrollLeft,
+                    width: el.clientWidth,
+                    scrollWidth: el.scrollWidth,
+                  });
+                  setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
+                }
+              }}
+            >
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                  tableLayout: "auto",
+                  minWidth: 900,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <TH
                       style={{
-                        background: rowBg,
-                        transition: "background 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected)
-                          e.currentTarget.style.background = "#f1f5f9";
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected)
-                          e.currentTarget.style.background = rowBg;
+                        width: 40,
+                        padding: 0,
+                        borderLeft: "none",
                       }}
                     >
-                      <td
+                      <Checkbox
+                        size="small"
+                        checked={
+                          commands.length > 0 &&
+                          selected.length === commands.length
+                        }
+                        indeterminate={
+                          selected.length > 0 &&
+                          selected.length < commands.length
+                        }
+                        onChange={(e) =>
+                          e.target.checked
+                            ? handleCheckAll()
+                            : handleUncheckAll()
+                        }
+                        sx={checkboxSx}
+                      />
+                    </TH>
+                    <TH style={{ width: 36 }}>Id</TH>
+                    <TH>Command</TH>
+                    <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedCommands.map((cmd, pageIdx) => {
+                    const rowIdx = (page - 1) * itemsPerPage + pageIdx;
+                    const isLastRow = pageIdx === pagedCommands.length - 1;
+                    const isSelected = selected.includes(rowIdx);
+                    const rowBg = getAccessControlRowBg(isSelected, pageIdx);
+                    const lastRowCellStyle = isLastRow
+                      ? { borderBottom: "none" }
+                      : {};
+
+                    return (
+                      <tr
+                        key={rowIdx}
                         style={{
-                          ...tdStyle,
                           background: rowBg,
-                          borderLeft: "none",
-                          width: 36,
-                          ...lastRowCellStyle,
-                          ...(isLastRow
-                            ? { borderBottomLeftRadius: CARD_RADIUS }
-                            : {}),
+                          transition: "background 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = "#f8fafc";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected)
+                            e.currentTarget.style.background = rowBg;
                         }}
                       >
-                        <Checkbox
-                          size="small"
-                          checked={isSelected}
-                          onChange={() => handleSelectRow(rowIdx)}
-                          disabled={loading.delete}
-                          sx={checkboxSx}
-                        />
-                      </td>
-                      <td
-                        style={{
-                          ...tdStyle,
-                          background: rowBg,
-                          ...lastRowCellStyle,
-                        }}
-                      >
-                        {cmd.index}
-                      </td>
-                      <td
-                        style={{
-                          ...tdStyle,
-                          background: rowBg,
-                          ...lastRowCellStyle,
-                        }}
-                      >
-                        {cmd.command}
-                      </td>
-                      <td
-                        style={{
-                          ...tdStyle,
-                          background: rowBg,
-                          borderRight: "none",
-                          ...lastRowCellStyle,
-                          ...(isLastRow
-                            ? { borderBottomRightRadius: CARD_RADIUS }
-                            : {}),
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
+                        <td
+                          style={getAccessControlTdStyle(rowBg, lastRowCellStyle, {
+                            width: 36,
+                            borderLeft: "none",
+                          })}
                         >
-                          <EditDocumentIcon
-                            titleAccess="Edit"
-                            onClick={() => {
-                              if (!loading.delete) handleOpenModal(cmd, rowIdx);
-                            }}
-                            style={{
-                              cursor: loading.delete
-                                ? "not-allowed"
-                                : "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: loading.delete ? 0.4 : 0.7,
-                              transition: "opacity 0.15s ease",
-                              pointerEvents: loading.delete ? "none" : "auto",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!loading.delete)
-                                e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!loading.delete)
-                                e.currentTarget.style.opacity = "0.7";
-                            }}
+                          <Checkbox
+                            size="small"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(rowIdx)}
+                            disabled={loading.delete}
+                            sx={checkboxSx}
                           />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td style={getAccessControlTdStyle(rowBg, lastRowCellStyle)}>
+                          {cmd.index}
+                        </td>
+                        <td style={getAccessControlTdStyle(rowBg, lastRowCellStyle)}>
+                          {cmd.command}
+                        </td>
+                        <td
+                          style={getAccessControlTdStyle(rowBg, lastRowCellStyle, {
+                            borderRight: "none",
+                          })}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <AccessControlEditIcon
+                              disabled={loading.delete}
+                              onClick={() => handleOpenModal(cmd, rowIdx)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
-        </div>
 
-        {/* ── Footer ── */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 12,
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "7px 14px",
-            background: C.footerBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: CARD_RADIUS,
-            borderBottomRightRadius: CARD_RADIUS,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: 12,
-            }}
-          >
+          <div style={accessControlFooterStyle}>
             <span style={{ fontSize: 11, color: C.mutedText }}>
-              Showing {commands.length} record{commands.length !== 1 ? "s" : ""}
+              Showing {commands.length} record
+              {commands.length !== 1 ? "s" : ""}
             </span>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <Btn
-              variant="primary"
-              onClick={handleApply}
-              disabled={loading.apply}
-              style={{ height: 30 }}
-            >
-              {loading.apply && (
-                <CircularProgress size={12} color="inherit" sx={{ mr: 0.5 }} />
-              )}{" "}
-              Apply
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={async () => {
-                const latestInfo = await loadIptablesInfo();
-                setExecutionLogs(latestInfo || iptablesInfo);
-                showToast(
-                  "Log view reset to current iptables configuration",
-                  "info",
-                );
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
               }}
-              disabled={loading.apply}
-              style={{ height: 30 }}
             >
-              Cancel
-            </Btn>
+              <Btn
+                variant="primary"
+                onClick={handleApply}
+                disabled={loading.apply}
+                style={accessControlFooterBtnStyle}
+                startIcon={
+                  loading.apply ? (
+                    <CircularProgress size={11} style={{ color: "#fff" }} />
+                  ) : null
+                }
+              >
+                Apply
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={async () => {
+                  const latestInfo = await loadIptablesInfo();
+                  setExecutionLogs(latestInfo || iptablesInfo);
+                  showToast(
+                    "Log view reset to current iptables configuration",
+                    "info",
+                  );
+                }}
+                disabled={loading.apply}
+                style={accessControlFooterBtnStyle}
+              >
+                Cancel
+              </Btn>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Iptables Info Log Field */}
-      <div className="w-full max-w-[900px] mx-auto mt-4 flex flex-col items-center">
-        <div className="text-gray-600 text-sm font-semibold mb-2 text-center">
-          Iptables Info
+      <div style={accessControlLogSectionStyle}>
+        <div style={accessControlLogTitleStyle}>Iptables Info</div>
+        <div style={accessControlLogBoxStyle}>
+          <pre style={accessControlLogPreStyle}>{executionLogs}</pre>
         </div>
-        <div
-          className="w-full bg-white border-2 border-gray-400 rounded-md shadow-sm overflow-y-auto p-3 resize-y"
-          style={{ minHeight: 140, maxHeight: 320 }}
-        >
-          <pre
-            className="w-full h-full bg-white text-gray-800 text-xs font-mono whitespace-pre-wrap m-0 p-0"
-            style={{ minHeight: 120, maxHeight: 260, fontSize: "11px" }}
-          >
-            {executionLogs}
-          </pre>
-        </div>
-        <div
-          className="mt-2 text-[11px] text-center"
-          style={{ color: "#dc2626" }}
-        >
+        <div style={accessControlLogNotesStyle}>
           <div>
             Note: Please don't enable "SIP" =&gt; "Calls from SIP Trunk Address
             only".
@@ -1147,115 +1236,92 @@ const AccessControl = () => {
         </div>
       </div>
 
-      {/* Modal for Add/Edit Command */}
       <Dialog
         open={showModal}
         onClose={() => {
           if (!loading.save) handleCloseModal();
         }}
         maxWidth={false}
-        className="z-50"
         slotProps={{
-          backdrop: {
-            sx: {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          },
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
         PaperProps={{
           sx: {
             width: 500,
-            maxWidth: "95vw",
+            maxWidth: "96vw",
             mx: "auto",
+            p: 0,
             borderRadius: "8px",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
-            backgroundImage: "none",
+            overflow: "hidden",
           },
         }}
         disableRestoreFocus
         disableEnforceFocus
       >
         <DialogTitle
-          sx={{
-            fontWeight: 600,
-            fontSize: "16px",
+          style={{
+            background: "#1e2d42",
             color: "#ffffff",
-            backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.divider}`,
-            px: 3,
-            py: 2,
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: "8px",
-            borderTopRightRadius: "8px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           Access Control Command
         </DialogTitle>
-        <DialogContent
-          sx={{
-            p: "24px",
-            backgroundColor: "#ffffff",
-          }}
-        >
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               gap: 14,
+              width: "100%",
               background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
-              marginTop: 22,
             }}
           >
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
                 gap: 12,
+                width: "100%",
               }}
             >
-             <Tooltip
-  title={tooltips.index}
-  {...tooltipProps}
->
-  <span
-    style={{
-      width: 170,
-      display: "inline-block",
-    }}
-  >
-    <label
-      style={{
-        width: 170,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        textAlign: "left",
-        whiteSpace: "nowrap",
-      }}
-    >
-      Index:
-    </label>
-  </span>
-</Tooltip>
-              <div style={{ width: "min(100%, 320px)" }}>
+              <Tooltip title={tooltips.index} {...tooltipProps}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    width: "100%",
+                    maxWidth: 220,
+                    flexShrink: 0,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                    cursor: "help",
+                  }}
+                >
+                  Index:
+                </label>
+              </Tooltip>
+              <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                 <input
                   type="text"
                   value={form.index || ""}
                   onChange={(e) => handleChange("index", e.target.value)}
                   disabled={editIndex !== null}
                   placeholder="Auto-generated"
-                  style={{
-                    ...systemModalFieldInputStyle,
-                    background: editIndex !== null ? "#f1f5f9" : "#ffffff",
-                    color: editIndex !== null ? "#94a3b8" : "#1e293b",
-                    cursor: editIndex !== null ? "not-allowed" : "text",
-                  }}
+                  style={
+                    editIndex !== null
+                      ? disabledInputStyle
+                      : systemModalFieldInputStyle
+                  }
                   {...(editIndex === null ? inputInteraction : {})}
                 />
               </div>
@@ -1265,35 +1331,28 @@ const AccessControl = () => {
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
                 gap: 12,
+                width: "100%",
               }}
             >
-            <Tooltip
-  title={tooltips.command}
-  {...tooltipProps}
->
-  <span
-    style={{
-      width: 170,
-      display: "inline-block",
-    }}
-  >
-    <label
-      style={{
-        width: 170,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        textAlign: "left",
-        whiteSpace: "nowrap",
-      }}
-    >
-      Command:
-    </label>
-  </span>
-</Tooltip>
-              <div style={{ width: "min(100%, 320px)" }}>
+              <Tooltip title={tooltips.command} {...tooltipProps}>
+                <label
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.labelText,
+                    width: "100%",
+                    maxWidth: 220,
+                    flexShrink: 0,
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                    cursor: "help",
+                  }}
+                >
+                  Command:
+                </label>
+              </Tooltip>
+              <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                 <input
                   type="text"
                   value={form.command || ""}
@@ -1307,22 +1366,26 @@ const AccessControl = () => {
           </div>
         </DialogContent>
         <DialogActions
-          sx={{
+          style={{
+            display: "flex",
             justifyContent: "center",
-            gap: 2,
-            py: "10px",
-            px: "16px",
-            borderTop: `1px solid ${C.divider}`,
-            backgroundColor: "#f8fafc",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={accessControlFooterBtnStyle}
             startIcon={
-              loading.save && <CircularProgress size={16} color="inherit" />
+              loading.save ? (
+                <CircularProgress size={11} style={{ color: "#fff" }} />
+              ) : null
             }
           >
             {loading.save ? "Saving..." : "Save"}
@@ -1331,13 +1394,13 @@ const AccessControl = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={accessControlFooterBtnStyle}
           >
             Close
           </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+    </AccessControlPageShell>
   );
 };
 

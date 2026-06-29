@@ -93,7 +93,7 @@ const C = {
   cardShadow:
     "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText:  "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
@@ -179,6 +179,7 @@ const modalSelectSx = {
     minHeight: 36,
     height: 36,
     backgroundColor: "#fff",
+    color: C.labelText,
   },
 };
 
@@ -211,16 +212,7 @@ const advancedPageInnerStyle = {
   display: "flex",
   flexDirection: "column",
 };
-
-const pageTitleStyle = {
-  fontSize: 22,
-  fontWeight: 700,
-  color: C.strongText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-  flexShrink: 0,
-};
-
+                                      
 const panelCardStyle = {
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
@@ -247,8 +239,8 @@ const panelToolbarStyle = {
 
 const panelSectionTitleStyle = {
   fontSize: 14,
-  fontWeight: 700,
-  color: C.strongText,
+  fontWeight: 500,
+  color: C.labelText,
   letterSpacing: "-0.01em",
 };
 
@@ -886,7 +878,7 @@ const Blacklist = () => {
                 <span
                   style={{
                     background: "#eff6ff",
-                    color: C.accent,
+                    color: C.labelText,
                     fontSize: 11,
                     fontWeight: 700,
                     padding: "4px 10px",
@@ -1121,7 +1113,6 @@ const Blacklist = () => {
         </Alert>
       )}
 
-      <h1 style={pageTitleStyle}>Blacklist</h1>
       <BlacklistBreadcrumb current="Blacklist" />
 
       {isInitialLoading ? (
@@ -1149,6 +1140,8 @@ const Blacklist = () => {
               flexWrap: "wrap",
               width: "100%",
               alignItems: "flex-start",
+              marginBottom: 16,
+
             }}
           >
             {renderTablePanel({
@@ -1179,7 +1172,7 @@ const Blacklist = () => {
 
           <p
             style={{
-              color: C.amber,
+              color: C.accent,
               fontSize: 11,
               lineHeight: 1.5,
               margin: "16px 0 0",
@@ -1218,6 +1211,7 @@ const Blacklist = () => {
             fontSize: 16,
             textAlign: "center",
             padding: "14px 24px",
+            textColor: C.labelText,
             letterSpacing: "-0.01em",
           }}
         >
