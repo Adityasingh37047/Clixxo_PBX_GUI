@@ -23,23 +23,29 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#30415A",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
   errorRed: "#dc2626",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+// ── Local field UI (matches Network.jsx design language) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -56,19 +62,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -105,7 +111,7 @@ const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
   padding: "6px 10px",
-  borderRadius: 10,
+  borderRadius: FIELD_RADIUS,
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
@@ -120,9 +126,11 @@ const systemFieldSelectStyle = {
   ...systemFieldInputStyle,
   appearance: "auto",
   minHeight: 36,
+  height: 36,
   paddingTop: 7,
   paddingBottom: 7,
   lineHeight: 1.35,
+  cursor: "pointer",
 };
 
 const inputStyle = systemFieldInputStyleNarrow;
@@ -132,16 +140,15 @@ const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const advancedFormBtnStyle = {
@@ -156,9 +163,9 @@ const advancedFormBtnStyle = {
 
 const checkboxSx = {
   padding: "4px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  color: OUTLINED_BORDER,
+  "&.Mui-checked": { color: OUTLINED_FOCUS },
+  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
   "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
@@ -184,12 +191,16 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     error: {
       background: C.errorRed,
@@ -199,21 +210,38 @@ const Btn = ({
   };
 
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "error":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      error: "#b91c1c",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      error: "#991b1b",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -225,24 +253,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {startIcon && (
@@ -266,11 +311,11 @@ const disabledInputStyle = {
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 16px 0" : "28px 0 16px 0",
       position: "relative",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
     <span
       style={{
         position: "absolute",
@@ -279,12 +324,163 @@ const SectionHeading = ({ title, isFirst = false }) => (
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontWeight: 500,
+        color: C.labelText,
+        letterSpacing: "0.01em",
       }}
     >
       {title}
     </span>
+  </div>
+);
+
+const managementPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const managementPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const managementCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const managementTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const managementToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const managementFieldGroupStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+  width: "100%",
+};
+
+const managementDashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+};
+
+const managementDashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 24px",
+  background: C.cardBg,
+};
+
+const managementDashboardDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+  margin: "14px 0",
+  flexShrink: 0,
+};
+
+const managementDashboardSectionTitleStyle = {
+  fontSize: 13,
+  fontWeight: 500,
+  color: C.labelText,
+  marginBottom: 12,
+  flexShrink: 0,
+  letterSpacing: "0.01em",
+};
+
+const managementDashboardFieldsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  gap: 0,
+};
+
+/** UI-only column split — mirrors Network.jsx two-panel layout */
+const MANAGEMENT_LEFT_SECTION_NAMES = new Set([
+  "WEB Management",
+  "SSH Management Config",
+  "Remote Data Capture Config",
+  "FTP Config",
+  "Telnet Config",
+]);
+
+const managementFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const ManagementPageShell = ({ children }) => (
+  <div style={managementPageWrapStyle} data-native-scroll>
+    <div style={managementPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const ManagementBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>Management</span>
   </div>
 );
 
@@ -294,19 +490,16 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
@@ -383,6 +576,7 @@ const FieldLabel = ({ name, children }) => {
         width: "100%",
         maxWidth: 220,
         flexShrink: 0,
+        cursor: tooltips[name] ? "help" : "default",
       }}
     >
       {children}
@@ -1495,7 +1689,7 @@ const Management = () => {
               minWidth: 0,
               maxWidth: "none",
               width: "auto",
-              borderRadius: 4,
+              borderRadius: FIELD_RADIUS,
               borderColor: fieldErrors[field.name] ? C.errorRed : C.cardBorder,
             }}
             onFocus={
@@ -1520,97 +1714,288 @@ const Management = () => {
     </div>
   );
 
+  const renderManagementSection = (section, isFirst) => (
+    <div key={section.section} className="flex flex-col gap-0">
+      <SectionHeading title={section.section} isFirst={isFirst} />
+
+      <div
+        className="flex flex-col gap-3 w-full"
+        style={managementFieldGroupStyle}
+      >
+        {section.fields.map((field, fieldIdx) => {
+          if (
+            field.conditional &&
+            form[field.conditional] !== field.conditionalValue
+          ) {
+            if (
+              Array.isArray(field.conditionalValue) &&
+              !field.conditionalValue.includes(form[field.conditional])
+            ) {
+              return null;
+            }
+            if (!Array.isArray(field.conditionalValue)) {
+              return null;
+            }
+          }
+          if (Array.isArray(field.conditionalAll)) {
+            const allOk = field.conditionalAll.every(
+              (c) => form[c.name] === c.value,
+            );
+            if (!allOk) return null;
+          }
+
+          if (
+            field.name === "systemTime" &&
+            section.fields[fieldIdx + 1] &&
+            section.fields[fieldIdx + 1].name === "modifyTime"
+          ) {
+            return renderSystemTimeInline(
+              field,
+              section.fields[fieldIdx + 1],
+            );
+          }
+          if (
+            field.name === "modifyTime" &&
+            section.fields[fieldIdx - 1] &&
+            section.fields[fieldIdx - 1].name === "systemTime"
+          ) {
+            return null;
+          }
+
+          return (
+            <div
+              key={section.section + field.name}
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+            >
+              <FieldLabel name={field.name}>{field.label}</FieldLabel>
+
+              <div className="flex-1 w-full max-w-[280px]">
+                {field.type === "text" && (
+                  <div className="flex flex-col gap-1 w-full">
+                    <input
+                      type={
+                        field.name === "webPort" ||
+                        field.name === "webTimeout" ||
+                        field.name === "sshPort" ||
+                        field.name === "synchronizingCycle"
+                          ? "number"
+                          : "text"
+                      }
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      style={{
+                        ...inputStyle,
+                        borderColor: fieldErrors[field.name]
+                          ? C.errorRed
+                          : C.cardBorder,
+                      }}
+                      onFocus={inputInteraction.onFocus}
+                      onBlur={inputInteraction.onBlur}
+                      onMouseEnter={inputInteraction.onMouseEnter}
+                      onMouseLeave={inputInteraction.onMouseLeave}
+                      min={
+                        field.name === "webPort" ||
+                        field.name === "webTimeout" ||
+                        field.name === "sshPort" ||
+                        field.name === "synchronizingCycle"
+                          ? 1
+                          : undefined
+                      }
+                      max={
+                        field.name === "webTimeout"
+                          ? 3600
+                          : field.name === "synchronizingCycle"
+                            ? 86400
+                            : field.name === "webPort" ||
+                                field.name === "sshPort"
+                              ? 65535
+                              : undefined
+                      }
+                    />
+                    {(field.name === "webWhitelist" ||
+                      field.name === "sshWhitelist" ||
+                      field.name === "ftpWhitelist" ||
+                      field.name === "telnetWhitelist") && (
+                      <span style={{ fontSize: 11, color: C.mutedText }}>
+                        IP addresses are separated by '.'
+                      </span>
+                    )}
+                    {field.name === "webIpAddress" && (
+                      <span style={{ fontSize: 11, color: C.mutedText }}>
+                        IP addresses are separated by ','
+                      </span>
+                    )}
+                    {field.unit && (
+                      <span style={{ fontSize: 11, color: C.mutedText }}>
+                        {field.unit}
+                      </span>
+                    )}
+                    {fieldErrors[field.name] && (
+                      <span style={{ fontSize: 11, color: C.errorRed }}>
+                        {fieldErrors[field.name]}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {field.type === "textarea" && (
+                  <div className="flex flex-col gap-1 w-full">
+                    <textarea
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      style={{
+                        ...inputStyle,
+                        minHeight: 60,
+                        resize: "vertical",
+                        borderColor: fieldErrors[field.name]
+                          ? C.errorRed
+                          : C.cardBorder,
+                      }}
+                      onFocus={inputInteraction.onFocus}
+                      onBlur={inputInteraction.onBlur}
+                      onMouseEnter={inputInteraction.onMouseEnter}
+                      onMouseLeave={inputInteraction.onMouseLeave}
+                    />
+                    {fieldErrors[field.name] && (
+                      <span style={{ fontSize: 11, color: C.errorRed }}>
+                        {fieldErrors[field.name]}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {field.type === "select" && (
+                  <div className="flex flex-col gap-1 w-full">
+                    <select
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      style={{
+                        ...selectStyle,
+                        borderColor: fieldErrors[field.name]
+                          ? C.errorRed
+                          : C.cardBorder,
+                      }}
+                      onFocus={inputInteraction.onFocus}
+                      onBlur={inputInteraction.onBlur}
+                      onMouseEnter={inputInteraction.onMouseEnter}
+                      onMouseLeave={inputInteraction.onMouseLeave}
+                    >
+                      {(() => {
+                        const options =
+                          field.name === "captureRtpInterface"
+                            ? [
+                                {
+                                  value: "lan1",
+                                  label: lanIps.lan1
+                                    ? `LAN1: ${lanIps.lan1}`
+                                    : "LAN 1",
+                                },
+                                {
+                                  value: "lan2",
+                                  label: lanIps.lan2
+                                    ? `LAN2: ${lanIps.lan2}`
+                                    : "LAN 2",
+                                },
+                              ]
+                            : field.options;
+                        return options.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ));
+                      })()}
+                    </select>
+                    {fieldErrors[field.name] && (
+                      <span style={{ fontSize: 11, color: C.errorRed }}>
+                        {fieldErrors[field.name]}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {field.type === "radio" && (
+                  <div className="flex flex-wrap items-center gap-4">
+                    {field.options.map((opt) => (
+                      <label
+                        key={opt}
+                        className="flex items-center gap-1 cursor-pointer"
+                      >
+                        <input
+                          type="radio"
+                          name={field.name}
+                          value={opt}
+                          checked={form[field.name] === opt}
+                          onChange={handleChange}
+                          style={{ accentColor: OUTLINED_FOCUS }}
+                        />
+                        <span style={{ fontSize: 13, color: C.labelText }}>
+                          {opt}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {field.type === "checkbox" && (
+                  <div className="flex items-center min-h-[32px]">
+                    <Checkbox
+                      name={field.name}
+                      size="small"
+                      checked={!!form[field.name]}
+                      onChange={handleCheckboxChange(field.name)}
+                      sx={checkboxSx}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const leftSections = MANAGEMENT_SECTIONS.filter((s) =>
+    MANAGEMENT_LEFT_SECTION_NAMES.has(s.section),
+  );
+  const rightSections = MANAGEMENT_SECTIONS.filter(
+    (s) => !MANAGEMENT_LEFT_SECTION_NAMES.has(s.section),
+  );
+
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {/* Alerts */}
-        {error && (
-          <Alert
-            severity="error"
-            onClose={() => setError("")}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {typeof error === "string" ? error : JSON.stringify(error)}
-          </Alert>
-        )}
+    <ManagementPageShell>
+      {error && (
+        <Alert
+          severity="error"
+          onClose={() => setError("")}
+          sx={managementFixedAlertSx}
+        >
+          {typeof error === "string" ? error : JSON.stringify(error)}
+        </Alert>
+      )}
 
-        {toast.msg && (
-          <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: error ? 88 : 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              whiteSpace: "pre-line",
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {toast.msg}
-          </Alert>
-        )}
-
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            ...managementFixedAlertSx,
+            top: error ? 88 : 20,
+            whiteSpace: "pre-line",
           }}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Management
-          </span>
-        </div>
+          {toast.msg}
+        </Alert>
+      )}
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Header */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
+      <ManagementBreadcrumb />
+
+      <div style={managementCardShellStyle}>
+        <div style={managementTableContainerStyle}>
+          <div style={managementToolbarStyle}>
             <span
               style={{
                 fontSize: 13,
@@ -1623,349 +2008,88 @@ const Management = () => {
             </span>
           </div>
 
-          {/* Card Body */}
-          <div style={{ padding: loading ? "24px 32px" : "24px 32px 0" }}>
-            {loading ? (
-              <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <CircularProgress size={40} sx={{ color: C.primary }} />
+          {loading ? (
+            <div
+              className="flex items-center justify-center w-full"
+              style={{ minHeight: 400, padding: "48px 32px" }}
+            >
+              <div className="text-center">
+                <CircularProgress size={40} sx={{ color: C.accent }} />
                 <div
-                  style={{ marginTop: 12, color: C.mutedText, fontSize: 13 }}
+                  style={{
+                    marginTop: 12,
+                    fontSize: 13,
+                    color: C.mutedText,
+                    fontWeight: 500,
+                  }}
                 >
                   Loading management parameters...
                 </div>
               </div>
-            ) : (
+            </div>
+          ) : (
+            <>
               <form
                 id="management-form"
                 key={formKey}
                 onSubmit={handleSave}
                 className="flex flex-col gap-2"
               >
-                <div style={{ marginBottom: 12 }}>
-                {MANAGEMENT_SECTIONS.map((section, idx) => (
-                  <div key={section.section} className="flex flex-col gap-0">
-                    <SectionHeading
-                      title={section.section}
-                      isFirst={idx === 0}
-                    />
-
-                    <div
-                      className="flex flex-col gap-3 w-full"
-                      style={{ maxWidth: 640, margin: "0 auto" }}
-                    >
-                      {section.fields.map((field, fieldIdx) => {
-                        // Check if field should be conditionally hidden (single condition)
-                        if (
-                          field.conditional &&
-                          form[field.conditional] !== field.conditionalValue
-                        ) {
-                          // Handle array conditional values (e.g., ['whitelist', 'blacklist'])
-                          if (
-                            Array.isArray(field.conditionalValue) &&
-                            !field.conditionalValue.includes(
-                              form[field.conditional],
-                            )
-                          ) {
-                            return null;
-                          }
-                          // Handle single conditional value
-                          if (!Array.isArray(field.conditionalValue)) {
-                            return null;
-                          }
-                        }
-                        // Support multiple conditions via conditionalAll: [{ name, value }]
-                        if (Array.isArray(field.conditionalAll)) {
-                          const allOk = field.conditionalAll.every(
-                            (c) => form[c.name] === c.value,
-                          );
-                          if (!allOk) return null;
-                        }
-
-                        // Special case: System Time + Modify inline in the same row
-                        if (
-                          field.name === "systemTime" &&
-                          section.fields[fieldIdx + 1] &&
-                          section.fields[fieldIdx + 1].name === "modifyTime"
-                        ) {
-                          return renderSystemTimeInline(
-                            field,
-                            section.fields[fieldIdx + 1],
-                          );
-                        }
-                        // Skip rendering the modifyTime row (handled above)
-                        if (
-                          field.name === "modifyTime" &&
-                          section.fields[fieldIdx - 1] &&
-                          section.fields[fieldIdx - 1].name === "systemTime"
-                        ) {
-                          return null;
-                        }
-
-                        // Render field
-                        return (
-                          <div
-                            key={section.section + field.name}
-                            className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                          >
-                            <FieldLabel name={field.name}>{field.label}</FieldLabel>
-
-                            <div className="flex-1 w-full max-w-[280px]">
-                              {field.type === "text" && (
-                                <div className="flex flex-col gap-1 w-full">
-                                  <input
-                                    type={
-                                      field.name === "webPort" ||
-                                      field.name === "webTimeout" ||
-                                      field.name === "sshPort" ||
-                                      field.name === "synchronizingCycle"
-                                        ? "number"
-                                        : "text"
-                                    }
-                                    name={field.name}
-                                    value={form[field.name]}
-                                    onChange={handleChange}
-                                    style={{
-                                      ...inputStyle,
-                                      borderColor: fieldErrors[field.name]
-                                        ? C.errorRed
-                                        : C.cardBorder,
-                                    }}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                    min={
-                                      field.name === "webPort" ||
-                                      field.name === "webTimeout" ||
-                                      field.name === "sshPort" ||
-                                      field.name === "synchronizingCycle"
-                                        ? 1
-                                        : undefined
-                                    }
-                                    max={
-                                      field.name === "webTimeout"
-                                        ? 3600
-                                        : field.name === "synchronizingCycle"
-                                          ? 86400
-                                          : field.name === "webPort" ||
-                                              field.name === "sshPort"
-                                            ? 65535
-                                            : undefined
-                                    }
-                                  />
-                                  {/* Helper texts */}
-                                  {(field.name === "webWhitelist" ||
-                                    field.name === "sshWhitelist" ||
-                                    field.name === "ftpWhitelist" ||
-                                    field.name === "telnetWhitelist") && (
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.mutedText,
-                                      }}
-                                    >
-                                      IP addresses are separated by '.'
-                                    </span>
-                                  )}
-                                  {field.name === "webIpAddress" && (
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.mutedText,
-                                      }}
-                                    >
-                                      IP addresses are separated by ','
-                                    </span>
-                                  )}
-                                  {field.unit && (
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.mutedText,
-                                      }}
-                                    >
-                                      {field.unit}
-                                    </span>
-                                  )}
-                                  {fieldErrors[field.name] && (
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                      }}
-                                    >
-                                      {fieldErrors[field.name]}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {field.type === "textarea" && (
-                                <div className="flex flex-col gap-1 w-full">
-                                  <textarea
-                                    name={field.name}
-                                    value={form[field.name]}
-                                    onChange={handleChange}
-                                    style={{
-                                      ...inputStyle,
-                                      minHeight: 60,
-                                      resize: "vertical",
-                                      borderColor: fieldErrors[field.name]
-                                        ? C.errorRed
-                                        : C.cardBorder,
-                                    }}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  />
-                                  {fieldErrors[field.name] && (
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                      }}
-                                    >
-                                      {fieldErrors[field.name]}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {field.type === "select" && (
-                                <div className="flex flex-col gap-1 w-full">
-                                  <select
-                                    name={field.name}
-                                    value={form[field.name]}
-                                    onChange={handleChange}
-                                    style={{
-                                      ...selectStyle,
-                                      borderColor: fieldErrors[field.name]
-                                        ? C.errorRed
-                                        : undefined,
-                                    }}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  >
-                                    {(() => {
-                                      const options =
-                                        field.name === "captureRtpInterface"
-                                          ? [
-                                              {
-                                                value: "lan1",
-                                                label: lanIps.lan1
-                                                  ? `LAN1: ${lanIps.lan1}`
-                                                  : "LAN 1",
-                                              },
-                                              {
-                                                value: "lan2",
-                                                label: lanIps.lan2
-                                                  ? `LAN2: ${lanIps.lan2}`
-                                                  : "LAN 2",
-                                              },
-                                            ]
-                                          : field.options;
-                                      return options.map((opt) => (
-                                        <option
-                                          key={opt.value}
-                                          value={opt.value}
-                                        >
-                                          {opt.label}
-                                        </option>
-                                      ));
-                                    })()}
-                                  </select>
-                                  {fieldErrors[field.name] && (
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                      }}
-                                    >
-                                      {fieldErrors[field.name]}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {field.type === "radio" && (
-                                <div className="flex flex-wrap items-center gap-4">
-                                  {field.options.map((opt) => (
-                                    <label
-                                      key={opt}
-                                      className="flex items-center gap-1 cursor-pointer"
-                                    >
-                                      <input
-                                        type="radio"
-                                        name={field.name}
-                                        value={opt}
-                                        checked={form[field.name] === opt}
-                                        onChange={handleChange}
-                                        style={{ accentColor: C.primary }}
-                                      />
-                                      <span
-                                        style={{
-                                          fontSize: 13,
-                                          color: C.valueText,
-                                        }}
-                                      >
-                                        {opt}
-                                      </span>
-                                    </label>
-                                  ))}
-                                </div>
-                              )}
-
-                              {field.type === "checkbox" && (
-                                <div className="flex items-center min-h-[32px]">
-                                  <Checkbox
-                                    name={field.name}
-                                    size="small"
-                                    checked={!!form[field.name]}
-                                    onChange={handleCheckboxChange(field.name)}
-                                    sx={checkboxSx}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                <div style={managementDashboardGridStyle}>
+                  <div style={managementDashboardColumnStyle}>
+                    <div style={managementDashboardSectionTitleStyle}>
+                      Access &amp; Services
+                    </div>
+                    <div style={managementDashboardFieldsStackStyle}>
+                      {leftSections.map((section, idx) =>
+                        renderManagementSection(section, idx === 0),
+                      )}
                     </div>
                   </div>
-                ))}
+
+                  <div
+                    style={managementDashboardDividerStyle}
+                    aria-hidden="true"
+                  />
+
+                  <div style={managementDashboardColumnStyle}>
+                    <div style={managementDashboardSectionTitleStyle}>
+                      Logging, CDR &amp; Time
+                    </div>
+                    <div style={managementDashboardFieldsStackStyle}>
+                      {rightSections.map((section, idx) =>
+                        renderManagementSection(section, idx === 0),
+                      )}
+                    </div>
+                  </div>
                 </div>
               </form>
-            )}
-          </div>
 
-          {!loading && (
-            <div style={advancedFormInlineFooterStyle}>
-              <Btn
-                variant="primary"
-                type="submit"
-                form="management-form"
-                disabled={loading}
-                style={advancedFormBtnStyle}
-              >
-                Save
-              </Btn>
-              <Btn
-                variant="cancel"
-                type="button"
-                onClick={handleReset}
-                disabled={loading}
-                style={advancedFormBtnStyle}
-              >
-                Reset
-              </Btn>
-            </div>
+              <div style={advancedFormInlineFooterStyle}>
+                <Btn
+                  variant="primary"
+                  type="submit"
+                  form="management-form"
+                  disabled={loading}
+                  style={advancedFormBtnStyle}
+                >
+                  Save
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  type="button"
+                  onClick={handleReset}
+                  disabled={loading}
+                  style={advancedFormBtnStyle}
+                >
+                  Reset
+                </Btn>
+              </div>
+            </>
           )}
         </div>
       </div>
-    </div>
+    </ManagementPageShell>
   );
 };
 

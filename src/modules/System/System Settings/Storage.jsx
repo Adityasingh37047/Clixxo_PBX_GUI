@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   TextField,
   Select,
@@ -15,49 +14,89 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   amber: "#dc2626",
+  errorRed: "#dc2626",
 };
 
 const CARD_RADIUS = 10;
-const SECTION_HEADING_COLOR = "#30415A";
+const FIELD_RADIUS = 6;
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const storageOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW(),
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const muiSelectSx = {
+const storageTextFieldSx = {
+  "& .MuiOutlinedInput-root": storageOutlinedInputRootSx,
+  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const storageSelectSx = {
   fontSize: 13,
   backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...storageOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -65,40 +104,30 @@ const muiSelectSx = {
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
     boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
   },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+};
+
+const storageCompactSelectSx = {
+  ...storageSelectSx,
+  minHeight: 32,
+  height: 32,
+  "& .MuiSelect-select": {
+    ...storageSelectSx["& .MuiSelect-select"],
+    padding: "4px 28px 4px 8px !important",
   },
 };
 
 const modalTextFieldSx = {
-  ...muiTextFieldSx,
+  ...storageTextFieldSx,
   "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
+    ...storageOutlinedInputRootSx,
+    minHeight: 34,
   },
 };
 
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
-};
+const modalSelectSx = storageSelectSx;
 
 const Btn = ({
   children,
@@ -107,6 +136,9 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -128,7 +160,12 @@ const Btn = ({
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -136,66 +173,115 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type || "button"}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
+};
+
+const storageFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
 };
 
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: "16px 0 24px -100px", // sabke liye same
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
       position: "relative",
-      width: "calc(100% + 35px)",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+
     <span
       style={{
         position: "absolute",
@@ -203,15 +289,177 @@ const SectionHeading = ({ title, isFirst = false }) => (
         left: 0,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: SECTION_HEADING_COLOR,
+        fontSize: 13,
+        fontWeight: 500,
+        color: C.labelText,
+        letterSpacing: "0.01em",
       }}
     >
       {title}
     </span>
   </div>
 );
+
+const storagePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const storagePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const storageCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const storageTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const storageToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const storageTabBarStyle = {
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+};
+
+const storageTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: "#374151",
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: C.accent,
+    fontWeight: 700,
+  },
+};
+
+const storageDashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+};
+
+const storageDashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "20px 36px 24px",
+  background: C.cardBg,
+};
+
+const storageDashboardDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+  margin: "14px 0",
+  flexShrink: 0,
+};
+
+const storageFieldGroupStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+};
+
+const storageSingleColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 24px",
+  background: C.cardBg,
+};
+
+const StoragePageShell = ({ children }) => (
+  <div style={storagePageWrapStyle} data-native-scroll>
+    <div style={storagePageInnerStyle}>{children}</div>
+  </div>
+);
+
+const StorageBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>Storage</span>
+  </div>
+);
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
 
 
 
@@ -231,49 +479,32 @@ const FormFieldRow = ({
       alignItems: "center",
       justifyContent: "center",
       gap: 12,
+      width: "100%",
     }}
   >
-  <Tooltip
-  title={tooltip || ""}
-  arrow
-  placement="top"
-  disableHoverListener={!tooltip}
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#ffffff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        maxWidth: 500,
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#ffffff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      color: C.labelText,
-      fontWeight: 600,
-      whiteSpace: "nowrap",
-      textAlign: "left",
-      width: labelWidth,
-      flexShrink: 0,
-      cursor: tooltip ? "help" : "default",
-    }}
-  >
-    {label}
-    {required && <span style={{ color: C.amber }}> *</span>}
-  </label>
-</Tooltip>
+    <Tooltip
+      title={tooltip || ""}
+      disableHoverListener={!tooltip}
+      {...tooltipProps}
+    >
+      <label
+        style={{
+          fontSize: 13,
+          color: C.labelText,
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          textAlign: "left",
+          width: labelWidth,
+          flexShrink: 0,
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {label}
+        {required && <span style={{ color: C.errorRed }}> *</span>}
+      </label>
+    </Tooltip>
 
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+    <div style={{ width: "min(100%, 320px)", flexShrink: 0 }}>{children}</div>
   </div>
 );
 const AUTO_CLEANUP_SECTIONS = [
@@ -490,12 +721,20 @@ const Storage = () => {
         <FormControlLabel
           key={opt}
           value={opt}
-          control={<Radio size="small" />}
+          control={
+            <Radio
+              size="small"
+              sx={{
+                color: OUTLINED_BORDER,
+                "&.Mui-checked": { color: OUTLINED_FOCUS },
+              }}
+            />
+          }
           label={opt}
           sx={{
             "& .MuiFormControlLabel-label": {
-              fontSize: 14,
-              color: "#374151",
+              fontSize: 13,
+              color: C.labelText,
             },
           }}
         />
@@ -542,55 +781,12 @@ const Storage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-        boxSizing: "border-box",
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Storage</span>
-        </div>
+    <StoragePageShell>
+      <StorageBreadcrumb />
 
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: C.cardBg,
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
+      <div style={storageCardShellStyle}>
+        <div style={storageTableContainerStyle}>
+          <div style={storageToolbarStyle}>
             <span
               style={{
                 fontSize: 13,
@@ -599,159 +795,163 @@ const Storage = () => {
                 letterSpacing: "0.02em",
               }}
             >
-              Storage
+            Storage
+
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Btn variant="cancel" style={{ height: 30, minWidth: 90 }}>
+              <Btn variant="cancel" style={storageFormBtnStyle}>
                 Refresh
               </Btn>
-              <Btn variant="primary" style={{ height: 30, minWidth: 90, fontSize: 12 }}>
+              <Btn variant="primary" style={storageFormBtnStyle}>
                 Save
               </Btn>
             </div>
           </div>
 
-          <div
-            style={{
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: C.cardBg,
-            }}
-          >
+          <div style={storageTabBarStyle}>
             <Tabs
               value={tab}
               onChange={(_, v) => setTab(v)}
               variant="fullWidth"
-              TabIndicatorProps={{ style: { backgroundColor: C.accent, height: 2 } }}
-              sx={{
-                minHeight: 45,
-                "& .MuiTab-root": {
-                  color: "#374151",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  textTransform: "none",
-                  minHeight: 45,
-                },
-                "& .MuiTab-root.Mui-selected": {
-                  color: C.accent,
-                  fontWeight: 700,
-                },
+              TabIndicatorProps={{
+                style: { backgroundColor: C.accent, height: 2 },
               }}
+              sx={storageTabsSx}
             >
               <Tab label="Auto Cleanup" />
               <Tab label="Backups" />
             </Tabs>
           </div>
 
-          <div style={{ padding: "24px 32px 32px", boxSizing: "border-box" }}>
-            {tab === 0 && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                  maxWidth: 720,
-                  margin: "0 auto",
-                }}
-              >
-                {AUTO_CLEANUP_SECTIONS.map((section, idx) => (
+          {tab === 0 && (
+            <div style={storageDashboardGridStyle}>
+              <div style={storageDashboardColumnStyle}>
+                {AUTO_CLEANUP_SECTIONS.slice(0, 2).map((section, idx) => (
                   <div key={section.title}>
                     <SectionHeading title={section.title} isFirst={idx === 0} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div style={storageFieldGroupStyle}>
                       {section.fields.map((field) =>
-                        renderField(field, autoCleanupForm, handleAutoCleanupChange),
+                        renderField(
+                          field,
+                          autoCleanupForm,
+                          handleAutoCleanupChange,
+                        ),
                       )}
                     </div>
                   </div>
                 ))}
               </div>
-            )}
 
-            {tab === 1 && (
+              <div style={storageDashboardDividerStyle} aria-hidden="true" />
+
+              <div style={storageDashboardColumnStyle}>
+                {AUTO_CLEANUP_SECTIONS.slice(2).map((section, idx) => (
+                  <div key={section.title}>
+                    <SectionHeading title={section.title} isFirst={idx === 0} />
+                    <div style={storageFieldGroupStyle}>
+                      {section.fields.map((field) =>
+                        renderField(
+                          field,
+                          autoCleanupForm,
+                          handleAutoCleanupChange,
+                        ),
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === 1 && (
+            <div style={storageSingleColumnStyle}>
+              <SectionHeading title="Record Backup" isFirst />
+              <div style={storageFieldGroupStyle}>
+                {BACKUP_FIELDS.map((field) => (
+                  <React.Fragment key={field.name}>
+                    {renderField(field, backupsForm, handleBackupsChange)}
+
+                    {field.name === "uploadTime" &&
+                      backupsForm.uploadTime === "Timing" && (
+                        <FormFieldRow label="Start Time" required>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <Select
+                              size="small"
+                              value={backupsForm.startHour || "00"}
+                              onChange={(e) =>
+                                handleBackupsChange("startHour", e.target.value)
+                              }
+                              sx={{ ...storageCompactSelectSx, width: 56 }}
+                            >
+                              {Array.from({ length: 24 }, (_, i) => (
+                                <MenuItem
+                                  key={i}
+                                  value={String(i).padStart(2, "0")}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {String(i).padStart(2, "0")}
+                                </MenuItem>
+                              ))}
+                            </Select>
+
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                color: C.labelText,
+                              }}
+                            >
+                              :
+                            </span>
+
+                            <Select
+                              size="small"
+                              value={backupsForm.startMinute || "00"}
+                              onChange={(e) =>
+                                handleBackupsChange(
+                                  "startMinute",
+                                  e.target.value,
+                                )
+                              }
+                              sx={{ ...storageCompactSelectSx, width: 56 }}
+                            >
+                              {Array.from({ length: 60 }, (_, i) => (
+                                <MenuItem
+                                  key={i}
+                                  value={String(i).padStart(2, "0")}
+                                  sx={{ fontSize: 13 }}
+                                >
+                                  {String(i).padStart(2, "0")}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </div>
+                        </FormFieldRow>
+                      )}
+                  </React.Fragment>
+                ))}
+              </div>
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                  maxWidth: 720,
-                  margin: "0 auto",
+                  justifyContent: "flex-end",
+                  paddingTop: 4,
                 }}
               >
-                <SectionHeading title="Record Backup" isFirst />
-                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-  {BACKUP_FIELDS.map((field) => (
-    <React.Fragment key={field.name}>
-      {renderField(field, backupsForm, handleBackupsChange)}
-
-      {field.name === "uploadTime" &&
-        backupsForm.uploadTime === "Timing" && (
-          <FormFieldRow label="Start Time" required>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <Select
-                size="small"
-                value={backupsForm.startHour || "00"}
-                onChange={(e) =>
-                  handleBackupsChange("startHour", e.target.value)
-                }
-                sx={{ width: 56 }}
-              >
-                {Array.from({ length: 24 }, (_, i) => (
-                  <MenuItem
-                    key={i}
-                    value={String(i).padStart(2, "0")}
-                  >
-                    {String(i).padStart(2, "0")}
-                  </MenuItem>
-                ))}
-              </Select>
-
-              <span style={{ fontWeight: 600 }}>:</span>
-
-              <Select
-                size="small"
-                value={backupsForm.startMinute || "00"}
-                onChange={(e) =>
-                  handleBackupsChange("startMinute", e.target.value)
-                }
-                sx={{ width: 56 }}
-              >
-                {Array.from({ length: 60 }, (_, i) => (
-                  <MenuItem
-                    key={i}
-                    value={String(i).padStart(2, "0")}
-                  >
-                    {String(i).padStart(2, "0")}
-                  </MenuItem>
-                ))}
-              </Select>
-            </div>
-          </FormFieldRow>
-        )}
-    </React.Fragment>
-  ))}
-</div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    paddingTop: 8,
-                  }}
-                >
-                  <Btn variant="primary" style={{ minWidth: 110, height: 33, fontSize: 13 }}>
-                    FTP Test
-                  </Btn>
-                </div>
+                <Btn variant="primary" style={storageFormBtnStyle}>
+                  FTP Test
+                </Btn>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </StoragePageShell>
   );
 };
 

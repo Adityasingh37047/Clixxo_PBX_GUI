@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Tooltip } from "@mui/material";
 import {
   IP_ROUTING_TABLE_COLUMNS,
   IP_ROUTING_TABLE_MODAL_FIELDS,
@@ -7,142 +6,189 @@ import {
 } from "../../../constants/IPRoutingTableConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Select,
   MenuItem,
   Alert,
   Checkbox,
+  Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
-  gridHeaderBg: "#F8FAFC",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
+  valueText: "#0f172a",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
-  mutedText: "#94a3b8",
   accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
   errorRed: "#dc2626",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
-const setFieldDefault = (el) => {
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const IP_ROUTE_TABLE_CARD_RADIUS = 10;
+
+const ipRouteOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const ipRouteModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  borderRadius: "6px",
+  ...ipRouteOutlinedInputRootSx,
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "6px",
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+  },
+};
+
+const setIpRouteFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
   el.style.borderWidth = "1px";
   el.style.boxShadow = "none";
 };
 
-const setFieldHover = (el) => {
+const setIpRouteFieldHover = (el) => {
   el.style.borderColor = OUTLINED_HOVER;
   el.style.borderWidth = "1px";
   el.style.boxShadow = "none";
 };
 
-const setFieldFocus = (el) => {
+const setIpRouteFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
-const nativeFieldInputStyle = {
-  height: 28,
-  width: 200,
-  padding: "0 8px",
-  fontSize: 13,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
-  outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
-  boxSizing: "border-box",
-  boxShadow: "none",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-};
-
-const inputInteraction = {
+const ipRouteModalInputInteraction = {
   onFocus: (e) => {
     if (e.target.disabled) return;
-    setFieldFocus(e.target);
+    setIpRouteFieldFocus(e.target);
   },
   onBlur: (e) => {
-    setFieldDefault(e.target);
+    setIpRouteFieldDefault(e.target);
   },
   onMouseEnter: (e) => {
     if (e.target.disabled) return;
     if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
+      setIpRouteFieldFocus(e.target);
     } else {
-      setFieldHover(e.target);
+      setIpRouteFieldHover(e.target);
     }
   },
   onMouseLeave: (e) => {
     if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
+      setIpRouteFieldFocus(e.target);
     } else {
-      setFieldDefault(e.target);
+      setIpRouteFieldDefault(e.target);
     }
   },
 };
 
-const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
-
-const systemModalFieldInputStyle = {
-  ...nativeFieldBase,
+const ipRouteModalFieldInputStyle = {
   minHeight: 32,
   height: 32,
   width: "100%",
   padding: "0 10px",
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 6,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  boxShadow: "none",
   lineHeight: 1.35,
-  color: "#1e293b",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
+const ipRouteModalFieldControlStyle = {
+  width: 320,
+  maxWidth: "100%",
+  minWidth: 0,
+  flexShrink: 0,
 };
 
-const tooltipProps = {
+const ipRouteModalFieldRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  maxWidth: 502,
+  margin: "0 auto",
+};
+
+const IP_ROUTE_FIELD_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
     arrow: {
@@ -157,96 +203,8 @@ const tooltips = {
   Destination: "Enter the destination IP address or subnet.",
   "Subnet Mask": "Enter the subnet mask in CIDR notation (e.g., 24).",
   "Network Port": "Select the network port to route traffic through.",
-  "Gateway (Optional)": "Enter the gateway IP address for this route (required for VPN).",
-};
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
-};
-
-const systemModalSelectSx = {
-  ...modalSelectSx,
-  height: 36,
-  "& .MuiOutlinedInput-root": { height: 36 },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const CARD_RADIUS = 20;
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
-};
-
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "Gateway (Optional)":
+    "Enter the gateway IP address for this route (required for VPN).",
 };
 
 const Btn = ({
@@ -256,7 +214,9 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  startIcon,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -269,61 +229,76 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    error: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `1px solid ${C.errorRed}`,
+    danger: {
+      background: "#fef2f2",
+      color: "#dc2626",
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    accent: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
   };
 
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "error":
-        return "#b91c1c";
-      case "delete":
-        return "#fecaca";
-      case "edit":
-        return "#bbf7d0";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-        return "#e2e8f0";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "accent"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
-  const baseBg = s.background;
-
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -336,29 +311,255 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "flex", alignItems: "center" }}>
-          {startIcon}
-        </span>
-      )}
       {children}
-    </button>
+    </Component>
   );
 };
+
+const ipRouteModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
+  whiteSpace: "nowrap",
+};
+
+const ipRouteTableCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const ipRouteFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const getIpRouteTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const getIpRouteRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const IpRouteTableEditIcon = ({ disabled, onClick }) => (
+  <EditDocumentIcon
+    titleAccess="Edit"
+    onClick={() => {
+      if (!disabled) onClick();
+    }}
+    style={{
+      cursor: disabled ? "not-allowed" : "pointer",
+      color: "#2563eb",
+      fontSize: 22,
+      opacity: disabled ? 0.4 : 0.7,
+      transition: "opacity 0.15s ease",
+    }}
+    onMouseEnter={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "1";
+    }}
+    onMouseLeave={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "0.7";
+    }}
+  />
+);
+
+const ipRoutePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const ipRoutePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const IpRouteTableBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>IP Route Table</span>
+  </div>
+);
+
+const ipRouteCardStyle = {
+  background: "#ffffff",
+  borderRadius: IP_ROUTE_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const ipRouteToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: IP_ROUTE_TABLE_CARD_RADIUS,
+  borderTopRightRadius: IP_ROUTE_TABLE_CARD_RADIUS,
+};
+
+const ipRoutePaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: IP_ROUTE_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: IP_ROUTE_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const ipRouteSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const ipRouteCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const ipRoutePrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const IpRouteTableEmptyState = ({ message, onAddNew, disabled }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: 16,
+      }}
+    >
+      {message}
+    </div>
+    <Btn
+      variant="cancel"
+      onClick={onAddNew}
+      disabled={disabled}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+    >
+      + Add New
+    </Btn>
+  </div>
+);
 
 const IPRoutingTable = () => {
   const LOCAL_STORAGE_KEY = "ipRoutingTableRows";
@@ -1346,108 +1547,73 @@ WantedBy=multi-user.target
   }, []);
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      {/* ── Alerts ── */}
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-
-      {/* Show spinner only while saving from the modal (add/edit), not on delete/clear */}
-      {savingRoute && modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div
-            className="bg-white rounded-lg shadow-xl p-4 flex flex-col items-center gap-2 pointer-events-auto"
-            style={{ minWidth: "260px" }}
+    <div style={ipRoutePageWrapStyle}>
+      <div style={ipRoutePageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={ipRouteFixedAlertSx}
           >
-            <div className="animate-spin h-8 w-8 border-4 border-[#0e8fd6] border-t-transparent rounded-full" />
-            <div className="text-sm font-medium text-gray-700">
-              Applying routing changes...
-            </div>
-            <div className="text-xs text-gray-500">
-              Updating kernel routes and persistent config
-            </div>
-          </div>
-        </div>
-      )}
+            {toast.msg}
+          </Alert>
+        )}
 
-      {/* ── Breadcrumb ── */}
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            IP Route Table
-          </span>
-        </div>
-
-        {/* ── Main Container ── */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Toolbar */}
+        {savingRoute && modalOpen && (
           <div
             style={{
+              position: "fixed",
+              inset: 0,
               display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
               alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+              justifyContent: "center",
+              zIndex: 50,
+              pointerEvents: "none",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                background: "#ffffff",
+                borderRadius: 8,
+                boxShadow:
+                  "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+                padding: 16,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                pointerEvents: "auto",
+                minWidth: 260,
+              }}
+            >
+              <CircularProgress size={28} style={{ color: C.accent }} />
+              <div
+                style={{ fontSize: 13, fontWeight: 600, color: C.valueText }}
+              >
+                Applying routing changes...
+              </div>
+              <div style={{ fontSize: 11, color: C.mutedText }}>
+                Updating kernel routes and persistent config
+              </div>
+            </div>
+          </div>
+        )}
+
+        <IpRouteTableBreadcrumb />
+
+        <div style={ipRouteCardStyle}>
+          <div style={ipRouteToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {rows.some((r) => r.checked) && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={ipRouteSelectedBadgeStyle}>
                   {rows.filter((r) => r.checked).length} selected
                 </span>
               )}
@@ -1464,7 +1630,7 @@ WantedBy=multi-user.target
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={!rows.some((r) => r.checked) || savingRoute}
-                style={{ height: 30 }}
+                style={ipRouteCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 {savingRoute ? "Working..." : "Delete"}
@@ -1473,7 +1639,7 @@ WantedBy=multi-user.target
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rows.length === 0 || savingRoute}
-                style={{ height: 30 }}
+                style={ipRouteCancelBtnStyle}
               >
                 {savingRoute ? "Working..." : "Clear All"}
               </Btn>
@@ -1481,326 +1647,226 @@ WantedBy=multi-user.target
                 variant="primary"
                 onClick={() => openModal(null)}
                 disabled={savingRoute}
-                style={{ height: 30 }}
+                style={ipRoutePrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          <div
-            className="overflow-x-auto w-full"
-            style={
-              rows.length === 0
-                ? {
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minHeight: 240,
-                    padding: 24,
-                    textAlign: "center",
-                    borderBottomLeftRadius: CARD_RADIUS,
-                    borderBottomRightRadius: CARD_RADIUS,
-                  }
-                : {
-                    overflowX: "auto",
-                    overflowY: "auto",
-                    flex: 1,
-                    width: "100%",
-                  }
-            }
-            ref={rows.length > 0 ? tableScrollRef : undefined}
-            onScroll={rows.length > 0 ? handleTableScroll : undefined}
-          >
-            {rows.length === 0 ? (
-              <>
-                <div
+          {rows.length === 0 ? (
+            <IpRouteTableEmptyState
+              message="No routes configured!"
+              onAddNew={() => openModal(null)}
+              disabled={savingRoute}
+            />
+          ) : (
+            <>
+              <div
+                style={{
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
+                }}
+                ref={tableScrollRef}
+                onScroll={handleTableScroll}
+              >
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
                   }}
                 >
-                  No routes configured!
-                </div>
-                <Btn
-                  onClick={() => openModal(null)}
-                  variant="cancel"
-                  disabled={savingRoute}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New
-                </Btn>
-              </>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  minWidth: 900,
-                }}
-              >
-                <thead>
-                  <tr>
-                    {IP_ROUTING_TABLE_COLUMNS.map((col) => {
-                      if (col.key === "checked") {
-                        return (
-                          <TH
-                            key={col.key}
-                            style={{
-                              width: 40,
-                              padding: 0,
+                  <thead>
+                    <tr>
+                      {IP_ROUTING_TABLE_COLUMNS.map((col) => {
+                        if (col.key === "checked") {
+                          return (
+                            <TH
+                              key={col.key}
+                              style={{
+                                width: 40,
+                                padding: 0,
+                                borderLeft: "none",
+                              }}
+                            >
+                              <Checkbox
+                                size="small"
+                                checked={
+                                  rows.length > 0 &&
+                                  rows.every((r) => r.checked)
+                                }
+                                indeterminate={
+                                  rows.some((r) => r.checked) &&
+                                  !rows.every((r) => r.checked)
+                                }
+                                onChange={handleSelectAll}
+                                sx={ipRouteTableCheckboxSx}
+                              />
+                            </TH>
+                          );
+                        }
+                        if (col.key === "modify") {
+                          return (
+                            <TH
+                              key={col.key}
+                              style={{ width: 70, borderRight: "none" }}
+                            >
+                              {col.label}
+                            </TH>
+                          );
+                        }
+                        return <TH key={col.key}>{col.label}</TH>;
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, idx) => {
+                      const isLastRow = idx === rows.length - 1;
+                      const isRowChecked = row.checked || false;
+                      const rowBg = getIpRouteRowBg(isRowChecked, idx);
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
+
+                      return (
+                        <tr
+                          key={`row-${row.no ?? idx}`}
+                          style={{
+                            background: rowBg,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isRowChecked)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isRowChecked)
+                              e.currentTarget.style.background = rowBg;
+                          }}
+                        >
+                          <td
+                            style={getIpRouteTdStyle(rowBg, lastRowCellStyle, {
+                              width: 36,
                               borderLeft: "none",
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 10,
-                            }}
+                            })}
                           >
                             <Checkbox
                               size="small"
-                              checked={
-                                rows.length > 0 && rows.every((r) => r.checked)
-                              }
-                              indeterminate={
-                                rows.some((r) => r.checked) &&
-                                !rows.every((r) => r.checked)
-                              }
-                              onChange={handleSelectAll}
-                              sx={checkboxSx}
+                              checked={isRowChecked}
+                              onChange={() => handleCheck(idx)}
+                              sx={ipRouteTableCheckboxSx}
                             />
-                          </TH>
-                        );
-                      }
-                      if (col.key === "modify") {
-                        return (
-                          <TH
-                            key={col.key}
-                            style={{
-                              width: 70,
-                              borderRight: "none",
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 10,
-                            }}
+                          </td>
+                          <td
+                            style={getIpRouteTdStyle(
+                              rowBg,
+                              lastRowCellStyle,
+                            )}
                           >
-                            {col.label}
-                          </TH>
-                        );
-                      }
-                      return (
-                        <TH
-                          key={col.key}
-                          style={{ position: "sticky", top: 0, zIndex: 10 }}
-                        >
-                          {col.label}
-                        </TH>
+                            {row.no}
+                          </td>
+                          <td
+                            style={getIpRouteTdStyle(
+                              rowBg,
+                              lastRowCellStyle,
+                            )}
+                          >
+                            {row.destination}
+                          </td>
+                          <td
+                            style={getIpRouteTdStyle(
+                              rowBg,
+                              lastRowCellStyle,
+                            )}
+                          >
+                            {row.subnetMask}
+                          </td>
+                          <td
+                            style={getIpRouteTdStyle(
+                              rowBg,
+                              lastRowCellStyle,
+                            )}
+                          >
+                            {row.networkPort}
+                          </td>
+                          <td
+                            style={getIpRouteTdStyle(rowBg, lastRowCellStyle, {
+                              borderRight: "none",
+                            })}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <IpRouteTableEditIcon
+                                disabled={savingRoute}
+                                onClick={() => openModal(idx)}
+                              />
+                            </div>
+                          </td>
+                        </tr>
                       );
                     })}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, idx) => {
-                    const isLastRow = idx === rows.length - 1;
-                    const isRowChecked = row.checked || false;
-                    const rowBg = isRowChecked
-                      ? "#f0f9ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
-                    const lastRowCellStyle = isLastRow
-                      ? { borderBottom: "none" }
-                      : {};
+                  </tbody>
+                </table>
+              </div>
 
-                    return (
-                      <tr
-                        key={`row-${row.no ?? idx}`}
-                        style={{
-                          background: rowBg,
-                          transition: "background 0.15s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isRowChecked)
-                            e.currentTarget.style.background = "#f1f5f9";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isRowChecked)
-                            e.currentTarget.style.background = rowBg;
-                        }}
-                      >
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderLeft: "none",
-                            width: 36,
-                            ...lastRowCellStyle,
-                            ...(isLastRow
-                              ? { borderBottomLeftRadius: CARD_RADIUS }
-                              : {}),
-                          }}
-                        >
-                          <Checkbox
-                            size="small"
-                            checked={isRowChecked}
-                            onChange={() => handleCheck(idx)}
-                            sx={checkboxSx}
-                          />
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.no}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.destination}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.subnetMask}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.networkPort}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderRight: "none",
-                            ...lastRowCellStyle,
-                            ...(isLastRow
-                              ? { borderBottomRightRadius: CARD_RADIUS }
-                              : {}),
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <EditDocumentIcon
-                              titleAccess="Edit"
-                              onClick={() => openModal(idx)}
-                              style={{
-                                cursor: "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: 0.7,
-                                transition: "opacity 0.15s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.opacity = "1";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.opacity = "0.7";
-                              }}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {rows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                background: "#ffffff",
-                borderTop: `1px solid ${C.cardBorder}`,
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-                overflow: "hidden",
-              }}
-            >
-              <span
-                style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}
-              >
-                Showing {rows.length} record
-                {rows.length !== 1 ? "s" : ""}
-              </span>
-            </div>
+              <div style={ipRoutePaginationStyle}>
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Showing {rows.length} record
+                  {rows.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </>
           )}
         </div>
       </div>
-      {/* Modal */}
+
       <Dialog
         open={modalOpen}
         onClose={() => {
           if (!savingRoute) closeModal();
         }}
         maxWidth={false}
-        className="z-50"
         slotProps={{
-          backdrop: {
-            sx: {
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-            },
-          },
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
         PaperProps={{
           sx: {
-            width: 500,
-            maxWidth: "95vw",
+            width: 600,
+            maxWidth: "96vw",
             mx: "auto",
+            p: 0,
             borderRadius: "8px",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            backgroundColor: "#ffffff",
-            backgroundImage: "none",
+            overflow: "hidden",
           },
         }}
       >
         <DialogTitle
-          sx={{
-            fontWeight: 600,
-            fontSize: "16px",
+          style={{
+            background: "#1e2d42",
             color: "#ffffff",
-            backgroundColor: "#1e2d42",
-            borderBottom: `1px solid ${C.divider}`,
-            px: 3,
-            py: 2,
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: "8px",
-            borderTopRightRadius: "8px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
-          IP Routing Table
+          {editIndex !== null ? "Edit IP Route" : "Add IP Route"}
         </DialogTitle>
         <DialogContent
-          sx={{
-            p: "24px",
+          style={{
+            padding: "24px",
             backgroundColor: "#ffffff",
+            overflowY: "auto",
           }}
         >
           <div
@@ -1812,46 +1878,37 @@ WantedBy=multi-user.target
               border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 20,
-              marginTop: 22,
+              marginTop: 0,
             }}
           >
             {IP_ROUTING_TABLE_MODAL_FIELDS.map((field) => (
-              <div
-                key={field.key}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
-              >
-               <Tooltip
-  title={tooltips[field.label] || ""}
-  {...tooltipProps}
->
-  <span
-    style={{
-      width: 170,
-      flexShrink: 0,
-      display: "inline-block",
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 170,
-        flexShrink: 0,
-        textAlign: "left",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {field.label}:
-    </label>
-  </span>
-</Tooltip>
-                <div style={{ width: "min(100%, 320px)", display: "flex" }}>
+              <div key={field.key} style={ipRouteModalFieldRowStyle}>
+                <div
+                  style={{
+                    width: 170,
+                    flexShrink: 0,
+                    textAlign: "left",
+                  }}
+                >
+                  <Tooltip
+                    title={tooltips[field.label] || ""}
+                    {...IP_ROUTE_FIELD_TOOLTIP_PROPS}
+                  >
+                    <span>
+                      <label
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {field.label}:
+                      </label>
+                    </span>
+                  </Tooltip>
+                </div>
+                <div style={ipRouteModalFieldControlStyle}>
                   {field.type === "text" || field.type === "number" ? (
                     <input
                       name={field.key}
@@ -1859,8 +1916,8 @@ WantedBy=multi-user.target
                       value={form[field.key] || ""}
                       onChange={handleFormChange}
                       placeholder={field.placeholder || ""}
-                      style={{ ...systemModalFieldInputStyle, flex: 1 }}
-                      {...inputInteraction}
+                      style={ipRouteModalFieldInputStyle}
+                      {...ipRouteModalInputInteraction}
                     />
                   ) : null}
                   {field.type === "select" ? (
@@ -1878,8 +1935,8 @@ WantedBy=multi-user.target
                       onChange={handleFormChange}
                       fullWidth
                       sx={{
-                        ...systemModalSelectSx,
-                        borderRadius: "4px",
+                        ...ipRouteModalSelectSx,
+                        borderRadius: "6px",
                         fontSize: 13,
                       }}
                       MenuProps={{
@@ -1889,7 +1946,7 @@ WantedBy=multi-user.target
                       }}
                     >
                       {field.key === "networkPort" && networkLoading && (
-                        <MenuItem value="" disabled sx={{ fontSize: "14px" }}>
+                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                           Loading network interfaces...
                         </MenuItem>
                       )}
@@ -1900,7 +1957,7 @@ WantedBy=multi-user.target
                         <MenuItem
                           key={opt.value}
                           value={opt.value}
-                          sx={{ fontSize: "14px" }}
+                          sx={{ fontSize: 13 }}
                         >
                           {opt.label}
                         </MenuItem>
@@ -1913,13 +1970,15 @@ WantedBy=multi-user.target
           </div>
         </DialogContent>
         <DialogActions
-          sx={{
+          style={{
+            display: "flex",
             justifyContent: "center",
-            gap: 2,
-            py: "10px",
-            px: "16px",
-            borderTop: `1px solid ${C.divider}`,
-            backgroundColor: "#f8fafc",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
@@ -1933,7 +1992,8 @@ WantedBy=multi-user.target
           <Btn
             variant="cancel"
             onClick={closeModal}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            disabled={savingRoute}
+            style={ipRouteModalCancelBtnStyle}
           >
             Close
           </Btn>

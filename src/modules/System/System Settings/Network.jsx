@@ -17,23 +17,28 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#30415A",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
   errorRed: "#dc2626",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+// ── Local field UI (matches SipSipPage design language) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -50,19 +55,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -99,7 +104,7 @@ const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
   padding: "6px 10px",
-  borderRadius: 10,
+  borderRadius: FIELD_RADIUS,
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
@@ -114,9 +119,11 @@ const systemFieldSelectStyle = {
   ...systemFieldInputStyle,
   appearance: "auto",
   minHeight: 36,
+  height: 36,
   paddingTop: 7,
   paddingBottom: 7,
   lineHeight: 1.35,
+  cursor: "pointer",
 };
 
 const inputStyle = systemFieldInputStyleNarrow;
@@ -126,16 +133,15 @@ const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const advancedFormBtnStyle = {
@@ -157,6 +163,8 @@ const Btn = ({
   type,
   startIcon,
   form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -169,12 +177,26 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     error: {
       background: C.errorRed,
@@ -182,52 +204,91 @@ const Btn = ({
       border: `1px solid ${C.errorRed}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "error":
-        return "#b91c1c";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      error: "#b91c1c",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      error: "#991b1b",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
       form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {startIcon && (
@@ -236,7 +297,7 @@ const Btn = ({
         </span>
       )}
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -255,7 +316,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       position: "relative",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
     <span
       style={{
         position: "absolute",
@@ -264,12 +325,142 @@ const SectionHeading = ({ title, isFirst = false }) => (
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontWeight: 500,
+        color: C.labelText,
+        letterSpacing: "0.01em",
       }}
     >
       {title}
     </span>
+  </div>
+);
+
+const networkPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const networkPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const networkCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const networkTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const networkDashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+};
+
+const networkDashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 24px",
+  background: C.cardBg,
+};
+
+const networkDashboardDividerStyle = {
+  background: C.divider,
+  width: 1,
+  alignSelf: "stretch",
+  margin: "14px 0",
+  flexShrink: 0,
+};
+
+const networkDashboardSectionTitleStyle = {
+  fontSize: 13,
+  fontWeight: 500,
+  color: C.labelText,
+  marginBottom: 2,
+  flexShrink: 0,
+  letterSpacing: "0.01em",
+};
+
+const networkDashboardFieldsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  gap: 10,
+};
+
+const networkFieldGroupStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 3,
+  width: "100%",
+};
+
+const networkFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const NetworkPageShell = ({ children }) => (
+  <div style={networkPageWrapStyle} data-native-scroll>
+    <div style={networkPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const NetworkBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>Network</span>
   </div>
 );
 
@@ -279,19 +470,16 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
@@ -1151,124 +1339,95 @@ const Network = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {/* Alerts */}
-        {error && (
-          <Alert
-            severity="error"
-            onClose={() => setError("")}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {error}
-          </Alert>
-        )}
+    <NetworkPageShell>
+      {error && (
+        <Alert
+          severity="error"
+          onClose={() => setError("")}
+          sx={networkFixedAlertSx}
+        >
+          {error}
+        </Alert>
+      )}
 
-        {toast.msg && (
-          <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: error ? 88 : 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500,
-              whiteSpace: "pre-line",
-              wordBreak: "break-word",
-              boxShadow: 3,
-            }}
-          >
-            {toast.msg}
-          </Alert>
-        )}
-
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            ...networkFixedAlertSx,
+            top: error ? 88 : 20,
+            whiteSpace: "pre-line",
           }}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Network</span>
-        </div>
+          {toast.msg}
+        </Alert>
+      )}
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Header */}
+      {networkRestarting && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
           <div
+            className="bg-white rounded-lg flex flex-col items-center gap-4 pointer-events-auto"
             style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
+              minWidth: "300px",
+              padding: "24px 32px",
+              border: `1px solid ${C.cardBorder}`,
+              boxShadow: C.cardShadow,
+              borderRadius: CARD_RADIUS,
             }}
           >
-            <span
+            <CircularProgress size={50} sx={{ color: C.accent }} />
+            <div
               style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
+                fontSize: 15,
+                fontWeight: 600,
+                color: C.strongText,
+                whiteSpace: "pre-line",
+                textAlign: "center",
               }}
             >
-              Network Settings
-            </span>
+              {progressMessage || "Restarting network service..."}
+            </div>
           </div>
+        </div>
+      )}
 
-          {/* Card Body */}
-          <div style={{ padding: loading ? "24px 32px" : "24px 32px 0" }}>
-            {loading ? (
-              <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <CircularProgress size={40} sx={{ color: C.primary }} />
+      <NetworkBreadcrumb />
+
+      <div style={networkCardShellStyle}>
+        <div style={networkTableContainerStyle}>
+          {loading ? (
+            <div
+              className="flex items-center justify-center w-full"
+              style={{ minHeight: 400, padding: "48px 32px" }}
+            >
+              <div className="text-center">
+                <CircularProgress size={40} sx={{ color: C.accent }} />
                 <div
-                  style={{ marginTop: 12, color: C.mutedText, fontSize: 13 }}
+                  style={{
+                    marginTop: 12,
+                    fontSize: 13,
+                    color: C.mutedText,
+                    fontWeight: 500,
+                  }}
                 >
                   Loading network settings...
                 </div>
               </div>
-            ) : (
+            </div>
+          ) : (
+            <>
               <form
                 id="network-settings-form"
                 onSubmit={handleSave}
                 className="flex flex-col gap-2"
               >
-                <div style={{ marginBottom: 12 }}>
+                <div style={networkDashboardGridStyle}>
+                  <div style={networkDashboardColumnStyle}>
+                    <div style={networkDashboardSectionTitleStyle}>
+                      Interfaces &amp; VLAN
+                    </div>
+                    <div style={networkDashboardFieldsStackStyle}>
                   {/* Dynamically render LAN sections */}
                   {!vlanEnabled &&
                     lanInterfaces.map((lan, idx) => (
@@ -1283,7 +1442,7 @@ const Network = () => {
 
                         <div
                           className="flex flex-col gap-3 w-full"
-                          style={{ maxWidth: 640, margin: "0 auto" }}
+                          style={networkFieldGroupStyle}
                         >
                         {/* IPV4 Network Type */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
@@ -1499,7 +1658,7 @@ const Network = () => {
 >
   <label
     style={{
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: 600,
       color: C.labelText,
       width: "100%",
@@ -1572,7 +1731,7 @@ const Network = () => {
 >
   <label
     style={{
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: 600,
       color: C.labelText,
       width: "100%",
@@ -1673,7 +1832,7 @@ const Network = () => {
                     />
                     <div
                       className="flex flex-col gap-4 w-full"
-                      style={{ maxWidth: 640, margin: "0 auto" }}
+                      style={networkFieldGroupStyle}
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
@@ -1699,7 +1858,7 @@ const Network = () => {
 >
   <label
     style={{
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: 600,
       color: C.labelText,
       width: "100%",
@@ -1741,10 +1900,10 @@ const Network = () => {
                                   setVlanEnabled(true);
                                   setHasChanges(true);
                                 }}
-                                style={{ accentColor: C.primary }}
+                                style={{ accentColor: OUTLINED_FOCUS }}
                               />
                               <span
-                                style={{ fontSize: 13, color: C.valueText }}
+                                style={{ fontSize: 13, color: C.labelText }}
                               >
                                 Yes
                               </span>
@@ -1758,10 +1917,10 @@ const Network = () => {
                                   setVlanEnabled(false);
                                   setHasChanges(true);
                                 }}
-                                style={{ accentColor: C.primary }}
+                                style={{ accentColor: OUTLINED_FOCUS }}
                               />
                               <span
-                                style={{ fontSize: 13, color: C.valueText }}
+                                style={{ fontSize: 13, color: C.labelText }}
                               >
                                 No
                               </span>
@@ -1937,13 +2096,22 @@ const Network = () => {
                       )}
                     </div>
                   </div>
+                    </div>
+                  </div>
 
+                  <div style={networkDashboardDividerStyle} aria-hidden="true" />
+
+                  <div style={networkDashboardColumnStyle}>
+                    <div style={networkDashboardSectionTitleStyle}>
+                      DNS &amp; Routing
+                    </div>
+                    <div style={networkDashboardFieldsStackStyle}>
                   {/* DNS Server Set */}
                   <div className="flex flex-col gap-0">
-                    <SectionHeading title="DNS Server Set" />
+                    <SectionHeading title="DNS Server Set" isFirst />
                     <div
                       className="flex flex-col gap-3 w-full"
-                      style={{ maxWidth: 640, margin: "0 auto" }}
+                      style={networkFieldGroupStyle}
                     >
                       {/* Preferred DNS Server */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
@@ -1970,7 +2138,7 @@ const Network = () => {
 >
   <label
     style={{
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: 600,
       color: C.labelText,
       width: "100%",
@@ -2037,7 +2205,7 @@ const Network = () => {
 >
   <label
     style={{
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: 600,
       color: C.labelText,
       width: "100%",
@@ -2086,7 +2254,7 @@ const Network = () => {
                     <SectionHeading title="ARP Mode" />
                     <div
                       className="flex flex-col gap-3 w-full"
-                      style={{ maxWidth: 640, margin: "0 auto" }}
+                      style={networkFieldGroupStyle}
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
@@ -2112,7 +2280,7 @@ const Network = () => {
 >
   <label
     style={{
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: 600,
       color: C.labelText,
       width: "100%",
@@ -2155,46 +2323,36 @@ const Network = () => {
                       </div>
                     </div>
                   </div>
+                    </div>
+                  </div>
                 </div>
               </form>
-            )}
-          </div>
-          {!loading && (
-            <div style={advancedFormInlineFooterStyle}>
-              <Btn
-                variant="primary"
-                type="submit"
-                form="network-settings-form"
-                disabled={loading || resetting || networkRestarting}
-                style={advancedFormBtnStyle}
-              >
-                {loading && !resetting ? "Saving..." : "Save"}
-              </Btn>
-              <Btn
-                variant="cancel"
-                type="button"
-                onClick={handleReset}
-                disabled={resetting || networkRestarting}
-                style={advancedFormBtnStyle}
-              >
-                {resetting ? "Resetting..." : "Reset"}
-              </Btn>
-            </div>
+
+              <div style={advancedFormInlineFooterStyle}>
+                <Btn
+                  variant="primary"
+                  type="submit"
+                  form="network-settings-form"
+                  disabled={loading || resetting || networkRestarting}
+                  style={advancedFormBtnStyle}
+                >
+                  {loading && !resetting ? "Saving..." : "Save"}
+                </Btn>
+                <Btn
+                  variant="cancel"
+                  type="button"
+                  onClick={handleReset}
+                  disabled={resetting || networkRestarting}
+                  style={advancedFormBtnStyle}
+                >
+                  {resetting ? "Resetting..." : "Reset"}
+                </Btn>
+              </div>
+            </>
           )}
         </div>
       </div>
-
-      {networkRestarting && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
-            <CircularProgress />
-            <div className="text-gray-700 text-sm whitespace-pre-line">
-              {progressMessage || "Restarting network service..."}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    </NetworkPageShell>
   );
 };
 
