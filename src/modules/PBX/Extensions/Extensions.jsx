@@ -1416,13 +1416,13 @@ const ExtensionsPage = () => {
     );
   };
 
-  // ── Message ───────────────────────────────────────────────────────────────
+
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
-  // ── Transform helpers (unchanged from original) ───────────────────────────
+  
   const transformApiToUi = (apiData) => {
     const isEnabled = (value) =>
       value === true ||

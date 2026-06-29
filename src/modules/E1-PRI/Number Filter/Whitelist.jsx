@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Button,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -24,8 +23,8 @@ import {
   deleteAllNumberFilters,
 } from "../../../api/apiService";
 import { WHITELIST_FIELD_TOOLTIPS } from "../../../constants/WhitelistConstants";
-// ── Page-local field label tooltip UI (not shared) ──
-const FIELD_LABEL_COLOR = "#3E5475";
+// ── Page-local field label tooltip UI ──
+const FIELD_LABEL_COLOR = "#374151";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -37,12 +36,9 @@ const FIELD_TOOLTIP_PROPS = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
+        fontSize: 13,
         maxWidth: 500,
-        padding: "10px 12px",
-        textTransform: "none",
-        letterSpacing: "normal",
+        padding: "12px 16px",
       },
     },
     arrow: { sx: { color: "#fff" } },
@@ -51,7 +47,12 @@ const FIELD_TOOLTIP_PROPS = {
 
 const formatFieldTooltipTitle = (text) => {
   if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
+  const normalized = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
   if (normalized.includes("\n")) {
     return (
       <span style={{ whiteSpace: "pre-line", display: "block" }}>
@@ -85,43 +86,50 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
+// ── Local page UI (matches FxsVoipMediaPage design language) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
+  labelText: "#374151",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   amber: "#dc2626",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
 
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
     backgroundColor: "#fff",
     "& fieldset": {
       borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
+      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
     },
     "&:hover fieldset": {
       borderColor: OUTLINED_HOVER,
     },
     "&.Mui-focused fieldset": {
       borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
+      borderWidth: "1px",
+      boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
     },
     "&.Mui-focused:hover fieldset": {
       borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
+      borderWidth: "1px",
+      boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
     },
   },
 };
@@ -149,7 +157,8 @@ const muiSelectSx = {
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: "1px",
+    boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
   },
 };
 
@@ -180,10 +189,116 @@ const addHostFormPanelStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: FIELD_RADIUS,
   padding: 20,
 };
 
+const advancedPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const advancedPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const pageTitleStyle = {
+  fontSize: 22,
+  fontWeight: 700,
+  color: C.strongText,
+  margin: "0 0 6px 0",
+  letterSpacing: "-0.02em",
+  flexShrink: 0,
+};
+
+const panelCardStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minWidth: 0,
+};
+
+const panelToolbarStyle = {
+  minHeight: 44,
+  padding: "10px 16px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: 10,
+  background: C.cardBg,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const panelSectionTitleStyle = {
+  fontSize: 14,
+  fontWeight: 700,
+  color: C.strongText,
+  letterSpacing: "-0.01em",
+};
+
+const panelFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "8px 16px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+};
+
+const advancedFormBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const WhitelistBreadcrumb = ({ current }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>Number Filter</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+  </div>
+);
+
+const AdvancedPageShell = ({ children }) => (
+  <div style={advancedPageWrapStyle}>
+    <div style={advancedPageInnerStyle}>{children}</div>
+  </div>
+);
 
 const Btn = ({
   children,
@@ -192,10 +307,13 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
-      background: " #cbd5e1",
+      background: C.cardBg,
       color: C.valueText,
       border: "1px solid #9ca3af",
     },
@@ -206,7 +324,6 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
       fontSize: 15,
-      // borderRadius: 6,
       textTransform: "none",
       padding: "6px 28px",
     },
@@ -214,12 +331,12 @@ const Btn = ({
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     danger: {
       background: "#fef2f2",
       color: C.amber,
-      border: `0.5px solid #fecaca`,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -227,56 +344,93 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "danger":
-        return "#fca5a5";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
@@ -314,8 +468,9 @@ const tdStyle = {
 
 const checkboxSx = {
   padding: "1px",
-  color: "#3E5475",
+  color: C.accent,
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const headerCheckThStyle = {
@@ -728,45 +883,11 @@ const Whitelist = () => {
     const someChecked = checkedItems.length > 0 && !allChecked;
 
     return (
-    <div style={{ flex: 1, minWidth: 0 }}>
-      {/* Card */}
-      <div
-        style={{
-          background: C.cardBg,
-          border: `1.5px solid ${C.cardBorder}`,
-          borderRadius: 10,
-          overflow: "hidden",
-          boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-        }}
-      >
-        {/* Top Actions Bar */}
-        <div
-          style={{
-            minHeight: 44,
-            padding: "7px 14px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 12,
-            background: "#ffffff",
-            borderBottom: `1px solid ${C.cardBorder}`,
-            borderTopLeftRadius: CARD_RADIUS,
-            borderTopRightRadius: CARD_RADIUS,
-          }}
-        >
-          {/* Left Section */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#3E5475",
-                letterSpacing: "0.02em",
-              }}
-            >
-              {title}
-            </span>
+    <div style={{ flex: 1, minWidth: 280 }}>
+      <div style={panelCardStyle}>
+        <div style={panelToolbarStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={panelSectionTitleStyle}>{title}</span>
             {checkedItems.length > 0 && (
               <span
                 style={{
@@ -774,9 +895,9 @@ const Whitelist = () => {
                   color: C.accent,
                   fontSize: 11,
                   fontWeight: 700,
-                  padding: "5px 12px",
+                  padding: "4px 10px",
                   borderRadius: 999,
-                  border: `1px solid ${C.accent}`,
+                  border: `1px solid ${C.accentDark}`,
                 }}
               >
                 {checkedItems.length} selected
@@ -784,7 +905,6 @@ const Whitelist = () => {
             )}
           </div>
 
-          {/* Right Section: Actions */}
           <div
             style={{
               display: "flex",
@@ -797,7 +917,7 @@ const Whitelist = () => {
               variant="cancel"
               onClick={onDelete}
               disabled={checkedItems.length === 0 || isDeleting}
-              style={{ height: 30 }}
+              style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
             >
               {isDeleting ? (
                 <CircularProgress size={12} color="inherit" />
@@ -812,7 +932,7 @@ const Whitelist = () => {
               variant="cancel"
               onClick={onClear}
               disabled={rows.length === 0 || isDeleting}
-              style={{ height: 30 }}
+              style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
             >
               Clear All
             </Btn>
@@ -822,9 +942,8 @@ const Whitelist = () => {
               disabled={isDeleting}
               style={{
                 height: 30,
-                padding: "6px 14px",
+                padding: "6px 16px",
                 fontSize: 12,
-                borderRadius: 10,
               }}
             >
               + Add New
@@ -832,7 +951,6 @@ const Whitelist = () => {
           </div>
         </div>
 
-        {/* Table */}
         <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: 360 }}>
           <table
             style={{
@@ -867,9 +985,10 @@ const Whitelist = () => {
                     style={{
                       textAlign: "center",
                       padding: "36px 0",
-                      color: "#3E5475",
+                      color: C.mutedText,
                       fontSize: 13,
                       fontWeight: 600,
+                      borderBottom: "none",
                     }}
                   >
                     No entries found.
@@ -951,9 +1070,9 @@ const Whitelist = () => {
                             titleAccess="Edit"
                             style={{
                               cursor: "pointer",
-                              color: "#2563eb",
+                              color: C.accent,
                               fontSize: 22,
-                              opacity: 0.7,
+                              opacity: 0.75,
                               transition: "opacity 0.15s ease",
                             }}
                             onClick={() => onEdit(row)}
@@ -961,7 +1080,7 @@ const Whitelist = () => {
                               (e.currentTarget.style.opacity = "1")
                             }
                             onMouseLeave={(e) =>
-                              (e.currentTarget.style.opacity = "0.7")
+                              (e.currentTarget.style.opacity = "0.75")
                             }
                           />
                         </div>
@@ -974,19 +1093,7 @@ const Whitelist = () => {
           </table>
         </div>
 
-        {/* Footer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "7px 14px",
-            borderTop: `1px solid ${C.cardBorder}`,
-            background: "#ffffff",
-            borderBottomLeftRadius: CARD_RADIUS,
-            borderBottomRightRadius: CARD_RADIUS,
-          }}
-        >
+        <div style={panelFooterStyle}>
           <span style={{ fontSize: 11, color: C.mutedText }}>
             Showing {rows.length} record
             {rows.length !== 1 ? "s" : ""}
@@ -998,14 +1105,7 @@ const Whitelist = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      {/* Alerts */}
+    <AdvancedPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -1024,127 +1124,121 @@ const Whitelist = () => {
         </Alert>
       )}
 
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
+      <h1 style={pageTitleStyle}>Whitelist</h1>
+      <WhitelistBreadcrumb current="Whitelist" />
+
+      {isInitialLoading ? (
         <div
           style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
             display: "flex",
+            justifyContent: "center",
             alignItems: "center",
-            gap: 4,
+            padding: 64,
+            flexDirection: "column",
+            gap: 12,
           }}
         >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>Number Filter</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Whitelist
+          <CircularProgress size={32} style={{ color: C.accent }} />
+          <span style={{ fontSize: 13, color: C.mutedText }}>
+            Loading whitelist data...
           </span>
         </div>
-
-        {isInitialLoading ? (
+      ) : (
+        <>
           <div
             style={{
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: 64,
-              flexDirection: "column",
-              gap: 12,
+              gap: 20,
+              flexWrap: "wrap",
+              width: "100%",
+              alignItems: "flex-start",
             }}
           >
-            <CircularProgress size={32} style={{ color: C.accent }} />
-            <span style={{ fontSize: 13, color: C.mutedText }}>
-              Loading whitelist data...
-            </span>
+            {renderTablePanel({
+              title: "CallerID Whitelist",
+              rows: callerRows,
+              checkedItems: callerChecked,
+              onCheck: handleCallerCheck,
+              onCheckAll: handleCallerCheckAll,
+              onDelete: handleCallerDelete,
+              onClear: handleCallerClear,
+              onAddNew: () => handleAddNew("caller"),
+              onEdit: (row) => handleEdit("caller", row),
+              idKey: "callerId",
+            })}
+            {renderTablePanel({
+              title: "CalleeID Whitelist",
+              rows: calleeRows,
+              checkedItems: calleeChecked,
+              onCheck: handleCalleeCheck,
+              onCheckAll: handleCalleeCheckAll,
+              onDelete: handleCalleeDelete,
+              onClear: handleCalleeClear,
+              onAddNew: () => handleAddNew("callee"),
+              onEdit: (row) => handleEdit("callee", row),
+              idKey: "calleeId",
+            })}
           </div>
-        ) : (
-          <>
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-              {renderTablePanel({
-                title: "CallerID Whitelist",
-                rows: callerRows,
-                checkedItems: callerChecked,
-                onCheck: handleCallerCheck,
-                onCheckAll: handleCallerCheckAll,
-                onDelete: handleCallerDelete,
-                onClear: handleCallerClear,
-                onAddNew: () => handleAddNew("caller"),
-                onEdit: (row) => handleEdit("caller", row),
-                idKey: "callerId",
-              })}
-              {renderTablePanel({
-                title: "CalleeID Whitelist",
-                rows: calleeRows,
-                checkedItems: calleeChecked,
-                onCheck: handleCalleeCheck,
-                onCheckAll: handleCalleeCheckAll,
-                onDelete: handleCalleeDelete,
-                onClear: handleCalleeClear,
-                onAddNew: () => handleAddNew("callee"),
-                onEdit: (row) => handleEdit("callee", row),
-                idKey: "calleeId",
-              })}
-            </div>
 
-            <div
-              style={{
-                textAlign: "center",
-                color: "#dc2626",
-                fontSize: 12,
-                marginTop: 24,
-                padding: "8px 16px",
-                borderRadius: 6,
-              }}
-            >
-              Note: The one list, only the latest 200 pieces will be displayed.
-              To check all the records, please backup the file.
-            </div>
-          </>
-        )}
-      </div>
+          <p
+            style={{
+              color: C.amber,
+              fontSize: 11,
+              lineHeight: 1.5,
+              margin: "16px 0 0",
+              padding: "0 4px",
+            }}
+          >
+            Note: The one list, only the latest 200 pieces will be displayed.
+            To check all the records, please backup the file.
+          </p>
+        </>
+      )}
 
       {/* Modal */}
       <Dialog
         open={showModal}
         onClose={() => setShowModal(false)}
         maxWidth={false}
-        className="z-50"
         PaperProps={{
           sx: {
-            width: 500,
-            maxWidth: "95vw",
-            mx: "auto",
+            mt: 0,
             p: 0,
-            borderRadius: 2,
+            borderRadius: `${CARD_RADIUS}px`,
             overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
+            
+          }
         }}
         disableRestoreFocus
         disableEnforceFocus
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "16px 24px",
-          }}
-        >
-          {modalType === "caller"
-            ? "CallerIDs in Whitelist"
-            : "CalleeIDs in Whitelist"}
-        </DialogTitle>
+       <DialogTitle
+  sx={{
+    m: 0,
+    p: "14px 24px",
+    backgroundColor: "#1e2d42",
+    color: "#fff",
+    fontWeight: 600,
+    fontSize: 16,
+    textAlign: "center",
+    letterSpacing: "-0.01em",
+    minHeight: "unset",
+  }}
+>
+  {modalType === "caller"
+    ? "CallerIDs in Whitelist"
+    : "CalleeIDs in Whitelist"}
+</DialogTitle>
 
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+<DialogContent
+  sx={{
+    p: 3,
+    backgroundColor: "#fff",
+    "&:first-of-type": {
+      paddingTop: 3,
+    },
+  }}
+>
           <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
             {/* Group No. */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1210,18 +1304,18 @@ const Whitelist = () => {
 
         <DialogActions
           style={{
-            background: "#f8fafc",
-            padding: "16px 24px",
-            borderTop: `1px solid ${C.cardBorder}`,
+            background: C.cardBg,
+            padding: "12px 24px",
+            borderTop: `1px solid ${C.divider}`,
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "flex-end",
             gap: 12,
           }}
         >
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={advancedFormBtnStyle}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -1233,14 +1327,14 @@ const Whitelist = () => {
           <Btn
             onClick={() => setShowModal(false)}
             variant="cancel"
-            style={{ width: 100, height: 33 }}
+            style={advancedFormBtnStyle}
             disabled={isLoading}
           >
             Cancel
           </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+    </AdvancedPageShell>
   );
 };
 

@@ -90,20 +90,21 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-// ── Color palette (matches Num Manipulate pages) ─────────────────────────────
+// ── Color palette (matches Extensions) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
-
-const CARD_RADIUS = 20;
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -197,6 +198,9 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -210,15 +214,17 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -226,26 +232,48 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -258,23 +286,46 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
+};
+
+const pcmPstnModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 const TH = ({ children, style: extra }) => (
@@ -286,11 +337,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -303,16 +357,165 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const pcmPstnTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const pcmPstnPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pcmPstnPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const PCM_PSTN_TABLE_CARD_RADIUS = 10;
+
+const pcmPstnCardStyle = {
+  background: "#ffffff",
+  borderRadius: PCM_PSTN_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const pcmPstnToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PCM_PSTN_TABLE_CARD_RADIUS,
+  borderTopRightRadius: PCM_PSTN_TABLE_CARD_RADIUS,
+};
+
+const pcmPstnFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PCM_PSTN_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: PCM_PSTN_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const pcmPstnSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const pcmPstnCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pcmPstnPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const PCM_PSTN_MODAL_TAB_BAR_STYLE = {
+  borderBottom: "1px solid #e5e7eb",
+  background: "#ffffff",
+};
+
+const PCM_PSTN_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
+const PCM_PSTN_MODAL_TAB_INACTIVE_COLOR = "#374151";
+
+const pcmPstnModalTabsSx = {
+  minHeight: 45,
+  "& .MuiTab-root": {
+    color: PCM_PSTN_MODAL_TAB_INACTIVE_COLOR,
+    fontSize: 12,
+    fontWeight: 500,
+    textTransform: "none",
+    minHeight: 45,
+  },
+  "& .MuiTab-root.Mui-selected": {
+    color: PCM_PSTN_MODAL_TAB_ACTIVE_COLOR,
+    fontWeight: 700,
+  },
 };
 
 const PRIMARY_CHANNEL = "1-15,17-31";
@@ -924,7 +1127,7 @@ const PcmPstnPage = () => {
     const spanId = row.span_id || row.span?.id;
     const isRowChecked = selectedItems.includes(spanId);
     const rowBg = isRowChecked
-      ? "#f0f9ff"
+      ? "#eff6ff"
       : idx % 2 === 1
         ? "#f8fafc"
         : "#ffffff";
@@ -938,7 +1141,7 @@ const PcmPstnPage = () => {
           transition: "background 0.15s ease",
         }}
         onMouseEnter={(e) => {
-          if (!isRowChecked) e.currentTarget.style.background = "#f1f5f9";
+          if (!isRowChecked) e.currentTarget.style.background = "#f8fafc";
         }}
         onMouseLeave={(e) => {
           if (!isRowChecked) e.currentTarget.style.background = rowBg;
@@ -951,7 +1154,6 @@ const PcmPstnPage = () => {
             width: 36,
             borderLeft: "none",
             ...lastRowCellStyle,
-            ...(isLastRow ? { borderBottomLeftRadius: CARD_RADIUS } : {}),
           }}
         >
           <Checkbox
@@ -965,7 +1167,7 @@ const PcmPstnPage = () => {
               );
             }}
             disabled={loading.delete}
-            sx={checkboxSx}
+            sx={pcmPstnTableCheckboxSx}
           />
         </td>
         {PCM_PSTN_TABLE_COLUMNS.map((col) => {
@@ -978,9 +1180,6 @@ const PcmPstnPage = () => {
                   background: rowBg,
                   borderRight: "none",
                   ...lastRowCellStyle,
-                  ...(isLastRow
-                    ? { borderBottomRightRadius: CARD_RADIUS }
-                    : {}),
                 }}
               >
                 <div
@@ -993,33 +1192,36 @@ const PcmPstnPage = () => {
                     titleAccess="Edit"
                     onClick={() => handleEditItem(row, realIndex)}
                     style={{
-                      cursor: "pointer",
+                      cursor: loading.delete ? "not-allowed" : "pointer",
                       color: "#2563eb",
                       fontSize: 22,
-                      opacity: 0.7,
+                      opacity: loading.delete ? 0.4 : 0.7,
                       transition: "opacity 0.15s ease",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.opacity = "0.7")
-                    }
+                    onMouseEnter={(e) => {
+                      if (!loading.delete) e.currentTarget.style.opacity = "1";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!loading.delete) e.currentTarget.style.opacity = "0.7";
+                    }}
                   />
                 </div>
               </td>
             );
           }
           if (col.key === "span_status") {
+            const isUp = row.span_status?.includes("Up");
             return (
               <td
                 key={col.key}
                 style={{ ...tdStyle, background: rowBg, ...lastRowCellStyle }}
               >
                 <span
-                  className={`text-[13px] font-semibold ${
-                    row.span_status?.includes("Up")
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: isUp ? C.successGreen : C.errorRed,
+                  }}
                 >
                   {row.span_status || "—"}
                 </span>
@@ -1099,7 +1301,7 @@ const PcmPstnPage = () => {
       >
         {field.label}
         {["spanNo", "context", "signalling", "status"].includes(field.name) && (
-          <span className="text-red-500 ml-1">*</span>
+          <span style={{ color: C.errorRed, marginLeft: 4 }}>*</span>
         )}
         :
       </E1PriFieldLabel>
@@ -1179,13 +1381,7 @@ const PcmPstnPage = () => {
   );
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
+    <div style={pcmPstnPageWrapStyle}>
       {message.text && (
         <Alert
           severity={message.type}
@@ -1203,52 +1399,30 @@ const PcmPstnPage = () => {
         </Alert>
       )}
 
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
+      <div style={pcmPstnPageInnerStyle}>
         <div
           style={{
             fontSize: 12,
-            color: C.mutedText,
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>E1-PRI</span>
           <span>&gt;</span>
           <span>PCM</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             PSTN Settings
           </span>
         </div>
 
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={pcmPstnCardStyle}>
+          <div style={pcmPstnToolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -1259,17 +1433,7 @@ const PcmPstnPage = () => {
               }}
             >
               {selectedItems.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pcmPstnSelectedBadgeStyle}>
                   {selectedItems.length} selected
                 </span>
               )}
@@ -1286,7 +1450,7 @@ const PcmPstnPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || isInitialLoad}
-                style={{ height: 30 }}
+                style={pcmPstnCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1296,10 +1460,10 @@ const PcmPstnPage = () => {
                 disabled={
                   loading.delete || isInitialLoad || selectedItems.length === 0
                 }
-                style={{ height: 30 }}
+                style={pcmPstnCancelBtnStyle}
               >
                 {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   <>
                     <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1311,10 +1475,10 @@ const PcmPstnPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || isInitialLoad || data.length === 0}
-                style={{ height: 30 }}
+                style={pcmPstnCancelBtnStyle}
               >
                 {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   "Clear All"
                 )}
@@ -1323,174 +1487,133 @@ const PcmPstnPage = () => {
                 variant="primary"
                 onClick={handleAddNew}
                 disabled={loading.save || isInitialLoad}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={pcmPstnPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
-          >
-            {isInitialLoad ? (
+          {isInitialLoad ? (
+            <TableListLoading />
+          ) : data.length === 0 ? (
+            <TableListEmptyState
+              message="No PSTN settings found."
+              onAddNew={handleAddNew}
+            />
+          ) : (
+            <>
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
                 }}
               >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
-            ) : data.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
                   }}
                 >
-                  No PSTN settings found.
-                </div>
-                <Btn
-                  variant="cancel"
-                  onClick={handleAddNew}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New
-                </Btn>
-              </div>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  tableLayout: "auto",
-                  minWidth: 900,
-                }}
-              >
-                <thead>
-                  <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={
-                          data.length > 0 &&
-                          data.every((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          )
-                        }
-                        indeterminate={
-                          data.some((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          ) &&
-                          !data.every((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          )
-                        }
-                        onChange={() => {
-                          const allSelected = data.every((row) =>
-                            selectedItems.includes(row.span_id || row.span?.id),
-                          );
-                          if (allSelected) {
-                            const rowIds = data.map(
-                              (r) => r.span_id || r.span?.id,
-                            );
-                            setSelectedItems((prev) =>
-                              prev.filter((id) => !rowIds.includes(id)),
-                            );
-                          } else {
-                            setSelectedItems((prev) => {
-                              const newSelections = [...prev];
-                              data.forEach((row) => {
-                                const id = row.span_id || row.span?.id;
-                                if (!newSelections.includes(id)) {
-                                  newSelections.push(id);
-                                }
-                              });
-                              return newSelections;
-                            });
-                          }
-                        }}
-                        sx={checkboxSx}
-                      />
-                    </TH>
-                    {PCM_PSTN_TABLE_COLUMNS.map((col) => (
+                  <thead>
+                    <tr>
                       <TH
-                        key={col.key}
                         style={{
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
                           position: "sticky",
                           top: 0,
                           zIndex: 10,
-                          ...(col.key === "modify"
-                            ? { width: 70, borderRight: "none" }
-                            : {}),
                         }}
                       >
-                        {col.label}
+                        <Checkbox
+                          size="small"
+                          checked={
+                            data.length > 0 &&
+                            data.every((row) =>
+                              selectedItems.includes(
+                                row.span_id || row.span?.id,
+                              ),
+                            )
+                          }
+                          indeterminate={
+                            data.some((row) =>
+                              selectedItems.includes(
+                                row.span_id || row.span?.id,
+                              ),
+                            ) &&
+                            !data.every((row) =>
+                              selectedItems.includes(
+                                row.span_id || row.span?.id,
+                              ),
+                            )
+                          }
+                          onChange={() => {
+                            const allSelected = data.every((row) =>
+                              selectedItems.includes(
+                                row.span_id || row.span?.id,
+                              ),
+                            );
+                            if (allSelected) {
+                              const rowIds = data.map(
+                                (r) => r.span_id || r.span?.id,
+                              );
+                              setSelectedItems((prev) =>
+                                prev.filter((id) => !rowIds.includes(id)),
+                              );
+                            } else {
+                              setSelectedItems((prev) => {
+                                const newSelections = [...prev];
+                                data.forEach((row) => {
+                                  const id = row.span_id || row.span?.id;
+                                  if (!newSelections.includes(id)) {
+                                    newSelections.push(id);
+                                  }
+                                });
+                                return newSelections;
+                              });
+                            }
+                          }}
+                          sx={pcmPstnTableCheckboxSx}
+                        />
                       </TH>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((row, idx) =>
-                    renderTableRow(row, idx, idx === data.length - 1),
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
+                      {PCM_PSTN_TABLE_COLUMNS.map((col) => (
+                        <TH
+                          key={col.key}
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 10,
+                            ...(col.key === "modify"
+                              ? { width: 70, borderRight: "none" }
+                              : {}),
+                          }}
+                        >
+                          {col.label}
+                        </TH>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((row, idx) =>
+                      renderTableRow(row, idx, idx === data.length - 1),
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-          {!isInitialLoad && data.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {data.length} record
-                {data.length !== 1 ? "s" : ""}
-              </span>
-            </div>
+              <div style={pcmPstnFooterStyle}>
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Showing {data.length} record
+                  {data.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -1499,6 +1622,9 @@ const PcmPstnPage = () => {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
         sx={{
           "& .MuiDialog-container": {
             alignItems: "flex-start",
@@ -1509,11 +1635,10 @@ const PcmPstnPage = () => {
           sx: {
             width: 600,
             maxWidth: "95vw",
+            mx: "auto",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
         }}
       >
@@ -1532,47 +1657,22 @@ const PcmPstnPage = () => {
           {editIndex >= 0 ? "Edit PCM PSTN Settings" : "Add PCM PSTN Settings"}
         </DialogTitle>
 
-        <div
-          style={{
-            borderBottom: `1px solid ${C.cardBorder}`,
-            background: "#ffffff",
-          }}
-        >
+        <div style={PCM_PSTN_MODAL_TAB_BAR_STYLE}>
           <Tabs
             value={tab}
             onChange={(_, v) => setTab(v)}
             variant="fullWidth"
-            TabIndicatorProps={{ style: { backgroundColor: "#3E5475" } }}
-            sx={{
-              "& .MuiTab-root.Mui-selected": {
-                color: "#3E5475",
+            TabIndicatorProps={{
+              style: {
+                backgroundColor: PCM_PSTN_MODAL_TAB_ACTIVE_COLOR,
+                height: 2,
               },
             }}
+            sx={pcmPstnModalTabsSx}
           >
-            <Tab
-              label="Span"
-              sx={{
-                color: "#374151",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            />
-            <Tab
-              label="Channels"
-              sx={{
-                color: "#374151",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            />
-            <Tab
-              label="Voice"
-              sx={{
-                color: "#374151",
-                fontWeight: 600,
-                textTransform: "none",
-              }}
-            />
+            <Tab label="Span" />
+            <Tab label="Channels" />
+            <Tab label="Voice" />
           </Tabs>
         </div>
 
@@ -1616,7 +1716,7 @@ const PcmPstnPage = () => {
             variant="cancel"
             onClick={() => setIsModalOpen(false)}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={pcmPstnModalCancelBtnStyle}
           >
             Close
           </Btn>

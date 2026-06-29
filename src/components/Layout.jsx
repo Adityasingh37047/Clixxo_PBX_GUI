@@ -60,10 +60,19 @@ const attachSmoothWheelScroll = (container, scrollRoot = container) => {
   };
 
   const onWheel = (e) => {
+<<<<<<< HEAD
     const scrollEl = getScrollParent(e.target, scrollRoot);
     const maxScroll = scrollEl.scrollHeight - scrollEl.clientHeight;
     if (maxScroll <= 0) return;
 
+=======
+    // Pages that opt in use native browser scrolling (immediate, no eased lag).
+    if (e.target.closest("[data-native-scroll]")) {
+      return;
+    }
+
+    const scrollEl = getScrollParent(e.target, container);
+>>>>>>> 9d4c84a9d4cc7d4ba01502fa9fdd10031ecabcb9
     const s = getState(scrollEl);
 
     e.preventDefault();

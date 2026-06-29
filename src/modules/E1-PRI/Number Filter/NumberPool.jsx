@@ -5,7 +5,7 @@ import {
   NUMBER_POOL_FIELD_TOOLTIPS,
 } from "../../../constants/NumberPoolConstants";
 import {
-  Button,
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,6 +16,7 @@ import {
   CircularProgress,
   Alert,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
 import {
   listNumberPool,
@@ -25,7 +26,9 @@ import {
 } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { Checkbox } from "@mui/material";
+
+const NUMBER_POOL_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -91,16 +94,32 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
-const CARD_RADIUS = 20;
+const NUMBER_POOL_CARD_RADIUS = 10;
+
+const numberPoolPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const numberPoolPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -203,7 +222,7 @@ const numberPoolFieldLabelStyle = {
 const numberPoolFieldRowStyle = {
   display: "flex",
   alignItems: "center",
-  gap: 10,
+  gap: 12,
   width: "100%",
 };
 
@@ -229,10 +248,13 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
-      background: " #cbd5e1",
+      background: C.cardBg,
       color: C.valueText,
       border: "1px solid #9ca3af",
     },
@@ -242,21 +264,17 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      // borderRadius: 6,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
     danger: {
       background: "#fef2f2",
       color: C.amber,
-      border: `0.5px solid #fecaca`,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -264,28 +282,49 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "danger":
-        return "#fca5a5";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -298,24 +337,179 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
+
+const numberPoolCardStyle = {
+  background: "#ffffff",
+  borderRadius: NUMBER_POOL_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const numberPoolToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: NUMBER_POOL_CARD_RADIUS,
+  borderTopRightRadius: NUMBER_POOL_CARD_RADIUS,
+};
+
+const numberPoolFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: NUMBER_POOL_CARD_RADIUS,
+  borderBottomRightRadius: NUMBER_POOL_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const numberPoolSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const numberPoolCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const numberPoolPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const numberPoolModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const NumberPoolBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>Number Filter</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>Number Pool</span>
+  </div>
+);
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -326,11 +520,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -343,26 +540,20 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const numberPoolTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
-
-const headerCheckThStyle = {
-  padding: "1px 14px",
-  lineHeight: 1,
-};
-
-const MIN_ROWS = 14;
 
 const NumberPool = () => {
+  const isCompact = useMediaQuery(NUMBER_POOL_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
@@ -374,6 +565,7 @@ const NumberPool = () => {
   });
   const [validationError, setValidationError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState({ msg: "", type: "success" });
 
@@ -616,6 +808,7 @@ const NumberPool = () => {
       setRows([]);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
@@ -636,98 +829,55 @@ const NumberPool = () => {
   return (
     <div
       style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        ...numberPoolPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      {/* Alerts */}
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>Number Filter</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Number Pool
-          </span>
-        </div>
-
-        {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Top Actions Bar */}
-          <div
-            style={{
-              minHeight: 44,
-              padding: "7px 14px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 12,
-              background: "#ffffff",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+      <div style={numberPoolPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            {/* Left Section */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {toast.msg}
+          </Alert>
+        )}
+
+        <NumberPoolBreadcrumb />
+
+        <div style={numberPoolCardStyle}>
+          <div
+            style={{
+              ...numberPoolToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {rows.some((r) => r.checked) && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={numberPoolSelectedBadgeStyle}>
                   {rows.filter((r) => r.checked).length} selected
                 </span>
               )}
             </div>
 
-            {/* Right Section: Actions */}
             <div
               style={{
                 display: "flex",
@@ -739,226 +889,221 @@ const NumberPool = () => {
               <Btn
                 variant="cancel"
                 onClick={handleDelete}
-                disabled={!rows.some((r) => r.checked) || isDeleting}
-                style={{ height: 30 }}
+                disabled={
+                  isInitialLoad ||
+                  !rows.some((r) => r.checked) ||
+                  isDeleting
+                }
+                style={numberPoolCancelBtnStyle}
               >
                 {isDeleting ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  <>
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
-                  </>
-                )}
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
-                disabled={rows.length === 0 || isDeleting}
-                style={{ height: 30 }}
+                disabled={isInitialLoad || rows.length === 0 || isDeleting}
+                style={numberPoolCancelBtnStyle}
               >
                 Clear All
               </Btn>
               <Btn
                 variant="primary"
                 onClick={() => openModal()}
-                disabled={isDeleting}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                disabled={isInitialLoad || isDeleting || loading}
+                style={numberPoolPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
-          >
-            {rows.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
+          {isInitialLoad ? (
+            <TableListLoading />
+          ) : rows.length === 0 ? (
+            <TableListEmptyState
+              message="No number pool entries found."
+              onAddNew={() => openModal()}
+            />
+          ) : (
+            <>
+              <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 600,
+                    ...(isCompact ? { minWidth: 480 } : {}),
                   }}
                 >
-                  No Number Pool Entries Configured!
-                </div>
-                <Btn
-                  onClick={() => openModal()}
-                  variant="cancel"
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New Entry
-                </Btn>
-              </div>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  minWidth: "600px",
-                }}
-              >
-                <thead>
-                  <tr>
-                    <TH style={{ width: 60, borderLeft: "none", ...headerCheckThStyle }}>
-                      <Checkbox
-                        checked={allRowsChecked}
-                        indeterminate={someRowsChecked}
-                        onChange={handleCheckAll}
-                        size="small"
-                        sx={checkboxSx}
-                        disabled={rows.length === 0}
-                      />
-                    </TH>
-                    <TH>Group No.</TH>
-                    <TH>Number Range</TH>
-                    <TH style={{ width: 80, borderRight: "none" }}>Modify</TH>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, idx) => {
-                    const realIdx = idx;
-                    const isChecked = row?.checked || false;
-                    const isLastRow = idx === rows.length - 1;
-                    const rowBg = isChecked
-                      ? "#f0f9ff"
-                      : realIdx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
-                    const lastRowCellStyle = isLastRow
-                      ? { borderBottom: "none" }
-                      : {};
-                    return (
-                      <tr
-                        key={row.id || realIdx}
+                  <thead>
+                    <tr>
+                      <TH
                         style={{
-                          background: rowBg,
-                          transition: "background 0.1s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isChecked)
-                            e.currentTarget.style.background = "#f1f5f9";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isChecked)
-                            e.currentTarget.style.background = rowBg;
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
                         }}
                       >
-                        <td
+                        <Checkbox
+                          checked={allRowsChecked}
+                          indeterminate={someRowsChecked}
+                          onChange={handleCheckAll}
+                          size="small"
+                          sx={numberPoolTableCheckboxSx}
+                          disabled={rows.length === 0}
+                        />
+                      </TH>
+                      <TH
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        Group No.
+                      </TH>
+                      <TH
+                        style={{ position: "sticky", top: 0, zIndex: 10 }}
+                      >
+                        Number Range
+                      </TH>
+                      <TH
+                        style={{
+                          width: 70,
+                          borderRight: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        Modify
+                      </TH>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, idx) => {
+                      const realIdx = idx;
+                      const isChecked = row?.checked || false;
+                      const isLastRow = idx === rows.length - 1;
+                      const rowBg = isChecked
+                        ? "#eff6ff"
+                        : realIdx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
+                      return (
+                        <tr
+                          key={row.id || realIdx}
                           style={{
-                            ...tdStyle,
                             background: rowBg,
-                            borderLeft: "none",
-                            ...lastRowCellStyle,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isChecked)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isChecked)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          <Checkbox
-                            checked={isChecked}
-                            onChange={() => handleCheck(realIdx)}
-                            size="small"
-                            sx={checkboxSx}
-                          />
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.groupNo}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.numberRange}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderRight: "none",
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          <div
+                          <td
                             style={{
-                              display: "flex",
-                              justifyContent: "center",
+                              ...tdStyle,
+                              background: rowBg,
+                              width: 36,
+                              borderLeft: "none",
+                              ...lastRowCellStyle,
                             }}
                           >
-                            <EditDocumentIcon
-                              titleAccess="Edit"
-                              style={{
-                                cursor: "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: 0.7,
-                                transition: "opacity 0.15s ease",
-                              }}
-                              onClick={() => openModal(realIdx)}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.style.opacity = "1")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.style.opacity = "0.7")
-                              }
+                            <Checkbox
+                              checked={isChecked}
+                              onChange={() => handleCheck(realIdx)}
+                              size="small"
+                              disabled={isDeleting}
+                              sx={numberPoolTableCheckboxSx}
                             />
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {row.groupNo}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight: 400,
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {row.numberRange}
+                          </td>
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                onClick={() => {
+                                  if (!isDeleting) openModal(realIdx);
+                                }}
+                                style={{
+                                  cursor: isDeleting
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: isDeleting ? 0.4 : 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isDeleting)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isDeleting)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-          {rows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                background: "#ffffff",
-                borderTop: `1px solid ${C.cardBorder}`,
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {rows.length} record
-                {rows.length !== 1 ? "s" : ""}
-              </span>
-            </div>
+              <div style={numberPoolFooterStyle}>
+                <span style={{ fontSize: 11, color: C.mutedText }}>
+                  Showing {rows.length} record
+                  {rows.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -966,19 +1111,28 @@ const NumberPool = () => {
       {/* Modal */}
       <Dialog
         open={modalOpen}
-        onClose={closeModal}
+        onClose={() => {
+          if (loading) return;
+          closeModal();
+        }}
         maxWidth={false}
-        className="z-50"
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
         PaperProps={{
           sx: {
             width: 500,
-            maxWidth: "95vw",
+            maxWidth: "96vw",
             mx: "auto",
             p: 0,
-            borderRadius: 2,
+            borderRadius: "8px",
             overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
         }}
         disableRestoreFocus
@@ -992,6 +1146,8 @@ const NumberPool = () => {
             fontSize: 16,
             textAlign: "center",
             padding: "16px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {editIndex !== null ? "Edit" : "Add"} Number Pool Entry
@@ -1087,12 +1243,14 @@ const NumberPool = () => {
         </DialogContent>
         <DialogActions
           style={{
-            background: "#f8fafc",
-            padding: "16px 24px",
-            borderTop: `1px solid ${C.cardBorder}`,
             display: "flex",
             justifyContent: "center",
-            gap: 12,
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
@@ -1101,19 +1259,15 @@ const NumberPool = () => {
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
             disabled={loading}
           >
-            {loading ? (
-              <CircularProgress size={16} style={{ color: "#fff" }} />
-            ) : (
-              "Save"
-            )}
+            {loading ? "Saving..." : "Save"}
           </Btn>
           <Btn
             onClick={closeModal}
             variant="cancel"
-            style={{ width: 100, height: 33 }}
+            style={numberPoolModalCancelBtnStyle}
             disabled={loading}
           >
-            Cancel
+            Close
           </Btn>
         </DialogActions>
       </Dialog>

@@ -86,23 +86,69 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 170,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+  </div>
+);
+
 // ── Color palette (matches Extensions page) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
-// ── Button (Account Manage style; outline kept for pagination only) ───────────
+const PCM_NUM_RECV_RULE_CARD_RADIUS = 10;
+
+const pcmNumRecvRulePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pcmNumRecvRulePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+// ── Button (matches Extensions page) ─────────────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -110,6 +156,9 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -123,15 +172,17 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 13,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -139,26 +190,48 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -171,26 +244,217 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
-const CARD_RADIUS = 20;
+const pcmNumRecvRuleCardStyle = {
+  background: "#ffffff",
+  borderRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const pcmNumRecvRuleToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
+  borderTopRightRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
+};
+
+const pcmNumRecvRulePaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
+  borderBottomRightRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const pcmNumRecvRuleSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const pcmNumRecvRuleCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pcmNumRecvRulePrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const pcmNumRecvRulePageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const pcmNumRecvRuleModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PcmNumRecvRuleBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>PCM</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      Number-Receiving Rule
+    </span>
+  </div>
+);
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({ message, onAddNew, buttonLabel = "+ Add New" }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: 16,
+      }}
+    >
+      {message}
+    </div>
+    <Btn
+      variant="cancel"
+      onClick={onAddNew}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+    >
+      {buttonLabel}
+    </Btn>
+  </div>
+);
+
+const PcmNumRecvRulePagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+}) => (
+  <div style={pcmNumRecvRulePaginationStyle}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} record
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={pcmNumRecvRulePageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -286,11 +550,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -298,7 +565,7 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const checkboxSx = {
+const pcmNumRecvRuleTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -310,8 +577,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -630,149 +897,45 @@ const PcmNumReceivingRulePage = () => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
   };
 
-  // Render form field
-  const renderFormField = (field) => (
-    <div
-      key={field.name}
-      className="flex flex-row items-center border border-gray-300 rounded px-3 py-2 gap-3 w-full bg-white mb-2"
-    >
-      <label className="text-[15px] text-gray-700 font-medium whitespace-nowrap text-left min-w-[120px] mr-2">
-        {field.label}:
-      </label>
-      <div className="flex-1 min-w-0">
-        {field.type === "select" ? (
-          <Select
-            value={form[field.name]}
-            onChange={(e) => handleInputChange(field.name, e.target.value)}
-            size="small"
-            fullWidth
-            variant="outlined"
-            className="bg-white"
-            sx={{
-              maxWidth: "100%",
-              minWidth: 0,
-              ...modalSelectSx,
-            }}
-          >
-            {field.options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        ) : (
-          <TextField
-            type={field.type}
-            value={form[field.name] || ""}
-            onChange={(e) => handleInputChange(field.name, e.target.value)}
-            size="small"
-            fullWidth
-            variant="outlined"
-            className="bg-white"
-            sx={{
-              maxWidth: "100%",
-              minWidth: 0,
-              ...modalTextFieldSx,
-            }}
-            placeholder={field.placeholder || ""}
-          />
-        )}
-      </div>
-    </div>
-  );
-
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      {/* Message Display */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
-
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>PCM</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Number-Receiving Rule
-          </span>
-        </div>
-
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+    <div style={pcmNumRecvRulePageWrapStyle}>
+      <div style={pcmNumRecvRulePageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {message.text}
+          </Alert>
+        )}
+
+        <PcmNumRecvRuleBreadcrumb />
+
+        <div style={pcmNumRecvRuleCardStyle}>
+          <div style={pcmNumRecvRuleToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pcmNumRecvRuleSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            {/* Right: action buttons */}
             <div
               style={{
                 display: "flex",
@@ -785,21 +948,9 @@ const PcmNumReceivingRulePage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || loading.fetch}
-                style={{ height: 30 }}
+                style={pcmNumRecvRuleCancelBtnStyle}
               >
                 Inverse
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleClearAll}
-                disabled={loading.delete || loading.fetch || rules.length === 0}
-                style={{ height: 30 }}
-              >
-                {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  "Clear All"
-                )}
               </Btn>
               <Btn
                 variant="cancel"
@@ -807,164 +958,124 @@ const PcmNumReceivingRulePage = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                style={{ height: 30 }}
+                style={pcmNumRecvRuleCancelBtnStyle}
               >
                 {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={loading.delete || loading.fetch || rules.length === 0}
+                style={pcmNumRecvRuleCancelBtnStyle}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
-                  <>
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
-                  </>
+                  "Clear All"
                 )}
               </Btn>
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.save || loading.fetch}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={pcmNumRecvRulePrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
-          <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
-          >
-            {loading.fetch ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
-            ) : rules.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
+          {loading.fetch ? (
+            <TableListLoading />
+          ) : rules.length === 0 ? (
+            <TableListEmptyState
+              message="No Number-Receiving Rules found."
+              onAddNew={() => handleOpenModal()}
+            />
+          ) : (
+            <>
+              <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
                   }}
                 >
-                  No Number-Receiving Rules found.
-                </div>
-                <Btn
-                  variant="cancel"
-                  onClick={() => handleOpenModal()}
-                  disabled={loading.save || loading.fetch}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New
-                </Btn>
-              </div>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  tableLayout: "auto",
-                  minWidth: 900,
-                }}
-              >
-                <thead>
-                  <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={
-                          pagedRules.length > 0 &&
-                          pagedRules.every((_, idx) =>
-                            selected.includes((page - 1) * itemsPerPage + idx),
-                          )
-                        }
-                        indeterminate={
-                          pagedRules.some((_, idx) =>
-                            selected.includes((page - 1) * itemsPerPage + idx),
-                          ) &&
-                          !pagedRules.every((_, idx) =>
-                            selected.includes((page - 1) * itemsPerPage + idx),
-                          )
-                        }
-                        onChange={() => {
-                          const allSelected = pagedRules.every((_, idx) =>
-                            selected.includes((page - 1) * itemsPerPage + idx),
-                          );
-                          if (allSelected) handleUncheckAllRows();
-                          else handleCheckAllRows();
-                        }}
-                        sx={checkboxSx}
-                      />
-                    </TH>
-                    {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
-                      (c) => c.key !== "check",
-                    ).map((c) => (
-                      <TH
-                        key={c.key}
-                        style={{
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                          ...(c.key === "modify"
-                            ? { width: 70, borderRight: "none" }
-                            : {}),
-                        }}
-                      >
-                        {c.label}
+                  <thead>
+                    <tr>
+                      <TH style={{ width: 40, padding: 0, borderLeft: "none" }}>
+                        <Checkbox
+                          size="small"
+                          checked={
+                            pagedRules.length > 0 &&
+                            pagedRules.every((_, idx) =>
+                              selected.includes(
+                                (page - 1) * itemsPerPage + idx,
+                              ),
+                            )
+                          }
+                          indeterminate={
+                            pagedRules.some((_, idx) =>
+                              selected.includes(
+                                (page - 1) * itemsPerPage + idx,
+                              ),
+                            ) &&
+                            !pagedRules.every((_, idx) =>
+                              selected.includes(
+                                (page - 1) * itemsPerPage + idx,
+                              ),
+                            )
+                          }
+                          onChange={() => {
+                            const allSelected = pagedRules.every((_, idx) =>
+                              selected.includes(
+                                (page - 1) * itemsPerPage + idx,
+                              ),
+                            );
+                            if (allSelected) handleUncheckAllRows();
+                            else handleCheckAllRows();
+                          }}
+                          sx={pcmNumRecvRuleTableCheckboxSx}
+                        />
                       </TH>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedRules.map((item, idx) => {
+                      {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
+                        (c) => c.key !== "check",
+                      ).map((c) => (
+                        <TH
+                          key={c.key}
+                          style={
+                            c.key === "modify"
+                              ? { width: 70, borderRight: "none" }
+                              : undefined
+                          }
+                        >
+                          {c.label}
+                        </TH>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedRules.map((item, idx) => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const globalIndex = realIdx + 1;
                       const isRowChecked = selected.includes(realIdx);
                       const isLastRow = idx === pagedRules.length - 1;
                       const rowBg = isRowChecked
-                        ? "#f0f9ff"
+                        ? "#eff6ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
                       const lastRowCellStyle = isLastRow
                         ? { borderBottom: "none" }
                         : {};
+
                       return (
                         <tr
                           key={item.id || realIdx}
@@ -974,7 +1085,7 @@ const PcmNumReceivingRulePage = () => {
                           }}
                           onMouseEnter={(e) => {
                             if (!isRowChecked)
-                              e.currentTarget.style.background = "#f1f5f9";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isRowChecked)
@@ -988,9 +1099,6 @@ const PcmNumReceivingRulePage = () => {
                               borderLeft: "none",
                               width: 36,
                               ...lastRowCellStyle,
-                              ...(isLastRow
-                                ? { borderBottomLeftRadius: CARD_RADIUS }
-                                : {}),
                             }}
                           >
                             <Checkbox
@@ -998,7 +1106,7 @@ const PcmNumReceivingRulePage = () => {
                               checked={isRowChecked}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={loading.delete}
-                              sx={checkboxSx}
+                              sx={pcmNumRecvRuleTableCheckboxSx}
                             />
                           </td>
                           {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
@@ -1011,6 +1119,7 @@ const PcmNumReceivingRulePage = () => {
                                   style={{
                                     ...tdStyle,
                                     background: rowBg,
+                                    fontWeight: 400,
                                     ...lastRowCellStyle,
                                   }}
                                 >
@@ -1027,9 +1136,6 @@ const PcmNumReceivingRulePage = () => {
                                     background: rowBg,
                                     borderRight: "none",
                                     ...lastRowCellStyle,
-                                    ...(isLastRow
-                                      ? { borderBottomRightRadius: CARD_RADIUS }
-                                      : {}),
                                   }}
                                 >
                                   <div
@@ -1053,9 +1159,6 @@ const PcmNumReceivingRulePage = () => {
                                         fontSize: 22,
                                         opacity: loading.delete ? 0.4 : 0.7,
                                         transition: "opacity 0.15s ease",
-                                        pointerEvents: loading.delete
-                                          ? "none"
-                                          : "auto",
                                       }}
                                       onMouseEnter={(e) => {
                                         if (!loading.delete)
@@ -1076,6 +1179,7 @@ const PcmNumReceivingRulePage = () => {
                                 style={{
                                   ...tdStyle,
                                   background: rowBg,
+                                  fontWeight: 400,
                                   ...lastRowCellStyle,
                                 }}
                               >
@@ -1091,64 +1195,20 @@ const PcmNumReceivingRulePage = () => {
                         </tr>
                       );
                     })}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Pagination footer */}
-          {!loading.fetch && rules.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-                overflow: "hidden",
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} record
-                {pagedRules.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
+                  </tbody>
+                </table>
               </div>
-            </div>
+
+              <PcmNumRecvRulePagination
+                page={page}
+                totalPages={totalPages}
+                recordCount={pagedRules.length}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </div>
 
-        {/* Rule note */}
         {rules.length > 0 && (
           <div
             style={{
@@ -1164,11 +1224,22 @@ const PcmNumReceivingRulePage = () => {
         )}
       </div>
 
-      {/* Modal */}
       <Dialog
         open={showModal}
-        onClose={handleCloseModal}
+        onClose={() => {
+          if (loading.save) return;
+          handleCloseModal();
+        }}
         maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
         PaperProps={{
           sx: {
             width: 500,
@@ -1200,75 +1271,57 @@ const PcmNumReceivingRulePage = () => {
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div style={addHostFormPanelStyle}>
             {NUM_RECEIVING_RULE_FIELDS.map((field) => (
-              <div
+              <E1PriFieldRow
                 key={field.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
+                label={`${field.label}:`}
+                tooltipKey={field.name}
+                tooltips={NUM_RECEIVING_RULE_FIELD_TOOLTIPS}
               >
-                <E1PriFieldLabel
-                  tooltipKey={field.name}
-                  tooltips={NUM_RECEIVING_RULE_FIELD_TOOLTIPS}
-                  style={{
-                    fontSize: 13,
-                    whiteSpace: "nowrap",
-                    width: 170,
-                    textAlign: "left",
-                    display: "inline-block",
-                  }}
-                >
-                  {field.label}:
-                </E1PriFieldLabel>
-                <div style={{ width: "min(100%, 320px)" }}>
-                  {field.type === "select" ? (
-                    <Select
-                      value={form[field.name]}
-                      onChange={(e) =>
-                        handleInputChange(field.name, e.target.value)
-                      }
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      MenuProps={{ PaperProps: { style: { maxHeight: 240 } } }}
-                      sx={modalSelectSx}
-                    >
-                      {field.options.map((option) => (
-                        <MenuItem
-                          key={option.value}
-                          value={option.value}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  ) : (
-                    <TextField
-                      type={field.type}
-                      value={form[field.name] || ""}
-                      onChange={(e) =>
-                        handleInputChange(field.name, e.target.value)
-                      }
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      placeholder={field.placeholder || ""}
-                      sx={{ fontSize: 13, ...modalTextFieldSx }}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          height: 32,
-                          padding: "0 8px",
-                          boxSizing: "border-box",
-                        },
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
+                {field.type === "select" ? (
+                  <Select
+                    value={form[field.name]}
+                    onChange={(e) =>
+                      handleInputChange(field.name, e.target.value)
+                    }
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    MenuProps={{ PaperProps: { style: { maxHeight: 240 } } }}
+                    sx={modalSelectSx}
+                  >
+                    {field.options.map((option) => (
+                      <MenuItem
+                        key={option.value}
+                        value={option.value}
+                        sx={{ fontSize: 13 }}
+                      >
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                ) : (
+                  <TextField
+                    type={field.type}
+                    value={form[field.name] || ""}
+                    onChange={(e) =>
+                      handleInputChange(field.name, e.target.value)
+                    }
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    placeholder={field.placeholder || ""}
+                    sx={{ fontSize: 13, ...modalTextFieldSx }}
+                    inputProps={{
+                      style: {
+                        fontSize: 13,
+                        height: 32,
+                        padding: "0 8px",
+                        boxSizing: "border-box",
+                      },
+                    }}
+                  />
+                )}
+              </E1PriFieldRow>
             ))}
           </div>
         </DialogContent>
@@ -1296,7 +1349,7 @@ const PcmNumReceivingRulePage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={pcmNumRecvRuleModalCancelBtnStyle}
           >
             Cancel
           </Btn>

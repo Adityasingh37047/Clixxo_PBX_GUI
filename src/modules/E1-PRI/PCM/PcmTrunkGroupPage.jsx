@@ -89,20 +89,20 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-// ── Color palette (matches Number-Receiving Rule) ─────────────────────────────
+// ── Color palette (matches Extensions) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
-  successGreen: "#22c55e",
-  errorRed: "#ef4444",
-  purple: "#8b5cf6",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -112,6 +112,9 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -125,15 +128,17 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
@@ -141,26 +146,48 @@ const Btn = ({
       border: `1px solid ${C.cardBorder}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
+      form={form}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -173,26 +200,252 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
 
-const CARD_RADIUS = 20;
+const pcmTrunkGroupModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const TH = ({ children, style: extra }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "9px 14px",
+      textAlign: "center",
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
+      ...extra,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
+  whiteSpace: "nowrap",
+};
+
+const pcmTrunkGroupPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pcmTrunkGroupPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New",
+  showButton = true,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: showButton && onAddNew ? 16 : 0,
+      }}
+    >
+      {message}
+    </div>
+    {showButton && onAddNew ? (
+      <Btn
+        variant="cancel"
+        onClick={onAddNew}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      >
+        {buttonLabel}
+      </Btn>
+    ) : null}
+  </div>
+);
+
+const PCM_TRUNK_GROUP_TABLE_CARD_RADIUS = 10;
+
+const pcmTrunkGroupCardStyle = {
+  background: "#ffffff",
+  borderRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const pcmTrunkGroupToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
+};
+
+const pcmTrunkGroupPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const pcmTrunkGroupSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const pcmTrunkGroupCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pcmTrunkGroupPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const pcmTrunkGroupPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const PcmTrunkGroupPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+  recordLabel = "record",
+  style,
+}) => (
+  <div style={{ ...pcmTrunkGroupPaginationStyle, ...style }}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} {recordLabel}
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={pcmTrunkGroupPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -275,43 +528,11 @@ const addHostFormPanelStyle = {
 };
 
 
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "8px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const checkboxSx = {
+const pcmTrunkGroupTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const tdStyle = {
-  padding: "6px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
-  whiteSpace: "nowrap",
 };
 
 // const LOCAL_STORAGE_KEY = 'pcmTrunkGroups';
@@ -941,14 +1162,7 @@ const PcmTrunkGroupPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      {/* Message Display */}
+    <div style={pcmTrunkGroupPageWrapStyle}>
       {message.text && (
         <Alert
           severity={message.type}
@@ -966,67 +1180,41 @@ const PcmTrunkGroupPage = () => {
         </Alert>
       )}
 
-      <div style={{ maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
+      <div style={pcmTrunkGroupPageInnerStyle}>
         <div
           style={{
             fontSize: 12,
-            color: C.mutedText,
+            color: "#94a3b8",
             marginBottom: 16,
             fontWeight: 400,
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>E1-PRI</span>
           <span>&gt;</span>
           <span>PCM</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             PCM Trunk Group
           </span>
         </div>
 
-        {/* Main Card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={pcmTrunkGroupCardStyle}>
+          <div style={pcmTrunkGroupToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={pcmTrunkGroupSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1044,7 +1232,7 @@ const PcmTrunkGroupPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={isLoadingData}
-                style={{ height: 30 }}
+                style={pcmTrunkGroupCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1052,10 +1240,10 @@ const PcmTrunkGroupPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={isLoadingData || groups.length === 0}
-                style={{ height: 30 }}
+                style={pcmTrunkGroupCancelBtnStyle}
               >
                 {isLoadingData ? (
-                  <CircularProgress size={12} color="inherit" />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   "Clear All"
                 )}
@@ -1064,10 +1252,10 @@ const PcmTrunkGroupPage = () => {
                 variant="cancel"
                 onClick={handleDeleteSelected}
                 disabled={isLoadingData || selected.length === 0}
-                style={{ height: 30 }}
+                style={pcmTrunkGroupCancelBtnStyle}
               >
                 {isLoadingData ? (
-                  <CircularProgress size={12} color="inherit" />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   <>
                     <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -1079,12 +1267,7 @@ const PcmTrunkGroupPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={isLoadingSpans}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={pcmTrunkGroupPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
@@ -1092,52 +1275,21 @@ const PcmTrunkGroupPage = () => {
           </div>
 
           {isLoadingData ? (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: 48,
-              }}
-            >
-              <CircularProgress size={28} style={{ color: C.accent }} />
-            </div>
+            <TableListLoading />
           ) : groups.length === 0 ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: 240,
-                padding: 24,
-                textAlign: "center",
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-              }}
-            >
-              <div
-                style={{
-                  color: "#3E5475",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  marginBottom: 16,
-                }}
-              >
-                No PCM Trunk Groups found.
-              </div>
-              <Btn
-                variant="cancel"
-                onClick={() => handleOpenModal()}
-                disabled={isLoadingSpans}
-                style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-              >
-                + Add New
-              </Btn>
-            </div>
+            <TableListEmptyState
+              message="No PCM Trunk Groups found."
+              onAddNew={() => handleOpenModal()}
+            />
           ) : (
             <>
-              <div style={{ overflowX: "auto" }}>
+              <div
+                style={{
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
+                }}
+              >
                 <table
                   style={{
                     width: "100%",
@@ -1149,13 +1301,22 @@ const PcmTrunkGroupPage = () => {
                 >
                   <thead>
                     <tr>
-                      <TH style={{ width: 36, borderLeft: "none" }}>
+                      <TH
+                        style={{
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
                         <Checkbox
                           size="small"
                           checked={allPageSelected}
                           indeterminate={somePageSelected}
                           onChange={handleToggleAll}
-                          sx={checkboxSx}
+                          sx={pcmTrunkGroupTableCheckboxSx}
                         />
                       </TH>
                       {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
@@ -1163,11 +1324,12 @@ const PcmTrunkGroupPage = () => {
                       ).map((c) => (
                         <TH
                           key={c.key}
-                          style={
-                            c.key === "modify"
-                              ? { borderRight: "none" }
-                              : undefined
-                          }
+                          style={{
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 10,
+                            ...(c.key === "modify" ? { borderRight: "none" } : {}),
+                          }}
                         >
                           {c.label}
                         </TH>
@@ -1180,7 +1342,7 @@ const PcmTrunkGroupPage = () => {
                       const isRowChecked = selected.includes(realIdx);
                       const isLastRow = idx === pagedGroups.length - 1;
                       const rowBg = isRowChecked
-                        ? "#e0f2fe"
+                        ? "#eff6ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -1208,7 +1370,7 @@ const PcmTrunkGroupPage = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              padding: "6px 0",
+                              width: 36,
                               borderLeft: "none",
                               ...lastRowCellStyle,
                             }}
@@ -1218,7 +1380,7 @@ const PcmTrunkGroupPage = () => {
                               checked={isRowChecked}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={isLoadingData}
-                              sx={checkboxSx}
+                              sx={pcmTrunkGroupTableCheckboxSx}
                             />
                           </td>
 
@@ -1232,27 +1394,42 @@ const PcmTrunkGroupPage = () => {
                                   style={{
                                     ...tdStyle,
                                     background: rowBg,
-                                    padding: "6px 8px",
                                     borderRight: "none",
                                     ...lastRowCellStyle,
                                   }}
                                 >
-                                  <EditDocumentIcon
-                                    className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                                    titleAccess="Edit"
-                                    onClick={() => {
-                                      if (!isLoadingData) {
-                                        handleOpenModal(item, realIdx);
-                                      }
-                                    }}
+                                  <div
                                     style={{
-                                      fontSize: 22,
-                                      opacity: isLoadingData ? 0.4 : undefined,
-                                      pointerEvents: isLoadingData
-                                        ? "none"
-                                        : "auto",
+                                      display: "flex",
+                                      justifyContent: "center",
                                     }}
-                                  />
+                                  >
+                                    <EditDocumentIcon
+                                      titleAccess="Edit"
+                                      onClick={() => {
+                                        if (!isLoadingData) {
+                                          handleOpenModal(item, realIdx);
+                                        }
+                                      }}
+                                      style={{
+                                        cursor: isLoadingData
+                                          ? "not-allowed"
+                                          : "pointer",
+                                        color: "#2563eb",
+                                        fontSize: 22,
+                                        opacity: isLoadingData ? 0.4 : 0.7,
+                                        transition: "opacity 0.15s ease",
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!isLoadingData)
+                                          e.currentTarget.style.opacity = "1";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!isLoadingData)
+                                          e.currentTarget.style.opacity = "0.7";
+                                      }}
+                                    />
+                                  </div>
                                 </td>
                               );
                             }
@@ -1301,53 +1478,15 @@ const PcmTrunkGroupPage = () => {
                 </table>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "7px 14px",
-                  borderTop: `1px solid ${C.cardBorder}`,
-                  background: "#ffffff",
-                  borderBottomLeftRadius: CARD_RADIUS,
-                  borderBottomRightRadius: CARD_RADIUS,
-                  overflow: "hidden",
-                }}
-              >
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Showing {pagedGroups.length} record
-                  {pagedGroups.length !== 1 ? "s" : ""} on page {page}
-                </span>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Btn
-                    onClick={() => setPage(page - 1)}
-                    disabled={page <= 1}
-                    variant="outline"
-                  >
-                    ← Prev
-                  </Btn>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: C.accent,
-                      background: "#e0f2fe",
-                      padding: "5px 14px",
-                      borderRadius: 6,
-                      border: `1px solid ${C.cardBorder}`,
-                    }}
-                  >
-                    Page {page} of {totalPages}
-                  </span>
-                  <Btn
-                    onClick={() => setPage(page + 1)}
-                    disabled={page >= totalPages}
-                    variant="outline"
-                  >
-                    Next →
-                  </Btn>
-                </div>
-              </div>
+              {groups.length > 0 && (
+                <PcmTrunkGroupPagination
+                  page={page}
+                  totalPages={totalPages}
+                  recordCount={pagedGroups.length}
+                  recordLabel="PCM trunk group"
+                  onPageChange={(p) => setPage(p)}
+                />
+              )}
             </>
           )}
         </div>
@@ -1357,15 +1496,23 @@ const PcmTrunkGroupPage = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
         PaperProps={{
           sx: {
             width: 500,
             maxWidth: "95vw",
+            mx: "auto",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
         }}
       >
@@ -1737,7 +1884,7 @@ const PcmTrunkGroupPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={isSaving}
-            style={{ minWidth: 100, height: 33 }}
+            style={pcmTrunkGroupModalCancelBtnStyle}
           >
             Close
           </Btn>

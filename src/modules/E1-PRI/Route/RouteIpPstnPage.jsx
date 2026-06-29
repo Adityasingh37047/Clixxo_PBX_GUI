@@ -6,7 +6,6 @@ import {
   ROUTE_IP_PSTN_FIELD_TOOLTIPS,
 } from "../../../constants/RouteIPtoPstnConstants";
 import {
-  Button,
   Checkbox,
   Dialog,
   DialogTitle,
@@ -126,16 +125,32 @@ const E1PriFieldRow = ({
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
-const CARD_RADIUS = 20;
+const ROUTE_IP_PSTN_CARD_RADIUS = 10;
+
+const routeIpPstnPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const routeIpPstnPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
 
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
@@ -229,6 +244,8 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
+  component,
   title,
 }) => {
   const styles = {
@@ -243,50 +260,66 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      // borderRadius: 6,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
     },
     outline: {
       background: C.cardBg,
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: `0.5px solid #fecaca`,
-    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
   };
 
-  const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "danger":
-        return "#fee2e2";
-      case "outline":
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
-  const baseBg = s.background;
+  const Component = component || "button";
 
   return (
-    <button
+    <Component
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -300,24 +333,221 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </button>
+    </Component>
   );
 };
+
+const routeIpPstnCardStyle = {
+  background: "#ffffff",
+  borderRadius: ROUTE_IP_PSTN_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const routeIpPstnToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: ROUTE_IP_PSTN_CARD_RADIUS,
+  borderTopRightRadius: ROUTE_IP_PSTN_CARD_RADIUS,
+};
+
+const routeIpPstnPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: ROUTE_IP_PSTN_CARD_RADIUS,
+  borderBottomRightRadius: ROUTE_IP_PSTN_CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const routeIpPstnSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const routeIpPstnCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const routeIpPstnPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const routeIpPstnPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const routeIpPstnModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const RouteIpPstnBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>E1-PRI</span>
+    <span>&gt;</span>
+    <span>Route</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      IP-&gt;PSTN Routing Rule
+    </span>
+  </div>
+);
+
+const TableListLoading = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 48,
+    }}
+  >
+    <CircularProgress size={28} style={{ color: C.accent }} />
+  </div>
+);
+
+const TableListEmptyState = ({
+  message,
+  onAddNew,
+  buttonLabel = "+ Add New Rule",
+}) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 240,
+      padding: 24,
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#3E5475",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: 16,
+      }}
+    >
+      {message}
+    </div>
+    <Btn
+      variant="cancel"
+      onClick={onAddNew}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+    >
+      {buttonLabel}
+    </Btn>
+  </div>
+);
+
+const RouteIpPstnPagination = ({
+  page,
+  totalPages,
+  recordCount,
+  onPageChange,
+}) => (
+  <div style={routeIpPstnPaginationStyle}>
+    <span style={{ fontSize: 11, color: C.mutedText }}>
+      Showing {recordCount} record
+      {recordCount !== 1 ? "s" : ""} on page {page}
+    </span>
+    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <Btn
+        onClick={() => onPageChange(page - 1)}
+        disabled={page <= 1}
+        variant="outline"
+      >
+        ← Prev
+      </Btn>
+      <span style={routeIpPstnPageBadgeStyle}>
+        Page {page} of {totalPages}
+      </span>
+      <Btn
+        onClick={() => onPageChange(page + 1)}
+        disabled={page >= totalPages}
+        variant="outline"
+      >
+        Next →
+      </Btn>
+    </div>
+  </div>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -328,11 +558,14 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
+      position: "sticky",
+      top: 0,
+      zIndex: 10,
       ...extra,
     }}
   >
@@ -345,16 +578,16 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const routeIpPstnTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const RouteIpPstnPage = () => {
@@ -668,14 +901,8 @@ const RouteIpPstnPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+    <div style={routeIpPstnPageWrapStyle}>
+      <div style={routeIpPstnPageInnerStyle}>
         {/* Toast Alert */}
         {message.text && (
           <Alert
@@ -694,66 +921,23 @@ const RouteIpPstnPage = () => {
           </Alert>
         )}
 
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>E1-PRI</span>
-          <span>&gt;</span>
-          <span>Route</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            IP-&gt;PSTN Routing Rule
-          </span>
-        </div>
+        <RouteIpPstnBreadcrumb />
 
         {/* Main Card */}
-        <div
-          style={{
-            background: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={routeIpPstnCardStyle}>
           {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={routeIpPstnToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={routeIpPstnSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -770,7 +954,7 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || loading.fetch}
-                style={{ height: 30 }}
+                style={routeIpPstnCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -778,25 +962,22 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0 || loading.delete}
-                style={{ height: 30 }}
+                style={routeIpPstnCancelBtnStyle}
               >
                 {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  <>
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
-                  </>
-                )}
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
+                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                Delete
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0 || loading.delete}
-                style={{ height: 30 }}
+                style={routeIpPstnCancelBtnStyle}
               >
                 {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   "Clear All"
                 )}
@@ -804,68 +985,31 @@ const RouteIpPstnPage = () => {
               <Btn
                 onClick={() => handleOpenModal()}
                 variant="primary"
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                disabled={loading.fetch || loading.save}
+                style={routeIpPstnPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          {/* Table Area */}
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
-            {loading.fetch ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: 240,
-                }}
-              >
-                <CircularProgress size={24} />
-              </div>
-            ) : rules.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
-                  }}
-                >
-                  No rules configured!
-                </div>
-                <Btn
-                  onClick={() => handleOpenModal()}
-                  variant="cancel"
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New Rule
-                </Btn>
-              </div>
-            ) : (
-              <>
+          {loading.fetch ? (
+            <TableListLoading />
+          ) : rules.length === 0 ? (
+            <TableListEmptyState
+              message="No rules configured!"
+              onAddNew={() => handleOpenModal()}
+            />
+          ) : (
+            <>
+              {/* Table Area */}
+              <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
                 <table
                   style={{
                     width: "100%",
                     borderCollapse: "separate",
                     borderSpacing: 0,
+                    tableLayout: "auto",
                     minWidth: tableMinWidth,
                   }}
                 >
@@ -885,7 +1029,7 @@ const RouteIpPstnPage = () => {
                             if (e.target.checked) handleCheckAll();
                             else handleUncheckAll();
                           }}
-                          sx={checkboxSx}
+                          sx={routeIpPstnTableCheckboxSx}
                         />
                       </TH>
                       {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
@@ -900,7 +1044,7 @@ const RouteIpPstnPage = () => {
                       const isSelected = selected.includes(realIdx);
                       const isLastRow = idx === pagedRules.length - 1;
                       const rowBg = isSelected
-                        ? "#f0f9ff"
+                        ? "#eff6ff"
                         : idx % 2 === 1
                           ? "#f8fafc"
                           : "#ffffff";
@@ -917,7 +1061,7 @@ const RouteIpPstnPage = () => {
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
-                              e.currentTarget.style.background = "#f1f5f9";
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -937,7 +1081,8 @@ const RouteIpPstnPage = () => {
                               size="small"
                               checked={isSelected}
                               onChange={() => handleSelectRow(idx)}
-                              sx={checkboxSx}
+                              disabled={loading.delete}
+                              sx={routeIpPstnTableCheckboxSx}
                             />
                           </td>
                           {ROUTE_IP_PSTN_TABLE_COLUMNS.map((col) => (
@@ -946,6 +1091,7 @@ const RouteIpPstnPage = () => {
                               style={{
                                 ...tdStyle,
                                 background: rowBg,
+                                fontWeight: 400,
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -968,20 +1114,27 @@ const RouteIpPstnPage = () => {
                             >
                               <EditDocumentIcon
                                 titleAccess="Edit"
+                                onClick={() => {
+                                  if (!loading.delete)
+                                    handleOpenModal(item, realIdx);
+                                }}
                                 style={{
-                                  cursor: "pointer",
+                                  cursor: loading.delete
+                                    ? "not-allowed"
+                                    : "pointer",
                                   color: "#2563eb",
                                   fontSize: 22,
-                                  opacity: 0.7,
+                                  opacity: loading.delete ? 0.4 : 0.7,
                                   transition: "opacity 0.15s ease",
                                 }}
-                                onClick={() => handleOpenModal(item, realIdx)}
-                                onMouseEnter={(e) =>
-                                  (e.currentTarget.style.opacity = "1")
-                                }
-                                onMouseLeave={(e) =>
-                                  (e.currentTarget.style.opacity = "0.7")
-                                }
+                                onMouseEnter={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
                               />
                             </div>
                           </td>
@@ -990,59 +1143,15 @@ const RouteIpPstnPage = () => {
                     })}
                   </tbody>
                 </table>
-              </>
-            )}
-          </div>
-
-          {/* Pagination Footer */}
-          {!loading.fetch && rules.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                background: "#ffffff",
-                borderTop: `1px solid ${C.cardBorder}`,
-                borderBottomLeftRadius: CARD_RADIUS,
-                borderBottomRightRadius: CARD_RADIUS,
-                overflow: "hidden",
-              }}
-            >
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRules.length} record
-                {pagedRules.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8 }}>
-                <Btn
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page <= 1}
-                  variant="outline"
-                >
-                  ← Prev
-                </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
-                  }}
-                >
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page >= totalPages}
-                  variant="outline"
-                >
-                  Next →
-                </Btn>
               </div>
-            </div>
+
+              <RouteIpPstnPagination
+                page={page}
+                totalPages={totalPages}
+                recordCount={pagedRules.length}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </div>
       </div>
@@ -1050,17 +1159,28 @@ const RouteIpPstnPage = () => {
       {/* Configuration Modal */}
       <Dialog
         open={isModalOpen}
-        onClose={handleCloseModal}
+        onClose={() => {
+          if (loading.save) return;
+          handleCloseModal();
+        }}
         maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
         PaperProps={{
           sx: {
             width: 600,
-            maxWidth: "95vw",
+            maxWidth: "96vw",
+            mx: "auto",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
           },
         }}
       >
@@ -1200,11 +1320,14 @@ const RouteIpPstnPage = () => {
         </DialogContent>
         <DialogActions
           style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
             padding: "16px 24px",
             background: "#f8fafc",
             borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
@@ -1223,7 +1346,7 @@ const RouteIpPstnPage = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={routeIpPstnModalCancelBtnStyle}
           >
             Cancel
           </Btn>
