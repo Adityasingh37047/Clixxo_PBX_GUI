@@ -27,8 +27,8 @@ export const ACTIVE_CALL_QUEUE_TAB_VALUES = {
 };
 
 export const ACTIVE_CALL_QUEUE_TAB_LABELS = {
-  agent: "AGENT STATISTICS",
-  queue: "QUEUE STATISTICS",
+  agent: "Agent Statistics",
+  queue: "Queue Statistics",
 };
 
 export const ACTIVE_CALL_QUEUE_AGENT_SEARCH_PLACEHOLDER =

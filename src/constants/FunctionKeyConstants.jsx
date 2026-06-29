@@ -1,4 +1,15 @@
 // Function Key Constants
+export const FUNCTION_KEY_PAGE_BREADCRUMB_ROOT = "FXS";
+export const FUNCTION_KEY_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const FUNCTION_KEY_PAGE_TITLE = "Function Key";
+export const FUNCTION_KEY_CARD_TITLE = "Function Key";
+export const FUNCTION_KEY_SECTIONS_ORDER = [
+  "Device Function",
+  "Service Available",
+];
+export const FUNCTION_KEY_SAVE_LABEL = "Save";
+export const FUNCTION_KEY_RESET_LABEL = "Reset";
+
 export const FUNCTION_KEY_FIELDS = [
   // Device Function Section
   {

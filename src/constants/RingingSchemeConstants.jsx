@@ -27,6 +27,18 @@ export const RINGING_SCHEME_INITIAL_FORM = {
   ringMode4bak: '',
 };
 
+export const RINGING_SCHEME_PAGE_BREADCRUMB_ROOT = "FXS";
+export const RINGING_SCHEME_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const RINGING_SCHEME_PAGE_TITLE = "Ringing Scheme";
+export const RINGING_SCHEME_CARD_TITLE = "Ringing Scheme";
+export const RINGING_SCHEME_SAVE_LABEL = "Save";
+export const RINGING_SCHEME_RESET_LABEL = "Reset";
+
+export const RINGING_SCHEME_MATCHING_OPTIONS = [
+  { value: "0", label: "CallerID Matching" },
+  { value: "1", label: "Alert-Info Matching" },
+];
+
 const ringModeTooltip = (n) =>
   `Comma-separated ringing cadence for scheme ${n}.\nFormat type 1: 1,ON_ms,OFF_ms.\nFormat type 2: 2,T1,T2,T3,T4.\nEach ON/OFF duration ≥ 50 ms; last OFF ≥ 1700 ms when FSK CID follows ring.\nRequired when the matching CallerID or Alert-Info value is set.`;
 

@@ -1,5 +1,15 @@
 // Port Group page constants
 
+export const PORT_GROUP_PAGE_BREADCRUMB_ROOT = "FXS";
+export const PORT_GROUP_PAGE_BREADCRUMB_SECTION = "Port";
+export const PORT_GROUP_PAGE_BREADCRUMB_TITLE = "Port Group";
+export const PORT_GROUP_CARD_TITLE = "Port Group";
+export const PORT_GROUP_EMPTY_MESSAGE = "No available port group!";
+export const PORT_GROUP_MODAL_TITLE_ADD = "Add Port Group";
+export const PORT_GROUP_MODAL_TITLE_EDIT = "Edit Port Group";
+export const PORT_GROUP_SAVE_LABEL = "Save";
+export const PORT_GROUP_CLOSE_LABEL = "Close";
+
 export const PORT_GROUP_TOTAL_PORTS = 32;
 
 export const PORT_GROUP_TABLE_COLUMNS = [

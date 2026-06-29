@@ -1,12 +1,18 @@
-// File type options for the dropdown
+export const CUE_TONE_PAGE_BREADCRUMB_ROOT = "FXS";
+export const CUE_TONE_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const CUE_TONE_PAGE_TITLE = "Cue Tone";
+export const CUE_TONE_CARD_TITLE = "Upload";
+
+export const CUE_TONE_NOTE_TEXT =
+  "Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.";
+
 export const CUE_TONE_FILE_TYPES = [
-  { value: '0', label: 'File of cue tone for IVR' },
-  { value: '1', label: 'Cue Tone of Call Waiting' },
+  { value: "0", label: "File of cue tone for IVR" },
+  { value: "1", label: "Cue Tone of Call Waiting" },
 ];
 
-// Initial form state
 export const CUE_TONE_INITIAL_FORM = {
-  fileType: '0',
+  fileType: "0",
   file: null,
 };
 

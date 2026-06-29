@@ -23,7 +23,7 @@ import {
   ACTIVE_CALL_QUEUE_TAB_LABELS,
   ACTIVE_CALL_QUEUE_TAB_VALUES,
 } from "../../../constants/ActiveCallQueueConstants";
-import { CircularProgress, Tabs, Tab, useMediaQuery } from "@mui/material";
+import { CircularProgress, useMediaQuery } from "@mui/material";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
@@ -85,6 +85,19 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    tabActive: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    tabInactive: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
@@ -93,6 +106,8 @@ const Btn = ({
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
+      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      tabInactive: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
@@ -111,6 +126,8 @@ const Btn = ({
         cancel: "#a3b1c2",
         danger: "#f87171",
         outline: "#d1d9e6",
+        tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+        tabInactive: "#d1d9e6",
         default: "#d1d5db",
       }[variant] || "#d1d5db";
     el.style.transform = "translateY(1px) scale(0.98)";
@@ -134,7 +151,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -265,29 +282,6 @@ const TableListEmptyState = ({
     ) : null}
   </div>
 );
-
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
-
-const pbxHeaderTabsSx = {
-  minHeight: 44,
-  pl: 0,
-  "& .MuiTabs-flexContainer": { height: 44, paddingLeft: 0 },
-  "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 44,
-    py: 0,
-    px: 1.25,
-    minWidth: 0,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
-    fontWeight: 700,
-  },
-};
 
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
@@ -487,11 +481,33 @@ const activeCallQueueStatsHeaderStyle = {
   borderTopRightRadius: ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: "7px 14px",
+  justifyContent: "space-between",
+  padding: "10px 28px 10px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
+  flexWrap: "wrap",
+  gap: 12,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const activeCallQueueStatsHeaderLeftStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+  minWidth: 0,
+};
+
+const activeCallQueueStatsHeaderToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexShrink: 0,
+  flexWrap: "wrap",
+  marginLeft: "auto",
 };
 
 const activeCallQueueToolbarStyle = {
@@ -925,46 +941,46 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           <div
             style={{
               ...activeCallQueueStatsHeaderStyle,
-              padding: "0 8px 0 6px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-              flexWrap: "wrap",
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch" }
                 : {}),
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, tab) => setActiveTab(tab)}
-              variant="standard"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR,
-                  height: 2,
-                },
-              }}
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                width: isCompact ? "100%" : undefined,
-                ...pbxHeaderTabsSx,
+            <div
+              style={{
+                ...activeCallQueueStatsHeaderLeftStyle,
+                ...(isCompact ? { width: "100%" } : {}),
               }}
             >
-              <Tab label={ACTIVE_CALL_QUEUE_TAB_LABELS.agent} value={ACTIVE_CALL_QUEUE_TAB_VALUES.agent} />
-              <Tab label={ACTIVE_CALL_QUEUE_TAB_LABELS.queue} value={ACTIVE_CALL_QUEUE_TAB_VALUES.queue} />
-            </Tabs>
+              <Btn
+                type="button"
+                variant={
+                  activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.agent
+                    ? "tabActive"
+                    : "tabInactive"
+                }
+                onClick={() => setActiveTab(ACTIVE_CALL_QUEUE_TAB_VALUES.agent)}
+                style={{ height: 30 }}
+              >
+                {ACTIVE_CALL_QUEUE_TAB_LABELS.agent}
+              </Btn>
+              <Btn
+                type="button"
+                variant={
+                  activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.queue
+                    ? "tabActive"
+                    : "tabInactive"
+                }
+                onClick={() => setActiveTab(ACTIVE_CALL_QUEUE_TAB_VALUES.queue)}
+                style={{ height: 30 }}
+              >
+                {ACTIVE_CALL_QUEUE_TAB_LABELS.queue}
+              </Btn>
+            </div>
 
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexShrink: 0,
-                flexWrap: "wrap",
-                marginLeft: "auto",
+                ...activeCallQueueStatsHeaderToolbarStyle,
                 ...(isCompact
                   ? {
                       width: "100%",

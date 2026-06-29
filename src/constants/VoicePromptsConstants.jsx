@@ -1,9 +1,9 @@
 export const VOICE_PROMPTS_TITLE = 'Voice Prompts';
 
 export const VOICE_PROMPTS_TABS = [
-  { id: 'promptPreference', label: 'PROMPT PREFERENCE' },
-  { id: 'musicOnHold', label: 'MUSIC ON HOLD' },
-  { id: 'customPrompt', label: 'CUSTOM PROMPT' },
+  { id: 'promptPreference', label: 'Prompt Preference' },
+  { id: 'musicOnHold', label: 'Music on Hold' },
+  { id: 'customPrompt', label: 'Custom Prompt' },
 ];
 
 export const VOICE_PROMPTS_RECORD_MODAL_TITLE = 'Record New Prompt';

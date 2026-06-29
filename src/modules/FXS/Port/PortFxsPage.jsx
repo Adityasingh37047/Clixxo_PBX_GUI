@@ -13,6 +13,10 @@ import {
   PORT_FXS_BATCH_MODIFY_TITLE,
   PORT_FXS_MODIFY_DIALOG_WIDTH,
   PORT_FXS_TABLE_COLUMN_TOOLTIPS,
+  PORT_FXS_PAGE_BREADCRUMB_ROOT,
+  PORT_FXS_PAGE_BREADCRUMB_SECTION,
+  PORT_FXS_PAGE_TITLE,
+  PORT_FXS_EMPTY_MESSAGE,
 } from "../../../constants/PortFxsPageConstants";
 import { fetchFxsPorts } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
@@ -105,11 +109,14 @@ const renderTableColumnHeader = (col) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -170,6 +177,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -183,23 +216,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -217,8 +264,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -237,10 +284,90 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
+
+const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
+
+const portFxsPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  boxSizing: "border-box",
+};
+
+const portFxsPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+};
+
+const portFxsCardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const portFxsHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  minHeight: 44,
+  padding: "10px 28px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+  boxSizing: "border-box",
+};
+
+const portFxsTableBodyStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
+const portFxsPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "10px 28px",
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
+  overflow: "hidden",
+};
+
+const PortFxsBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{PORT_FXS_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{PORT_FXS_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {PORT_FXS_PAGE_TITLE}
+    </span>
+  </div>
+);
 
 const numManipulateCardStyle = {
   background: "#ffffff",
@@ -295,7 +422,8 @@ const routeTableMinWidthForZoom = (widePx) => {
 const routeTdStyle = {
   ...tdStyle,
   fontSize: 12,
-  padding: "7px 8px",
+  padding: "6px 8px",
+  lineHeight: 1.2,
 };
 
 const routeThExtra = {
@@ -310,7 +438,7 @@ const FWD_TYPE_TO_UI = {
   busy: "Busy",
 };
 
-const tableSectionBorder = `1px solid ${C.cardBorder}`;
+const tableSectionBorder = `1px solid ${C.divider}`;
 
 const fxsDialogPaperSx = {
   width: PORT_FXS_MODIFY_DIALOG_WIDTH,
@@ -336,7 +464,7 @@ const fxsDialogTitleStyle = {
 const fxsDialogActionsStyle = {
   padding: "16px 24px",
   background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
+  borderTop: `1px solid ${C.divider}`,
   justifyContent: "center",
   gap: 12,
 };
@@ -497,7 +625,7 @@ const PortFxsPage = () => {
           marginBottom: 16,
         }}
       >
-        No available FXS settings!
+        {PORT_FXS_EMPTY_MESSAGE}
       </div>
       <Btn
         variant="cancel"
@@ -586,15 +714,8 @@ const PortFxsPage = () => {
   };
 
   const renderListCard = () => (
-    <div
-      style={{
-        ...numManipulateCardStyle,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div style={numManipulateToolbarStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }} />
+    <div style={portFxsCardStyle}>
+      <div style={portFxsHeaderStyle}>
         <div
           style={{
             display: "flex",
@@ -606,12 +727,7 @@ const PortFxsPage = () => {
           <Btn
             variant="primary"
             onClick={handleBatchModify}
-            style={{
-              height: 30,
-              padding: "6px 14px",
-              fontSize: 12,
-              borderRadius: 10,
-            }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
           >
             Batch Modify
           </Btn>
@@ -621,12 +737,7 @@ const PortFxsPage = () => {
       <div
         ref={tableScrollRef}
         key={refreshKey}
-        style={{
-          overflowX: "auto",
-          overflowY: "auto",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
+        style={portFxsTableBodyStyle}
       >
         {error ? (
           <div
@@ -675,6 +786,7 @@ const PortFxsPage = () => {
                             width: 70,
                             borderRight: "none",
                             ...routeThExtra,
+                            ...PCM_TRUNK_GROUP_TH_GAP,
                           }}
                         >
                           {renderTableColumnHeader(col)}
@@ -682,7 +794,7 @@ const PortFxsPage = () => {
                       );
                     }
                     return (
-                      <TH key={col.key} style={routeThExtra}>
+                      <TH key={col.key} style={{ ...routeThExtra, ...PCM_TRUNK_GROUP_TH_GAP }}>
                         {renderTableColumnHeader(col)}
                       </TH>
                     );
@@ -720,12 +832,7 @@ const PortFxsPage = () => {
       </div>
 
       {hasData && (
-        <div
-          style={{
-            ...numManipulatePaginationStyle,
-            borderTop: tableSectionBorder,
-          }}
-        >
+        <div style={portFxsPaginationStyle}>
           <span style={{ fontSize: 11, color: C.mutedText }}>
             Showing {pagedPorts.length} record
             {pagedPorts.length !== 1 ? "s" : ""} on page {page}
@@ -765,34 +872,9 @@ const PortFxsPage = () => {
   );
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>FXS</span>
-          <span>&gt;</span>
-          <span>Port</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            FXS Settings
-          </span>
-        </div>
+    <div style={portFxsPageWrapStyle}>
+      <div style={portFxsPageInnerStyle}>
+        <PortFxsBreadcrumb />
 
         {renderListCard()}
 
@@ -842,14 +924,14 @@ const PortFxsPage = () => {
               variant="primary"
               type="submit"
               form="fxs-batch-modify-form"
-              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+              style={{ minWidth: 100, height: 34, fontSize: 13 }}
             >
               Save
             </Btn>
             <Btn
               variant="cancel"
               onClick={() => setShowBatchModify(false)}
-              style={{ minWidth: 100, height: 33 }}
+              style={{ minWidth: 100, height: 34 }}
             >
               Close
             </Btn>
@@ -914,7 +996,7 @@ const PortFxsPage = () => {
               type="submit"
               form="fxs-modify-form"
               disabled={modifySaving}
-              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+              style={{ minWidth: 100, height: 34, fontSize: 13 }}
             >
               {modifySaving ? "Saving..." : "Modify"}
             </Btn>
@@ -923,7 +1005,7 @@ const PortFxsPage = () => {
               type="button"
               onClick={() => modifyFormRef.current?.reset()}
               disabled={modifySaving}
-              style={{ minWidth: 100, height: 33 }}
+              style={{ minWidth: 100, height: 34 }}
             >
               Reset
             </Btn>
@@ -935,7 +1017,7 @@ const PortFxsPage = () => {
                 setModifyPortData(null);
                 setModifySaving(false);
               }}
-              style={{ minWidth: 100, height: 33 }}
+              style={{ minWidth: 100, height: 34 }}
             >
               Close
             </Btn>

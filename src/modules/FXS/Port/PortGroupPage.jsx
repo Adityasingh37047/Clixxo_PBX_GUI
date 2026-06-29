@@ -19,6 +19,14 @@ import {
   PORT_GROUP_SELECT_MODE_OPTIONS,
   PORT_GROUP_MULTI_GROUP_OPTIONS,
   PORT_GROUP_FIELD_TOOLTIPS,
+  PORT_GROUP_PAGE_BREADCRUMB_ROOT,
+  PORT_GROUP_PAGE_BREADCRUMB_SECTION,
+  PORT_GROUP_PAGE_BREADCRUMB_TITLE,
+  PORT_GROUP_EMPTY_MESSAGE,
+  PORT_GROUP_MODAL_TITLE_ADD,
+  PORT_GROUP_MODAL_TITLE_EDIT,
+  PORT_GROUP_SAVE_LABEL,
+  PORT_GROUP_CLOSE_LABEL,
 } from "../../../constants/PortGroupPageConstants";
 
 // ── Page-local field label tooltip UI (not shared) ──
@@ -87,11 +95,14 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -152,6 +163,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -165,23 +202,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -190,9 +241,9 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
 
 const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
@@ -277,11 +328,10 @@ const fxsNativeFieldInteraction = nativeFieldInteraction;
 
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 
@@ -294,8 +344,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -314,10 +364,91 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
+
+const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
+const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
+
+const portGroupPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  boxSizing: "border-box",
+};
+
+const portGroupPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+};
+
+const portGroupCardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const portGroupHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "10px 28px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+  boxSizing: "border-box",
+};
+
+const portGroupTableBodyStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
+const portGroupPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "10px 28px",
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
+  overflow: "hidden",
+};
+
+const PortGroupBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{PORT_GROUP_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{PORT_GROUP_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {PORT_GROUP_PAGE_BREADCRUMB_TITLE}
+    </span>
+  </div>
+);
 
 const numManipulateCardStyle = {
   background: "#ffffff",
@@ -372,7 +503,8 @@ const routeTableMinWidthForZoom = (widePx) => {
 const routeTdStyle = {
   ...tdStyle,
   fontSize: 12,
-  padding: "7px 8px",
+  padding: "6px 8px",
+  lineHeight: 1.2,
 };
 
 const routeThExtra = {
@@ -666,7 +798,7 @@ const PortGroupPage = () => {
           marginBottom: 16,
         }}
       >
-        No available port group!
+        {PORT_GROUP_EMPTY_MESSAGE}
       </div>
       <Btn
         variant="cancel"
@@ -747,18 +879,10 @@ const PortGroupPage = () => {
     );
   };
 
-  const tableSectionBorder = `1px solid ${C.cardBorder}`;
-
   const renderTable = () => (
-    <div
-      style={{
-        ...numManipulateCardStyle,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div style={numManipulateToolbarStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <div style={portGroupCardStyle}>
+      <div style={portGroupHeaderStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {selectedCount > 0 && (
             <span
               style={{
@@ -811,27 +935,14 @@ const PortGroupPage = () => {
           <Btn
             variant="primary"
             onClick={handleAddNewClick}
-            style={{
-              height: 30,
-              padding: "6px 14px",
-              fontSize: 12,
-              borderRadius: 10,
-            }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
           >
             + Add New
           </Btn>
         </div>
       </div>
 
-      <div
-        style={{
-          overflowX: "auto",
-          overflowY: "auto",
-          width: "100%",
-          boxSizing: "border-box",
-          borderBottom: groups.length > 0 ? tableSectionBorder : undefined,
-        }}
-      >
+      <div style={portGroupTableBodyStyle}>
         {groups.length === 0 ? (
           renderEmptyState()
         ) : (
@@ -853,7 +964,9 @@ const PortGroupPage = () => {
                         style={{
                           width: 40,
                           padding: 0,
+                          borderLeft: "none",
                           ...routeThExtra,
+                          ...PCM_TRUNK_GROUP_TH_GAP,
                         }}
                       >
                         <Checkbox
@@ -879,17 +992,18 @@ const PortGroupPage = () => {
                           width: 70,
                           borderRight: "none",
                           ...routeThExtra,
+                          ...PCM_TRUNK_GROUP_TH_GAP,
                         }}
                       >
                         {col.label}
                       </TH>
                     );
                   }
-                  return (
-                    <TH key={col.key} style={routeThExtra}>
-                      {col.label}
-                    </TH>
-                  );
+                    return (
+                      <TH key={col.key} style={{ ...routeThExtra, ...PCM_TRUNK_GROUP_TH_GAP }}>
+                        {col.label}
+                      </TH>
+                    );
                 })}
               </tr>
             </thead>
@@ -929,7 +1043,7 @@ const PortGroupPage = () => {
       </div>
 
       {groups.length > 0 && (
-        <div style={{ ...numManipulatePaginationStyle, borderTop: "none" }}>
+        <div style={portGroupPaginationStyle}>
           <span style={{ fontSize: 11, color: C.mutedText }}>
             Showing {groups.length} record{groups.length !== 1 ? "s" : ""} on
             page 1
@@ -946,7 +1060,7 @@ const PortGroupPage = () => {
                 background: "#e0f2fe",
                 padding: "5px 14px",
                 borderRadius: 6,
-                border: `1px solid ${C.cardBorder}`,
+                border: `1px solid ${C.divider}`,
               }}
             >
               Page 1 of 1
@@ -1142,7 +1256,7 @@ const PortGroupPage = () => {
             style={{
               background: "#f8fafc",
 
-              border: `1px solid ${C.cardBorder}`,
+              border: `1px solid ${C.divider}`,
               borderRadius: 8,
               padding: 16,
             }}
@@ -1217,14 +1331,8 @@ const PortGroupPage = () => {
   );
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+    <div style={portGroupPageWrapStyle}>
+      <div style={portGroupPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -1235,33 +1343,15 @@ const PortGroupPage = () => {
               right: 20,
               zIndex: 9999,
               minWidth: 300,
-              boxShadow: 3,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
             }}
           >
             {toast.msg}
           </Alert>
         )}
 
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>FXS</span>
-          <span>&gt;</span>
-          <span>Port</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            Port Group
-          </span>
-        </div>
+        <PortGroupBreadcrumb />
 
         {renderTable()}
 
@@ -1295,7 +1385,9 @@ const PortGroupPage = () => {
               borderTopRightRadius: 8,
             }}
           >
-            {editingGroupId !== null ? "Edit Port Group" : "Add Port Group"}
+            {editingGroupId !== null
+              ? PORT_GROUP_MODAL_TITLE_EDIT
+              : PORT_GROUP_MODAL_TITLE_ADD}
           </DialogTitle>
           <DialogContent
             style={{
@@ -1314,7 +1406,7 @@ const PortGroupPage = () => {
                   flexDirection: "column",
                   gap: 14,
                   background: "#f8fafc",
-                  border: `1px solid ${C.cardBorder}`,
+                  border: `1px solid ${C.divider}`,
                   borderRadius: 8,
                   padding: 20,
                 }}
@@ -1328,7 +1420,7 @@ const PortGroupPage = () => {
             style={{
               padding: "16px 24px",
               background: "#f8fafc",
-              borderTop: `1px solid ${C.cardBorder}`,
+              borderTop: `1px solid ${C.divider}`,
               justifyContent: "center",
               gap: 12,
             }}
@@ -1336,16 +1428,16 @@ const PortGroupPage = () => {
             <Btn
               variant="primary"
               onClick={handleSave}
-              style={{ minWidth: 100, height: 33, fontSize: 13 }}
+              style={{ minWidth: 100, height: 34, fontSize: 13 }}
             >
-              Save
+              {PORT_GROUP_SAVE_LABEL}
             </Btn>
             <Btn
               variant="cancel"
               onClick={handleCloseModal}
-              style={{ minWidth: 100, height: 33 }}
+              style={{ minWidth: 100, height: 34 }}
             >
-              Close
+              {PORT_GROUP_CLOSE_LABEL}
             </Btn>
           </DialogActions>
         </Dialog>

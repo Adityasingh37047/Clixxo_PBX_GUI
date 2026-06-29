@@ -1,3 +1,9 @@
+export const DIALING_TIMEOUT_PAGE_BREADCRUMB_ROOT = "FXS";
+export const DIALING_TIMEOUT_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const DIALING_TIMEOUT_PAGE_TITLE = "Dialing Timeout";
+export const DIALING_TIMEOUT_CARD_TITLE = "Dialing Timeout";
+export const DIALING_TIMEOUT_MODAL_TITLE = "Dialing Timeout";
+
 // Table columns for the main table view
 export const DIALING_TIMEOUT_TABLE_COLUMNS = [
   { key: 'interDigitTimeout', label: 'Inter Digit Timeout (s)' },

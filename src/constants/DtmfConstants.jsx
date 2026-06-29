@@ -1,3 +1,16 @@
+export const DTMF_PAGE_BREADCRUMB_ROOT = "FXS";
+export const DTMF_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const DTMF_PAGE_TITLE = "DTMF";
+export const DTMF_CARD_TITLE = "DTMF";
+export const DTMF_DETECTOR_TAB = "DTMF Detector";
+export const DTMF_GENERATOR_TAB = "DTMF Generator";
+export const DTMF_TAB_DETECTOR = "detector";
+export const DTMF_TAB_GENERATOR = "generator";
+export const DTMF_SAVE_LABEL = "Save";
+export const DTMF_RESET_LABEL = "Reset";
+export const DTMF_GENERATOR_WARNING =
+  "Note: Setting the DTMF transmission energy too large may cause the distortion of the transmitted DTMF. Please configure it carefully.";
+
 // Initial form state for DTMF
 export const DTMF_INITIAL_FORM = {
   // DTMF Detector

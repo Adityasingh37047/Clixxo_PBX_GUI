@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { RINGING_SCHEME_INITIAL_FORM, RINGING_SCHEME_FIELD_TOOLTIPS } from "../../../constants/RingingSchemeConstants";
 import {
-  Alert,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
-  Tooltip,
-} from "@mui/material";
-// ── Local page UI (inlined from fxsSharedUi) ──
+  RINGING_SCHEME_INITIAL_FORM,
+  RINGING_SCHEME_FIELD_TOOLTIPS,
+  RINGING_SCHEME_PAGE_BREADCRUMB_ROOT,
+  RINGING_SCHEME_PAGE_BREADCRUMB_SECTION,
+  RINGING_SCHEME_PAGE_TITLE,
+  RINGING_SCHEME_CARD_TITLE,
+  RINGING_SCHEME_SAVE_LABEL,
+  RINGING_SCHEME_RESET_LABEL,
+  RINGING_SCHEME_MATCHING_OPTIONS,
+} from "../../../constants/RingingSchemeConstants";
+import { Alert, Tooltip } from "@mui/material";
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -73,16 +75,23 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
   accent: "#3E5475",
-  amber: "#dc2626",
+  fieldBg: "#ffffff",
+  rowAlt: "#f8fafc",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
 const Btn = ({
   children,
@@ -91,25 +100,14 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  form,
-  component,
-  title,
 }) => {
   const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
     primary: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -117,49 +115,55 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
   };
-  const s = styles[variant] || styles.default;
+  const s = styles[variant] || styles.primary;
   const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+    variant === "cancel"
+      ? "#b6c2d3"
+      : "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
   const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    variant === "cancel"
+      ? "#a3b1c2"
+      : "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
   return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
+    <button
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding: "0 28px",
+        borderRadius: 8,
+        fontSize: 13,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
+        height: 34,
+        lineHeight: "34px",
+        boxSizing: "border-box",
+        minWidth: 110,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -167,308 +171,235 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </Component>
+    </button>
   );
 };
 
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW();
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
+const MATCHING_SELECT_WIDTH = 240;
+const FIELD_CONTROL_HEIGHT = 32;
 
-const muiSelectSx = {
+const nativeSelectStyle = {
+  width: "100%",
+  minWidth: MATCHING_SELECT_WIDTH,
+  maxWidth: MATCHING_SELECT_WIDTH,
+  height: FIELD_CONTROL_HEIGHT,
+  padding: "0 10px",
   fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  cursor: "pointer",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
+const nativeInputStyle = {
+  width: "100%",
+  height: FIELD_CONTROL_HEIGHT,
+  padding: "0 10px",
+  fontSize: 12,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 6,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
 
-const advancedPageWrapStyle = {
+const RS_TH_STYLE = { padding: "8px 14px" };
+const RS_TD_STYLE = {
+  padding: "6px 14px",
+  lineHeight: 1.2,
+  verticalAlign: "middle",
+};
+
+const pageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
   boxSizing: "border-box",
 };
 
-const advancedPageInnerStyle = {
+const cardStyle = {
   width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
   overflow: "hidden",
-  marginBottom: 24,
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
 };
 
-const advancedBlueBarStyle = {
+const cardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: "10px 28px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+  background: C.cardBg,
 };
 
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
+const formBodyStyle = {
+  padding: "16px 28px 12px",
   display: "flex",
   flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
+  gap: 16,
+  width: "100%",
+  boxSizing: "border-box",
 };
 
-const advancedFormInlineFooterStyle = {
+const footerStyle = {
   display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const tableShellStyle = {
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  background: C.cardBg,
+  width: "100%",
 };
 
-const AdvancedBreadcrumb = ({ current }) => (
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
+};
+
+const TH = ({ children, align = "left", style: extraStyle }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "8px 14px",
+      textAlign: align,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.1em",
+      ...extraStyle,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const RingingSchemeBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
       marginBottom: 16,
-      fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{RINGING_SCHEME_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{RINGING_SCHEME_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {RINGING_SCHEME_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  tooltipKey,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-}) => (
+const MatchingSchemeRow = ({ children }) => (
   <div
     style={{
       display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
+      alignItems: "center",
+      gap: 16,
+      flexWrap: "wrap",
     }}
   >
-    {tooltipKey ? (
-      <FxsFieldLabel
-        tooltipKey={tooltipKey}
-        tooltips={RINGING_SCHEME_FIELD_TOOLTIPS}
-        style={{
-          width: labelWidth,
-          flexShrink: 0,
-          textAlign: "left",
-          paddingTop: align === "flex-start" ? 8 : 0,
-        }}
-      >
-        {label}
-        {required && <span style={{ color: "#dc2626" }}> *</span>}
+    <div style={{ minWidth: 160, flexShrink: 0 }}>
+      <FxsFieldLabel tooltipKey="ringScheme" tooltips={RINGING_SCHEME_FIELD_TOOLTIPS}>
+        Matching Scheme
       </FxsFieldLabel>
-    ) : (
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: labelWidth,
-          flexShrink: 0,
-          textAlign: "left",
-          paddingTop: align === "flex-start" ? 8 : 0,
-        }}
-      >
-        {label}
-        {required && <span style={{ color: "#dc2626" }}> *</span>}
-      </label>
-    )}
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
     </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-const RINGING_SCHEME_SECTION_HEADING_COLOR = "#30415A";
-
-const RingingSchemeSectionHeading = ({ title }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: RINGING_SCHEME_SECTION_HEADING_COLOR,
-      }}
-    >
-      {title}
-    </span>
+    <div style={{ flex: "0 0 auto" }}>{children}</div>
   </div>
 );
 
@@ -487,7 +418,6 @@ const RingingSchemePage = () => {
     showToast(msg, isSuccess ? "success" : "error");
   };
 
-  // --- API / FUNCTIONALITY (UNTOUCHED) ---
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -762,75 +692,12 @@ const RingingSchemePage = () => {
     setChangeTime(0);
   };
 
-  // ── Render Helpers ─────────────────────────────────────────────────────────
-  const renderSchemeContent = (n) => {
-    const isCallerId = formData.ringScheme === "0";
-    return (
-      <div key={n} style={{ marginBottom: 24 }}>
-        <RingingSchemeSectionHeading title={`Scheme ${n}`} />
-        <div
-          style={{
-            ...advancedFormPanelStyle,
-            border: "none",
-            boxShadow: "none",
-            background: "transparent",
-            padding: 0,
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: "16px 24px",
-          }}
-        >
-          <FieldRow
-            label={isCallerId ? "CallerID" : "Alert-Info Value"}
-            tooltipKey={isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`}
-          >
-            <TextField
-              id={isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`}
-              size="small"
-              fullWidth
-              value={
-                isCallerId
-                  ? formData[`ringCallerId${n}`]
-                  : formData[`ringAlertInfo${n}`]
-              }
-              onChange={(e) =>
-                handleInputChange(
-                  isCallerId ? `ringCallerId${n}` : `ringAlertInfo${n}`,
-                  e.target.value,
-                )
-              }
-              onKeyPress={handleKeyPress1}
-              sx={muiTextFieldSx}
-              inputProps={{
-                maxLength: 128,
-                style: { fontSize: 13, padding: "6px 8px" },
-              }}
-            />
-          </FieldRow>
-          <FieldRow label="Ringing Mode" tooltipKey={`ringMode${n}`}>
-            <TextField
-              id={`ringMode${n}`}
-              size="small"
-              fullWidth
-              value={formData[`ringMode${n}`]}
-              onChange={(e) =>
-                handleInputChange(`ringMode${n}`, e.target.value)
-              }
-              onKeyPress={handleKeyPress}
-              sx={muiTextFieldSx}
-              inputProps={{
-                maxLength: 128,
-                style: { fontSize: 13, padding: "6px 8px" },
-              }}
-            />
-          </FieldRow>
-        </div>
-      </div>
-    );
-  };
+  const isCallerId = formData.ringScheme === "0";
+  const matchColumnLabel = isCallerId ? "CallerID" : "Alert-Info Value";
+  const matchColumnTooltip = isCallerId ? "ringCallerId1" : "ringAlertInfo1";
 
   return (
-    <AdvancedPageShell>
+    <div style={pageWrapStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -848,62 +715,145 @@ const RingingSchemePage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="Ringing Scheme" />
-      <AdvancedFormCard
-        title="Ringing Scheme"
-        fullWidthContent
-        footer={
-          <>
-            <Btn
-              variant="primary"
-              onClick={handleSave}
-              style={advancedFormBtnStyle}
-            >
-              Save
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleReset}
-              style={advancedFormBtnStyle}
-            >
-              Reset
-            </Btn>
-          </>
-        }
-      >
-          <div>
-            <div
-              style={{
-                ...advancedFormPanelStyle,
-                border: "none",
-                boxShadow: "none",
-                background: "transparent",
-                padding: 0,
-                marginBottom: 24,
-              }}
-            >
-              <FieldRow label="Matching Scheme" tooltipKey="ringScheme">
-                <FormControl size="small" sx={{ width: "100%" }}>
-                  <MuiSelect
-                    value={formData.ringScheme}
-                    onChange={(e) => handleSchemeChange(e.target.value)}
-                    sx={muiSelectSx}
-                  >
-                    <MenuItem value="0" sx={{ fontSize: 13 }}>
-                      CallerID Matching
-                    </MenuItem>
-                    <MenuItem value="1" sx={{ fontSize: 13 }}>
-                      Alert-Info Matching
-                    </MenuItem>
-                  </MuiSelect>
-                </FormControl>
-              </FieldRow>
-            </div>
 
-            {[1, 2, 3, 4].map((n) => renderSchemeContent(n))}
+      <RingingSchemeBreadcrumb />
+
+      <div style={cardStyle}>
+        <div style={cardTitleBarStyle}>{RINGING_SCHEME_CARD_TITLE}</div>
+
+        <div style={formBodyStyle}>
+          <MatchingSchemeRow>
+            <select
+              id="ringScheme"
+              value={formData.ringScheme}
+              onChange={(e) => handleSchemeChange(e.target.value)}
+              style={nativeSelectStyle}
+              {...nativeFieldInteraction}
+            >
+              {RINGING_SCHEME_MATCHING_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </MatchingSchemeRow>
+
+          <div style={tableShellStyle}>
+            <table style={tableStyle}>
+              <colgroup>
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "38%" }} />
+                <col style={{ width: "48%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <TH style={RS_TH_STYLE}>Scheme</TH>
+                  <TH style={RS_TH_STYLE}>
+                    <FxsFieldLabel
+                      tooltipKey={matchColumnTooltip}
+                      tooltips={RINGING_SCHEME_FIELD_TOOLTIPS}
+                    >
+                      {matchColumnLabel}
+                    </FxsFieldLabel>
+                  </TH>
+                  <TH style={{ ...RS_TH_STYLE, borderRight: "none" }}>
+                    <FxsFieldLabel
+                      tooltipKey="ringMode1"
+                      tooltips={RINGING_SCHEME_FIELD_TOOLTIPS}
+                    >
+                      Ringing Mode
+                    </FxsFieldLabel>
+                  </TH>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3, 4].map((n, idx) => {
+                  const isLast = idx === 3;
+                  const rowBg = idx % 2 === 1 ? C.rowAlt : C.cardBg;
+                  const matchField = isCallerId
+                    ? `ringCallerId${n}`
+                    : `ringAlertInfo${n}`;
+                  const matchTooltip = isCallerId
+                    ? `ringCallerId${n}`
+                    : `ringAlertInfo${n}`;
+
+                  return (
+                    <tr key={n} style={{ background: rowBg }}>
+                      <td
+                        style={{
+                          ...RS_TD_STYLE,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: C.labelText,
+                          borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
+                      >
+                        Scheme {n}
+                      </td>
+                      <td
+                        style={{
+                          ...RS_TD_STYLE,
+                          borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                          borderRight: `1px solid ${C.divider}`,
+                        }}
+                      >
+                        <input
+                          id={matchField}
+                          type="text"
+                          value={formData[matchField]}
+                          onChange={(e) =>
+                            handleInputChange(matchField, e.target.value)
+                          }
+                          onKeyPress={handleKeyPress1}
+                          maxLength={128}
+                          style={nativeInputStyle}
+                          title={
+                            RINGING_SCHEME_FIELD_TOOLTIPS[matchTooltip] || ""
+                          }
+                          {...nativeFieldInteraction}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          ...RS_TD_STYLE,
+                          borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                        }}
+                      >
+                        <input
+                          id={`ringMode${n}`}
+                          type="text"
+                          value={formData[`ringMode${n}`]}
+                          onChange={(e) =>
+                            handleInputChange(`ringMode${n}`, e.target.value)
+                          }
+                          onKeyPress={handleKeyPress}
+                          maxLength={128}
+                          style={nativeInputStyle}
+                          title={
+                            RINGING_SCHEME_FIELD_TOOLTIPS[`ringMode${n}`] || ""
+                          }
+                          {...nativeFieldInteraction}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-      </AdvancedFormCard>
-    </AdvancedPageShell>
+        </div>
+
+        <div style={footerStyle}>
+          <Btn type="button" variant="primary" onClick={handleSave}>
+            {RINGING_SCHEME_SAVE_LABEL}
+          </Btn>
+          <Btn type="button" variant="cancel" onClick={handleReset}>
+            {RINGING_SCHEME_RESET_LABEL}
+          </Btn>
+        </div>
+      </div>
+    </div>
   );
 };
 

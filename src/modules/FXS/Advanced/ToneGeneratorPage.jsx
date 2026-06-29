@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { Alert, TextField, Tooltip } from "@mui/material";
+import { Alert, Tooltip } from "@mui/material";
 import {
   TONE_GENERATOR_INITIAL_FORM,
   TONE_GENERATOR_FIELD_TOOLTIPS,
+  TONE_GENERATOR_PAGE_BREADCRUMB_ROOT,
+  TONE_GENERATOR_PAGE_BREADCRUMB_SECTION,
+  TONE_GENERATOR_PAGE_TITLE,
+  TONE_GENERATOR_CARD_TITLE,
+  TONE_GENERATOR_SAVE_LABEL,
+  TONE_GENERATOR_RESET_LABEL,
 } from "../../../constants/ToneGeneratorConstants";
-// ── Local page UI (inlined from fxsSharedUi) ──
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -69,16 +74,24 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
-  amber: "#dc2626",
+  fieldBg: "#ffffff",
+  helpBg: "#f8fafc",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
 const Btn = ({
   children,
@@ -87,25 +100,14 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  form,
-  component,
-  title,
 }) => {
   const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
     primary: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -113,49 +115,55 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
   };
-  const s = styles[variant] || styles.default;
+  const s = styles[variant] || styles.primary;
   const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+    variant === "cancel"
+      ? "#b6c2d3"
+      : "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
   const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    variant === "cancel"
+      ? "#a3b1c2"
+      : "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
   return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
+    <button
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding: "0 28px",
+        borderRadius: 8,
+        fontSize: 13,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
+        height: 34,
+        lineHeight: "34px",
+        boxSizing: "border-box",
+        minWidth: 110,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -163,269 +171,196 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </Component>
+    </button>
   );
 };
 
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    e.target.style.borderColor = OUTLINED_FOCUS;
+    e.target.style.boxShadow = FOCUS_RING_SHADOW();
+  },
+  onBlur: (e) => {
+    e.target.style.borderColor = OUTLINED_BORDER;
+    e.target.style.boxShadow = "none";
+  },
+  onMouseEnter: (e) => {
+    if (document.activeElement === e.target) {
+      e.target.style.borderColor = OUTLINED_FOCUS;
+      e.target.style.boxShadow = FOCUS_RING_SHADOW();
+    } else {
+      e.target.style.borderColor = OUTLINED_HOVER;
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      e.target.style.borderColor = OUTLINED_FOCUS;
+      e.target.style.boxShadow = FOCUS_RING_SHADOW();
+    } else {
+      e.target.style.borderColor = OUTLINED_BORDER;
+      e.target.style.boxShadow = "none";
+    }
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
+const nativeInputStyle = {
+  width: "100%",
+  height: 36,
+  padding: "0 12px",
   fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+  letterSpacing: "0.02em",
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-
-const advancedPageWrapStyle = {
+const pageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
   boxSizing: "border-box",
 };
 
-const advancedPageInnerStyle = {
+const cardStyle = {
   width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
   overflow: "hidden",
-  marginBottom: 24,
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
 };
 
-const advancedBlueBarStyle = {
+const cardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: "10px 28px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+  background: C.cardBg,
 };
 
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
+const cardBodyStyle = {
+  display: "flex",
+  alignItems: "stretch",
+  width: "100%",
+  minHeight: 360,
+  padding: "20px 28px",
+  gap: 0,
+  boxSizing: "border-box",
+  flexWrap: "nowrap",
+  overflowX: "auto",
 };
 
-const advancedFormPanelStyle = {
+const columnDividerStyle = {
+  width: 1,
+  flexShrink: 0,
+  alignSelf: "stretch",
+  backgroundColor: C.divider,
+  margin: "4px 24px",
+  minHeight: 280,
+};
+
+const formColumnStyle = {
+  flex: "1 1 320px",
+  minWidth: 280,
+  maxWidth: 480,
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
+};
+
+const helpColumnStyle = {
+  flex: "1 1 360px",
+  minWidth: 300,
+  background: C.helpBg,
+  border: `1px solid ${C.divider}`,
   borderRadius: 8,
-  padding: 20,
+  padding: "16px 20px",
+  boxSizing: "border-box",
 };
 
-const advancedFormInlineFooterStyle = {
+const footerStyle = {
   display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const AdvancedBreadcrumb = ({ current }) => (
+const ToneGeneratorBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
       marginBottom: 16,
-      fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{TONE_GENERATOR_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{TONE_GENERATOR_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {TONE_GENERATOR_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-}) => (
+const ToneFieldRow = ({ label, id, value, onChange, onKeyPress, tooltipKey }) => (
   <div
     style={{
       display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
+      flexDirection: "column",
+      gap: 6,
     }}
   >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
+    <FxsFieldLabel tooltipKey={tooltipKey} tooltips={TONE_GENERATOR_FIELD_TOOLTIPS}>
       {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
+    </FxsFieldLabel>
+    <input
+      id={id}
+      type="text"
+      value={value}
+      onChange={onChange}
+      onKeyPress={onKeyPress}
+      maxLength={63}
+      style={nativeInputStyle}
+      {...nativeFieldInteraction}
+    />
   </div>
 );
 
@@ -492,54 +427,6 @@ const helpBlocks = [
   },
 ];
 
-const labelStyle = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: C.labelText,
-  width: 110,
-  marginRight: 12,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-};
-
-const ToneFieldRow = ({ label, id, value, onChange, onKeyPress, tooltipKey }) => (
-  <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
-    <FxsFieldLabel
-      tooltipKey={tooltipKey}
-      tooltips={TONE_GENERATOR_FIELD_TOOLTIPS}
-      style={{
-        width: 110,
-        marginRight: 12,
-        flexShrink: 0,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {label}
-    </FxsFieldLabel>
-    <TextField
-      id={id}
-      fullWidth
-      size="small"
-      value={value}
-      onChange={onChange}
-      onKeyPress={onKeyPress}
-      variant="outlined"
-      sx={{
-        ...muiTextFieldSx,
-        flex: 1,
-        "& .MuiOutlinedInput-root": {
-          ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-          borderRadius: "6px",
-        },
-      }}
-      inputProps={{
-        maxLength: 63,
-        style: { fontSize: 14, padding: "6px 10px" },
-      }}
-    />
-  </div>
-);
-
 const ToneGeneratorPage = () => {
   const [formData, setFormData] = useState(TONE_GENERATOR_INITIAL_FORM);
   const [toast, setToast] = useState({ msg: "", type: "success" });
@@ -580,8 +467,10 @@ const ToneGeneratorPage = () => {
     alert("Settings saved successfully!");
   };
 
+  const handleReset = () => setFormData(TONE_GENERATOR_INITIAL_FORM);
+
   return (
-    <AdvancedPageShell>
+    <div style={pageWrapStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -599,125 +488,90 @@ const ToneGeneratorPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="Tone Generator" />
 
-      <div style={advancedTableContainerStyle}>
-        <div style={advancedBlueBarStyle}>
-          <span>Tone Generator</span>
-        </div>
+      <ToneGeneratorBreadcrumb />
 
-        <div style={{ padding: "16px 20px 0", background: C.cardBg }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "stretch",
-              minHeight: 400,
-              width: "100%",
-            }}
-          >
-            {/* Left — tone parameters */}
-            <div style={{ width: "45%", paddingTop: 16, paddingRight: 8 }}>
-              <div style={{ height: 24 }} />
-              <ToneFieldRow
-                label="Dial Tone"
-                id="dialTone"
-                tooltipKey="dialTone"
-                value={formData.dialTone}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, dialTone: e.target.value }))
-                }
-                onKeyPress={handleKeyPress}
-              />
-              <div style={{ height: 24 }} />
-              <ToneFieldRow
-                label="Ringback Tone"
-                id="ringbackTone"
-                tooltipKey="ringbackTone"
-                value={formData.ringbackTone}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    ringbackTone: e.target.value,
-                  }))
-                }
-                onKeyPress={handleKeyPress}
-              />
-              <div style={{ height: 24 }} />
-              <ToneFieldRow
-                label="Busy Tone"
-                id="busyTone"
-                tooltipKey="busyTone"
-                value={formData.busyTone}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, busyTone: e.target.value }))
-                }
-                onKeyPress={handleKeyPress}
-              />
-            </div>
+      <div style={cardStyle}>
+        <div style={cardTitleBarStyle}>{TONE_GENERATOR_CARD_TITLE}</div>
 
-            {/* Center divider */}
-            <div
-              style={{
-                width: 6,
-                flexShrink: 0,
-                backgroundColor: "#d1d5db",
-                borderRadius: 2,
-                margin: "8px 12px",
-              }}
-              aria-hidden
+        <div style={cardBodyStyle}>
+          <div style={formColumnStyle}>
+            <ToneFieldRow
+              label="Dial Tone"
+              id="dialTone"
+              tooltipKey="dialTone"
+              value={formData.dialTone}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, dialTone: e.target.value }))
+              }
+              onKeyPress={handleKeyPress}
             />
+            <ToneFieldRow
+              label="Ringback Tone"
+              id="ringbackTone"
+              tooltipKey="ringbackTone"
+              value={formData.ringbackTone}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  ringbackTone: e.target.value,
+                }))
+              }
+              onKeyPress={handleKeyPress}
+            />
+            <ToneFieldRow
+              label="Busy Tone"
+              id="busyTone"
+              tooltipKey="busyTone"
+              value={formData.busyTone}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, busyTone: e.target.value }))
+              }
+              onKeyPress={handleKeyPress}
+            />
+          </div>
 
-            {/* Right — format help */}
-            <div style={{ width: "54%", paddingTop: 16, paddingLeft: 4 }}>
-              <div style={{ marginLeft: "2%", width: "96%" }}>
-                {helpBlocks.map((block, idx) => (
-                  <div key={block.title}>
-                    {idx > 0 && <div style={{ height: 16 }} />}
-                    <p
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: C.strongText,
-                        margin: "0 0 8px",
-                      }}
-                    >
-                      {block.title}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        color: "#64748b",
-                        lineHeight: 1.6,
-                        margin: "0 0 16px",
-                      }}
-                    >
-                      {block.text}
-                    </p>
-                  </div>
-                ))}
+          <div style={columnDividerStyle} aria-hidden />
+
+          <div style={helpColumnStyle}>
+            {helpBlocks.map((block, idx) => (
+              <div key={block.title} style={{ marginBottom: idx < helpBlocks.length - 1 ? 16 : 0 }}>
+                <p
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: C.labelText,
+                    margin: "0 0 6px",
+                    fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+                  }}
+                >
+                  {block.title}
+                </p>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: C.mutedText,
+                    lineHeight: 1.55,
+                    margin: 0,
+                  }}
+                >
+                  {block.text}
+                </p>
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        <div style={advancedFormInlineFooterStyle}>
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            style={advancedFormBtnStyle}
-          >
-            Save
+        <div style={footerStyle}>
+          <Btn type="button" variant="primary" onClick={handleSave}>
+            {TONE_GENERATOR_SAVE_LABEL}
           </Btn>
-          <Btn
-            variant="cancel"
-            onClick={() => setFormData(TONE_GENERATOR_INITIAL_FORM)}
-            style={advancedFormBtnStyle}
-          >
-            Reset
+          <Btn type="button" variant="cancel" onClick={handleReset}>
+            {TONE_GENERATOR_RESET_LABEL}
           </Btn>
         </div>
       </div>
-    </AdvancedPageShell>
+    </div>
   );
 };
 

@@ -5,6 +5,13 @@ export const QOS_INITIAL_FORM = {
   controlPremiumQos: '26',
 };
 
+export const QOS_PAGE_BREADCRUMB_ROOT = "FXS";
+export const QOS_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const QOS_PAGE_TITLE = "QoS";
+export const QOS_CARD_TITLE = "QoS";
+export const QOS_SAVE_LABEL = "Save";
+export const QOS_RESET_LABEL = "Reset";
+
 /** QoS page */
 export const QOS_FIELD_TOOLTIPS = {
   qosEnabled:

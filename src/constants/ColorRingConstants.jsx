@@ -1,3 +1,12 @@
+export const COLOR_RING_PAGE_BREADCRUMB_ROOT = "FXS";
+export const COLOR_RING_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const COLOR_RING_PAGE_TITLE = "Color Ring";
+export const COLOR_RING_CARD_TITLE = "Color Ring";
+
+export const COLOR_RING_MODAL_TITLE = "Color Ring-Upload";
+export const COLOR_RING_EMPTY_MESSAGE = "No available color ring!";
+export const COLOR_RING_ITEMS_PER_PAGE = 20;
+
 // Table columns for the main table view
 export const COLOR_RING_TABLE_COLUMNS = [
   { key: "modify", label: "Modify" },

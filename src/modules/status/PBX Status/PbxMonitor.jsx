@@ -5,7 +5,7 @@ import React, {
   useRef,
   useLayoutEffect,
 } from "react";
-import { CircularProgress, Tabs, Tab } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { monitorBoth } from "../../../api/apiService";
 import {
   PBX_MONITOR_BREADCRUMB_SEGMENTS,
@@ -77,6 +77,19 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    tabActive: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    tabInactive: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
@@ -85,6 +98,8 @@ const Btn = ({
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
+      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      tabInactive: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
@@ -103,6 +118,8 @@ const Btn = ({
         cancel: "#a3b1c2",
         danger: "#f87171",
         outline: "#d1d9e6",
+        tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+        tabInactive: "#d1d9e6",
         default: "#d1d5db",
       }[variant] || "#d1d5db";
     el.style.transform = "translateY(1px) scale(0.98)";
@@ -126,7 +143,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -258,27 +275,40 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+const PBX_MONITOR_TABLE_CARD_RADIUS = 10;
+const PBX_MONITOR_FORM_HEADER_RADIUS = 20;
 
-const pbxHeaderTabsSx = {
+const pbxMonitorCardHeaderStyle = {
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
   minHeight: 44,
-  pl: 0,
-  "& .MuiTabs-flexContainer": { height: 44, paddingLeft: 0 },
-  "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 44,
-    py: 0,
-    px: 1.25,
-    minWidth: 0,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
-    fontWeight: 700,
-  },
+  padding: "10px 28px 10px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  borderTopLeftRadius: PBX_MONITOR_FORM_HEADER_RADIUS,
+  borderTopRightRadius: PBX_MONITOR_FORM_HEADER_RADIUS,
+  flexWrap: "wrap",
+  gap: 12,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const pbxMonitorHeaderLeftStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+  minWidth: 0,
+};
+
+const pbxMonitorHeaderToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+  marginLeft: "auto",
 };
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -442,9 +472,6 @@ const PbxMonitorToolbarSearchBar = ({
     </div>
   );
 };
-
-const PBX_MONITOR_TABLE_CARD_RADIUS = 10;
-const PBX_MONITOR_FORM_HEADER_RADIUS = 20;
 
 const PBX_MONITOR_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
@@ -846,47 +873,35 @@ const PbxMonitor = () => {
         </div>
 
         <div style={pbxMonitorCardStyle}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: 0,
-              background: C.cardBg,
-              borderBottom: `1px solid ${C.divider}`,
-              borderTopLeftRadius: PBX_MONITOR_FORM_HEADER_RADIUS,
-              borderTopRightRadius: PBX_MONITOR_FORM_HEADER_RADIUS,
-              flexWrap: "wrap",
-              gap: 8,
-            }}
-          >
-            <Tabs
-              value={activeTab}
-              onChange={(_, tab) => setActiveTab(tab)}
-              variant="standard"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR,
-                  height: 2,
-                },
-              }}
-              sx={pbxHeaderTabsSx}
-            >
-              <Tab label={PBX_MONITOR_TAB_LABELS.extension} value={PBX_MONITOR_TAB_VALUES.extension} />
-              <Tab label={PBX_MONITOR_TAB_LABELS.trunk} value={PBX_MONITOR_TAB_VALUES.trunk} />
-            </Tabs>
+          <div style={pbxMonitorCardHeaderStyle}>
+            <div style={pbxMonitorHeaderLeftStyle}>
+              <Btn
+                type="button"
+                variant={
+                  activeTab === PBX_MONITOR_TAB_VALUES.extension
+                    ? "tabActive"
+                    : "tabInactive"
+                }
+                onClick={() => setActiveTab(PBX_MONITOR_TAB_VALUES.extension)}
+                style={{ height: 30 }}
+              >
+                {PBX_MONITOR_TAB_LABELS.extension}
+              </Btn>
+              <Btn
+                type="button"
+                variant={
+                  activeTab === PBX_MONITOR_TAB_VALUES.trunk
+                    ? "tabActive"
+                    : "tabInactive"
+                }
+                onClick={() => setActiveTab(PBX_MONITOR_TAB_VALUES.trunk)}
+                style={{ height: 30 }}
+              >
+                {PBX_MONITOR_TAB_LABELS.trunk}
+              </Btn>
+            </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-                marginLeft: "auto",
-                padding: "7px 6px 7px 0",
-              }}
-            >
+            <div style={pbxMonitorHeaderToolbarStyle}>
               <PbxMonitorToolbarSearchBar
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

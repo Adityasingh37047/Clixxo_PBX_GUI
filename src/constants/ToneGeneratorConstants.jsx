@@ -5,6 +5,13 @@ export const TONE_GENERATOR_INITIAL_FORM = {
   busyTone: '450/350,0/350',
 };
 
+export const TONE_GENERATOR_PAGE_BREADCRUMB_ROOT = "FXS";
+export const TONE_GENERATOR_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const TONE_GENERATOR_PAGE_TITLE = "Tone Generator";
+export const TONE_GENERATOR_CARD_TITLE = "Tone Generator";
+export const TONE_GENERATOR_SAVE_LABEL = "Save";
+export const TONE_GENERATOR_RESET_LABEL = "Reset";
+
 const toneParamTooltip = (name, example) =>
   `${name} transmitter pattern.\nFormat: freq/Duration_ms segments separated by commas.\nFrequency: 200~3500 Hz (or dual freq1+freq2). Use 0 for silence.\nMax 4 ON-state signals per period; tone cannot start with silence.\nExample: ${example}`;
 

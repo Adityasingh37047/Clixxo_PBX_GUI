@@ -1,3 +1,12 @@
+export const DIALING_RULE_PAGE_BREADCRUMB_ROOT = "FXS";
+export const DIALING_RULE_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const DIALING_RULE_PAGE_TITLE = "Dialing Rule";
+export const DIALING_RULE_CARD_TITLE = "Dialing Rule";
+export const DIALING_RULE_EMPTY_MESSAGE = "No available dialing rule!";
+export const DIALING_RULE_ITEMS_PER_PAGE = 20;
+export const DIALING_RULE_MODAL_TITLE_ADD = "Add Dialing Rule";
+export const DIALING_RULE_MODAL_TITLE_EDIT = "Edit Dialing Rule";
+
 // Table columns for the main table view
 export const DIALING_RULE_TABLE_COLUMNS = [
   { key: 'check', label: 'Check' },

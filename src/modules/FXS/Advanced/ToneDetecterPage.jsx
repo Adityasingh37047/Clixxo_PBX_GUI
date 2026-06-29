@@ -4,6 +4,13 @@ import {
   TONE_DETECTER_TABLE_COLUMNS,
   TONE_DETECTER_INITIAL_FORM,
   TONE_DETECTER_FIELD_TOOLTIPS,
+  TONE_DETECTER_PAGE_BREADCRUMB_ROOT,
+  TONE_DETECTER_PAGE_BREADCRUMB_SECTION,
+  TONE_DETECTER_PAGE_TITLE,
+  TONE_DETECTER_EMPTY_MESSAGE,
+  TONE_DETECTER_ITEMS_PER_PAGE,
+  TONE_DETECTER_MODAL_TITLE_ADD,
+  TONE_DETECTER_MODAL_TITLE_EDIT,
 } from "../../../constants/ToneDetecterConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -84,11 +91,14 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -149,6 +159,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -162,23 +198,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -253,8 +303,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -273,8 +323,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -289,6 +339,93 @@ const routeThExtra = {
   padding: "9px 8px",
   letterSpacing: "0.04em",
 };
+
+const toneDetecterPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const toneDetecterPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const toneDetecterCardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const toneDetecterHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "10px 28px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  flexWrap: "wrap",
+  gap: 12,
+  boxSizing: "border-box",
+};
+
+const toneDetecterTableBodyStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  width: "100%",
+};
+
+const toneDetecterPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "10px 28px",
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
+  overflow: "hidden",
+};
+
+const ToneDetecterBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{TONE_DETECTER_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{TONE_DETECTER_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {TONE_DETECTER_PAGE_TITLE}
+    </span>
+  </div>
+);
 
 const numManipulateCardStyle = {
   background: "#ffffff",
@@ -572,7 +709,7 @@ const addHostFormPanelStyle = {
   flexDirection: "column",
   gap: 14,
   background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
+  border: `1px solid ${C.divider}`,
   borderRadius: 8,
   padding: 20,
 };
@@ -582,7 +719,7 @@ const addHostModalFooterStyle = {
   justifyContent: "center",
   gap: 12,
   padding: "10px 16px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  borderTop: `1px solid ${C.divider}`,
   background: "#f8fafc",
 };
 
@@ -625,7 +762,7 @@ const ToneDetecterPage = () => {
   const [rules, setRules] = useState([]);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = TONE_DETECTER_ITEMS_PER_PAGE;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
@@ -923,28 +1060,31 @@ const ToneDetecterPage = () => {
     pagedRules.length > 0 && pagedSelectedCount === pagedRules.length;
 
   return (
-    <AdvancedPageShell fullWidth>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-      <AdvancedBreadcrumb current="Tone Detector" />
-      <div style={numManipulateCardStyle}>
-          <div style={numManipulateToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <div style={toneDetecterPageWrapStyle}>
+      <div style={toneDetecterPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+
+        <ToneDetecterBreadcrumb />
+
+        <div style={toneDetecterCardStyle}>
+          <div style={toneDetecterHeaderStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -997,24 +1137,13 @@ const ToneDetecterPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.save}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
               >
                 {loading.save ? "Saving..." : "+ Add New"}
               </Btn>
             </div>
           </div>
-          <div
-            style={{
-              overflowX: "auto",
-              overflowY: "auto",
-              flex: 1,
-            }}
-          >
+          <div style={toneDetecterTableBodyStyle}>
             {rules.length === 0 ? (
               <div
                 style={{
@@ -1035,7 +1164,7 @@ const ToneDetecterPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  No available tone detector parameter!
+                  {TONE_DETECTER_EMPTY_MESSAGE}
                 </div>
                 <Btn
                   variant="cancel"
@@ -1060,6 +1189,7 @@ const ToneDetecterPage = () => {
                         width: 40,
                         padding: 0,
                         borderLeft: "none",
+                        ...PCM_TRUNK_GROUP_TH_GAP,
                       }}
                     >
                       <Checkbox
@@ -1100,7 +1230,7 @@ const ToneDetecterPage = () => {
                       ? "#f8fafc"
                       : "#ffffff";
                   const lastRowCellStyle = isLastRow
-                    ? { borderBottom: `1px solid ${C.cardBorder}` }
+                    ? { borderBottom: "none" }
                     : {};
 
                     return (
@@ -1177,7 +1307,7 @@ const ToneDetecterPage = () => {
             )}
           </div>
           {rules.length > 0 && (
-            <div style={numManipulatePaginationStyle}>
+            <div style={toneDetecterPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRules.length} record
                 {pagedRules.length !== 1 ? "s" : ""} on page {page}
@@ -1224,7 +1354,9 @@ const ToneDetecterPage = () => {
         disableEnforceFocus
       >
         <DialogTitle style={advancedModalTitleStyle}>
-          {editIndex !== null ? "Edit Tone Parameters" : "Add Tone Parameters"}
+          {editIndex !== null
+            ? TONE_DETECTER_MODAL_TITLE_EDIT
+            : TONE_DETECTER_MODAL_TITLE_ADD}
         </DialogTitle>
         <DialogContent style={addHostModalContentStyle}>
           <div style={addHostFormPanelStyle}>
@@ -1292,7 +1424,8 @@ const ToneDetecterPage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-    </AdvancedPageShell>
+      </div>
+    </div>
   );
 };
 

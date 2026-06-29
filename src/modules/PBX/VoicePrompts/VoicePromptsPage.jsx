@@ -12,8 +12,6 @@ import {
   TextField,
   Checkbox,
   Alert,
-  Tabs,
-  Tab,
   CircularProgress, useMediaQuery } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
@@ -108,6 +106,19 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    tabActive: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    tabInactive: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
@@ -116,6 +127,8 @@ const Btn = ({
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
+      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      tabInactive: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const activeBg =
@@ -124,6 +137,8 @@ const Btn = ({
       cancel: "#a3b1c2",
       danger: "#f87171",
       outline: "#d1d9e6",
+      tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      tabInactive: "#d1d9e6",
       default: "#d1d5db",
     }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
@@ -158,7 +173,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -315,38 +330,6 @@ const TableListEmptyState = ({
   </div>
 );
 
-const VOICE_PROMPTS_TAB_ACTIVE_COLOR = "#3E5475";
-const VOICE_PROMPTS_TAB_INACTIVE_COLOR = "#374151";
-
-const voicePromptsHeaderTabsSx = {
-  minHeight: 44,
-  pl: 0,
-  borderBottom: `1px solid ${C.divider}`,
-  "& .MuiTabs-flexContainer": { height: 44, paddingLeft: 0 },
-  "& .MuiTab-root": {
-    color: VOICE_PROMPTS_TAB_INACTIVE_COLOR,
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 44,
-    py: 0,
-    px: 1.25,
-    minWidth: 0,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: VOICE_PROMPTS_TAB_ACTIVE_COLOR,
-    fontWeight: 700,
-  },
-};
-
-const voicePromptsCardStyle = {
-  background: "#ffffff",
-  borderRadius: VOICE_PROMPTS_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
 const voicePromptsTabHeaderStyle = {
   width: "100%",
   minHeight: 44,
@@ -355,8 +338,28 @@ const voicePromptsTabHeaderStyle = {
   borderTopRightRadius: VOICE_PROMPTS_CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: 0,
+  padding: "10px 28px 10px 14px",
   borderBottom: `1px solid ${C.divider}`,
+  flexWrap: "wrap",
+  gap: 8,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const voicePromptsHeaderLeftStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+  minWidth: 0,
+};
+
+const voicePromptsCardStyle = {
+  background: "#ffffff",
+  borderRadius: VOICE_PROMPTS_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
 const voicePromptsPrimaryBtnStyle = {
@@ -1045,26 +1048,28 @@ const VoicePromptsPage = () => {
                 : {}),
             }}
           >
-            <Tabs
-              value={activeTab}
-              onChange={(_, id) => {
-                stopMohPlayer();
-                stopCustomPlayer();
-                setActiveTab(id);
+            <div
+              style={{
+                ...voicePromptsHeaderLeftStyle,
+                ...(isCompact ? { width: "100%" } : {}),
               }}
-              variant="standard"
-              TabIndicatorProps={{
-                style: {
-                  backgroundColor: VOICE_PROMPTS_TAB_ACTIVE_COLOR,
-                  height: 2,
-                },
-              }}
-              sx={voicePromptsHeaderTabsSx}
             >
               {VOICE_PROMPTS_TABS.map((tab) => (
-                <Tab key={tab.id} label={tab.label} value={tab.id} />
+                <Btn
+                  key={tab.id}
+                  type="button"
+                  variant={activeTab === tab.id ? "tabActive" : "tabInactive"}
+                  onClick={() => {
+                    stopMohPlayer();
+                    stopCustomPlayer();
+                    setActiveTab(tab.id);
+                  }}
+                  style={{ height: 30 }}
+                >
+                  {tab.label}
+                </Btn>
               ))}
-            </Tabs>
+            </div>
           </div>
 
           <div style={{ padding: 16 }}>

@@ -375,6 +375,10 @@ export const PORT_FXS_MODIFY_FORM_WIDTH = 600;
 
 // Page Title
 export const PORT_FXS_PAGE_TITLE = "FXS Settings";
+export const PORT_FXS_PAGE_BREADCRUMB_ROOT = "FXS";
+export const PORT_FXS_PAGE_BREADCRUMB_SECTION = "Port";
+export const PORT_FXS_CARD_TITLE = "FXS Settings";
+export const PORT_FXS_EMPTY_MESSAGE = "No available FXS settings!";
 
 // Batch Modify Modal Title
 export const PORT_FXS_BATCH_MODIFY_TITLE = "FXS-Batch Modify";

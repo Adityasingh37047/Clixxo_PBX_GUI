@@ -4,6 +4,13 @@ import {
   DIALING_RULE_INITIAL_FORM,
   DIALING_RULE_INITIAL_DATA,
   DIALING_RULE_FIELD_TOOLTIPS,
+  DIALING_RULE_PAGE_BREADCRUMB_ROOT,
+  DIALING_RULE_PAGE_BREADCRUMB_SECTION,
+  DIALING_RULE_PAGE_TITLE,
+  DIALING_RULE_EMPTY_MESSAGE,
+  DIALING_RULE_ITEMS_PER_PAGE,
+  DIALING_RULE_MODAL_TITLE_ADD,
+  DIALING_RULE_MODAL_TITLE_EDIT,
 } from "../../../constants/DialingRuleConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -84,11 +91,14 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -149,6 +159,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -162,23 +198,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -253,8 +303,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -273,8 +323,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -290,128 +340,71 @@ const routeThExtra = {
   letterSpacing: "0.04em",
 };
 
-const numManipulateCardStyle = {
-  background: "#ffffff",
-  borderRadius: CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+const dialingRulePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
 };
 
-const numManipulateToolbarStyle = {
+const dialingRulePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const dialingRuleCardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const dialingRuleHeaderStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: "10px 28px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,
   borderTopRightRadius: CARD_RADIUS,
+  flexWrap: "wrap",
+  gap: 12,
+  boxSizing: "border-box",
 };
 
-const numManipulatePaginationStyle = {
+const dialingRuleTableBodyStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  width: "100%",
+};
+
+const dialingRulePaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "10px 28px",
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
   overflow: "hidden",
 };
 
-
-const advancedPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  boxSizing: "border-box",
-};
-
-const advancedPageInnerStyle = {
-  width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-  marginBottom: 24,
-};
-
-const advancedBlueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const AdvancedBreadcrumb = ({ current }) => (
+const DialingRuleBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -424,24 +417,13 @@ const AdvancedBreadcrumb = ({ current }) => (
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{DIALING_RULE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{DIALING_RULE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {DIALING_RULE_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -507,42 +489,6 @@ const FieldRow = ({
   </div>
 );
 
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-
 const advancedModalPaperSx = {
   width: 500,
   maxWidth: "95vw",
@@ -605,7 +551,7 @@ const DialingRulePage = () => {
   const [rules, setRules] = useState(DIALING_RULE_INITIAL_DATA);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = DIALING_RULE_ITEMS_PER_PAGE;
   const totalPages = Math.max(1, Math.ceil(rules.length / itemsPerPage));
   const pagedRules = rules.slice(
     (page - 1) * itemsPerPage,
@@ -842,93 +788,90 @@ const DialingRulePage = () => {
     pagedRules.length > 0 && pagedSelectedCount === pagedRules.length;
 
   return (
-    <AdvancedPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-      <AdvancedBreadcrumb current="Dialing Rule" />
-
-      <div style={numManipulateCardStyle}>
-        <div style={numManipulateToolbarStyle}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {selected.length > 0 && (
-              <span
-                style={{
-                  background: "#eff6ff",
-                  color: C.accent,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "5px 12px",
-                  borderRadius: 999,
-                  border: `1px solid ${C.accent}`,
-                }}
-              >
-                {selected.length} selected
-              </span>
-            )}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
+    <div style={dialingRulePageWrapStyle}>
+      <div style={dialingRulePageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
             }}
           >
-            <Btn
-              variant="cancel"
-              onClick={handleInverse}
-              disabled={rules.length === 0}
-              style={{ height: 30 }}
-            >
-              Inverse
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleDelete}
-              disabled={selected.length === 0}
-              style={{ height: 30 }}
-            >
-              Delete
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleClearAll}
-              disabled={rules.length === 0}
-              style={{ height: 30 }}
-            >
-              Clear All
-            </Btn>
-            <Btn
-              variant="primary"
-              onClick={() => handleOpenModal()}
+            {toast.msg}
+          </Alert>
+        )}
+
+        <DialingRuleBreadcrumb />
+
+        <div style={dialingRuleCardStyle}>
+          <div style={dialingRuleHeaderStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {selected.length > 0 && (
+                <span
+                  style={{
+                    background: "#eff6ff",
+                    color: C.accent,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    border: `1px solid ${C.accent}`,
+                  }}
+                >
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
+            <div
               style={{
-                height: 30,
-                padding: "6px 14px",
-                fontSize: 12,
-                borderRadius: 10,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
               }}
             >
-              + Add New
-            </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleInverse}
+                disabled={rules.length === 0}
+                style={{ height: 30 }}
+              >
+                Inverse
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleDelete}
+                disabled={selected.length === 0}
+                style={{ height: 30 }}
+              >
+                Delete
+              </Btn>
+              <Btn
+                variant="cancel"
+                onClick={handleClearAll}
+                disabled={rules.length === 0}
+                style={{ height: 30 }}
+              >
+                Clear All
+              </Btn>
+              <Btn
+                variant="primary"
+                onClick={() => handleOpenModal()}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+              >
+                + Add New
+              </Btn>
+            </div>
           </div>
-        </div>
 
-        <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={dialingRuleTableBodyStyle}>
           {rules.length === 0 ? (
             <div
               style={{
@@ -949,7 +892,7 @@ const DialingRulePage = () => {
                   marginBottom: 16,
                 }}
               >
-                No available dialing rule!
+                {DIALING_RULE_EMPTY_MESSAGE}
               </div>
               <Btn
                 variant="cancel"
@@ -1109,7 +1052,7 @@ const DialingRulePage = () => {
         </div>
 
         {rules.length > 0 && (
-          <div style={numManipulatePaginationStyle}>
+          <div style={dialingRulePaginationStyle}>
             <span style={{ fontSize: 11, color: C.mutedText }}>
               Showing {pagedRules.length} record
               {pagedRules.length !== 1 ? "s" : ""} on page {page}
@@ -1144,7 +1087,8 @@ const DialingRulePage = () => {
               </Btn>
             </div>
           </div>
-        )}
+          )}
+        </div>
       </div>
 
       <Dialog
@@ -1156,7 +1100,9 @@ const DialingRulePage = () => {
         disableEnforceFocus
       >
         <DialogTitle style={advancedModalTitleStyle}>
-          {editIndex !== null ? "Edit Dialing Rule" : "Add Dialing Rule"}
+          {editIndex !== null
+            ? DIALING_RULE_MODAL_TITLE_EDIT
+            : DIALING_RULE_MODAL_TITLE_ADD}
         </DialogTitle>
         <DialogContent style={addHostModalContentStyle}>
           <div style={addHostFormPanelStyle}>
@@ -1226,7 +1172,7 @@ const DialingRulePage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-    </AdvancedPageShell>
+    </div>
   );
 };
 

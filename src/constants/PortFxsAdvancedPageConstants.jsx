@@ -1,5 +1,9 @@
 // Port FXS Advanced Page Constants
 
+export const PORT_FXS_ADVANCED_PAGE_BREADCRUMB_ROOT = "FXS";
+export const PORT_FXS_ADVANCED_PAGE_BREADCRUMB_SECTION = "Port";
+export const PORT_FXS_ADVANCED_PAGE_TITLE = "FXS Advanced";
+
 // Table columns
 export const PORT_FXS_ADVANCED_TABLE_COLUMNS = [
   { key: 'port', label: 'Port', width: '60px' },
@@ -68,7 +72,7 @@ export const PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES = [
 ];
 
 // Page Title
-export const PORT_FXS_ADVANCED_PAGE_TITLE = 'FXS Settings';
+export const PORT_FXS_ADVANCED_BATCH_MODIFY_LABEL = "Batch Modify";
 
 // Batch Modify Modal Title
 export const PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE = 'FXS-Batch Modify';

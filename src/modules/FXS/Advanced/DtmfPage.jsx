@@ -1,7 +1,19 @@
 import React, { useState } from "react";
-import { DTMF_INITIAL_FORM, DTMF_FIELD_TOOLTIPS } from "../../../constants/DtmfConstants";
-import { Alert, Checkbox, TextField, Tooltip } from "@mui/material";
-// ── Local page UI (inlined from fxsSharedUi) ──
+import {
+  DTMF_INITIAL_FORM,
+  DTMF_FIELD_TOOLTIPS,
+  DTMF_PAGE_BREADCRUMB_ROOT,
+  DTMF_PAGE_BREADCRUMB_SECTION,
+  DTMF_PAGE_TITLE,
+  DTMF_DETECTOR_TAB,
+  DTMF_GENERATOR_TAB,
+  DTMF_TAB_DETECTOR,
+  DTMF_TAB_GENERATOR,
+  DTMF_SAVE_LABEL,
+  DTMF_RESET_LABEL,
+  DTMF_GENERATOR_WARNING,
+} from "../../../constants/DtmfConstants";
+import { Alert, Checkbox, Tooltip } from "@mui/material";
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -66,16 +78,21 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
 
 const Btn = ({
   children,
@@ -99,6 +116,10 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -116,6 +137,19 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    tabActive: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    tabInactive: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
@@ -124,10 +158,42 @@ const Btn = ({
       cancel: "#b6c2d3",
       danger: "#fca5a5",
       outline: "#e2e8f0",
+      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      tabInactive: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      tabInactive: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary" || variant === "tabActive"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
+  const isFooterBtn = variant === "primary" || variant === "cancel";
+
   return (
     <Component
       type={type}
@@ -139,24 +205,40 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding: isFooterBtn ? "0 28px" : "6px 14px",
+        borderRadius: 8,
+        fontSize: isFooterBtn ? 13 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: isFooterBtn ? 34 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
+        lineHeight: isFooterBtn ? "34px" : undefined,
+        boxSizing: "border-box",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -164,194 +246,168 @@ const Btn = ({
   );
 };
 
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW();
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
+const FIELD_CONTROL_WIDTH = 220;
+const FIELD_CONTROL_HEIGHT = 36;
 
-const muiSelectSx = {
+const nativeFieldInputStyle = {
+  width: "100%",
+  minWidth: FIELD_CONTROL_WIDTH,
+  maxWidth: FIELD_CONTROL_WIDTH,
+  height: FIELD_CONTROL_HEIGHT,
+  minHeight: FIELD_CONTROL_HEIGHT,
+  padding: "0 12px",
   fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  lineHeight: `${FIELD_CONTROL_HEIGHT - 2}px`,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
-
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
-
-const FormEnableCheckbox = ({
-  checked,
-  onChange,
-  name,
-  label = "Enable",
-  id,
-}) => (
-  <label
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      cursor: "pointer",
-    }}
-  >
-    <Checkbox
-      id={id || name}
-      name={name}
-      size="small"
-      checked={!!checked}
-      onChange={onChange}
-      sx={checkboxSx}
-    />
-    <span style={{ fontSize: 13, color: C.valueText }}>{label}</span>
-  </label>
-);
-
-
-const advancedPageWrapStyle = {
+const dtmfPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: "stretch",
   boxSizing: "border-box",
 };
 
-const advancedPageInnerStyle = {
-  width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
+const dtmfPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-  marginBottom: 24,
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
 };
 
-const advancedBlueBarStyle = {
+const dtmfCardStyle = {
   width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const dtmfHeaderStyle = {
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
   minHeight: 44,
+  padding: "10px 28px 10px 14px",
+  borderBottom: `1px solid ${C.divider}`,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,
   borderTopRightRadius: CARD_RADIUS,
+  flexWrap: "wrap",
+  gap: 8,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const dtmfHeaderLeftStyle = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
+  gap: 8,
   flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  minWidth: 0,
 };
 
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
+const dtmfFormBodyStyle = {
+  padding: "20px 28px 8px",
   display: "flex",
   flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  gap: 0,
+  maxWidth: 760,
+  width: "100%",
+  margin: "0 auto",
   boxSizing: "border-box",
 };
 
-const dtmfFooterStyle = {
+const dtmfFormFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
   width: "100%",
-  marginTop: 24,
-  padding: "10px 20px",
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  boxSizing: "border-box",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  boxSizing: "border-box",
+  flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
-const dtmfFooterBtnStyle = {
+const dtmfFormBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -361,7 +417,17 @@ const dtmfFooterBtnStyle = {
   boxSizing: "border-box",
 };
 
-const AdvancedBreadcrumb = ({ current }) => (
+const dtmfNoteStyle = {
+  fontSize: 12,
+  color: C.mutedText,
+  margin: "12px 0 0",
+  lineHeight: 1.45,
+  whiteSpace: "nowrap",
+  textAlign: "center",
+  width: "100%",
+};
+
+const DtmfBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -374,20 +440,47 @@ const AdvancedBreadcrumb = ({ current }) => (
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{DTMF_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{DTMF_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{DTMF_PAGE_TITLE}</span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
+const DtmfFieldRow = ({ label, tooltipKey, children, isLongLabel = false }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "row",
+      width: "100%",
+      minHeight: 36,
+      alignItems: isLongLabel ? "flex-start" : "center",
+      paddingTop: isLongLabel ? 8 : 0,
+      paddingBottom: isLongLabel ? 8 : 0,
+      marginBottom: 10,
+    }}
+  >
     <div
       style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
+        flex: "1 1 auto",
+        minWidth: 0,
+        paddingRight: 24,
+        textAlign: "left",
+        lineHeight: 1.45,
+      }}
+    >
+      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={DTMF_FIELD_TOOLTIPS}>
+        {label}
+      </FxsFieldLabel>
+    </div>
+    <div
+      style={{
+        flex: "0 0 auto",
+        width: FIELD_CONTROL_WIDTH,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
       }}
     >
       {children}
@@ -395,88 +488,18 @@ const AdvancedPageShell = ({ children, fullWidth = false }) => (
   </div>
 );
 
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
+const GENERATOR_FIELD_KEYS = new Set([
+  "dtmfEnergyAdvance",
+  "dtmfPlayEnergy",
+  "dtmfTxHighDuration",
+  "dtmfTxLowDuration",
+  ...Array.from({ length: 12 }, (_, i) => `dtmfPlayEnergy${i}`),
+  ...Array.from({ length: 12 }, (_, i) => `dtmfHighPlayEnergy${i}`),
+]);
 
 const DtmfPage = () => {
   const [formData, setFormData] = useState(DTMF_INITIAL_FORM);
+  const [activeTab, setActiveTab] = useState(DTMF_TAB_DETECTOR);
   const [toast, setToast] = useState({ msg: "", type: "success" });
 
   const showToast = (msg, type = "success") => {
@@ -489,6 +512,16 @@ const DtmfPage = () => {
     showToast(msg, isSuccess ? "success" : "error");
   };
 
+  const focusField = (fieldName) => {
+    const tab = GENERATOR_FIELD_KEYS.has(fieldName)
+      ? DTMF_TAB_GENERATOR
+      : DTMF_TAB_DETECTOR;
+    setActiveTab(tab);
+    requestAnimationFrame(() => {
+      document.getElementById(fieldName)?.focus();
+    });
+  };
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -499,7 +532,6 @@ const DtmfPage = () => {
 
   const handleKeyPress = (e, allowDecimal = false) => {
     const key = e.keyCode || e.which;
-    // Allow: numbers (48-57), minus sign (45), decimal point (46) if allowed, backspace (8)
     if (
       !(
         (key >= 48 && key <= 57) ||
@@ -514,7 +546,6 @@ const DtmfPage = () => {
 
   const handleKeyPressInteger = (e) => {
     const key = e.keyCode || e.which;
-    // Allow: numbers (48-57), backspace (8)
     if (!((key >= 48 && key <= 57) || key === 8)) {
       e.preventDefault();
     }
@@ -529,13 +560,12 @@ const DtmfPage = () => {
   };
 
   const handleSave = () => {
-    // Validate DTMF Detector fields
     const positiveTwist = parseFloat(formData.positiveTwist);
     if (isNaN(positiveTwist) || positiveTwist < 0 || positiveTwist > 24) {
       alert(
         "The range of 'Energy Difference for High-freq minus Low-freq' is 0~24!",
       );
-      document.getElementById("positiveTwist")?.focus();
+      focusField("positiveTwist");
       return;
     }
 
@@ -544,14 +574,14 @@ const DtmfPage = () => {
       alert(
         "The range of 'Energy Difference for Low-freq minus High-freq' is 0~24!",
       );
-      document.getElementById("negativeTwist")?.focus();
+      focusField("negativeTwist");
       return;
     }
 
     const minDuration = parseFloat(formData.minDuration);
     if (isNaN(minDuration) || minDuration < 10 || minDuration > 2000) {
       alert("The value range of the minimum duration at ON is 10~2000!");
-      document.getElementById("minDuration")?.focus();
+      focusField("minDuration");
       return;
     }
 
@@ -562,25 +592,24 @@ const DtmfPage = () => {
       minNegativeDuration > 2000
     ) {
       alert("The value range of the minimum duration at OFF is 10~2000!");
-      document.getElementById("minNegativeDuration")?.focus();
+      focusField("minNegativeDuration");
       return;
     }
 
     const energyRatio = parseFloat(formData.energyRatio);
     if (isNaN(energyRatio) || energyRatio < 1 || energyRatio > 100) {
       alert("The ratio range of the DT energy is 1~100!");
-      document.getElementById("energyRatio")?.focus();
+      focusField("energyRatio");
       return;
     }
 
     const levelMinIn = parseFloat(formData.levelMinIn);
     if (isNaN(levelMinIn) || levelMinIn < -40 || levelMinIn > -9) {
       alert("The value range of the lowest energy threshold is -40~-9!");
-      document.getElementById("levelMinIn")?.focus();
+      focusField("levelMinIn");
       return;
     }
 
-    // Validate DTMF Generator fields
     if (formData.dtmfEnergyAdvance) {
       for (let i = 0; i <= 11; i++) {
         const dtmfPlayEnergy = parseFloat(formData[`dtmfPlayEnergy${i}`]);
@@ -591,13 +620,13 @@ const DtmfPage = () => {
         ) {
           const key = i === 10 ? "*" : i === 11 ? "#" : i;
           alert(`The value range of DTMF${key} Low Energy is -18.0~11.0dB!`);
-          document.getElementById(`dtmfPlayEnergy${i}`)?.focus();
+          focusField(`dtmfPlayEnergy${i}`);
           return;
         }
         if (checkDtmfEnergy(formData[`dtmfPlayEnergy${i}`])) {
           const key = i === 10 ? "*" : i === 11 ? "#" : i;
           alert(`The value of DTMF${key} Low Energy only have one decimal!`);
-          document.getElementById(`dtmfPlayEnergy${i}`)?.focus();
+          focusField(`dtmfPlayEnergy${i}`);
           return;
         }
 
@@ -611,13 +640,13 @@ const DtmfPage = () => {
         ) {
           const key = i === 10 ? "*" : i === 11 ? "#" : i;
           alert(`The value range of DTMF${key} High Energy is -18.0~11.0dB!`);
-          document.getElementById(`dtmfHighPlayEnergy${i}`)?.focus();
+          focusField(`dtmfHighPlayEnergy${i}`);
           return;
         }
         if (checkDtmfEnergy(formData[`dtmfHighPlayEnergy${i}`])) {
           const key = i === 10 ? "*" : i === 11 ? "#" : i;
           alert(`The value of DTMF${key} High Energy only have one decimal!`);
-          document.getElementById(`dtmfHighPlayEnergy${i}`)?.focus();
+          focusField(`dtmfHighPlayEnergy${i}`);
           return;
         }
       }
@@ -629,7 +658,7 @@ const DtmfPage = () => {
         dtmfPlayEnergy > 11
       ) {
         alert("The value range of 'DTMF Energy' is -18~11dB!");
-        document.getElementById("dtmfPlayEnergy")?.focus();
+        focusField("dtmfPlayEnergy");
         return;
       }
     }
@@ -641,7 +670,7 @@ const DtmfPage = () => {
       dtmfTxHighDuration > 16383
     ) {
       alert("The value range of 'Duration at ON' is 0~16383!");
-      document.getElementById("dtmfTxHighDuration")?.focus();
+      focusField("dtmfTxHighDuration");
       return;
     }
 
@@ -652,7 +681,7 @@ const DtmfPage = () => {
       dtmfTxLowDuration > 16383
     ) {
       alert("The value range of 'Duration at OFF' is 0~16383!");
-      document.getElementById("dtmfTxLowDuration")?.focus();
+      focusField("dtmfTxLowDuration");
       return;
     }
 
@@ -661,332 +690,239 @@ const DtmfPage = () => {
 
   const handleReset = () => {
     setFormData(DTMF_INITIAL_FORM);
+    setActiveTab(DTMF_TAB_DETECTOR);
   };
 
-  const labelCellStyle = {
-    fontSize: 13,
-    fontWeight: 600,
-    color: C.labelText,
-    paddingRight: 24,
-    textAlign: "left",
-    verticalAlign: "middle",
-  };
-  const inputCellStyle = {
-    width: "35%",
-    padding: 0,
-    verticalAlign: "middle",
-  };
+  const renderTextField = (label, fieldName, allowDecimal = false) => (
+    <DtmfFieldRow
+      key={fieldName}
+      label={label}
+      tooltipKey={fieldName}
+      isLongLabel={label.length > 42}
+    >
+      <input
+        id={fieldName}
+        type="text"
+        value={formData[fieldName]}
+        onChange={(e) => handleInputChange(fieldName, e.target.value)}
+        onKeyPress={(e) =>
+          allowDecimal ? handleKeyPress(e, true) : handleKeyPressInteger(e)
+        }
+        style={nativeFieldInputStyle}
+        maxLength={20}
+        {...nativeFieldInteraction}
+      />
+    </DtmfFieldRow>
+  );
 
-  const renderField = (
-    label,
-    fieldName,
-    type = "text",
-    allowDecimal = false,
-    width = "200px",
-  ) => {
-    return (
-      <>
-        <tr style={{ height: "22px" }}>
-          <td style={labelCellStyle}>
-            <FxsFieldLabel tooltipKey={fieldName} tooltips={DTMF_FIELD_TOOLTIPS}>
-              {label}
-            </FxsFieldLabel>
-          </td>
-          <td style={inputCellStyle}>
-            {type === "checkbox" ? (
-              <FormEnableCheckbox
-                checked={!!formData[fieldName]}
-                onChange={() => handleCheckboxChange(fieldName)}
-              />
-            ) : (
-              <TextField
-                id={fieldName}
-                value={formData[fieldName]}
-                onChange={(e) => handleInputChange(fieldName, e.target.value)}
-                onKeyPress={(e) =>
-                  allowDecimal
-                    ? handleKeyPress(e, true)
-                    : handleKeyPressInteger(e)
-                }
-                inputProps={{
-                  maxLength: 20,
-                  style: { fontSize: 14, padding: "4px 8px" },
-                }}
-                sx={{
-                  width: width,
-                  ...muiTextFieldSx,
-                  "& .MuiOutlinedInput-root": {
-                    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-                    height: "28px",
-                  },
-                }}
-                variant="outlined"
-                size="small"
-              />
-            )}
-          </td>
-        </tr>
-        <tr>
-          <td colSpan={2} style={{ height: "8px" }}></td>
-        </tr>
-      </>
-    );
-  };
+  const renderCheckboxField = (label, fieldName) => (
+    <DtmfFieldRow key={fieldName} label={label} tooltipKey={fieldName}>
+      <Checkbox
+        id={fieldName}
+        name={fieldName}
+        size="small"
+        checked={!!formData[fieldName]}
+        onChange={() => handleCheckboxChange(fieldName)}
+        sx={checkboxSx}
+      />
+    </DtmfFieldRow>
+  );
 
-  const renderAdvancedEnergyField = (label, lowField, highField, index) => {
-    const highLabel = label.replace("Low Hz", "High Hz");
-    return (
-      <>
-        {renderField(label, lowField, "text", true)}
-        {renderField(highLabel, highField, "text", true)}
-      </>
-    );
-  };
+  const renderAdvancedEnergyField = (label, lowField, highField) => (
+    <React.Fragment key={lowField}>
+      {renderTextField(label, lowField, true)}
+      {renderTextField(label.replace("Low Hz", "High Hz"), highField, true)}
+    </React.Fragment>
+  );
+
+  const renderDetectorSection = () => (
+    <>
+      {renderTextField(
+        "Energy Difference of High-freq minus Low-freq (dB)",
+        "positiveTwist",
+      )}
+      {renderTextField(
+        "Energy Difference of Low-freq minus High-freq (dB)",
+        "negativeTwist",
+      )}
+      {renderTextField("Minimum Duration at ON (ms)", "minDuration")}
+      {renderTextField("Minimum Duration at OFF (ms)", "minNegativeDuration")}
+      {renderTextField("Ratio of DT Energy(%)", "energyRatio", true)}
+      {renderTextField("Lowest Energy Threshold (dB)", "levelMinIn")}
+      {renderCheckboxField(
+        "DTMF Display via Channel Status",
+        "enableDisplayDtmf",
+      )}
+      {renderCheckboxField("ABCD Detection", "enableOmitABCD")}
+    </>
+  );
+
+  const renderGeneratorSection = () => (
+    <>
+      {renderCheckboxField("DTMF Energy Advance Set", "dtmfEnergyAdvance")}
+
+      {!formData.dtmfEnergyAdvance &&
+        renderTextField("DTMF Energy (dB)", "dtmfPlayEnergy")}
+
+      {formData.dtmfEnergyAdvance && (
+        <>
+          {renderAdvancedEnergyField(
+            "DTMF0 Low Hz Energy (dB)",
+            "dtmfPlayEnergy0",
+            "dtmfHighPlayEnergy0",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF1 Low Hz Energy (dB)",
+            "dtmfPlayEnergy1",
+            "dtmfHighPlayEnergy1",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF2 Low Hz Energy (dB)",
+            "dtmfPlayEnergy2",
+            "dtmfHighPlayEnergy2",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF3 Low Hz Energy (dB)",
+            "dtmfPlayEnergy3",
+            "dtmfHighPlayEnergy3",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF4 Low Hz Energy (dB)",
+            "dtmfPlayEnergy4",
+            "dtmfHighPlayEnergy4",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF5 Low Hz Energy (dB)",
+            "dtmfPlayEnergy5",
+            "dtmfHighPlayEnergy5",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF6 Low Hz Energy (dB)",
+            "dtmfPlayEnergy6",
+            "dtmfHighPlayEnergy6",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF7 Low Hz Energy (dB)",
+            "dtmfPlayEnergy7",
+            "dtmfHighPlayEnergy7",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF8 Low Hz Energy (dB)",
+            "dtmfPlayEnergy8",
+            "dtmfHighPlayEnergy8",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF9 Low Hz Energy (dB)",
+            "dtmfPlayEnergy9",
+            "dtmfHighPlayEnergy9",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF* Low Hz Energy (dB)",
+            "dtmfPlayEnergy10",
+            "dtmfHighPlayEnergy10",
+          )}
+          {renderAdvancedEnergyField(
+            "DTMF# Low Hz Energy (dB)",
+            "dtmfPlayEnergy11",
+            "dtmfHighPlayEnergy11",
+          )}
+        </>
+      )}
+
+      {renderTextField("Duration at ON (ms)", "dtmfTxHighDuration")}
+      {renderTextField("Duration at OFF (ms)", "dtmfTxLowDuration")}
+
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          marginTop: 4,
+        }}
+      >
+        <p style={dtmfNoteStyle}>{DTMF_GENERATOR_WARNING}</p>
+      </div>
+    </>
+  );
 
   return (
-    <AdvancedPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-      <AdvancedBreadcrumb current="DTMF" />
-      <AdvancedFormCard title="DTMF Detector">
-        <table style={{ width: "100%", tableLayout: "fixed" }}>
-          <colgroup>
-            <col style={{ width: "65%" }} />
-            <col style={{ width: "35%" }} />
-          </colgroup>
-          <tbody>
-            {renderField(
-              "Energy Difference of High-freq minus Low-freq (dB)",
-              "positiveTwist",
-              "text",
-              false,
-            )}
-            {renderField(
-              "Energy Difference of Low-freq minus High-freq (dB)",
-              "negativeTwist",
-              "text",
-              false,
-            )}
-            {renderField(
-              "Minimum Duration at ON (ms)",
-              "minDuration",
-              "text",
-              false,
-            )}
-            {renderField(
-              "Minimum Duration at OFF (ms)",
-              "minNegativeDuration",
-              "text",
-              false,
-            )}
-            {renderField("Ratio of DT Energy(%)", "energyRatio", "text", true)}
-            {renderField(
-              "Lowest Energy Threshold (dB)",
-              "levelMinIn",
-              "text",
-              false,
-            )}
-            {renderField(
-              "DTMF Display via Channel Status",
-              "enableDisplayDtmf",
-              "checkbox",
-            )}
-            {renderField("ABCD Detection", "enableOmitABCD", "checkbox")}
-          </tbody>
-        </table>
-      </AdvancedFormCard>
-
-      <div style={{ marginTop: 16, width: "100%" }}>
-        <AdvancedFormCard title="DTMF Generator">
-          <table style={{ width: "100%", tableLayout: "fixed" }}>
-            <colgroup>
-              <col style={{ width: "65%" }} />
-              <col style={{ width: "35%" }} />
-            </colgroup>
-            <tbody>
-              <tr style={{ height: "22px" }}>
-                <td style={labelCellStyle}>
-                  <FxsFieldLabel
-                    tooltipKey="dtmfEnergyAdvance"
-                    tooltips={DTMF_FIELD_TOOLTIPS}
-                  >
-                    DTMF Energy Advance Set
-                  </FxsFieldLabel>
-                </td>
-                <td style={inputCellStyle}>
-                  <FormEnableCheckbox
-                    checked={!!formData.dtmfEnergyAdvance}
-                    onChange={() => handleCheckboxChange("dtmfEnergyAdvance")}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2} style={{ height: "8px" }}></td>
-              </tr>
-
-              {/* Normal DTMF Energy (shown when advance is off) */}
-              {!formData.dtmfEnergyAdvance &&
-                renderField(
-                  "DTMF Energy (dB)",
-                  "dtmfPlayEnergy",
-                  "text",
-                  false,
-                )}
-
-              {/* Advanced Energy Settings (shown when advance is on) */}
-              {formData.dtmfEnergyAdvance && (
-                <>
-                  {renderAdvancedEnergyField(
-                    "DTMF0 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy0",
-                    "dtmfHighPlayEnergy0",
-                    0,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF1 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy1",
-                    "dtmfHighPlayEnergy1",
-                    1,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF2 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy2",
-                    "dtmfHighPlayEnergy2",
-                    2,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF3 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy3",
-                    "dtmfHighPlayEnergy3",
-                    3,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF4 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy4",
-                    "dtmfHighPlayEnergy4",
-                    4,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF5 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy5",
-                    "dtmfHighPlayEnergy5",
-                    5,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF6 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy6",
-                    "dtmfHighPlayEnergy6",
-                    6,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF7 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy7",
-                    "dtmfHighPlayEnergy7",
-                    7,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF8 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy8",
-                    "dtmfHighPlayEnergy8",
-                    8,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF9 Low Hz Energy (dB)",
-                    "dtmfPlayEnergy9",
-                    "dtmfHighPlayEnergy9",
-                    9,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF* Low Hz Energy (dB)",
-                    "dtmfPlayEnergy10",
-                    "dtmfHighPlayEnergy10",
-                    10,
-                  )}
-                  {renderAdvancedEnergyField(
-                    "DTMF# Low Hz Energy (dB)",
-                    "dtmfPlayEnergy11",
-                    "dtmfHighPlayEnergy11",
-                    11,
-                  )}
-                </>
-              )}
-
-              {renderField(
-                "Duration at ON (ms)",
-                "dtmfTxHighDuration",
-                "text",
-                false,
-              )}
-              {renderField(
-                "Duration at OFF (ms)",
-                "dtmfTxLowDuration",
-                "text",
-                false,
-              )}
-            </tbody>
-          </table>
-
-          {/* Warning Note */}
-          <div
-            style={{
-              marginTop: "16px",
-              marginLeft: "auto",
-              marginRight: "auto",
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
+    <div style={dtmfPageWrapStyle}>
+      <div style={dtmfPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
             }}
           >
-            <p
-              style={{
-                color: "#dc2626",
-                fontSize: "13px",
-                margin: 0,
-                whiteSpace: "nowrap",
-                textAlign: "center",
-              }}
-            >
-              Note: Setting the DTMF transmission energy too large may cause the
-              distortion of the transmitted DTMF. Please configure it carefully.
-            </p>
-          </div>
-        </AdvancedFormCard>
-      </div>
+            {toast.msg}
+          </Alert>
+        )}
 
-      <div style={dtmfFooterStyle}>
-        <Btn
-          variant="primary"
-          type="button"
-          onClick={handleSave}
-          style={dtmfFooterBtnStyle}
-        >
-          Save
-        </Btn>
-        <Btn
-          variant="cancel"
-          type="button"
-          onClick={handleReset}
-          style={dtmfFooterBtnStyle}
-        >
-          Reset
-        </Btn>
+        <DtmfBreadcrumb />
+
+        <div style={dtmfCardStyle}>
+          <div style={dtmfHeaderStyle}>
+            <div style={dtmfHeaderLeftStyle}>
+              <Btn
+                type="button"
+                variant={
+                  activeTab === DTMF_TAB_DETECTOR ? "tabActive" : "tabInactive"
+                }
+                onClick={() => setActiveTab(DTMF_TAB_DETECTOR)}
+                style={{ height: 30 }}
+              >
+                {DTMF_DETECTOR_TAB}
+              </Btn>
+              <Btn
+                type="button"
+                variant={
+                  activeTab === DTMF_TAB_GENERATOR
+                    ? "tabActive"
+                    : "tabInactive"
+                }
+                onClick={() => setActiveTab(DTMF_TAB_GENERATOR)}
+                style={{ height: 30 }}
+              >
+                {DTMF_GENERATOR_TAB}
+              </Btn>
+            </div>
+          </div>
+
+          <div style={dtmfFormBodyStyle}>
+            {activeTab === DTMF_TAB_DETECTOR
+              ? renderDetectorSection()
+              : renderGeneratorSection()}
+          </div>
+
+          <div style={dtmfFormFooterStyle}>
+            <Btn
+              type="button"
+              variant="primary"
+              onClick={handleSave}
+              style={dtmfFormBtnStyle}
+            >
+              {DTMF_SAVE_LABEL}
+            </Btn>
+            <Btn
+              type="button"
+              variant="cancel"
+              onClick={handleReset}
+              style={dtmfFormBtnStyle}
+            >
+              {DTMF_RESET_LABEL}
+            </Btn>
+          </div>
+        </div>
       </div>
-    </AdvancedPageShell>
+    </div>
   );
 };
 

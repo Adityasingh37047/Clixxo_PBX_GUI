@@ -21,8 +21,8 @@ export const PBX_MONITOR_TAB_VALUES = {
 };
 
 export const PBX_MONITOR_TAB_LABELS = {
-  extension: "EXTENSIONS",
-  trunk: "TRUNKS",
+  extension: "Extensions",
+  trunk: "Trunks",
 };
 
 export const PBX_MONITOR_EMPTY_MESSAGES = {

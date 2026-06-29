@@ -3,9 +3,15 @@ import {
   FUNCTION_KEY_FIELDS,
   getInitialFormState,
   FUNCTION_KEY_FIELD_TOOLTIPS,
+  FUNCTION_KEY_PAGE_BREADCRUMB_ROOT,
+  FUNCTION_KEY_PAGE_BREADCRUMB_SECTION,
+  FUNCTION_KEY_PAGE_TITLE,
+  FUNCTION_KEY_CARD_TITLE,
+  FUNCTION_KEY_SECTIONS_ORDER,
+  FUNCTION_KEY_SAVE_LABEL,
+  FUNCTION_KEY_RESET_LABEL,
 } from "../../../constants/FunctionKeyConstants";
-import { Alert, Checkbox, TextField, Tooltip } from "@mui/material";
-// ── Local page UI (inlined from fxsSharedUi) ──
+import { Alert, Checkbox, Tooltip } from "@mui/material";
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -70,16 +76,24 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
   accent: "#3E5475",
-  amber: "#dc2626",
+  sectionTitle: "#30415A",
+  fieldBg: "#ffffff",
+  rowAlt: "#f8fafc",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
 const Btn = ({
   children,
@@ -88,25 +102,14 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  form,
-  component,
-  title,
 }) => {
   const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
     primary: {
       background:
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -114,49 +117,55 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
   };
-  const s = styles[variant] || styles.default;
+  const s = styles[variant] || styles.primary;
   const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+    variant === "cancel"
+      ? "#b6c2d3"
+      : "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
   const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    variant === "cancel"
+      ? "#a3b1c2"
+      : "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
   return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
+    <button
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding: "0 28px",
+        borderRadius: 8,
+        fontSize: 13,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
+        height: 34,
+        lineHeight: "34px",
+        boxSizing: "border-box",
+        minWidth: 110,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -164,332 +173,206 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
-    </Component>
+    </button>
   );
 };
 
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    e.target.style.borderColor = OUTLINED_FOCUS;
+    e.target.style.boxShadow = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+  },
+  onBlur: (e) => {
+    e.target.style.borderColor = OUTLINED_BORDER;
+    e.target.style.boxShadow = "none";
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled || document.activeElement === e.target) return;
+    e.target.style.borderColor = OUTLINED_HOVER;
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) return;
+    e.target.style.borderColor = OUTLINED_BORDER;
   },
 };
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
-
-const advancedPageWrapStyle = {
+const pageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
+  width: "100%",
+  padding: "8px 28px 16px",
   boxSizing: "border-box",
 };
 
-const advancedPageInnerStyle = {
+const cardStyle = {
   width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
   overflow: "hidden",
-  marginBottom: 24,
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
 };
 
-const advancedBlueBarStyle = {
+const cardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: "10px 28px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+  background: C.cardBg,
 };
 
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
+const cardBodyStyle = {
+  padding: "14px 28px 4px",
 };
 
-const advancedFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
+const sectionBlockStyle = {
+  marginBottom: 20,
+};
+
+const sectionTitleStyle = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: C.sectionTitle,
+  letterSpacing: "0.08em",
+  textTransform: "uppercase",
+  marginBottom: 8,
+};
+
+const FK_TH_STYLE = { padding: "8px 14px" };
+const FK_TD_STYLE = {
+  padding: "6px 14px",
+  lineHeight: 1.2,
+  verticalAlign: "middle",
+};
+
+const FK_CONTROL_WIDTH = 130;
+const FK_CONTROL_HEIGHT = 28;
+
+const tableShellStyle = {
+  border: `1px solid ${C.divider}`,
   borderRadius: 8,
-  padding: 20,
+  overflow: "hidden",
+  background: C.cardBg,
 };
 
-const advancedFormInlineFooterStyle = {
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
+};
+
+const TH = ({ children, align = "left", width, style: extraStyle }) => (
+  <th
+    style={{
+      background: "#F8FAFC",
+      color: C.labelText,
+      fontWeight: 700,
+      fontSize: 11,
+      padding: "8px 14px",
+      textAlign: align,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
+      whiteSpace: "nowrap",
+      textTransform: "uppercase",
+      letterSpacing: "0.1em",
+      width,
+      ...extraStyle,
+    }}
+  >
+    {children}
+  </th>
+);
+
+const footerStyle = {
   display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
+const keyInputStyle = (enabled) => ({
+  width: "100%",
+  maxWidth: FK_CONTROL_WIDTH,
+  height: FK_CONTROL_HEIGHT,
+  padding: "0 8px",
+  fontSize: 12,
+  fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
+  letterSpacing: "0.03em",
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 6,
+  outline: "none",
+  backgroundColor: enabled ? C.fieldBg : "#f8fafc",
+  color: enabled ? C.valueText : C.mutedText,
   boxSizing: "border-box",
-};
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+});
 
-const AdvancedBreadcrumb = ({ current }) => (
+const modeSelectStyle = (enabled) => ({
+  width: "100%",
+  maxWidth: FK_CONTROL_WIDTH,
+  height: FK_CONTROL_HEIGHT,
+  padding: "0 8px",
+  fontSize: 12,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 6,
+  outline: "none",
+  backgroundColor: enabled ? C.fieldBg : "#f8fafc",
+  color: enabled ? C.valueText : C.mutedText,
+  boxSizing: "border-box",
+  cursor: enabled ? "pointer" : "not-allowed",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+});
+
+const FunctionKeyBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
       marginBottom: 16,
-      fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{FUNCTION_KEY_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{FUNCTION_KEY_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-const labelCellStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  verticalAlign: "middle",
-};
-
-/** Media Parameters header look; column alignment matches original layout */
-const functionKeyTableHeaderBase = {
-  fontSize: 12,
-  fontWeight: 700,
-  color: C.labelText,
-  padding: "8px 8px 12px",
-  boxSizing: "border-box",
-  verticalAlign: "middle",
-};
-
-const FUNCTION_KEY_SECTION_HEADING_COLOR = "#30415A";
-
-const FunctionKeySectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        color: FUNCTION_KEY_SECTION_HEADING_COLOR,
-      }}
-    >
-      {title}
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {FUNCTION_KEY_PAGE_TITLE}
     </span>
   </div>
 );
-
-const centeredTableWrapStyle = {
-  width: "100%",
-  maxWidth: 700,
-  margin: "0 auto",
-};
 
 const FunctionKeyPage = () => {
   const [formData, setFormData] = useState(getInitialFormState());
@@ -501,21 +384,21 @@ const FunctionKeyPage = () => {
   };
 
   const alert = (msg) => {
-    const isSuccess = /successfully/i.test(String(msg));
-    showToast(msg, isSuccess ? "success" : "error");
+    showToast(msg, /successfully/i.test(String(msg)) ? "success" : "error");
   };
+
+  const groupedFields = FUNCTION_KEY_FIELDS.reduce((acc, field) => {
+    if (!acc[field.section]) acc[field.section] = [];
+    acc[field.section].push(field);
+    return acc;
+  }, {});
 
   const handleEnableChange = (field) => {
     setFormData((prev) => {
       const newData = { ...prev };
       const enabled = !prev[field.enableKey];
       newData[field.enableKey] = enabled;
-
-      if (!enabled) {
-        // When disabled, mode should also be disabled (but keep value)
-        // Function key field will be disabled
-      } else if (prev[field.modeKey] === "0") {
-        // If enabled and mode is Default, set default value
+      if (enabled && prev[field.modeKey] === "0") {
         newData[field.functionKeyKey] = field.defaultValue;
       }
       return newData;
@@ -524,14 +407,10 @@ const FunctionKeyPage = () => {
 
   const handleModeChange = (field, value) => {
     setFormData((prev) => {
-      const newData = { ...prev };
-      newData[field.modeKey] = value;
-
+      const newData = { ...prev, [field.modeKey]: value };
       if (value === "0") {
-        // Default mode: set to default value (input will be disabled)
         newData[field.functionKeyKey] = field.defaultValue;
       }
-      // If User-defined, input will be enabled and user can edit
       return newData;
     });
   };
@@ -542,7 +421,6 @@ const FunctionKeyPage = () => {
 
   const handleKeyPress = (e) => {
     const key = e.keyCode || e.which;
-    // Allow: backspace (8), delete (127), numbers (48-57), * (42), # (35)
     if (
       !(
         key === 8 ||
@@ -556,149 +434,193 @@ const FunctionKeyPage = () => {
     }
   };
 
-  const validateForm = () => {
-    const pattern1 = /^\*\d{0,9}\*{0,1}$/; // Standard pattern: *123* or *123
-    const pattern2 = /^\*#\d{0,9}\*#$/; // Reboot pattern: *#123*#
+  const focusField = (field) => {
+    requestAnimationFrame(() => {
+      const el = document.getElementById(field.functionKeyKey);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      el?.focus();
+    });
+  };
 
+  const validateForm = () => {
+    const pattern1 = /^\*\d{0,9}\*{0,1}$/;
+    const pattern2 = /^\*#\d{0,9}\*#$/;
     const funkeyArr = [];
 
     for (const field of FUNCTION_KEY_FIELDS) {
-      const enabled = formData[field.enableKey];
+      if (!formData[field.enableKey]) continue;
+
       const functionKey = formData[field.functionKeyKey];
       const mode = formData[field.modeKey];
-
-      if (!enabled) continue;
-
-      // Check pattern
       const pattern = field.isReboot ? pattern2 : pattern1;
+
       if (mode === "1" && !pattern.test(functionKey)) {
-        const errorMsg = field.isReboot
-          ? `Please input the function key for '${field.name}' in the right format, like *#88921532*#`
-          : `Please input the function key for '${field.name}', in the right format, like ${field.defaultValue}`;
-        alert(errorMsg);
-        document.getElementById(field.functionKeyKey)?.focus();
+        alert(
+          field.isReboot
+            ? `Please input the function key for '${field.name}' in the right format, like *#88921532*#`
+            : `Please input the function key for '${field.name}', in the right format, like ${field.defaultValue}`,
+        );
+        focusField(field);
         return false;
       }
 
-      // Check for duplicates
       if (functionKey && funkeyArr.includes(functionKey)) {
         alert("Function key repeated!");
-        document.getElementById(field.functionKeyKey)?.focus();
+        focusField(field);
         return false;
       }
-      if (functionKey) {
-        funkeyArr.push(functionKey);
-      }
+      if (functionKey) funkeyArr.push(functionKey);
     }
 
     return true;
   };
 
   const handleSave = () => {
-    if (validateForm()) {
-      alert("Settings saved successfully!");
-    }
+    if (validateForm()) alert("Settings saved successfully!");
   };
 
-  const handleReset = () => {
-    setFormData(getInitialFormState());
+  const handleReset = () => setFormData(getInitialFormState());
+
+  const renderSectionTable = (sectionName) => {
+    const fields = groupedFields[sectionName] || [];
+
+    return (
+      <div
+        key={sectionName}
+        style={sectionBlockStyle}
+        id={`section-${sectionName.replace(/\s+/g, "-").toLowerCase()}`}
+      >
+        <div style={sectionTitleStyle}>{sectionName}</div>
+        <div style={tableShellStyle}>
+          <table style={tableStyle}>
+            <colgroup>
+              <col style={{ width: "46%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "22%" }} />
+              <col style={{ width: "22%" }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <TH style={FK_TH_STYLE}>Function</TH>
+                <TH align="center" style={FK_TH_STYLE}>
+                  Enable
+                </TH>
+                <TH align="center" style={FK_TH_STYLE}>
+                  Function Key
+                </TH>
+                <TH align="center" style={FK_TH_STYLE}>
+                  Mode
+                </TH>
+              </tr>
+            </thead>
+            <tbody>
+              {fields.map((field, idx) => {
+                const enabled = formData[field.enableKey];
+                const mode = formData[field.modeKey];
+                const functionKey = formData[field.functionKeyKey];
+                const isDefaultMode = mode === "0";
+                const maxLength = field.isReboot ? 12 : 7;
+                const rowBg = !enabled
+                  ? "#fafbfc"
+                  : idx % 2 === 1
+                    ? C.rowAlt
+                    : C.cardBg;
+                const isLast = idx === fields.length - 1;
+
+                return (
+                  <tr
+                    key={field.id}
+                    style={{
+                      background: rowBg,
+                      opacity: enabled ? 1 : 0.72,
+                    }}
+                  >
+                    <td
+                      style={{
+                        ...FK_TD_STYLE,
+                        fontSize: 12,
+                        color: C.labelText,
+                        fontWeight: 600,
+                        borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                        borderRight: `1px solid ${C.divider}`,
+                      }}
+                    >
+                      <FxsFieldLabel
+                        tooltipKey={field.functionKeyKey}
+                        tooltips={FUNCTION_KEY_FIELD_TOOLTIPS}
+                      >
+                        {field.name}
+                      </FxsFieldLabel>
+                    </td>
+                    <td
+                      style={{
+                        ...FK_TD_STYLE,
+                        textAlign: "center",
+                        borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                        borderRight: `1px solid ${C.divider}`,
+                      }}
+                    >
+                      <Checkbox
+                        size="small"
+                        checked={enabled}
+                        onChange={() => handleEnableChange(field)}
+                        sx={checkboxSx}
+                      />
+                    </td>
+                    <td
+                      style={{
+                        ...FK_TD_STYLE,
+                        textAlign: "center",
+                        borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                        borderRight: `1px solid ${C.divider}`,
+                      }}
+                    >
+                      <input
+                        id={field.functionKeyKey}
+                        type="text"
+                        value={functionKey}
+                        onChange={(e) =>
+                          handleFunctionKeyChange(field, e.target.value)
+                        }
+                        onKeyPress={handleKeyPress}
+                        disabled={!enabled || isDefaultMode}
+                        maxLength={maxLength}
+                        style={keyInputStyle(enabled && !isDefaultMode)}
+                        {...nativeFieldInteraction}
+                      />
+                    </td>
+                    <td
+                      style={{
+                        ...FK_TD_STYLE,
+                        textAlign: "center",
+                        borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+                      }}
+                    >
+                      <select
+                        value={mode}
+                        onChange={(e) =>
+                          handleModeChange(field, e.target.value)
+                        }
+                        disabled={!enabled}
+                        style={modeSelectStyle(enabled)}
+                        {...nativeFieldInteraction}
+                      >
+                        <option value="0">Default</option>
+                        <option value="1">User-defined</option>
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
   };
-
-  const groupedFields = FUNCTION_KEY_FIELDS.reduce((acc, field) => {
-    if (!acc[field.section]) {
-      acc[field.section] = [];
-    }
-    acc[field.section].push(field);
-    return acc;
-  }, {});
-
-  const sectionEntries = Object.entries(groupedFields);
-
-  const selectStyle = (enabled) => ({
-    height: 32,
-    width: "100%",
-    maxWidth: 130,
-    fontSize: 13,
-    borderRadius: 4,
-    border: `1px solid ${C.cardBorder}`,
-    backgroundColor: enabled ? "#fff" : "#f8fafc",
-    color: enabled ? C.valueText : C.mutedText,
-    padding: "0 8px",
-    boxSizing: "border-box",
-  });
-
-  const tableColgroup = (
-    <colgroup>
-      <col style={{ width: "50%" }} />
-      <col style={{ width: "12%" }} />
-      <col style={{ width: "19%" }} />
-      <col style={{ width: "19%" }} />
-    </colgroup>
-  );
-
-  const renderFieldRows = (fields) =>
-    fields.map((field) => {
-      const enabled = formData[field.enableKey];
-      const mode = formData[field.modeKey];
-      const functionKey = formData[field.functionKeyKey];
-      const isDefaultMode = mode === "0";
-      const maxLength = field.isReboot ? 12 : 7;
-
-      return (
-        <tr key={field.id} style={{ height: "26px" }}>
-          <td style={{ ...labelCellStyle, paddingLeft: 0 }}>
-            <FxsFieldLabel
-              tooltipKey={field.functionKeyKey}
-              tooltips={FUNCTION_KEY_FIELD_TOOLTIPS}
-            >
-              {field.name}
-            </FxsFieldLabel>
-          </td>
-          <td style={{ textAlign: "center" }}>
-            <Checkbox
-              size="small"
-              checked={enabled}
-              onChange={() => handleEnableChange(field)}
-              sx={checkboxSx}
-            />
-          </td>
-          <td style={{ paddingLeft: "0px", textAlign: "center" }}>
-            <TextField
-              id={field.functionKeyKey}
-              value={functionKey}
-              onChange={(e) => handleFunctionKeyChange(field, e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={!enabled || isDefaultMode}
-              inputProps={{
-                maxLength,
-                style: { fontSize: 14, padding: "4px 8px" },
-              }}
-              sx={{
-                width: "100%",
-                maxWidth: 145,
-                ...muiTextFieldSx,
-              }}
-              variant="outlined"
-              size="small"
-            />
-          </td>
-          <td style={{ paddingLeft: "0px", textAlign: "center" }}>
-            <select
-              value={mode}
-              onChange={(e) => handleModeChange(field, e.target.value)}
-              disabled={!enabled}
-              style={selectStyle(enabled)}
-            >
-              <option value="0">Default</option>
-              <option value="1">User-defined</option>
-            </select>
-          </td>
-        </tr>
-      );
-    });
 
   return (
-    <AdvancedPageShell>
+    <div style={pageWrapStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -716,91 +638,26 @@ const FunctionKeyPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="Function Key" />
-      <AdvancedFormCard
-        title="Function Key"
-        fullWidthContent
-        footer={
-          <Btn
-            variant="primary"
-            onClick={handleSave}
-            style={advancedFormBtnStyle}
-          >
-            Save
-          </Btn>
-        }
-      >
-        <div style={{ width: "100%", paddingBottom: 16 }}>
-          <div style={centeredTableWrapStyle}>
-            <table style={{ tableLayout: "fixed", width: "100%" }}>
-              {tableColgroup}
-              <tbody>
-                <tr>
-                  <td
-                    style={{
-                      ...functionKeyTableHeaderBase,
-                      textAlign: "left",
-                      paddingLeft: 0,
-                    }}
-                  >
-                    Function
-                  </td>
-                  <td
-                    style={{
-                      ...functionKeyTableHeaderBase,
-                      textAlign: "center",
-                    }}
-                  >
-                    Enable
-                  </td>
-                  <td
-                    style={{
-                      ...functionKeyTableHeaderBase,
-                      textAlign: "left",
-                    }}
-                  >
-                    Function Key
-                  </td>
-                  <td
-                    style={{
-                      ...functionKeyTableHeaderBase,
-                      textAlign: "left",
-                    }}
-                  >
-                    Mode
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
 
-          {sectionEntries.map(([sectionName, fields], sectionIdx) => {
-            const isLastSection = sectionIdx === sectionEntries.length - 1;
-            return (
-              <React.Fragment key={sectionName}>
-                <FunctionKeySectionHeading
-                  title={sectionName}
-                  isFirst={sectionIdx === 0}
-                />
-                <div style={centeredTableWrapStyle}>
-                  <table style={{ tableLayout: "fixed", width: "100%" }}>
-                    {tableColgroup}
-                    <tbody>
-                      {renderFieldRows(fields)}
-                      {!isLastSection && (
-                        <tr>
-                          <td colSpan={4} style={{ height: "8px" }}></td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </React.Fragment>
-            );
-          })}
+      <FunctionKeyBreadcrumb />
+
+      <div style={cardStyle}>
+        <div style={cardTitleBarStyle}>{FUNCTION_KEY_CARD_TITLE}</div>
+
+        <div style={cardBodyStyle}>
+          {FUNCTION_KEY_SECTIONS_ORDER.map(renderSectionTable)}
         </div>
-      </AdvancedFormCard>
-    </AdvancedPageShell>
+
+        <div style={footerStyle}>
+          <Btn type="button" variant="primary" onClick={handleSave}>
+            {FUNCTION_KEY_SAVE_LABEL}
+          </Btn>
+          <Btn type="button" variant="cancel" onClick={handleReset}>
+            {FUNCTION_KEY_RESET_LABEL}
+          </Btn>
+        </div>
+      </div>
+    </div>
   );
 };
 

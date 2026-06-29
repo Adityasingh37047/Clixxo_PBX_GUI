@@ -1,12 +1,16 @@
 import React, { useState, useRef } from "react";
-import { Alert, Select, MenuItem, FormControl, Tooltip } from "@mui/material";
+import { Alert, Tooltip } from "@mui/material";
 import {
   CUE_TONE_FILE_TYPES,
   CUE_TONE_INITIAL_FORM,
   CUE_TONE_FIELD_TOOLTIPS,
+  CUE_TONE_PAGE_BREADCRUMB_ROOT,
+  CUE_TONE_PAGE_BREADCRUMB_SECTION,
+  CUE_TONE_PAGE_TITLE,
+  CUE_TONE_CARD_TITLE,
+  CUE_TONE_NOTE_TEXT,
 } from "../../../constants/CueToneConstants";
-/** Choose file & Upload — same size; gray cancel styling on file picker */
-// ── Page-local field label tooltip UI (not shared) ──
+
 const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
@@ -44,44 +48,24 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
-  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
-  const labelNode = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return labelNode;
-  return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
-      {labelNode}
-    </Tooltip>
-  );
-};
-
-// ── Local page UI (inlined from fxsSharedUi) ──
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
+const FIELD_CONTROL_HEIGHT = 36;
 
 const Btn = ({
   children,
@@ -137,6 +121,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -150,23 +160,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -174,93 +198,165 @@ const Btn = ({
   );
 };
 
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW();
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
+const CUE_TONE_LABEL_WIDTH = 170;
+const CUE_TONE_FIELD_WIDTH = 320;
 
-const muiSelectSx = {
+const nativeFieldSelectStyle = {
+  width: "100%",
+  maxWidth: CUE_TONE_FIELD_WIDTH,
+  height: FIELD_CONTROL_HEIGHT,
+  minHeight: FIELD_CONTROL_HEIGHT,
+  padding: "0 28px 0 12px",
   fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  lineHeight: `${FIELD_CONTROL_HEIGHT - 2}px`,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
+const CueToneFieldRow = ({ label, tooltipKey, children, align = "center" }) => {
+  const tooltip = tooltipKey ? CUE_TONE_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        width: CUE_TONE_LABEL_WIDTH,
+        flexShrink: 0,
+        textAlign: "left",
+        lineHeight: 1.45,
+        cursor: tooltip ? "help" : undefined,
+        whiteSpace: "normal",
+        paddingTop: align === "flex-start" ? 8 : 0,
+      }}
+    >
+      {label}
+    </label>
+  );
 
-const advancedPageWrapStyle = {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: align,
+        justifyContent: "center",
+        gap: 100,
+        width: "fit-content",
+        maxWidth: "100%",
+        minHeight: align === "flex-start" ? undefined : 32,
+      }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatFieldTooltipTitle(tooltip)}
+          {...FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      <div
+        style={{
+          width: CUE_TONE_FIELD_WIDTH,
+          maxWidth: "100%",
+          flexShrink: 0,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const cueTonePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: "stretch",
   boxSizing: "border-box",
 };
 
-const advancedPageInnerStyle = {
-  width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
-};
-
-const advancedTableContainerStyle = {
+const cueTonePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-  marginBottom: 24,
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
 };
 
-const advancedBlueBarStyle = {
+const cueToneCardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+};
+
+const advancedCardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
@@ -269,56 +365,46 @@ const advancedBlueBarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: "10px 28px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
+const cueToneFormBodyStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "24px 36px 28px",
+  width: "100%",
   boxSizing: "border-box",
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
+const cueToneFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 20,
+  width: "fit-content",
+  maxWidth: "100%",
+};
+
+const cueToneNoteStyle = {
+  fontSize: 12,
+  color: C.amber,
   margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  lineHeight: 1.45,
+  whiteSpace: "normal",
+  overflowWrap: "break-word",
+  textAlign: "center",
+  width: "100%",
 };
 
-const AdvancedBreadcrumb = ({ current }) => (
+const cueToneFileBtnStyle = { height: 30, fontSize: 12, minWidth: 100 };
+
+const CueToneBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -331,111 +417,15 @@ const AdvancedBreadcrumb = ({ current }) => (
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{CUE_TONE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{CUE_TONE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {CUE_TONE_PAGE_TITLE}
+    </span>
   </div>
 );
-
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
-  <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-  tooltipKey,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={CUE_TONE_FIELD_TOOLTIPS}>
-        {label}
-      </FxsFieldLabel>
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-const cueToneFileBtnStyle = { height: 30, fontSize: 12, minWidth: 100 };
 
 const CueTonePage = () => {
   const [formData, setFormData] = useState(CUE_TONE_INITIAL_FORM);
@@ -459,6 +449,11 @@ const CueTonePage = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleUpload = () => {
     if (!formData.file) {
       showToast("Please select a file to upload!", "error");
@@ -479,87 +474,102 @@ const CueTonePage = () => {
   };
 
   return (
-    <AdvancedPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
-      <AdvancedBreadcrumb current="Cue Tone" />
-      <AdvancedFormCard title="Upload" fullWidthContent>
-        <FieldRow label="Upload a file of cue tone" tooltipKey="fileType">
-          <FormControl size="small" fullWidth>
-            <Select
-              value={formData.fileType}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, fileType: e.target.value }))
-              }
-              sx={muiSelectSx}
-            >
-              {CUE_TONE_FILE_TYPES.map((opt) => (
-                <MenuItem
-                  key={opt.value}
-                  value={opt.value}
-                  sx={{ fontSize: 13 }}
-                >
-                  {opt.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </FieldRow>
-        <FieldRow label="File" align="flex-start" tooltipKey="file">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              flexWrap: "wrap",
-              width: "100%",
+    <div style={cueTonePageWrapStyle}>
+      <div style={cueTonePageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
             }}
           >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".wav"
-              onChange={handleFileChange}
-              style={{ display: "none" }}
-              id="cue-tone-file-input"
-            />
-            <Btn
-              variant="cancel"
-              onClick={() => fileInputRef.current?.click()}
-              style={cueToneFileBtnStyle}
-            >
-              Choose file
-            </Btn>
-            <span style={{ fontSize: 13, color: C.mutedText }}>{fileName}</span>
-            <Btn
-              variant="primary"
-              onClick={handleUpload}
-              style={cueToneFileBtnStyle}
-            >
-              Upload
-            </Btn>
+            {toast.msg}
+          </Alert>
+        )}
+
+        <CueToneBreadcrumb />
+
+        <div style={cueToneCardStyle}>
+          <div style={advancedCardTitleBarStyle}>
+            <span>{CUE_TONE_CARD_TITLE}</span>
           </div>
-        </FieldRow>
-        <p style={{ ...wavFileNoteStyle, color: "#dc2626" }}>
-          Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.
-        </p>
-      </AdvancedFormCard>
-    </AdvancedPageShell>
+
+          <div style={cueToneFormBodyStyle}>
+            <div style={cueToneFieldsColStyle}>
+              <CueToneFieldRow
+                label="Upload a file of cue tone"
+                tooltipKey="fileType"
+              >
+                <select
+                  name="fileType"
+                  value={formData.fileType}
+                  onChange={handleInputChange}
+                  style={nativeFieldSelectStyle}
+                  {...nativeFieldInteraction}
+                >
+                  {CUE_TONE_FILE_TYPES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </CueToneFieldRow>
+
+              <CueToneFieldRow
+                label="File"
+                align="flex-start"
+                tooltipKey="file"
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    width: "100%",
+                  }}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".wav"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                    id="cue-tone-file-input"
+                  />
+                  <Btn
+                    variant="cancel"
+                    onClick={() => fileInputRef.current?.click()}
+                    style={cueToneFileBtnStyle}
+                  >
+                    Choose file
+                  </Btn>
+                  <span style={{ fontSize: 13, color: C.mutedText }}>
+                    {fileName}
+                  </span>
+                  <Btn
+                    variant="primary"
+                    onClick={handleUpload}
+                    style={cueToneFileBtnStyle}
+                  >
+                    Upload
+                  </Btn>
+                </div>
+              </CueToneFieldRow>
+
+              <p style={cueToneNoteStyle}>{CUE_TONE_NOTE_TEXT}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

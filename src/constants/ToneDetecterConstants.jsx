@@ -1,4 +1,13 @@
 // Table columns for the main table view
+export const TONE_DETECTER_PAGE_BREADCRUMB_ROOT = "FXS";
+export const TONE_DETECTER_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const TONE_DETECTER_PAGE_TITLE = "Tone Detector";
+export const TONE_DETECTER_CARD_TITLE = "Tone Detector";
+export const TONE_DETECTER_EMPTY_MESSAGE = "No available tone detector parameter!";
+export const TONE_DETECTER_ITEMS_PER_PAGE = 20;
+export const TONE_DETECTER_MODAL_TITLE_ADD = "Add Tone Parameters";
+export const TONE_DETECTER_MODAL_TITLE_EDIT = "Edit Tone Parameters";
+
 export const TONE_DETECTER_TABLE_COLUMNS = [
   { key: 'modify', label: 'Modify' },
   { key: 'check', label: 'Check' },
