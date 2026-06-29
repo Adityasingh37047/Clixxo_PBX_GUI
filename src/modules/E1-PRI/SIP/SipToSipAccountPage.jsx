@@ -101,14 +101,16 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
-  errorRed: "#ef4444",
   amber: "#dc2626",
+  errorRed: "#dc2626",
+  successGreen: "#16a34a",
 };
 
 const Btn = ({
@@ -134,9 +136,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -164,7 +163,33 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -183,18 +208,32 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -211,8 +250,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -231,18 +270,11 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
-};
 
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -266,6 +298,54 @@ const muiTextFieldSx = {
       borderColor: OUTLINED_FOCUS,
       borderWidth: 2,
     },
+  },
+};
+
+const muiSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    backgroundColor: "#fff",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: 2,
+  },
+};
+
+const modalTextFieldSx = {
+  ...muiTextFieldSx,
+  "& .MuiOutlinedInput-root": {
+    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
+    height: 32,
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+  },
+};
+
+const modalSelectSx = {
+  ...muiSelectSx,
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 36,
+    height: 36,
+    backgroundColor: "#fff",
   },
 };
 
@@ -400,43 +480,43 @@ const TableListEmptyState = ({
   </div>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const SIP_TO_SIP_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const sipToSipCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: SIP_TO_SIP_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const sipToSipToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: SIP_TO_SIP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_TO_SIP_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const sipToSipPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: SIP_TO_SIP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_TO_SIP_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const sipToSipSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -446,7 +526,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const sipToSipCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -454,14 +534,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const sipToSipPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const sipToSipPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -471,7 +551,7 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const SipToSipPagination = ({
   page,
   totalPages,
   recordCount,
@@ -479,7 +559,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...sipToSipPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -492,7 +572,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={sipToSipPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -506,7 +586,7 @@ const SipPcmPagination = ({
   </div>
 );
 
-const sipPcmCheckboxSx = {
+const sipToSipTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -545,7 +625,7 @@ const SipToSipSectionHeading = ({ title, required = false, tooltipKey, tooltips 
         position: "absolute",
         top: -10,
         left: 0,
-        background: "#f5f7fa",
+        background: "#f8fafc",
         paddingRight: 8,
         fontSize: SIP_TO_SIP_SECTION_HEADING_FONT_SIZE,
         fontWeight: 600,
@@ -597,12 +677,28 @@ const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
     style={{
       ...pbxDualListBtnStyle,
       fontWeight: reorder ? 400 : pbxDualListBtnStyle.fontWeight,
+      transition:
+        "background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+      userSelect: "none",
     }}
     onMouseEnter={(e) => {
       e.currentTarget.style.backgroundColor = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
       e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "";
+    }}
+    onMouseDown={(e) => {
+      e.currentTarget.style.backgroundColor = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.97)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
+    }}
+    onMouseUp={(e) => {
+      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.transform = "";
+      e.currentTarget.style.boxShadow = "";
     }}
   >
     {children}
@@ -624,14 +720,14 @@ const parseCodecList = (value) => {
 
 const normalizeAllowCodecs = (value) => parseCodecList(value).join(",");
 
-const sipPcmPageWrapStyle = pbxPageWrapStyle;
-const sipPcmInnerStyle = pbxPageInnerStyle;
+const sipToSipPageWrapStyle = pbxPageWrapStyle;
+const sipToSipInnerStyle = pbxPageInnerStyle;
 
-const SipPcmBreadcrumb = ({ current }) => (
+const SipToSipBreadcrumb = ({ current }) => (
   <PbxBreadcrumb section="SIP" current={current} />
 );
 
-const pbxModalCancelBtnStyle = {
+const sipToSipModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -1286,8 +1382,8 @@ const SipToSipAccountPage = () => {
           </PbxDualListBtn>
         </div>
       </div>
-      {validationErrors.allow_codecs && (
-        <div className="text-red-500 text-xs mt-1">
+          {validationErrors.allow_codecs && (
+        <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
           {validationErrors.allow_codecs}
         </div>
       )}
@@ -1297,7 +1393,7 @@ const SipToSipAccountPage = () => {
   const renderFormFieldControl = (field) => {
     if (field.type === "password") {
       return (
-        <div className="w-full">
+        <div style={{ width: "100%" }}>
           <TextField
             type={showPassword ? "text" : "password"}
             value={form[field.name] || ""}
@@ -1310,10 +1406,12 @@ const SipToSipAccountPage = () => {
             inputProps={{
               style: {
                 fontSize: 13,
-                padding: "6px 8px",
-                backgroundColor: "#fff",
+                height: 32,
+                padding: "0 8px",
+                boxSizing: "border-box",
               },
             }}
+            sx={modalTextFieldSx}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -1334,7 +1432,7 @@ const SipToSipAccountPage = () => {
             }}
           />
           {validationErrors[field.name] && (
-            <div className="text-red-500 text-xs mt-1">
+            <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
               {validationErrors[field.name]}
             </div>
           )}
@@ -1344,7 +1442,7 @@ const SipToSipAccountPage = () => {
 
     if (field.name === "context") {
       return (
-        <div className="w-full">
+        <div style={{ width: "100%" }}>
           <FormControl
             fullWidth
             size="small"
@@ -1356,23 +1454,7 @@ const SipToSipAccountPage = () => {
               onChange={(e) => handleChange("context", e.target.value)}
               inputProps={{ "aria-label": "Select Context" }}
               variant="outlined"
-              sx={{
-                fontSize: 13,
-                backgroundColor: "#fff",
-                "& .MuiOutlinedInput-root": {
-                  height: "auto",
-                  minHeight: "unset",
-                },
-                "& .MuiSelect-select": {
-                  padding: "6px 32px 6px 8px !important",
-                  fontSize: 13,
-                  lineHeight: 1.35,
-                  minHeight: "unset !important",
-                  boxSizing: "border-box",
-                  display: "flex",
-                  alignItems: "center",
-                },
-              }}
+              sx={modalSelectSx}
             >
               <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                 <em>Select Context</em>
@@ -1387,7 +1469,7 @@ const SipToSipAccountPage = () => {
             </MuiSelect>
           </FormControl>
           {validationErrors.context && (
-            <div className="text-red-500 text-xs mt-1">
+            <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
               {validationErrors.context}
             </div>
           )}
@@ -1396,7 +1478,7 @@ const SipToSipAccountPage = () => {
     }
 
     return (
-      <div className="w-full">
+      <div style={{ width: "100%" }}>
         {field.name === "contact" ? (
           <TextField
             type="text"
@@ -1412,10 +1494,12 @@ const SipToSipAccountPage = () => {
             inputProps={{
               style: {
                 fontSize: 13,
-                padding: "6px 8px",
-                backgroundColor: "#fff",
+                height: 32,
+                padding: "0 8px",
+                boxSizing: "border-box",
               },
             }}
+            sx={modalTextFieldSx}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">sip:</InputAdornment>
@@ -1446,14 +1530,16 @@ const SipToSipAccountPage = () => {
             inputProps={{
               style: {
                 fontSize: 13,
-                padding: "6px 8px",
-                backgroundColor: "#fff",
+                height: 32,
+                padding: "0 8px",
+                boxSizing: "border-box",
               },
             }}
+            sx={modalTextFieldSx}
           />
         )}
         {validationErrors[field.name] && (
-          <div className="text-red-500 text-xs mt-1">
+          <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
             {validationErrors[field.name]}
           </div>
         )}
@@ -1489,37 +1575,52 @@ const SipToSipAccountPage = () => {
   );
 
   return (
-    <div style={sipPcmPageWrapStyle}>
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
+    <div style={sipToSipPageWrapStyle}>
+      <div style={sipToSipInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              position: "fixed",
+              top: 20,
+              right: 20,
+              zIndex: 9999,
+              minWidth: 300,
+              boxShadow: 3,
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
 
-      <div style={sipPcmInnerStyle}>
-        <SipPcmBreadcrumb current="SIP To SIP Account" />
+        <SipToSipBreadcrumb current="SIP To SIP Account" />
 
-        <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={sipToSipCardStyle}>
+          <div style={sipToSipToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={sipToSipSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 onClick={() =>
                   setSelected((sel) =>
@@ -1530,7 +1631,7 @@ const SipToSipAccountPage = () => {
                 }
                 disabled={loading.delete}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={sipToSipCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1538,11 +1639,11 @@ const SipToSipAccountPage = () => {
                 onClick={() => handleDelete(selected)}
                 disabled={loading.delete || selected.length === 0}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={sipToSipCancelBtnStyle}
               >
-                {loading.delete && (
-                  <CircularProgress size={11} style={{ color: "#dc2626" }} />
-                )}
+                {loading.delete ? (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -1550,7 +1651,7 @@ const SipToSipAccountPage = () => {
                 onClick={handleClearAll}
                 disabled={loading.delete}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={sipToSipCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -1558,260 +1659,268 @@ const SipToSipAccountPage = () => {
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={sipToSipPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
-            {isInitialLoad ? (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
-                }}
-              >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
-            ) : accounts.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
+          {isInitialLoad ? (
+            <TableListLoading />
+          ) : accounts.length === 0 ? (
+            <TableListEmptyState
+              message="No SIP To SIP accounts found."
+              onAddNew={() => handleOpenModal()}
+            />
+          ) : (
+            <>
+              <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
                   }}
                 >
-                  No SIP To SIP accounts found.
-                </div>
-                <Btn
-                  variant="cancel"
-                  onClick={() => handleOpenModal()}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New
-                </Btn>
-              </div>
-            ) : (
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
-                  tableLayout: "auto",
-                  minWidth: 900,
-                }}
-              >
-                <thead>
-                  <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={
-                          selected.length > 0 &&
-                          selected.length === accounts.length
-                        }
-                        indeterminate={
-                          selected.length > 0 &&
-                          selected.length < accounts.length
-                        }
-                        onChange={
-                          selected.length === accounts.length
-                            ? () => setSelected([])
-                            : () => setSelected(accounts.map((_, i) => i))
-                        }
-                        disabled={loading.delete}
-                        sx={sipPcmCheckboxSx}
-                      />
-                    </TH>
-                    {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
-                      <TH key={col.key}>{col.label}</TH>
-                    ))}
-                    <TH
-                      style={{
-                        width: 70,
-                        borderRight: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      Modify
-                    </TH>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedAccounts.map((item, idx) => {
-                    const realIdx = (page - 1) * itemsPerPage + idx;
-                    const isSel = selected.includes(realIdx);
-                    const isLastRow = idx === pagedAccounts.length - 1;
-                    const rowBg = isSel
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
-                    return (
-                      <tr
-                        key={realIdx}
+                  <thead>
+                    <tr>
+                      <TH
                         style={{
-                          background: rowBg,
-                          transition: "background 0.15s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSel)
-                            e.currentTarget.style.background = "#f8fafc";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSel) e.currentTarget.style.background = rowBg;
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
                         }}
                       >
-                        <td
+                        <Checkbox
+                          size="small"
+                          checked={
+                            selected.length > 0 &&
+                            selected.length === accounts.length
+                          }
+                          indeterminate={
+                            selected.length > 0 &&
+                            selected.length < accounts.length
+                          }
+                          onChange={
+                            selected.length === accounts.length
+                              ? () => setSelected([])
+                              : () => setSelected(accounts.map((_, i) => i))
+                          }
+                          disabled={loading.delete}
+                          sx={sipToSipTableCheckboxSx}
+                        />
+                      </TH>
+                      {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
+                        <TH key={col.key}>{col.label}</TH>
+                      ))}
+                      <TH
+                        style={{
+                          width: 70,
+                          borderRight: "none",
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 10,
+                        }}
+                      >
+                        Modify
+                      </TH>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedAccounts.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSelected = selected.includes(realIdx);
+                      const isLastRow = idx === pagedAccounts.length - 1;
+                      const rowBg = isSelected
+                        ? "#eff6ff"
+                        : idx % 2 === 1
+                          ? "#f8fafc"
+                          : "#ffffff";
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
+                      return (
+                        <tr
+                          key={realIdx}
                           style={{
-                            ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          <Checkbox
-                            size="small"
-                            checked={isSel}
-                            onChange={() =>
-                              setSelected((sel) =>
-                                sel.includes(realIdx)
-                                  ? sel.filter((i) => i !== realIdx)
-                                  : [...sel, realIdx],
-                              )
-                            }
-                            disabled={loading.delete}
-                            sx={sipPcmCheckboxSx}
-                          />
-                        </td>
-                        {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
                           <td
-                            key={col.key}
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              borderBottom: isLastRow
-                                ? "none"
-                                : tdStyle.borderBottom,
+                              borderLeft: "none",
+                              width: 36,
+                              ...lastRowCellStyle,
                             }}
                           >
-                            {col.key === "password"
-                              ? "*".repeat(item.password?.length || 0)
-                              : col.key === "index"
-                                ? realIdx + 1
-                                : item[col.key] || "--"}
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() =>
+                                setSelected((sel) =>
+                                  sel.includes(realIdx)
+                                    ? sel.filter((i) => i !== realIdx)
+                                    : [...sel, realIdx],
+                                )
+                              }
+                              disabled={loading.delete}
+                              sx={sipToSipTableCheckboxSx}
+                            />
                           </td>
-                        ))}
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            textAlign: "center",
-                            padding: "7px 8px",
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
-                          }}
-                        >
-                          <EditDocumentIcon
-                            className="cursor-pointer text-blue-600 mx-auto opacity-70 hover:opacity-100 transition-opacity"
-                            titleAccess="Edit"
-                            onClick={() => handleOpenModal(item, realIdx)}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+                          {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
+                            <td
+                              key={col.key}
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {col.key === "password"
+                                ? "*".repeat(item.password?.length || 0)
+                                : col.key === "index"
+                                  ? realIdx + 1
+                                  : item[col.key] || "--"}
+                            </td>
+                          ))}
+                          <td
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              borderRight: "none",
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <EditDocumentIcon
+                                titleAccess="Edit"
+                                onClick={() => {
+                                  if (!loading.delete)
+                                    handleOpenModal(item, realIdx);
+                                }}
+                                style={{
+                                  cursor: loading.delete
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  color: "#2563eb",
+                                  fontSize: 22,
+                                  opacity: loading.delete ? 0.4 : 0.7,
+                                  transition: "opacity 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!loading.delete)
+                                    e.currentTarget.style.opacity = "0.7";
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-          {!isInitialLoad && accounts.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedAccounts.length}
-              onPageChange={(nextPage) =>
-                setPage(Math.min(totalPages, Math.max(1, nextPage)))
-              }
-            />
+              <SipToSipPagination
+                page={page}
+                totalPages={totalPages}
+                recordCount={pagedAccounts.length}
+                onPageChange={(nextPage) =>
+                  setPage(Math.min(totalPages, Math.max(1, nextPage)))
+                }
+              />
+            </>
           )}
         </div>
       </div>
 
-      {/* Modal */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        className="z-50"
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            pt: 8,
+          },
+        }}
         PaperProps={{
-          sx: { width: 700, maxWidth: "95vw", mx: "auto", borderRadius: 2 },
+          sx: {
+            width: 700,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "8px",
+            overflow: "hidden",
+          },
         }}
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            padding: "14px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
           {editIndex !== null
             ? "Edit SIP To SIP Account"
             : "Add SIP To SIP Account"}
         </DialogTitle>
-        <DialogContent
-          style={{
-            padding: "20px 24px",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div
               style={{
-                background: "#f5f7fa",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                width: "100%",
+                background: "#f8fafc",
                 border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
+                borderRadius: 8,
+                padding: 20,
               }}
             >
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: 16,
+                  gap: 10,
+                  paddingBottom: 8,
                 }}
               >
                 {SIP_TO_SIP_FORM_LAYOUT.map((rowFields, rowIdx) => {
@@ -1834,11 +1943,14 @@ const SipToSipAccountPage = () => {
         </DialogContent>
         <DialogActions
           style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
             justifyContent: "center",
-            gap: 12,
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
@@ -1859,7 +1971,7 @@ const SipToSipAccountPage = () => {
             onClick={handleCloseModal}
             variant="cancel"
             disabled={loading.save}
-            style={pbxModalCancelBtnStyle}
+            style={sipToSipModalCancelBtnStyle}
           >
             Close
           </Btn>
