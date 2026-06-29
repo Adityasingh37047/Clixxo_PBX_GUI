@@ -1,3 +1,6 @@
+export const FEATURE_CODE_TITLE = "Feature Code";
+export const FEATURE_CODE_BREADCRUMB_SECTION = "Features Codes";
+
 export const FEATURE_CODE_TOOLTIPS = {
   digits_timeout:
     "The maximum time waiting for the next feature code digit. The default value is 5000ms.",

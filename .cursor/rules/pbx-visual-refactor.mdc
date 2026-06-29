@@ -72,3 +72,27 @@ Local helpers inside the same file (`Btn`, `TH`, `FieldRow`) may stay generic. *
 **Allowed:** dedupe constants, shared components, `MODAL_INPUT_PROPS`, inline style objects in JS, Tailwind on low-risk shell (with exact `[px]` values).
 
 **Forbidden:** redesign, `box-border` on tables without proof, base classes that fight per-column overrides, estimated spacing, changing DOM structure without identical output.
+
+## Section headings (line + title) — apply automatically
+
+Import from `src/constants/pbxSectionHeadingConstants.jsx`. **Do not ask the user** — pick the correct constant by page type.
+
+| Page type | Constant | Examples |
+|-----------|----------|----------|
+| **Main form page** (full-page card, no Add New table) | `PBX_MAIN_SECTION_HEADING_LEFT` (`-20`) | Voicemail, Feature Code, Voice Prompts, Record Settings, Auto Provision |
+| **Add New / modal** (`Dialog`, `*ModalSectionHeading`, inside Add/Edit) | `PBX_MODAL_SECTION_HEADING_LEFT` (`-6`) | IVR, Ring Group, DISA, Inbound/Outbound Routes, Extensions modal, Sip Register |
+
+```jsx
+import {
+  PBX_MAIN_SECTION_HEADING_LEFT,
+  PBX_MODAL_SECTION_HEADING_LEFT,
+} from "../../../constants/pbxSectionHeadingConstants";
+
+// Main page *SectionHeading span:
+left: PBX_MAIN_SECTION_HEADING_LEFT,
+
+// Modal *ModalSectionHeading / Add New span:
+left: PBX_MODAL_SECTION_HEADING_LEFT,
+```
+
+**Never** use `PBX_MAIN_SECTION_HEADING_LEFT` inside modals. **Never** leave main form pages at `left: 0` or `-6` when adding the standard line+title heading pattern — main pages always use `-20`.

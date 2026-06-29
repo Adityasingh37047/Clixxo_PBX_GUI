@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {Button,
+import {
   Dialog,
   DialogActions,
   DialogContent,
@@ -35,25 +35,38 @@ import {
   updateVoicePromptPreferences,
   uploadMohFile,
 } from "../../../api/apiService";
+import {
+  VOICE_PROMPTS_CUSTOM_UPLOAD_NOTE,
+  VOICE_PROMPTS_FIELD_TOOLTIPS,
+  VOICE_PROMPTS_FORWARDING_HINT,
+  VOICE_PROMPTS_MOH_UPLOAD_NOTE,
+  VOICE_PROMPTS_RECORD_MODAL_TITLE,
+  VOICE_PROMPTS_SECTIONS,
+  VOICE_PROMPTS_TABS,
+  VOICE_PROMPTS_TITLE,
+} from "../../../constants/VoicePromptsConstants";
+import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const VOICE_PROMPTS_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  sectionHeading: "#30415A",
 };
 
-const CARD_RADIUS = 10;
+const VOICE_PROMPTS_CARD_RADIUS = 10;
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const Btn = ({
@@ -106,8 +119,34 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -129,6 +168,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -136,7 +176,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -144,7 +196,7 @@ const Btn = ({
   );
 };
 
-const pbxModalCancelBtnStyle = {
+const voicePromptsModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -153,20 +205,20 @@ const pbxModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pbxPageWrapStyle = {
+const voicePromptsPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const voicePromptsPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const VoicePromptsBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -188,27 +240,29 @@ const PbxBreadcrumb = ({ section, current, style }) => (
   </div>
 );
 
-const tooltipProps = {
+const VOICE_PROMPTS_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#000",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 12,
+        lineHeight: 1.45,
         maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
-      sx: {
-        color: "#fff",
-      },
+      sx: { color: "#fff" },
     },
   },
 };
+
+const tooltipProps = VOICE_PROMPTS_TOOLTIP_PROPS;
 
 const TableListLoading = () => (
   <div
@@ -262,15 +316,16 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PBX_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const PBX_MODAL_TAB_INACTIVE_COLOR = "#374151";
+const VOICE_PROMPTS_TAB_ACTIVE_COLOR = "#3E5475";
+const VOICE_PROMPTS_TAB_INACTIVE_COLOR = "#374151";
 
-const pbxHeaderTabsSx = {
+const voicePromptsHeaderTabsSx = {
   minHeight: 44,
   pl: 0,
+  borderBottom: `1px solid ${C.divider}`,
   "& .MuiTabs-flexContainer": { height: 44, paddingLeft: 0 },
   "& .MuiTab-root": {
-    color: PBX_MODAL_TAB_INACTIVE_COLOR,
+    color: VOICE_PROMPTS_TAB_INACTIVE_COLOR,
     fontSize: 12,
     fontWeight: 500,
     textTransform: "none",
@@ -280,47 +335,32 @@ const pbxHeaderTabsSx = {
     minWidth: 0,
   },
   "& .MuiTab-root.Mui-selected": {
-    color: PBX_MODAL_TAB_ACTIVE_COLOR,
+    color: VOICE_PROMPTS_TAB_ACTIVE_COLOR,
     fontWeight: 700,
   },
 };
 
-const sipPcmFormPageWrapStyle = {
-  ...pbxPageWrapStyle,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
-
-const sipPcmFormPageInnerStyle = {
-  ...pbxPageInnerStyle,
-  maxWidth: 1000,
-};
-
-const sipPcmFormCardStyle = {
+const voicePromptsCardStyle = {
   background: "#ffffff",
-  borderRadius: 10,
+  borderRadius: VOICE_PROMPTS_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmFormHeaderStyle = {
+const voicePromptsTabHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  borderTopLeftRadius: VOICE_PROMPTS_CARD_RADIUS,
+  borderTopRightRadius: VOICE_PROMPTS_CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  padding: 0,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
-const sipPcmAuthFormBtnStyle = {
+const voicePromptsPrimaryBtnStyle = {
   minWidth: 110,
   height: 34,
   fontSize: 13,
@@ -330,25 +370,59 @@ const sipPcmAuthFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const SipPcmSectionHeading = ({ title, isFirst = false }) => (
+const voicePromptsCancelBtnStyle = {
+  ...voicePromptsModalCancelBtnStyle,
+  boxShadow: "none",
+};
+
+const voicePromptsChooseFileBtnStyle = {
+  ...voicePromptsPrimaryBtnStyle,
+  minWidth: "auto",
+  boxShadow: "none",
+};
+
+const voicePromptsPanelStyle = {
+  background: "#f8fafc",
+  padding: 16,
+  borderRadius: 8,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const voicePromptsTableCardStyle = {
+  overflowX: "auto",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  background: "#ffffff",
+};
+
+const voicePromptsFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const VoicePromptsSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: PBX_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: C.sectionHeading,
       }}
     >
       {title}
@@ -356,34 +430,23 @@ const SipPcmSectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const voicePromptPrimaryBtnStyle = sipPcmAuthFormBtnStyle;
-
-const voicePromptCancelBtnStyle = {
-  ...pbxModalCancelBtnStyle,
-  boxShadow: "none",
-};
-
-const voicePromptChooseFileBtnStyle = {
-  ...sipPcmAuthFormBtnStyle,
-  minWidth: "auto",
-  boxShadow: "none",
-};
+const SipPcmSectionHeading = VoicePromptsSectionHeading;
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#f3f4f6",
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
-      fontSize: 10.5,
-      padding: "9px 8px",
+      fontSize: 11,
+      padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `0.5px solid #9ca3af`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.04em",
+      letterSpacing: "0.14em",
       ...extra,
     }}
   >
@@ -391,7 +454,19 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const FieldRow = ({ label, children, required, align = "center" }) => (
+const voicePromptsTdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
+  whiteSpace: "nowrap",
+};
+
+const getVoicePromptsRowBg = (idx) => (idx % 2 === 1 ? "#f8fafc" : "#ffffff");
+
+const VoicePromptsFieldRow = ({ label, children, required, align = "center" }) => (
   <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
     <label
       style={{
@@ -408,6 +483,126 @@ const FieldRow = ({ label, children, required, align = "center" }) => (
     <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
   </div>
 );
+
+const FieldRow = VoicePromptsFieldRow;
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const voicePromptsOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const voicePromptsTextFieldSx = {
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    ...voicePromptsOutlinedInputRootSx,
+    minHeight: 34,
+    height: 34,
+    fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
+    color: C.valueText,
+  },
+};
+
+const voicePromptsSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 34,
+  height: 34,
+  ...voicePromptsOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    padding: "7px 32px 7px 10px !important",
+    display: "flex",
+    alignItems: "center",
+    color: C.valueText,
+  },
+};
+
+const voicePromptsModalPaperSx = {
+  width: 560,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const voicePromptsModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const voicePromptsModalSectionStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const voicePromptsModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
 
 const toolIconBtnSx = {
   width: 24,
@@ -487,7 +682,7 @@ const toMessageText = (msg, fallback) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VoicePromptsPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(VOICE_PROMPTS_COMPACT_MQ);
   const [activeTab, setActiveTab] = useState("promptPreference");
   const [message, setMessage] = useState({ type: "", text: "" });
 
@@ -812,38 +1007,37 @@ const VoicePromptsPage = () => {
   }, [mohAudioUrl, customAudioUrl]);
 
   return (
-    <div style={{ ...sipPcmFormPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={sipPcmFormPageInnerStyle}>
-        {/* Error / Success Banner */}
+    <div
+      style={{
+        ...voicePromptsPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={voicePromptsPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={voicePromptsFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Voice Prompts" current="Voice Prompts" />
+        <VoicePromptsBreadcrumb
+          section={VOICE_PROMPTS_TITLE}
+          current={VOICE_PROMPTS_TITLE}
+        />
 
-        <div style={sipPcmFormCardStyle}>
-         <div
-  style={{
-    ...sipPcmFormHeaderStyle,
-    padding: "0",
-    ...(isCompact
-      ? { flexDirection: "column", alignItems: "stretch" }
-      : {}),
-  }}
->
+        <div style={voicePromptsCardStyle}>
+          <div
+            style={{
+              ...voicePromptsTabHeaderStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch" }
+                : {}),
+            }}
+          >
             <Tabs
               value={activeTab}
               onChange={(_, id) => {
@@ -854,15 +1048,15 @@ const VoicePromptsPage = () => {
               variant="standard"
               TabIndicatorProps={{
                 style: {
-                  backgroundColor: PBX_MODAL_TAB_ACTIVE_COLOR,
+                  backgroundColor: VOICE_PROMPTS_TAB_ACTIVE_COLOR,
                   height: 2,
                 },
               }}
-              sx={pbxHeaderTabsSx}
+              sx={voicePromptsHeaderTabsSx}
             >
-              <Tab label="PROMPT PREFERENCE" value="promptPreference" />
-              <Tab label="MUSIC ON HOLD" value="musicOnHold" />
-              <Tab label="CUSTOM PROMPT" value="customPrompt" />
+              {VOICE_PROMPTS_TABS.map((tab) => (
+                <Tab key={tab.id} label={tab.label} value={tab.id} />
+              ))}
             </Tabs>
           </div>
 
@@ -870,36 +1064,35 @@ const VoicePromptsPage = () => {
             {/* ── TAB 1: PROMPT PREFERENCE ── */}
             {activeTab === "promptPreference" && (
               <div>
-                <SipPcmSectionHeading title="General Preferences" isFirst />
+                <VoicePromptsSectionHeading
+                  title={VOICE_PROMPTS_SECTIONS.general_preferences}
+                  isFirst
+                />
                 <div
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr",
                     gap: 16,
-                    background: "#f8fafc",
-                    padding: 16,
-                    borderRadius: 6,
-                    border: `1px solid #e2e8f0`,
+                    ...voicePromptsPanelStyle,
                   }}
                 >
-<FieldRow
-  label={
-    <Tooltip
-      title="The music catalog to play when a call is being held. The default setting is default catalog."
-      {...tooltipProps}
-    >
-      <span style={{ cursor: "help" }}>
-        Music On Hold
-      </span>
-    </Tooltip>
-  }
->
+                  <FieldRow
+                    label={
+                      <Tooltip
+                        title={VOICE_PROMPTS_FIELD_TOOLTIPS.music_on_hold}
+                        {...tooltipProps}
+                      >
+                        <span style={{ cursor: "help" }}>Music On Hold</span>
+                      </Tooltip>
+                    }
+                  >
                     <FormControl size="small" sx={{ width: 260 }}>
                       <MuiSelect
+                        variant="outlined"
                         value={promptMohCategory}
                         onChange={(e) => setPromptMohCategory(e.target.value)}
                         displayEmpty
-                        sx={{ fontSize: 13, background: "#fff" }}
+                        sx={voicePromptsSelectSx}
                       >
                         {categories.length === 0 ? (
                           promptMohCategory ? (
@@ -929,50 +1122,56 @@ const VoicePromptsPage = () => {
                     </FormControl>
                   </FieldRow>
 
-                  <FieldRow label={
-    <Tooltip
-      title="If enabled, the system will play a prompt before transferring a call. By default it is unticked."
-      {...tooltipProps}
-    >
-      <span style={{ cursor: "help" }}>
-        Play Call Forwarding Prompt
-      </span>
-    </Tooltip>
-  }>
+                  <div>
+                    <FieldRow
+                      label={
+                        <Tooltip
+                          title={
+                            VOICE_PROMPTS_FIELD_TOOLTIPS.play_call_forwarding_prompt
+                          }
+                          {...tooltipProps}
+                        >
+                          <span style={{ cursor: "help" }}>
+                            Play Call Forwarding Prompt
+                          </span>
+                        </Tooltip>
+                      }
+                    >
+                      <Checkbox
+                        checked={playCallForwardingPrompt}
+                        onChange={(e) =>
+                          setPlayCallForwardingPrompt(e.target.checked)
+                        }
+                        size="small"
+                        sx={{
+                          padding: "1px",
+                          color: "#3E5475",
+                          "&.Mui-checked": { color: "#0284c7" },
+                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+                        }}
+                      />
+                    </FieldRow>
                     <div
                       style={{
                         display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
+                        alignItems: "flex-start",
+                        gap: 12,
+                        marginTop: 4,
                       }}
                     >
-                     <Checkbox
-  checked={playCallForwardingPrompt}
-  onChange={(e) =>
-    setPlayCallForwardingPrompt(e.target.checked)
-  }
-  size="small"
-  sx={{
-    padding: "1px",
-    color: "#3E5475",
-    "&.Mui-checked": { color: "#0284c7" },
-    "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-    alignSelf: "flex-start",
-  }}
-/>
+                      <div style={{ width: 170, flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: C.mutedText }}>
-                        If enabled, the system plays default forwarding prompt
-                        before transfer.
+                        {VOICE_PROMPTS_FORWARDING_HINT}
                       </span>
                     </div>
-                  </FieldRow>
+                  </div>
                 </div>
                 <div style={{ marginTop: 24, display: "flex" }}>
                   <Btn
                     onClick={handleSavePreferences}
                     disabled={savingPrefs}
                     variant="primary"
-                    style={voicePromptPrimaryBtnStyle}
+                    style={voicePromptsPrimaryBtnStyle}
                   >
                     {savingPrefs ? "Saving..." : "SAVE"}
                   </Btn>
@@ -983,17 +1182,17 @@ const VoicePromptsPage = () => {
             {/* ── TAB 2: MUSIC ON HOLD ── */}
             {activeTab === "musicOnHold" && (
               <div>
-                <SipPcmSectionHeading title="Upload New MOH File" isFirst />
+                <VoicePromptsSectionHeading
+                  title={VOICE_PROMPTS_SECTIONS.upload_moh}
+                  isFirst
+                />
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 16,
                     flexWrap: "wrap",
-                    background: "#f8fafc",
-                    padding: 16,
-                    borderRadius: 6,
-                    border: `1px solid #e2e8f0`,
+                    ...voicePromptsPanelStyle,
                     marginBottom: 5,
                   }}
                 >
@@ -1001,7 +1200,7 @@ const VoicePromptsPage = () => {
                     style={{ display: "flex", alignItems: "center", gap: 12 }}
                   >
                     <Tooltip
-                      title="Enter the name of the category for the music or audio that callers hear while they are placed on hold."
+                      title={VOICE_PROMPTS_FIELD_TOOLTIPS.moh_category}
                       {...tooltipProps}
                     >
                       <label
@@ -1016,17 +1215,11 @@ const VoicePromptsPage = () => {
                     </Tooltip>
                     <TextField
                       size="small"
+                      variant="outlined"
                       value={mohCategoryName}
                       onChange={(e) => setMohCategoryName(e.target.value)}
                       placeholder="Enter category name"
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          background: "#fff",
-                          width: 200,
-                        },
-                      }}
+                      sx={{ ...voicePromptsTextFieldSx, width: 220 }}
                     />
                   </div>
 
@@ -1051,7 +1244,7 @@ const VoicePromptsPage = () => {
                     <Btn
                       onClick={() => mohFileInputRef.current?.click()}
                       variant="cancel"
-                      style={voicePromptChooseFileBtnStyle}
+                      style={voicePromptsChooseFileBtnStyle}
                     >
                       Choose File
                     </Btn>
@@ -1073,7 +1266,7 @@ const VoicePromptsPage = () => {
                     onClick={handleUploadMoh}
                     variant="primary"
                     style={{
-                      ...voicePromptPrimaryBtnStyle,
+                      ...voicePromptsPrimaryBtnStyle,
                       marginLeft: "auto",
                     }}
                   >
@@ -1083,18 +1276,13 @@ const VoicePromptsPage = () => {
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}
                 >
-                  Note: only supports uploading G711A, G711U, PCM16 encoding,
-                  8000Hz sampling rate, mono wav, MP3 files.
+                  {VOICE_PROMPTS_MOH_UPLOAD_NOTE}
                 </div>
 
-                <SipPcmSectionHeading title="All Uploaded MOH Files" />
-                <div
-                  style={{
-                    overflowX: "auto",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                  }}
-                >
+                <VoicePromptsSectionHeading
+                  title={VOICE_PROMPTS_SECTIONS.all_moh_files}
+                />
+                <div style={voicePromptsTableCardStyle}>
                   {mohLoading ? (
                     <TableListLoading />
                   ) : mohFiles.length === 0 ? (
@@ -1120,54 +1308,47 @@ const VoicePromptsPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                        {mohFiles.map((item, idx) => (
+                        {mohFiles.map((item, idx) => {
+                          const rowBg = getVoicePromptsRowBg(idx);
+                          const isLastRow = idx === mohFiles.length - 1;
+                          const cellStyle = {
+                            ...voicePromptsTdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : voicePromptsTdStyle.borderBottom,
+                          };
+                          const lastCellStyle = {
+                            ...cellStyle,
+                            borderRight: "none",
+                          };
+                          return (
                           <tr
                             key={item.id}
                             style={{
-                              borderBottom: "1px solid #e2e8f0",
-                              background: idx % 2 === 1 ? "#f8fafc" : "#fff",
+                              background: rowBg,
+                              transition: "background 0.15s ease",
                             }}
                           >
                             <td
                               style={{
-                                padding: "8px 16px",
-                                fontSize: 12,
-                                color: C.valueText,
+                                ...cellStyle,
+                                textAlign: "left",
                                 fontWeight: 500,
                               }}
                             >
                               {item.filename}
                             </td>
-                            <td
-                              style={{
-                                padding: "8px 16px",
-                                fontSize: 12,
-                                color: C.valueText,
-                              }}
-                            >
+                            <td style={{ ...cellStyle, textAlign: "left" }}>
                               {item.category || "--"}
                             </td>
-                            <td
-                              style={{
-                                padding: "8px",
-                                fontSize: 12,
-                                color: C.mutedText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...cellStyle, color: C.mutedText }}>
                               {formatSize(item.sizeBytes)}
                             </td>
-                            <td
-                              style={{
-                                padding: "8px",
-                                fontSize: 12,
-                                color: C.mutedText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...cellStyle, color: C.mutedText }}>
                               {formatDateTime(item.uploadedAt)}
                             </td>
-                            <td style={{ padding: "8px", textAlign: "center" }}>
+                            <td style={lastCellStyle}>
                               <div
                                 style={{
                                   display: "flex",
@@ -1290,7 +1471,8 @@ const VoicePromptsPage = () => {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                     </tbody>
                   </table>
                   )}
@@ -1347,23 +1529,23 @@ const VoicePromptsPage = () => {
                   <Btn
                     onClick={openRecordModal}
                     variant="primary"
-                    style={voicePromptPrimaryBtnStyle}
+                    style={voicePromptsPrimaryBtnStyle}
                   >
                     + RECORD NEW
                   </Btn>
                 </div>
 
-                <SipPcmSectionHeading title="Upload Custom Prompt" isFirst />
+                <VoicePromptsSectionHeading
+                  title={VOICE_PROMPTS_SECTIONS.upload_custom}
+                  isFirst
+                />
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 16,
                     flexWrap: "wrap",
-                    background: "#f8fafc",
-                    padding: 16,
-                    borderRadius: 6,
-                    border: `1px solid #e2e8f0`,
+                    ...voicePromptsPanelStyle,
                     marginBottom: 5,
                   }}
                 >
@@ -1390,7 +1572,7 @@ const VoicePromptsPage = () => {
                     <Btn
                       onClick={() => customFileInputRef.current?.click()}
                       variant="cancel"
-                      style={voicePromptChooseFileBtnStyle}
+                      style={voicePromptsChooseFileBtnStyle}
                     >
                       Choose File
                     </Btn>
@@ -1411,7 +1593,7 @@ const VoicePromptsPage = () => {
                     onClick={handleUploadCustomPrompt}
                     variant="primary"
                     style={{
-                      ...voicePromptPrimaryBtnStyle,
+                      ...voicePromptsPrimaryBtnStyle,
                       marginLeft: "auto",
                     }}
                   >
@@ -1421,17 +1603,13 @@ const VoicePromptsPage = () => {
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}
                 >
-                  Note: supports uploading .wav, .mp3, .gsm files.
+                  {VOICE_PROMPTS_CUSTOM_UPLOAD_NOTE}
                 </div>
 
-                <SipPcmSectionHeading title="Recordings" />
-                <div
-                  style={{
-                    overflowX: "auto",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 6,
-                  }}
-                >
+                <VoicePromptsSectionHeading
+                  title={VOICE_PROMPTS_SECTIONS.recordings}
+                />
+                <div style={voicePromptsTableCardStyle}>
                   {customLoading ? (
                     <TableListLoading />
                   ) : customItems.length === 0 ? (
@@ -1457,19 +1635,32 @@ const VoicePromptsPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                        {customItems.map((item, idx) => (
+                        {customItems.map((item, idx) => {
+                          const rowBg = getVoicePromptsRowBg(idx);
+                          const isLastRow = idx === customItems.length - 1;
+                          const cellStyle = {
+                            ...voicePromptsTdStyle,
+                            background: rowBg,
+                            borderBottom: isLastRow
+                              ? "none"
+                              : voicePromptsTdStyle.borderBottom,
+                          };
+                          const lastCellStyle = {
+                            ...cellStyle,
+                            borderRight: "none",
+                          };
+                          return (
                           <tr
                             key={item.id}
                             style={{
-                              borderBottom: "1px solid #e2e8f0",
-                              background: idx % 2 === 1 ? "#f8fafc" : "#fff",
+                              background: rowBg,
+                              transition: "background 0.15s ease",
                             }}
                           >
                             <td
                               style={{
-                                padding: "8px 16px",
-                                fontSize: 12,
-                                color: C.valueText,
+                                ...cellStyle,
+                                textAlign: "left",
                                 fontWeight: 600,
                               }}
                             >
@@ -1477,35 +1668,21 @@ const VoicePromptsPage = () => {
                             </td>
                             <td
                               style={{
-                                padding: "8px 16px",
-                                fontSize: 12,
+                                ...cellStyle,
+                                textAlign: "left",
                                 color: C.mutedText,
                                 fontFamily: "monospace",
                               }}
                             >
                               {item.fileName}
                             </td>
-                            <td
-                              style={{
-                                padding: "8px",
-                                fontSize: 12,
-                                color: C.mutedText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...cellStyle, color: C.mutedText }}>
                               {formatSize(item.sizeBytes)}
                             </td>
-                            <td
-                              style={{
-                                padding: "8px",
-                                fontSize: 12,
-                                color: C.mutedText,
-                                textAlign: "center",
-                              }}
-                            >
+                            <td style={{ ...cellStyle, color: C.mutedText }}>
                               {formatDateTime(item.uploadedAt)}
                             </td>
-                            <td style={{ padding: "8px", textAlign: "center" }}>
+                            <td style={lastCellStyle}>
                               <div
                                 style={{
                                   display: "flex",
@@ -1617,7 +1794,8 @@ const VoicePromptsPage = () => {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                     </tbody>
                   </table>
                   )}
@@ -1668,50 +1846,37 @@ const VoicePromptsPage = () => {
       <Dialog
         open={recordModalOpen}
         onClose={() => setRecordModalOpen(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 2 } }}
+        maxWidth={false}
+        PaperProps={{ sx: voicePromptsModalPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 16,
-            textAlign: "center",
-            padding: "14px 24px",
+        <DialogTitle style={voicePromptsModalTitleStyle}>
+          {VOICE_PROMPTS_RECORD_MODAL_TITLE}
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
           }}
         >
-          Record New Prompt
-        </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: C.pageBg }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              background: "#fff",
-              padding: 20,
-              borderRadius: 6,
-              border: `1px solid ${C.cardBorder}`,
-            }}
-          >
+          <div style={voicePromptsModalSectionStyle}>
             <FieldRow label="File Name" required>
               <TextField
                 size="small"
                 fullWidth
+                variant="outlined"
                 value={recordFileName}
                 onChange={(e) => setRecordFileName(e.target.value)}
-                inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
+                sx={voicePromptsTextFieldSx}
               />
             </FieldRow>
             <FieldRow label="Extension" required>
-              <FormControl size="small" fullWidth>
+              <FormControl size="small" fullWidth variant="outlined">
                 <MuiSelect
+                  variant="outlined"
                   value={recordExtension}
                   onChange={(e) => setRecordExtension(e.target.value)}
                   displayEmpty
-                  sx={{ fontSize: 13 }}
+                  sx={voicePromptsSelectSx}
                 >
                   <MenuItem value="" disabled sx={{ fontSize: 13 }}>
                     <em>Select extension</em>
@@ -1726,26 +1891,18 @@ const VoicePromptsPage = () => {
             </FieldRow>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={voicePromptsModalActionsStyle}>
           <Btn
             onClick={handleSaveRecordedPrompt}
             variant="primary"
-            style={voicePromptPrimaryBtnStyle}
+            style={voicePromptsPrimaryBtnStyle}
           >
             RECORD
           </Btn>
           <Btn
             onClick={() => setRecordModalOpen(false)}
             variant="cancel"
-            style={voicePromptCancelBtnStyle}
+            style={voicePromptsCancelBtnStyle}
           >
             CANCEL
           </Btn>

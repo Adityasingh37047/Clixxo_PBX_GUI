@@ -3,27 +3,47 @@ import {
   Alert,
   Checkbox,
   CircularProgress,
+  FormControl,
+  MenuItem,
+  Select as MuiSelect,
+  Tooltip,
   useMediaQuery,
 } from "@mui/material";
 import {
   getVoicemailSettings,
   updateVoicemailSettings,
 } from "../../../api/apiService";
-import Tooltip from "@mui/material/Tooltip";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import {
+  VOICEMAIL_BREADCRUMB_SECTION,
+  VOICEMAIL_FIELD_TOOLTIPS,
+  VOICEMAIL_INITIAL_FORM,
+  VOICEMAIL_MAX_MESSAGE_TIME_OPTIONS,
+  VOICEMAIL_MAX_MESSAGES_OPTIONS,
+  VOICEMAIL_MIN_MESSAGE_TIME_OPTIONS,
+  VOICEMAIL_PROMPT_OPTIONS,
+  VOICEMAIL_SECTIONS,
+  VOICEMAIL_TITLE,
+} from "../../../constants/VoicemailConstants";
+import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const VOICEMAIL_COMPACT_MQ = "(max-width: 768px)";
 
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   accent: "#3E5475",
+  sectionHeading: "#30415A",
 };
 
-const CARD_RADIUS = 10;
+const VOICEMAIL_CARD_RADIUS = 10;
+const VOICEMAIL_FORM_HORIZONTAL_PADDING = 24;
+const VOICEMAIL_FIELD_LABEL_WIDTH = 260;
+const VOICEMAIL_INPUT_WIDTH = 150;
+const VOICEMAIL_FIELD_MIDDLE_GAP = 24;
 
 const Btn = ({
   children,
@@ -45,15 +65,46 @@ const Btn = ({
       border: "1px solid #5A6F8F",
       fontWeight: 600,
     },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
-    variant === "primary"
-      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
-      : "#e2e8f0";
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -70,6 +121,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -77,7 +129,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -85,7 +149,86 @@ const Btn = ({
   );
 };
 
-const PbxBreadcrumb = ({ section, current }) => (
+const voicemailPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const voicemailPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const voicemailFormBodyStyle = {
+  width: "100%",
+  maxWidth: 720,
+  margin: "0 auto",
+  padding: `0 ${VOICEMAIL_FORM_HORIZONTAL_PADDING}px`,
+  boxSizing: "border-box",
+};
+
+const voicemailCardStyle = {
+  background: "#ffffff",
+  borderRadius: VOICEMAIL_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const voicemailHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: VOICEMAIL_CARD_RADIUS,
+  borderTopRightRadius: VOICEMAIL_CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: "7px 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+const voicemailFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  padding: "12px 20px",
+  borderTop: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+  background: "#ffffff",
+  borderBottomLeftRadius: VOICEMAIL_CARD_RADIUS,
+  borderBottomRightRadius: VOICEMAIL_CARD_RADIUS,
+};
+
+const voicemailFooterBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const voicemailFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 420,
+  boxShadow: 3,
+};
+
+const VoicemailBreadcrumb = ({ section, current }) => (
   <div
     style={{
       fontSize: 12,
@@ -105,27 +248,6 @@ const PbxBreadcrumb = ({ section, current }) => (
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-const tooltipProps = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#000",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        maxWidth: 500,
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  },
-};
 
 const TableListLoading = () => (
   <div
@@ -140,25 +262,25 @@ const TableListLoading = () => (
   </div>
 );
 
-const SectionHeading = ({ title, isFirst = false }) => (
+const VoicemailSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: PBX_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 13,
+        fontSize: 14,
         fontWeight: 600,
-        color: "#30415A",
+        color: C.sectionHeading,
       }}
     >
       {title}
@@ -166,132 +288,168 @@ const SectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const OUTLINED_BORDER = "rgba(0,0,0,0.23)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const LABEL_W = 220;
-
-const labelStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  width: LABEL_W,
-  marginRight: 10,
-  lineHeight: 1.4,
-  flexShrink: 0,
-  whiteSpace: "nowrap",
+const VOICEMAIL_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
 };
 
-const inputStyle = {
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 12,
-  width: "100%",
-  backgroundColor: "#ffffff",
-  outline: "none",
-  color: "#3E5475",
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const voicemailOutlinedInputRootSx = {
+  backgroundColor: "#fff",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  boxSizing: "border-box",
-  height: 32,
-  padding: "0 8px",
-};
-
-const fieldInteraction = {
-  onFocus: (e) => {
-    e.target.style.borderColor = OUTLINED_FOCUS;
-    e.target.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`;
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  onBlur: (e) => {
-    e.target.style.borderColor = OUTLINED_BORDER;
-    e.target.style.boxShadow = "none";
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
   },
-  onMouseEnter: (e) => {
-    if (document.activeElement !== e.target)
-      e.target.style.borderColor = "rgba(0,0,0,0.87)";
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
   },
-  onMouseLeave: (e) => {
-    if (document.activeElement !== e.target) {
-      e.target.style.borderColor = OUTLINED_BORDER;
-      e.target.style.boxShadow = "none";
-    }
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const GridRow = ({ children }) => (
-  <div
-    style={{ display: "flex", justifyContent: "center", padding: "4px 16px" }}
-  >
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        width: "70%",
-        maxWidth: 660,
-        gap: 12,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
+const voicemailSelectSx = (isCompact) => ({
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: isCompact ? "100%" : VOICEMAIL_INPUT_WIDTH,
+  maxWidth: isCompact ? "100%" : VOICEMAIL_INPUT_WIDTH,
+  minHeight: 34,
+  height: 34,
+  ...voicemailOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiSelect-select": {
+    padding: "7px 32px 7px 10px !important",
+    display: "flex",
+    alignItems: "center",
+    color: C.valueText,
+    cursor: "pointer",
+  },
+});
 
-const checkboxSx = {
+const voicemailCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const CheckboxRow = ({ checked, onChange, label, tooltip }) => (
-  <GridRow>
-    <div style={{ width: LABEL_W, marginRight: 10, flexShrink: 0 }} />
-    <Tooltip title={tooltip || ""} {...tooltipProps}>
-      <label
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          cursor: "pointer",
-          flex: 1,
-          minWidth: 0,
-        }}
+const VoicemailFieldRow = ({ label, tooltipKey, isCompact, children }) => {
+  const stacked = isCompact;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: stacked ? "column" : "row",
+        alignItems: stacked ? "stretch" : "center",
+        justifyContent: stacked ? "flex-start" : "space-between",
+        padding: "8px 0",
+        gap: stacked ? 8 : VOICEMAIL_FIELD_MIDDLE_GAP,
+        width: "100%",
+      }}
+    >
+      <Tooltip
+        title={VOICEMAIL_FIELD_TOOLTIPS[tooltipKey] || ""}
+        {...VOICEMAIL_TOOLTIP_PROPS}
       >
-        <Checkbox
-          size="small"
-          checked={!!checked}
-          onChange={(e) => onChange(e.target.checked)}
-          sx={checkboxSx}
-        />
         <span
           style={{
             fontSize: 13,
-            fontWeight: 500,
+            fontWeight: 600,
             color: C.labelText,
+            textAlign: "left",
+            width: stacked ? "100%" : "auto",
+            maxWidth: stacked ? "100%" : VOICEMAIL_FIELD_LABEL_WIDTH,
+            flexShrink: 0,
+            lineHeight: 1.4,
+            cursor: "help",
           }}
         >
           {label}
         </span>
-      </label>
-    </Tooltip>
-  </GridRow>
-);
-
-const INITIAL_FORM = {
-  max_messages: "100",
-  max_message_time: "300",
-  min_message_time: "3",
-  press5_enabled: true,
-  busy_prompt: "default",
-  noanswer_prompt: "default",
-  announce_callerid: true,
-  announce_duration: true,
-  announce_arrival_time: true,
+      </Tooltip>
+      <div
+        style={{
+          minWidth: 0,
+          flexShrink: 0,
+          display: "flex",
+          justifyContent: stacked ? "flex-start" : "flex-end",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
 };
 
+const mapApiToForm = (d) => ({
+  max_messages: String(d.max_messages ?? VOICEMAIL_INITIAL_FORM.max_messages),
+  max_message_time: String(
+    d.max_message_time ?? VOICEMAIL_INITIAL_FORM.max_message_time,
+  ),
+  min_message_time: String(
+    d.min_message_time ?? VOICEMAIL_INITIAL_FORM.min_message_time,
+  ),
+  press5_enabled: d.press5_enabled ?? VOICEMAIL_INITIAL_FORM.press5_enabled,
+  busy_prompt: d.busy_prompt ?? VOICEMAIL_INITIAL_FORM.busy_prompt,
+  noanswer_prompt: d.noanswer_prompt ?? VOICEMAIL_INITIAL_FORM.noanswer_prompt,
+  announce_callerid:
+    d.announce_callerid ?? VOICEMAIL_INITIAL_FORM.announce_callerid,
+  announce_duration:
+    d.announce_duration ?? VOICEMAIL_INITIAL_FORM.announce_duration,
+  announce_arrival_time:
+    d.announce_arrival_time ?? VOICEMAIL_INITIAL_FORM.announce_arrival_time,
+});
+
 const VoicemailPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
-  const [form, setForm] = useState({ ...INITIAL_FORM });
+  const isCompact = useMediaQuery(VOICEMAIL_COMPACT_MQ);
+  const [form, setForm] = useState({ ...VOICEMAIL_INITIAL_FORM });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -309,25 +467,7 @@ const VoicemailPage = () => {
     try {
       const res = await getVoicemailSettings();
       if (res?.response && res?.message && typeof res.message === "object") {
-        const d = res.message;
-        setForm({
-          max_messages: String(d.max_messages ?? INITIAL_FORM.max_messages),
-          max_message_time: String(
-            d.max_message_time ?? INITIAL_FORM.max_message_time,
-          ),
-          min_message_time: String(
-            d.min_message_time ?? INITIAL_FORM.min_message_time,
-          ),
-          press5_enabled: d.press5_enabled ?? INITIAL_FORM.press5_enabled,
-          busy_prompt: d.busy_prompt ?? INITIAL_FORM.busy_prompt,
-          noanswer_prompt: d.noanswer_prompt ?? INITIAL_FORM.noanswer_prompt,
-          announce_callerid:
-            d.announce_callerid ?? INITIAL_FORM.announce_callerid,
-          announce_duration:
-            d.announce_duration ?? INITIAL_FORM.announce_duration,
-          announce_arrival_time:
-            d.announce_arrival_time ?? INITIAL_FORM.announce_arrival_time,
-        });
+        setForm(mapApiToForm(res.message));
       }
     } catch (_) {
     } finally {
@@ -372,261 +512,197 @@ const VoicemailPage = () => {
     }
   };
 
+  const renderSelect = (fieldKey, options, getLabel) => (
+    <FormControl
+      size="small"
+      sx={{ width: isCompact ? "100%" : VOICEMAIL_INPUT_WIDTH }}
+    >
+      <MuiSelect
+        value={form[fieldKey]}
+        onChange={(e) => set(fieldKey, e.target.value)}
+        sx={voicemailSelectSx(isCompact)}
+      >
+        {options.map((opt) => {
+          const value = typeof opt === "string" ? opt : opt.value;
+          const label = getLabel
+            ? getLabel(opt)
+            : typeof opt === "string"
+              ? opt
+              : opt.label;
+          return (
+            <MenuItem key={value} value={value} sx={{ fontSize: 13 }}>
+              {label}
+            </MenuItem>
+          );
+        })}
+      </MuiSelect>
+    </FormControl>
+  );
+
   return (
     <div
       style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: isCompact ? 8 : 16,
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        ...voicemailPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      <div style={{ width: "100%", maxWidth: 1000 }}>
+      <div style={voicemailPageInnerStyle}>
         {message.text && (
-          <div
-            style={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 420,
-            }}
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={voicemailFixedAlertSx}
           >
-            <Alert
-              severity={message.type}
-              onClose={() => setMessage({ type: "", text: "" })}
-              sx={{ boxShadow: 3 }}
-            >
-              {message.text}
-            </Alert>
-          </div>
+            {message.text}
+          </Alert>
         )}
 
-        <PbxBreadcrumb section="Voicemail" current="Voicemail" />
+        <VoicemailBreadcrumb
+          section={VOICEMAIL_BREADCRUMB_SECTION}
+          current={VOICEMAIL_TITLE}
+        />
 
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              minHeight: 44,
-              background: C.cardBg,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-              display: "flex",
-              alignItems: "center",
-              padding: "7px 14px",
-              fontWeight: 700,
-              fontSize: 13,
-              color: C.labelText,
-              borderBottom: `1px solid ${C.cardBorder}`,
-            }}
-          >
-            <span>Voicemail</span>
+        <div style={voicemailCardStyle}>
+          <div style={voicemailHeaderStyle}>
+            <span>{VOICEMAIL_TITLE}</span>
           </div>
 
-          <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
+          <div style={{ padding: "12px 0 0", boxSizing: "border-box" }}>
             {loading ? (
               <TableListLoading />
             ) : (
-              <div style={{ paddingBottom: 16 }}>
-                {/* ── Message Options ── */}
-                <SectionHeading title="Message Options" isFirst />
-
-                <GridRow>
-                  <Tooltip
-                    title="This option sets the maximum number of messages per extension. The default is 100."
-                    {...tooltipProps}
-                  >
-                    <label style={{ ...labelStyle, cursor: "help" }}>
-                      Max Messages per extension
-                    </label>
-                  </Tooltip>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <select
-                      value={form.max_messages}
-                      onChange={(e) => set("max_messages", e.target.value)}
-                      style={inputStyle}
-                      {...fieldInteraction}
-                    >
-                      <option value="10">10</option>
-                      <option value="25">25</option>
-                      <option value="100">100</option>
-                      <option value="250">250</option>
-                    </select>
-                  </div>
-                </GridRow>
-
-                <GridRow>
-                  <Tooltip
-                    title="This option sets the maximum lengthof a single voicemail message (in seconds)."
-                    {...tooltipProps}
-                  >
-                    <label style={{ ...labelStyle, cursor: "help" }}>
-                      Max Message Time (s)
-                    </label>
-                  </Tooltip>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <select
-                      value={form.max_message_time}
-                      onChange={(e) => set("max_message_time", e.target.value)}
-                      style={inputStyle}
-                      {...fieldInteraction}
-                    >
-                      <option value="60">60</option>
-                      <option value="120">120</option>
-                      <option value="300">300</option>
-                      <option value="600">600</option>
-                    </select>
-                  </div>
-                </GridRow>
-
-                <GridRow>
-                  <Tooltip
-                    title="This option sets the minimum length of a single voicemail message (in seconds). Messages below this threshold will be automatically deleted."
-                    {...tooltipProps}
-                  >
-                    <label style={{ ...labelStyle, cursor: "help" }}>
-                      Min Message Time (s)
-                    </label>
-                  </Tooltip>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <select
-                      value={form.min_message_time}
-                      onChange={(e) => set("min_message_time", e.target.value)}
-                      style={inputStyle}
-                      {...fieldInteraction}
-                    >
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                    </select>
-                  </div>
-                </GridRow>
-
-                <CheckboxRow
-                  checked={form.press5_enabled}
-                  onChange={(val) => set("press5_enabled", val)}
-                  label="press 5 to leave a message"
-                  tooltip="If this option is ticke, you will hear the prompt: The phone you dial is unavailable now. Please press 5 to leave your message: if it is unticket, you will hear the prompt: The phone you dial is unavailable noew. By default it is ticked."
+              <div style={{ ...voicemailFormBodyStyle, paddingBottom: 16 }}>
+                <VoicemailSectionHeading
+                  title={VOICEMAIL_SECTIONS.message_options}
+                  isFirst
                 />
 
-                {/* ── Greeting Options ── */}
-                <SectionHeading title="Greeting Options" />
+                <VoicemailFieldRow
+                  label="Max Messages per extension"
+                  tooltipKey="max_messages"
+                  isCompact={isCompact}
+                >
+                  {renderSelect("max_messages", VOICEMAIL_MAX_MESSAGES_OPTIONS)}
+                </VoicemailFieldRow>
 
-                <GridRow>
-                  <Tooltip
-                    title="Select the greeting that will be played when the extension is busy. The default setting is Default."
-                    {...tooltipProps}
-                  >
-                    <label style={{ ...labelStyle, cursor: "help" }}>
-                      Busy Prompt
-                    </label>
-                  </Tooltip>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <select
-                      value={form.busy_prompt}
-                      onChange={(e) => set("busy_prompt", e.target.value)}
-                      style={inputStyle}
-                      {...fieldInteraction}
-                    >
-                      <option value="default">Default</option>
-                    </select>
-                  </div>
-                </GridRow>
+                <VoicemailFieldRow
+                  label="Max Message Time (s)"
+                  tooltipKey="max_message_time"
+                  isCompact={isCompact}
+                >
+                  {renderSelect(
+                    "max_message_time",
+                    VOICEMAIL_MAX_MESSAGE_TIME_OPTIONS,
+                  )}
+                </VoicemailFieldRow>
 
-                <GridRow>
-                  <Tooltip
-                    title="Select the greeting that will be played when the extension is unavailable. The default setting is Default."
-                    {...tooltipProps}
-                  >
-                    <label style={{ ...labelStyle, cursor: "help" }}>
-                      No answer Prompt
-                    </label>
-                  </Tooltip>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <select
-                      value={form.noanswer_prompt}
-                      onChange={(e) => set("noanswer_prompt", e.target.value)}
-                      style={inputStyle}
-                      {...fieldInteraction}
-                    >
-                      <option value="default">Default</option>
-                    </select>
-                  </div>
-                </GridRow>
+                <VoicemailFieldRow
+                  label="Min Message Time (s)"
+                  tooltipKey="min_message_time"
+                  isCompact={isCompact}
+                >
+                  {renderSelect(
+                    "min_message_time",
+                    VOICEMAIL_MIN_MESSAGE_TIME_OPTIONS,
+                  )}
+                </VoicemailFieldRow>
 
-                {/* ── PlayBack Options ── */}
-                <SectionHeading title="PlayBack Options" />
+                <VoicemailFieldRow
+                  label="Press 5 to leave a message"
+                  tooltipKey="press5_enabled"
+                  isCompact={isCompact}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={!!form.press5_enabled}
+                    onChange={(e) => set("press5_enabled", e.target.checked)}
+                    sx={voicemailCheckboxSx}
+                  />
+                </VoicemailFieldRow>
 
-                <CheckboxRow
-                  checked={form.announce_callerid}
-                  onChange={(val) => set("announce_callerid", val)}
+                <VoicemailSectionHeading
+                  title={VOICEMAIL_SECTIONS.greeting_options}
+                />
+
+                <VoicemailFieldRow
+                  label="Busy Prompt"
+                  tooltipKey="busy_prompt"
+                  isCompact={isCompact}
+                >
+                  {renderSelect("busy_prompt", VOICEMAIL_PROMPT_OPTIONS)}
+                </VoicemailFieldRow>
+
+                <VoicemailFieldRow
+                  label="No answer Prompt"
+                  tooltipKey="noanswer_prompt"
+                  isCompact={isCompact}
+                >
+                  {renderSelect("noanswer_prompt", VOICEMAIL_PROMPT_OPTIONS)}
+                </VoicemailFieldRow>
+
+                <VoicemailSectionHeading
+                  title={VOICEMAIL_SECTIONS.playback_options}
+                />
+
+                <VoicemailFieldRow
                   label="Announce Message Caller ID"
-                  tooltip="If this option is ticked, the extension number of the caller who left the message will be announced before the content of this message. By default it is unticket."
-                />
+                  tooltipKey="announce_callerid"
+                  isCompact={isCompact}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={!!form.announce_callerid}
+                    onChange={(e) => set("announce_callerid", e.target.checked)}
+                    sx={voicemailCheckboxSx}
+                  />
+                </VoicemailFieldRow>
 
-                <CheckboxRow
-                  checked={form.announce_duration}
-                  onChange={(val) => set("announce_duration", val)}
+                <VoicemailFieldRow
                   label="Announce Message Duration"
-                  tooltip="If this option is ticked, you will hear the duration of the message when the message is played back."
-                />
+                  tooltipKey="announce_duration"
+                  isCompact={isCompact}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={!!form.announce_duration}
+                    onChange={(e) => set("announce_duration", e.target.checked)}
+                    sx={voicemailCheckboxSx}
+                  />
+                </VoicemailFieldRow>
 
-                <CheckboxRow
-                  checked={form.announce_arrival_time}
-                  onChange={(val) => set("announce_arrival_time", val)}
+                <VoicemailFieldRow
                   label="Announce Message Arrival Time"
-                  tooltip="If this option is ticked, you will hear the arrival time of the message when the message is played back."
-                />
+                  tooltipKey="announce_arrival_time"
+                  isCompact={isCompact}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={!!form.announce_arrival_time}
+                    onChange={(e) =>
+                      set("announce_arrival_time", e.target.checked)
+                    }
+                    sx={voicemailCheckboxSx}
+                  />
+                </VoicemailFieldRow>
               </div>
             )}
           </div>
 
           {!loading && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 12,
-                width: "100%",
-                padding: "10px 20px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                boxSizing: "border-box",
-              }}
-            >
+            <div style={voicemailFooterStyle}>
               <Btn
                 variant="primary"
                 onClick={handleSave}
                 disabled={saving}
-                style={{
-                  minWidth: 110,
-                  height: 34,
-                  fontSize: 13,
-                  padding: "0 28px",
-                }}
+                style={voicemailFooterBtnStyle}
               >
                 {saving ? (
                   <>
-                    <CircularProgress size={14} color="inherit" /> Saving...
+                    <CircularProgress size={14} color="inherit" />
+                    Saving...
                   </>
                 ) : (
-                  "Save"
+                  "SAVE"
                 )}
               </Btn>
             </div>

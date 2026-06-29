@@ -650,7 +650,7 @@ const PrivateGroupSectionHeading = ({
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: -6,
         background: PRIVATE_GROUP_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,

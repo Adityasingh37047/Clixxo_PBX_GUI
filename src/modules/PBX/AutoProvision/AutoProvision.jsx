@@ -6,8 +6,16 @@ import {
   CircularProgress,
   useMediaQuery,
 } from "@mui/material";
+import {
+  AUTO_PROVISION_BREADCRUMB_SECTION,
+  AUTO_PROVISION_COLUMNS,
+  AUTO_PROVISION_EMPTY_MESSAGE,
+  AUTO_PROVISION_ITEMS_PER_PAGE,
+  AUTO_PROVISION_SEARCH_PLACEHOLDER,
+  AUTO_PROVISION_TITLE,
+} from "../../../constants/AutoProvisionConstants";
 
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+const AUTO_PROVISION_COMPACT_MQ = "(max-width: 768px)";
 
 const PROVISION_LIST_KEYS = [
   "devices",
@@ -68,22 +76,17 @@ const extractAutoProvisionList = (res) => {
   return [];
 };
 
-// ── Color palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  mutedText: "#6b7280",
+  placeholderText: "#94a3b8",
   accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
 };
-
-const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -93,66 +96,69 @@ const Btn = ({
   style: extraStyle,
   title,
   type,
-  hoverBehavior = "background",
 }) => {
-  const variants = {
+  const styles = {
     default: {
-        background: C.cardBg,
-        color: C.valueText,
-        border: "1px solid #9ca3af",
-      },
-      primary: {
-        background:
-          "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-        color: "#fff",
-        border: "1px solid #5A6F8F",
-      },
-      danger: {
-        background: C.errorRed,
-        color: C.cardBg,
-        border: `0.5px solid ${C.errorRed}`,
-      },
-      cancel: {
-        background: "#cbd5e1",
-        color: "#374151",
-        border: "1px solid #cbd5e1",
-        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-      },
-      outline: {
-        background: C.cardBg,
-        color: C.valueText,
-        border: "1px solid #9ca3af",
-      },
-      accent: {
-        background:
-          "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-        color: "#fff",
-        border: "1px solid #5A6F8F",
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
   };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const s = variants[variant] || variants.default;
-  const hoverBg = (() => {
-    switch (variant) {
-        case "primary":
-            case "accent":
-              return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-            case "danger":
-              return "#b91c1c";
-            case "cancel":
-              return  "#b6c2d3";
-            case "outline":
-            case "default":
-            default:
-              return "#e2e8f0";
-          }
-  })();
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
 
-  const baseBg = extraStyle?.background || s.background;
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
-      type={type}
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       title={title}
@@ -170,25 +176,26 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "0.82";
-          } else {
-            e.currentTarget.style.background = hoverBg;
-          }
-        }
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
         if (!disabled) {
-          if (hoverBehavior === "opacity") {
-            e.currentTarget.style.opacity = "1";
-          } else {
-            e.currentTarget.style.background = baseBg;
-          }
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
         }
       }}
     >
@@ -206,8 +213,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -218,37 +225,111 @@ const TH = ({ children, style: extra }) => (
   </th>
 );
 
-const tdStyle = {
+const autoProvisionTdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
+const autoProvisionTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const pbxPageWrapStyle = {
+const AUTO_PROVISION_TABLE_CARD_RADIUS = 10;
+
+const autoProvisionPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const autoProvisionPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const autoProvisionCardStyle = {
+  background: "#ffffff",
+  borderRadius: AUTO_PROVISION_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+};
+
+const autoProvisionToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+  flexWrap: "wrap",
+  gap: 12,
+  borderTopLeftRadius: AUTO_PROVISION_TABLE_CARD_RADIUS,
+  borderTopRightRadius: AUTO_PROVISION_TABLE_CARD_RADIUS,
+};
+
+const autoProvisionPaginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: AUTO_PROVISION_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: AUTO_PROVISION_TABLE_CARD_RADIUS,
+  flexWrap: "wrap",
+  gap: 8,
+};
+
+const autoProvisionSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "5px 12px",
+  borderRadius: 999,
+  border: `1px solid ${C.accent}`,
+};
+
+const autoProvisionCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const autoProvisionPageBadgeStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.accent,
+  background: "#e0f2fe",
+  padding: "5px 14px",
+  borderRadius: 6,
+  border: `1px solid ${C.cardBorder}`,
+};
+
+const autoProvisionFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const AutoProvisionBreadcrumb = ({ section, current }) => (
   <div
     style={{
       fontSize: 12,
@@ -259,7 +340,6 @@ const PbxBreadcrumb = ({ section, current, style }) => (
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
-      ...style,
     }}
   >
     <span>PBX</span>
@@ -283,7 +363,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({ message, showButton = false }) => (
+const TableListEmptyState = ({ message }) => (
   <div
     style={{
       display: "flex",
@@ -300,13 +380,17 @@ const TableListEmptyState = ({ message, showButton = false }) => (
         color: "#3E5475",
         fontSize: 13,
         fontWeight: 600,
-        marginBottom: showButton ? 16 : 0,
       }}
     >
       {message}
     </div>
   </div>
 );
+
+const getAutoProvisionRowBg = (idx, isSelected) => {
+  if (isSelected) return "#e0f2fe";
+  return idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+};
 
 const normalizeRow = (item, index) => {
   const manufacturer =
@@ -354,7 +438,7 @@ const normalizeRow = (item, index) => {
 };
 
 const AutoProvision = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(AUTO_PROVISION_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState({ fetch: false });
@@ -362,7 +446,7 @@ const AutoProvision = () => {
   const hasInitialLoadRef = useRef(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const itemsPerPage = 20;
+  const itemsPerPage = AUTO_PROVISION_ITEMS_PER_PAGE;
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -464,8 +548,13 @@ const AutoProvision = () => {
   };
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div
+      style={{
+        ...autoProvisionPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      <div style={autoProvisionPageInnerStyle}>
         {error.text && (
           <Alert
             severity={
@@ -476,43 +565,21 @@ const AutoProvision = () => {
                   : "info"
             }
             onClose={() => setError({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={autoProvisionFixedAlertSx}
           >
             {error.text}
           </Alert>
         )}
 
-        <PbxBreadcrumb section="Auto Provision" current="Auto Provision" />
+        <AutoProvisionBreadcrumb
+          section={AUTO_PROVISION_BREADCRUMB_SECTION}
+          current={AUTO_PROVISION_TITLE}
+        />
 
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: 10,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
+        <div style={autoProvisionCardStyle}>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+              ...autoProvisionToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -527,17 +594,7 @@ const AutoProvision = () => {
               }}
             >
               {selected.length > 0 && (
-                <span
-                  style={{
-                    background: "#e0f2fe",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={autoProvisionSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -556,17 +613,20 @@ const AutoProvision = () => {
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
-                  background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
+                  background: "#f8fafc",
+                  border: `1px solid ${searchFocused ? "#3E5475" : "#d1d5db"}`,
+                  borderRadius: 10,
                   padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
+                  boxShadow: searchFocused
+                    ? "0 0 0 2px rgba(62, 84, 117, 0.15)"
+                    : "none",
+                  transition: "border-color 0.15s ease, box-shadow 0.15s ease",
                 }}
               >
                 <span
                   style={{
                     fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
+                    color: searchFocused ? "#3E5475" : C.mutedText,
                   }}
                 >
                   🔍
@@ -580,7 +640,7 @@ const AutoProvision = () => {
                   }}
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setSearchFocused(false)}
-                  placeholder="Search devices..."
+                  placeholder={AUTO_PROVISION_SEARCH_PLACEHOLDER}
                   style={{
                     border: "none",
                     background: "transparent",
@@ -608,9 +668,10 @@ const AutoProvision = () => {
                 onClick={loadRows}
                 disabled={loading.fetch}
                 variant="cancel"
+                style={autoProvisionCancelBtnStyle}
               >
                 {loading.fetch ? (
-                  <CircularProgress size={11} style={{ color: C.accent }} />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   "Refresh"
                 )}
@@ -631,7 +692,7 @@ const AutoProvision = () => {
             {isInitialLoad ? (
               <TableListLoading />
             ) : rows.length === 0 ? (
-              <TableListEmptyState message="No auto provision devices found." />
+              <TableListEmptyState message={AUTO_PROVISION_EMPTY_MESSAGE} />
             ) : searchQuery && filteredRows.length === 0 ? (
               <TableListEmptyState
                 message={`No results for "${searchQuery}"`}
@@ -662,17 +723,17 @@ const AutoProvision = () => {
                         checked={allPageSelected}
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
-                        sx={checkboxSx}
+                        sx={autoProvisionTableCheckboxSx}
                       />
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      MAC Address
+                      {AUTO_PROVISION_COLUMNS.macAddress}
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Extension
+                      {AUTO_PROVISION_COLUMNS.extension}
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Manufacturer / Model
+                      {AUTO_PROVISION_COLUMNS.manufacturerModel}
                     </TH>
                     <TH
                       style={{
@@ -682,7 +743,7 @@ const AutoProvision = () => {
                         zIndex: 10,
                       }}
                     >
-                      IP
+                      {AUTO_PROVISION_COLUMNS.ip}
                     </TH>
                   </tr>
                 </thead>
@@ -691,14 +752,19 @@ const AutoProvision = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
+                    const rowBg = getAutoProvisionRowBg(idx, isSelected);
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const cellStyle = {
+                      ...autoProvisionTdStyle,
+                      background: rowBg,
+                      ...lastRowCellStyle,
+                    };
+                    const lastCellStyle = {
+                      ...cellStyle,
+                      borderRight: "none",
+                    };
 
                     return (
                       <tr
@@ -718,56 +784,23 @@ const AutoProvision = () => {
                       >
                         <td
                           style={{
-                            ...tdStyle,
-                            background: rowBg,
+                            ...cellStyle,
                             borderLeft: "none",
-                            ...lastRowCellStyle,
                           }}
                         >
                           <Checkbox
                             size="small"
                             checked={isSelected}
                             onChange={() => handleToggleRow(realIdx)}
-                            sx={checkboxSx}
+                            sx={autoProvisionTableCheckboxSx}
                           />
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.macAddress || "—"}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.extension || "—"}
-                        </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            ...lastRowCellStyle,
-                          }}
-                        >
+                        <td style={cellStyle}>{row.macAddress || "—"}</td>
+                        <td style={cellStyle}>{row.extension || "—"}</td>
+                        <td style={cellStyle}>
                           {row.manufacturerModel || "—"}
                         </td>
-                        <td
-                          style={{
-                            ...tdStyle,
-                            background: rowBg,
-                            borderRight: "none",
-                            ...lastRowCellStyle,
-                          }}
-                        >
-                          {row.ip || "—"}
-                        </td>
+                        <td style={lastCellStyle}>{row.ip || "—"}</td>
                       </tr>
                     );
                   })}
@@ -777,20 +810,7 @@ const AutoProvision = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "7px 14px",
-                borderTop: `1px solid ${C.cardBorder}`,
-                background: "#ffffff",
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-                flexWrap: "wrap",
-                gap: 8,
-              }}
-            >
+            <div style={autoProvisionPaginationStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {pagedRows.length} record
                 {pagedRows.length !== 1 ? "s" : ""} on page {page}
@@ -803,17 +823,7 @@ const AutoProvision = () => {
                 >
                   ← Prev
                 </Btn>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: C.accent,
-                    background: "#e0f2fe",
-                    padding: "5px 14px",
-                    borderRadius: 6,
-                    border: `0.5px solid ${C.cardBorder}`,
-                  }}
-                >
+                <span style={autoProvisionPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
                 <Btn

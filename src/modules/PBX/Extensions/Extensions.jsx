@@ -452,7 +452,7 @@ const ExtensionModalSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: -6,
         background: EXTENSION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -472,7 +472,7 @@ const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: -6,
         background: EXTENSION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,

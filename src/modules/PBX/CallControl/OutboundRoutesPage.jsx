@@ -424,7 +424,7 @@ const OutboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: -6,
         background: OUTBOUND_ROUTE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,

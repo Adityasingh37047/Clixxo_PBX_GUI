@@ -435,7 +435,7 @@ const OutboundRestrictionModalSectionHeading = ({ title, tooltipKey, isFirst = f
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: -6,
         background: OUTBOUND_RESTRICTION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,

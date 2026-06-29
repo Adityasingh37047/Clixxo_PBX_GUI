@@ -604,7 +604,7 @@ const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: -6,
         background: SIP_REGISTER_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
