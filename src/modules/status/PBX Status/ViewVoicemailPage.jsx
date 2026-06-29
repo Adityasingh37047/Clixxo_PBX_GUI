@@ -13,32 +13,49 @@ import {
   playVoicemail,
   deleteVoicemail,
 } from "../../../api/apiService";
-
-const PBX_COMPACT_MQ = "(max-width: 768px)";
+import {
+  VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS,
+  VIEW_VOICEMAIL_COMPACT_MQ,
+  VIEW_VOICEMAIL_EMPTY_MESSAGE,
+  VIEW_VOICEMAIL_EXTENSION_PLACEHOLDER,
+  VIEW_VOICEMAIL_FILTER_LABELS,
+  VIEW_VOICEMAIL_FOLDER_OPTIONS,
+  VIEW_VOICEMAIL_PAGE_LIMIT,
+  VIEW_VOICEMAIL_RECORD_LABEL,
+  VIEW_VOICEMAIL_TABLE_HEADING,
+  VIEW_VOICEMAIL_TABLE_MIN_WIDTH,
+} from "../../../constants/ViewVoicemailConstants";
 
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   accent: "#3E5475",
-  amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
 };
 
-const CARD_RADIUS = 10;
-const OUTLINED_BORDER = "rgba(0,0,0,0.23)";
-const OUTLINED_HOVER = "rgba(0,0,0,0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const VIEW_VOICEMAIL_TABLE_CARD_RADIUS = 10;
+
+const VIEW_VOICEMAIL_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
+
+const VIEW_VOICEMAIL_SECONDARY_CARD_SHADOW =
+  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = C.accent;
 
 // ── Interaction handlers for native inputs ────────────────────────────────────
 const nativeFieldInteraction = {
   onFocus: (e) => {
     e.target.style.borderColor = OUTLINED_FOCUS;
-    e.target.style.boxShadow = `0 0 0 1px ${OUTLINED_FOCUS}`;
+    e.target.style.boxShadow = "0 0 0 2px rgba(62, 84, 117, 0.15)";
   },
   onBlur: (e) => {
     e.target.style.borderColor = OUTLINED_BORDER;
@@ -62,7 +79,7 @@ const Btn = ({
   onClick,
   disabled,
   variant = "default",
-  style: extra,
+  style: extraStyle,
 }) => {
   const styles = {
     default: {
@@ -97,7 +114,31 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
-  const baseBg = extra?.background ?? s.background;
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background =
+      {
+        primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+        cancel: "#a3b1c2",
+        outline: "#d1d9e6",
+        default: "#d1d5db",
+      }[variant] || "#d1d5db";
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <button
       onClick={onClick}
@@ -116,19 +157,145 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
-        ...extra,
+        ...extraStyle,
       }}
       onMouseEnter={(e) => {
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
     </button>
   );
+};
+
+const PageBreadcrumb = ({ segments, style }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      ...style,
+    }}
+  >
+    {segments.map((label, index) => (
+      <React.Fragment key={`${label}-${index}`}>
+        {index > 0 ? <span>&gt;</span> : null}
+        <span
+          style={
+            index === segments.length - 1
+              ? { color: "#1e293b", fontWeight: 600 }
+              : undefined
+          }
+        >
+          {label}
+        </span>
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+const viewVoicemailPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const viewVoicemailPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const viewVoicemailFilterCardStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
+  boxShadow: VIEW_VOICEMAIL_CARD_SHADOW,
+  padding: "10px 14px",
+  marginBottom: 16,
+};
+
+const viewVoicemailCardStyle = {
+  background: C.cardBg,
+  borderRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: VIEW_VOICEMAIL_CARD_SHADOW,
+};
+
+const viewVoicemailToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 8,
+  borderTopLeftRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
+  borderTopRightRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
+};
+
+const viewVoicemailFilterFieldStyle = {
+  height: 30,
+  fontSize: 12,
+  color: C.valueText,
+  background: "#f8fafc",
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 10,
+  outline: "none",
+  fontFamily: "Inter, sans-serif",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  boxSizing: "border-box",
+};
+
+const viewVoicemailFilterLabelStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: C.labelText,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+  marginBottom: 6,
+  display: "block",
+};
+
+const viewVoicemailToolbarBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const viewVoicemailRefreshBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 const TH = ({ children, align = "center", style: extra }) => (
@@ -140,8 +307,8 @@ const TH = ({ children, align = "center", style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: align,
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -160,8 +327,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -224,23 +391,25 @@ const toolIconBtnSx = {
   "&:hover": { backgroundColor: "#e8edf3" },
 };
 
-const viewVoicemailPaginationStyle = {
+const viewVoicemailFooterStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: CARD_RADIUS,
-  borderBottomRightRadius: CARD_RADIUS,
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
   overflow: "hidden",
+  flexWrap: "wrap",
+  gap: 10,
 };
 
 const viewVoicemailPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
-  background: "#e0f2fe",
+  background: "#eff6ff",
   padding: "5px 14px",
   borderRadius: 6,
   border: `0.5px solid ${C.cardBorder}`,
@@ -277,7 +446,7 @@ const NewBadge = () => (
   <span
     style={{
       background: "#dcfce7",
-      color: "#16a34a",
+      color: C.successGreen,
       padding: "2px 7px",
       borderRadius: 999,
       fontSize: 10,
@@ -306,14 +475,14 @@ const ReadBadge = () => (
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 const ViewVoicemailPage = () => {
-  const isCompact = useMediaQuery(PBX_COMPACT_MQ);
+  const isCompact = useMediaQuery(VIEW_VOICEMAIL_COMPACT_MQ);
 
   const [extensionInput, setExtensionInput] = useState("");
   const [folderFilter, setFolderFilter] = useState("all");
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit] = useState(50);
+  const [limit] = useState(VIEW_VOICEMAIL_PAGE_LIMIT);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -432,42 +601,22 @@ const ViewVoicemailPage = () => {
   return (
     <div
       style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
+        ...viewVoicemailPageWrapStyle,
         padding: isCompact ? 8 : 16,
-        boxSizing: "border-box",
       }}
     >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        {/* Breadcrumb */}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>Status</span>
-          <span>&gt;</span>
-          <span>PBX Status</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            View Voicemail
-          </span>
-        </div>
+      <div style={viewVoicemailPageInnerStyle}>
+        <PageBreadcrumb
+          segments={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS}
+          style={{ marginBottom: 16 }}
+        />
 
-        {/* Error banner */}
         {error && (
           <div
             style={{
               background: "#fef2f2",
-              borderLeft: `3px solid ${C.amber}`,
-              color: "#DC2626",
+              borderLeft: `3px solid ${C.errorRed}`,
+              color: C.errorRed,
               padding: "10px 14px",
               borderRadius: 8,
               marginBottom: 16,
@@ -487,15 +636,10 @@ const ViewVoicemailPage = () => {
           </div>
         )}
 
-        {/* Filter bar */}
         <div
           style={{
-            background: "#ffffff",
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: CARD_RADIUS,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            ...viewVoicemailFilterCardStyle,
             padding: isCompact ? 12 : "10px 14px",
-            marginBottom: 16,
           }}
         >
           <div
@@ -507,18 +651,8 @@ const ViewVoicemailPage = () => {
             }}
           >
             <div style={{ flex: isCompact ? "1 1 100%" : "0 0 auto" }}>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                Extension (optional)
+              <span style={viewVoicemailFilterLabelStyle}>
+                {VIEW_VOICEMAIL_FILTER_LABELS.extension}
               </span>
               <input
                 type="text"
@@ -527,37 +661,18 @@ const ViewVoicemailPage = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") loadMessages(1);
                 }}
-                placeholder="All mailboxes"
+                placeholder={VIEW_VOICEMAIL_EXTENSION_PLACEHOLDER}
                 style={{
-                  height: 30,
-                  fontSize: 12,
-                  color: C.valueText,
-                  background: "#ffffff",
-                  border: `1px solid ${OUTLINED_BORDER}`,
-                  borderRadius: 10,
+                  ...viewVoicemailFilterFieldStyle,
                   padding: "0 12px",
-                  outline: "none",
-                  fontFamily: "Inter, sans-serif",
-                  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
                   width: isCompact ? "100%" : 180,
-                  boxSizing: "border-box",
                 }}
                 {...nativeFieldInteraction}
               />
             </div>
             <div style={{ flex: isCompact ? "1 1 100%" : "0 0 auto" }}>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                Folder
+              <span style={viewVoicemailFilterLabelStyle}>
+                {VIEW_VOICEMAIL_FILTER_LABELS.folder}
               </span>
               <select
                 value={folderFilter}
@@ -567,18 +682,9 @@ const ViewVoicemailPage = () => {
                   loadMessages(1, extensionInput, v);
                 }}
                 style={{
-                  height: 30,
-                  fontSize: 12,
-                  color: C.valueText,
-                  background: "#ffffff",
-                  border: `1px solid ${OUTLINED_BORDER}`,
-                  borderRadius: 10,
+                  ...viewVoicemailFilterFieldStyle,
                   padding: "0 32px 0 12px",
-                  outline: "none",
-                  fontFamily: "Inter, sans-serif",
-                  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
                   width: isCompact ? "100%" : 170,
-                  boxSizing: "border-box",
                   cursor: "pointer",
                   appearance: "none",
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
@@ -587,24 +693,21 @@ const ViewVoicemailPage = () => {
                 }}
                 {...nativeFieldInteraction}
               >
-                <option value="all">All Folders</option>
-                <option value="INBOX">New (INBOX)</option>
-                <option value="Old">Read (Old)</option>
+                {VIEW_VOICEMAIL_FOLDER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
             <Btn
               variant="primary"
               onClick={() => loadMessages(1)}
               disabled={loading}
-              style={{
-                height: 30,
-                padding: "6px 14px",
-                fontSize: 12,
-                borderRadius: 10,
-              }}
+              style={viewVoicemailToolbarBtnStyle}
             >
               {loading ? (
-                <CircularProgress size={14} color="inherit" />
+                <CircularProgress size={11} style={{ color: "#fff" }} />
               ) : (
                 "Search"
               )}
@@ -613,7 +716,7 @@ const ViewVoicemailPage = () => {
               variant="cancel"
               onClick={() => loadMessages(page)}
               disabled={loading}
-              style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+              style={viewVoicemailRefreshBtnStyle}
             >
               Refresh
             </Btn>
@@ -626,7 +729,7 @@ const ViewVoicemailPage = () => {
                   loadMessages(1, "", "all");
                 }}
                 disabled={loading}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+                style={viewVoicemailToolbarBtnStyle}
               >
                 Reset
               </Btn>
@@ -634,60 +737,30 @@ const ViewVoicemailPage = () => {
           </div>
         </div>
 
-        {/* Table card */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            border: `1.5px solid ${C.cardBorder}`,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 8,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
-            }}
-          >
+        <div style={viewVoicemailCardStyle}>
+          <div style={viewVoicemailToolbarStyle}>
             <span style={{ fontSize: 13, fontWeight: 700, color: C.labelText }}>
-              Voicemail Messages
+              {VIEW_VOICEMAIL_TABLE_HEADING}
             </span>
-            {hasLoaded && (
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                {total} message{total !== 1 ? "s" : ""} total
-              </span>
-            )}
           </div>
 
           {loading ? (
             <TableListLoading />
           ) : rows.length === 0 ? (
-            <TableListEmptyState message="No voicemail messages found." />
+            <TableListEmptyState message={VIEW_VOICEMAIL_EMPTY_MESSAGE} />
           ) : (
-            <>
-              <div
-                className="trunk-table-scroll"
-                style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  WebkitOverflowScrolling: "touch",
-                }}
-              >
-                <table
+            <div
+              className="trunk-table-scroll"
+              style={{
+                overflowX: "auto",
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              <table
                   style={{
                     width: "100%",
-                    minWidth: 860,
+                    minWidth: VIEW_VOICEMAIL_TABLE_MIN_WIDTH,
                     borderCollapse: "separate",
                     borderSpacing: 0,
                     tableLayout: "fixed",
@@ -797,7 +870,7 @@ const ViewVoicemailPage = () => {
                                 {playLoading === row.id ? (
                                   <CircularProgress
                                     size={13}
-                                    style={{ color: "#16a34a" }}
+                                    style={{ color: C.successGreen }}
                                   />
                                 ) : isPlaying ? (
                                   <StopRoundedIcon
@@ -805,7 +878,7 @@ const ViewVoicemailPage = () => {
                                   />
                                 ) : (
                                   <PlayArrowRoundedIcon
-                                    sx={{ fontSize: 16, color: "#16a34a" }}
+                                    sx={{ fontSize: 16, color: C.successGreen }}
                                   />
                                 )}
                               </IconButton>
@@ -844,24 +917,24 @@ const ViewVoicemailPage = () => {
                   </tbody>
                 </table>
               </div>
+          )}
 
-              {/* Pagination */}
-              <div
-                style={{
-                  ...viewVoicemailPaginationStyle,
-                  ...(isCompact
-                    ? {
-                        flexDirection: "column",
-                        alignItems: "stretch",
-                        gap: 10,
-                      }
-                    : {}),
-                }}
-              >
-                <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Showing {rows.length} message{rows.length !== 1 ? "s" : ""} on
-                  page {page}
-                </span>
+          {hasLoaded && rows.length > 0 && (
+            <div
+              style={{
+                ...viewVoicemailFooterStyle,
+                ...(isCompact
+                  ? {
+                      flexDirection: "column",
+                      alignItems: "stretch",
+                    }
+                  : {}),
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                Showing {total} {VIEW_VOICEMAIL_RECORD_LABEL}
+              </span>
+              {totalPages > 1 && (
                 <div
                   style={{
                     display: "flex",
@@ -890,8 +963,8 @@ const ViewVoicemailPage = () => {
                     Next →
                   </Btn>
                 </div>
-              </div>
-            </>
+              )}
+            </div>
           )}
         </div>
 
@@ -903,18 +976,18 @@ const ViewVoicemailPage = () => {
               alignItems: "center",
               gap: 12,
               marginTop: 16,
-              background: "#ffffff",
-              border: `1.5px solid ${C.cardBorder}`,
-              borderRadius: CARD_RADIUS,
+              background: C.cardBg,
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
               padding: "10px 16px",
-              boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+              boxShadow: VIEW_VOICEMAIL_SECONDARY_CARD_SHADOW,
             }}
           >
             <span
               style={{
                 fontSize: 11,
                 fontWeight: 700,
-                color: "#16a34a",
+                color: C.successGreen,
                 whiteSpace: "nowrap",
               }}
             >

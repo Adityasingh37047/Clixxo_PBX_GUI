@@ -1,13 +1,25 @@
 import React, { useState } from "react";
-import { Alert, Tooltip } from "@mui/material";
+import { Alert, Checkbox, Tooltip } from "@mui/material";
 import {
   NAT_SETTINGS_FIELDS,
   NAT_SETTINGS_NOTE,
   NAT_SETTINGS_FIELD_TOOLTIPS,
+  FXS_NAT_SETTINGS_BREADCRUMB_ROOT,
+  FXS_NAT_SETTINGS_BREADCRUMB_SECTION,
+  FXS_NAT_SETTINGS_PAGE_TITLE,
+  FXS_NAT_SETTINGS_LEFT_SECTION_TITLE,
+  FXS_NAT_SETTINGS_RIGHT_SECTION_TITLE,
+  FXS_NAT_SETTINGS_SAVE_LABEL,
+  FXS_NAT_SETTINGS_RESET_LABEL,
+  FXS_NAT_SETTINGS_NOTE_LABEL,
+  FXS_NAT_SETTINGS_SECTION_HEADING_LEFT,
+  FXS_NAT_SETTINGS_SECTION_HEADING_COLOR,
+  FXS_NAT_SETTINGS_LEFT_COLUMN_FIELD_KEYS,
+  FXS_NAT_SETTINGS_RIGHT_COLUMN_FIELD_KEYS,
 } from "../../../constants/NatSettingsConstants";
 
 // ── Page-local field label tooltip UI (not shared) ──
-const FIELD_LABEL_COLOR = "#374151";
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -68,8 +80,13 @@ const NatFieldRow = ({ label, tooltipKey, children }) => {
 
   return (
     <div
-      className="flex flex-row items-center w-full"
-      style={{ minHeight: 36 }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        minHeight: 36,
+      }}
     >
       {tooltip ? (
         <Tooltip
@@ -94,12 +111,14 @@ const C = {
   cardShadow:
     "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   strongText: "#1f2937",
-  accent: "#4A5D75",
+  accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
+  fieldReadonlyBg: "#f1f5f9",
 };
 
 const CARD_RADIUS = 10;
@@ -297,7 +316,7 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: FIELD_RADIUS,
   outline: "none",
-  backgroundColor: "#f8fafc",
+  backgroundColor: C.fieldBg,
   color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
@@ -369,6 +388,8 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
@@ -400,11 +421,13 @@ const dashboardColumnStyle = {
 const dashboardColumnLeftStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
 };
 
 const dashboardColumnRightStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const noteSectionStyle = {
@@ -450,15 +473,47 @@ const dashboardDividerLineStyle = {
   margin: "0 auto",
 };
 
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 700,
-  color: "#3e5475",
-  marginBottom: 2,
-  textAlign: "left",
+const fxsNatSettingsFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  width: "100%",
 };
 
-const VoipBreadcrumb = ({ current }) => (
+const fxsNatSettingsCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const FxsNatSettingsSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: FXS_NAT_SETTINGS_SECTION_HEADING_LEFT,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: FXS_NAT_SETTINGS_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const FxsNatSettingsBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -472,36 +527,21 @@ const VoipBreadcrumb = ({ current }) => (
       flexShrink: 0,
     }}
   >
-    <span>FXS</span>
+    <span>{FXS_NAT_SETTINGS_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>VoIP</span>
+    <span>{FXS_NAT_SETTINGS_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {FXS_NAT_SETTINGS_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children }) => (
+const FxsNatSettingsPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
-
-const LEFT_COLUMN_FIELD_KEYS = [
-  "autoNat",
-  "outerNetworkAddress",
-  "stunServer",
-  "natType",
-  "stunServerAddress",
-  "mappingContactIp",
-  "mappingSdpIp",
-];
-
-const RIGHT_COLUMN_FIELD_KEYS = [
-  "rport",
-  "learnNat",
-  "autoDetectNatIp",
-  "rtpSelfAdaption",
-];
 
 const getInitialState = () => {
   const state = {};
@@ -598,7 +638,7 @@ const NatSettingsPage = () => {
 
   const fieldReadonlyStyle = {
     ...fieldInputStyle,
-    backgroundColor: "#e5e7eb",
+    backgroundColor: C.fieldReadonlyBg,
     lineHeight: "36px",
     display: "flex",
     alignItems: "center",
@@ -622,10 +662,10 @@ const NatSettingsPage = () => {
   };
 
   const leftColumnFields = NAT_SETTINGS_FIELDS.filter((f) =>
-    LEFT_COLUMN_FIELD_KEYS.includes(f.key),
+    FXS_NAT_SETTINGS_LEFT_COLUMN_FIELD_KEYS.includes(f.key),
   );
   const rightColumnFields = NAT_SETTINGS_FIELDS.filter((f) =>
-    RIGHT_COLUMN_FIELD_KEYS.includes(f.key),
+    FXS_NAT_SETTINGS_RIGHT_COLUMN_FIELD_KEYS.includes(f.key),
   );
 
   const renderFieldControl = (field) => {
@@ -666,29 +706,13 @@ const NatSettingsPage = () => {
     if (field.type === "checkbox") {
       const disabled = field.key === "autoDetectNatIp" && !form.learnNat;
       return (
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            cursor: disabled ? "not-allowed" : "pointer",
-            opacity: disabled ? 0.6 : 1,
-          }}
-        >
-          <input
-            type="checkbox"
-            name={field.key}
-            checked={!!form[field.key]}
-            onChange={() => handleCheckbox(field.key)}
-            disabled={disabled}
-            style={{
-              width: 16,
-              height: 16,
-              margin: 0,
-              cursor: disabled ? "not-allowed" : "pointer",
-              accentColor: "#3E5475",
-            }}
-          />
-        </label>
+        <Checkbox
+          size="small"
+          checked={!!form[field.key]}
+          onChange={() => handleCheckbox(field.key)}
+          disabled={disabled}
+          sx={fxsNatSettingsCheckboxSx}
+        />
       );
     }
     return null;
@@ -707,7 +731,7 @@ const NatSettingsPage = () => {
   };
 
   return (
-    <AdvancedPageShell>
+    <FxsNatSettingsPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -727,13 +751,16 @@ const NatSettingsPage = () => {
       )}
 
 
-      <VoipBreadcrumb current="NAT Settings" />
+      <FxsNatSettingsBreadcrumb />
 
       <div style={advancedTableContainerStyle}>
         <div style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
-            <div style={dashboardSectionTitleStyle}>Core Networking</div>
-            <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+            <FxsNatSettingsSectionHeading
+              title={FXS_NAT_SETTINGS_LEFT_SECTION_TITLE}
+              isFirst
+            />
+            <div style={fxsNatSettingsFieldsColStyle}>
               {leftColumnFields.map((field) => renderField(field))}
             </div>
           </div>
@@ -743,8 +770,11 @@ const NatSettingsPage = () => {
           </div>
 
           <div style={dashboardColumnRightStyle}>
-            <div style={dashboardSectionTitleStyle}>Traversal & Options</div>
-            <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+            <FxsNatSettingsSectionHeading
+              title={FXS_NAT_SETTINGS_RIGHT_SECTION_TITLE}
+              isFirst
+            />
+            <div style={fxsNatSettingsFieldsColStyle}>
               {rightColumnFields.map((field) => renderField(field))}
             </div>
           </div>
@@ -752,7 +782,7 @@ const NatSettingsPage = () => {
 
         {NAT_SETTINGS_NOTE ? (
           <div style={noteSectionStyle}>
-            <div style={noteTitleStyle}>Note:</div>
+            <div style={noteTitleStyle}>{FXS_NAT_SETTINGS_NOTE_LABEL}</div>
             <div style={{ width: "100%", boxSizing: "border-box" }}>
               {NAT_SETTINGS_NOTE.split("\n")
                 .filter(Boolean)
@@ -778,7 +808,7 @@ const NatSettingsPage = () => {
             variant="primary"
             style={advancedFormBtnStyle}
           >
-            Save
+            {FXS_NAT_SETTINGS_SAVE_LABEL}
           </Btn>
           <Btn
             type="button"
@@ -786,11 +816,11 @@ const NatSettingsPage = () => {
             variant="cancel"
             style={advancedFormBtnStyle}
           >
-            Reset
+            {FXS_NAT_SETTINGS_RESET_LABEL}
           </Btn>
         </div>
       </div>
-    </AdvancedPageShell>
+    </FxsNatSettingsPageShell>
   );
 };
 

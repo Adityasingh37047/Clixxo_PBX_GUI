@@ -6,26 +6,40 @@ import CallEndIcon from "@mui/icons-material/CallEnd";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { IconButton, CircularProgress, Tooltip } from "@mui/material";
 import { fetchAriChannels, ariHangup } from "../../../api/apiService";
+import {
+  ACTIVE_CALLS_ACTIVE_BADGE_SUFFIX,
+  ACTIVE_CALLS_BREADCRUMB_SEGMENTS,
+  ACTIVE_CALLS_EMPTY_SUBTITLE,
+  ACTIVE_CALLS_EMPTY_TITLE,
+  ACTIVE_CALLS_POLL_MS,
+  ACTIVE_CALLS_TICK_MS,
+} from "../../../constants/ActiveCallsConstants";
 
-// 1s poll so "Talking" timer starts within ~1s of answer (was ~3s with 3s poll)
-const POLL_MS = 1000;
-const TICK_MS = 1000;
-
-/** Align with IP→PSTN Routing Rule / PbxMonitor palette */
+/** Align with PBX / Status palette */
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  cardBorderSoft: "#f1f5f9",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   strongText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   accent: "#3E5475",
-  errorRed: "#ef4444",
+  errorRed: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const activeCallsRefreshBtnStyle = {
+  height: 30,
+};
+
+const ACTIVE_CALLS_CARD_RADIUS = 10;
+
+const ACTIVE_CALLS_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
+
+const ACTIVE_CALLS_ITEM_CARD_SHADOW =
+  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
 
 /** Same breadcrumb as System Info — inline, no shared import */
 const PageBreadcrumb = ({ segments, style }) => (
@@ -84,7 +98,20 @@ const Btn = ({
   };
   const s = styles[variant] || styles.default;
   const hoverBg = variant === "cancel" ? "#b6c2d3" : "#e2e8f0";
-  const baseBg = s.background;
+  const activeBg = variant === "cancel" ? "#a3b1c2" : "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow = "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
 
   return (
     <button
@@ -105,6 +132,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -112,7 +140,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -512,7 +552,7 @@ const ActiveCallsPage = () => {
   useEffect(() => {
     mounted.current = true;
     loadChannels(false);
-    const pollId = setInterval(() => loadChannels(true), POLL_MS);
+    const pollId = setInterval(() => loadChannels(true), ACTIVE_CALLS_POLL_MS);
     return () => {
       mounted.current = false;
       clearInterval(pollId);
@@ -521,7 +561,7 @@ const ActiveCallsPage = () => {
 
   // Re-render duration every second
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), TICK_MS);
+    const id = setInterval(() => setTick((t) => t + 1), ACTIVE_CALLS_TICK_MS);
     return () => clearInterval(id);
   }, []);
 
@@ -538,16 +578,16 @@ const ActiveCallsPage = () => {
       }}
     >
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        <PageBreadcrumb segments={["Status", "PBX Status", "Active Calls"]} />
+        <PageBreadcrumb segments={ACTIVE_CALLS_BREADCRUMB_SEGMENTS} />
 
         {/* Main card */}
         <div
           className="w-full max-w-full overflow-hidden"
           style={{
             backgroundColor: C.cardBg,
-            border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: CARD_RADIUS,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+            border: `1px solid ${C.cardBorder}`,
+            borderRadius: ACTIVE_CALLS_CARD_RADIUS,
+            boxShadow: ACTIVE_CALLS_CARD_SHADOW,
           }}
         >
           {/* Toolbar */}
@@ -558,12 +598,12 @@ const ActiveCallsPage = () => {
               justifyContent: "space-between",
               minHeight: 44,
               padding: "7px 14px",
-              borderBottom: `1px solid ${C.cardBorder}`,
+              borderBottom: `1px solid ${C.divider}`,
               background: "#ffffff",
               flexWrap: "wrap",
               gap: 12,
-              borderTopLeftRadius: CARD_RADIUS,
-              borderTopRightRadius: CARD_RADIUS,
+              borderTopLeftRadius: ACTIVE_CALLS_CARD_RADIUS,
+              borderTopRightRadius: ACTIVE_CALLS_CARD_RADIUS,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -579,7 +619,7 @@ const ActiveCallsPage = () => {
                     border: `1px solid ${C.accent}`,
                   }}
                 >
-                  {channels.length} active
+                  {channels.length} {ACTIVE_CALLS_ACTIVE_BADGE_SUFFIX}
                 </span>
               )}
             </div>
@@ -587,11 +627,11 @@ const ActiveCallsPage = () => {
               variant="cancel"
               onClick={() => loadChannels(false)}
               disabled={isRefreshing}
-              style={{ height: 30 }}
+              style={activeCallsRefreshBtnStyle}
             >
               {isRefreshing ? (
                 <>
-                  <CircularProgress size={14} sx={{ color: "inherit" }} />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                   Refreshing...
                 </>
               ) : (
@@ -625,10 +665,10 @@ const ActiveCallsPage = () => {
                   className="text-lg font-semibold"
                   style={{ color: C.valueText }}
                 >
-                  No Active Calls
+                  {ACTIVE_CALLS_EMPTY_TITLE}
                 </div>
                 <div className="text-sm mt-1" style={{ color: C.mutedText }}>
-                  No ongoing calls right now
+                  {ACTIVE_CALLS_EMPTY_SUBTITLE}
                 </div>
               </div>
             )}
@@ -677,9 +717,9 @@ const ActiveCallsPage = () => {
                       className="flex items-stretch min-w-0 overflow-hidden"
                       style={{
                         backgroundColor: C.cardBg,
-                        borderRadius: CARD_RADIUS,
+                        borderRadius: ACTIVE_CALLS_CARD_RADIUS,
                         border: `1px solid ${C.cardBorder}`,
-                        boxShadow: "0 2px 10px rgba(15,23,42,0.04)",
+                        boxShadow: ACTIVE_CALLS_ITEM_CARD_SHADOW,
                       }}
                     >
                       <div className="flex items-center pl-4 pr-3 py-4 shrink-0">
@@ -719,7 +759,7 @@ const ActiveCallsPage = () => {
 
                       <div
                         className="flex flex-col items-end justify-between py-4 pl-3 pr-4 min-w-[110px] shrink-0 border-l"
-                        style={{ borderColor: C.cardBorderSoft }}
+                        style={{ borderColor: C.divider }}
                       >
                         <div
                           className="flex items-center gap-1 text-sm font-semibold"

@@ -1,3 +1,35 @@
+export const FXS_NAT_SETTINGS_BREADCRUMB_ROOT = "FXS";
+export const FXS_NAT_SETTINGS_BREADCRUMB_SECTION = "VoIP";
+export const FXS_NAT_SETTINGS_PAGE_TITLE = "NAT Settings";
+
+export const FXS_NAT_SETTINGS_LEFT_SECTION_TITLE = "Core Networking";
+export const FXS_NAT_SETTINGS_RIGHT_SECTION_TITLE = "Traversal & Options";
+
+export const FXS_NAT_SETTINGS_SAVE_LABEL = "Save";
+export const FXS_NAT_SETTINGS_RESET_LABEL = "Reset";
+export const FXS_NAT_SETTINGS_NOTE_LABEL = "Note:";
+
+/** Matches PBX main-page section headings */
+export const FXS_NAT_SETTINGS_SECTION_HEADING_LEFT = -20;
+export const FXS_NAT_SETTINGS_SECTION_HEADING_COLOR = "#30415A";
+
+export const FXS_NAT_SETTINGS_LEFT_COLUMN_FIELD_KEYS = [
+  "autoNat",
+  "outerNetworkAddress",
+  "stunServer",
+  "natType",
+  "stunServerAddress",
+  "mappingContactIp",
+  "mappingSdpIp",
+];
+
+export const FXS_NAT_SETTINGS_RIGHT_COLUMN_FIELD_KEYS = [
+  "rport",
+  "learnNat",
+  "autoDetectNatIp",
+  "rtpSelfAdaption",
+];
+
 export const NAT_SETTINGS_FIELDS = [
   // Local NAT Traversal - Method 1
   {

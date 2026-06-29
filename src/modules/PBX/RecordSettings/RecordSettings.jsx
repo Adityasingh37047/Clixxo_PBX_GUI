@@ -32,9 +32,9 @@ const C = {
   codecBoxBorder: "#c5ccd6",
   codecBoxAvailableBg: "#f8fafc",
   codecStripBg: "#ffffff",
-  codecStripBorder: "#d8dde5",
-  codecStripSelectedBg: "#eff6ff",
-  codecStripSelectedBorder: "#93c5fd",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
   codecBtnBorder: "#9ca3af",
   codecBtnBg: "#e5e7eb",
 };
@@ -604,15 +604,41 @@ const RecordCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   </button>
 );
 
-const getItemValue = (item) =>
-  typeof item === "object" && item !== null ? item.value : item;
+const getItemValue = (item) => {
+  if (typeof item === "object" && item !== null) {
+    const raw = item.value ?? item.extension ?? item.id ?? "";
+    return String(raw).trim();
+  }
+  return String(item ?? "").trim();
+};
 
 const getItemLabel = (item, available = []) => {
   if (typeof item === "object" && item !== null) {
-    return item.label || item.value;
+    return item.label || getItemValue(item);
   }
-  const found = available.find((entry) => getItemValue(entry) === item);
+  const found = available.find((entry) => getItemValue(entry) === getItemValue(item));
   return found?.label || String(item);
+};
+
+const normalizeDestinationList = (list) => {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => {
+      if (item == null) return null;
+      if (typeof item === "string" || typeof item === "number") {
+        const value = String(item).trim();
+        return value ? { value, label: value } : null;
+      }
+      const value = String(
+        item.value ?? item.extension ?? item.id ?? "",
+      ).trim();
+      const label = String(
+        item.label ?? item.display_name ?? item.name ?? value,
+      ).trim();
+      if (!value) return null;
+      return { value, label: label || value };
+    })
+    .filter(Boolean);
 };
 
 const RecordCodecListBox = ({
@@ -662,7 +688,9 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
   const [availableSelected, setAvailableSelected] = useState([]);
   const [chosenSelected, setChosenSelected] = useState([]);
 
-  const availableList = available.filter((item) => !selected.includes(item));
+  const availableList = available.filter(
+    (item) => !selected.some((entry) => getItemValue(entry) === getItemValue(item)),
+  );
 
   const toggleAvailableSelect = (id) => {
     setAvailableSelected((prev) =>
@@ -680,7 +708,9 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
     if (!availableSelected.length) return;
     onChange([
       ...selected,
-      ...availableSelected.filter((id) => !selected.includes(id)),
+      ...availableSelected.filter(
+        (id) => !selected.some((entry) => getItemValue(entry) === id),
+      ),
     ]);
     setAvailableSelected([]);
   };
@@ -688,14 +718,22 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
   const addAll = () => {
     onChange([
       ...selected,
-      ...availableList.filter((item) => !selected.includes(item)),
+      ...availableList
+        .map(getItemValue)
+        .filter(
+          (id) =>
+            id &&
+            !selected.some((entry) => getItemValue(entry) === id),
+        ),
     ]);
     setAvailableSelected([]);
   };
 
   const removeSelected = () => {
     if (!chosenSelected.length) return;
-    onChange(selected.filter((item) => !chosenSelected.includes(item)));
+    onChange(
+      selected.filter((item) => !chosenSelected.includes(getItemValue(item))),
+    );
     setChosenSelected([]);
   };
 
@@ -707,8 +745,8 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
   const moveToBottom = () => {
     if (!chosenSelected.length) return;
     onChange([
-      ...selected.filter((item) => !chosenSelected.includes(item)),
-      ...selected.filter((item) => chosenSelected.includes(item)),
+      ...selected.filter((item) => !chosenSelected.includes(getItemValue(item))),
+      ...selected.filter((item) => chosenSelected.includes(getItemValue(item))),
     ]);
   };
 
@@ -718,9 +756,11 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
       (() => {
         const arr = [...selected];
         for (let i = 1; i < arr.length; i++) {
+          const currentId = getItemValue(arr[i]);
+          const prevId = getItemValue(arr[i - 1]);
           if (
-            chosenSelected.includes(arr[i]) &&
-            !chosenSelected.includes(arr[i - 1])
+            chosenSelected.includes(currentId) &&
+            !chosenSelected.includes(prevId)
           ) {
             [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
           }
@@ -736,9 +776,11 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
       (() => {
         const arr = [...selected];
         for (let i = arr.length - 2; i >= 0; i--) {
+          const currentId = getItemValue(arr[i]);
+          const nextId = getItemValue(arr[i + 1]);
           if (
-            chosenSelected.includes(arr[i]) &&
-            !chosenSelected.includes(arr[i + 1])
+            chosenSelected.includes(currentId) &&
+            !chosenSelected.includes(nextId)
           ) {
             [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
           }
@@ -751,8 +793,8 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
   const moveToTop = () => {
     if (!chosenSelected.length) return;
     onChange([
-      ...selected.filter((item) => chosenSelected.includes(item)),
-      ...selected.filter((item) => !chosenSelected.includes(item)),
+      ...selected.filter((item) => chosenSelected.includes(getItemValue(item))),
+      ...selected.filter((item) => !chosenSelected.includes(getItemValue(item))),
     ]);
   };
 
@@ -783,7 +825,7 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
             selectedIds={chosenSelected}
             onToggle={toggleChosenSelect}
             emptyText="No selected items"
-            getSelectId={(item) => item}
+            getSelectId={getItemValue}
             getLabel={(item) => getItemLabel(item, available)}
           />
         </div>
@@ -831,7 +873,7 @@ const RecordDualList = ({ available, selected, onChange, isCompact }) => {
           selectedIds={chosenSelected}
           onToggle={toggleChosenSelect}
           emptyText="No selected items"
-          getSelectId={(item) => item}
+          getSelectId={getItemValue}
           getLabel={(item) => getItemLabel(item, available)}
         />
       </div>
@@ -913,9 +955,14 @@ const RecordSettings = () => {
     const loadDestinations = async () => {
       try {
         const data = await listIvrDestinations();
-        setAvailableTrunks(data.message?.Trunks || []);
-        setAvailableExtensions(data.message?.Extensions || []);
-        setAvailableConferences(data.message?.Conferences || []);
+        const msg = data?.message ?? data?.data ?? data ?? {};
+        setAvailableTrunks(normalizeDestinationList(msg.Trunks || msg.trunks));
+        setAvailableExtensions(
+          normalizeDestinationList(msg.Extensions || msg.extensions),
+        );
+        setAvailableConferences(
+          normalizeDestinationList(msg.Conferences || msg.conferences),
+        );
       } catch (error) {
         console.error("Failed to load destinations:", error);
       }

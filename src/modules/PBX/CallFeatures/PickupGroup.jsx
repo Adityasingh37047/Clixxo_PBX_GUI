@@ -480,8 +480,18 @@ const pickupGroupModalSelectSx = {
   },
 };
 
+const PICKUP_GROUP_MODAL_LABEL_WIDTH = 140;
+const PICKUP_GROUP_MODAL_NAME_LABEL_WIDTH = 80;
+const PICKUP_GROUP_MODAL_NAME_FIELD_WIDTH = 480;
+
+const pickupGroupModalNameTextFieldSx = {
+  ...pickupGroupModalTextFieldFullSx,
+  width: PICKUP_GROUP_MODAL_NAME_FIELD_WIDTH,
+  maxWidth: "100%",
+};
+
 const pickupGroupModalPaperSx = {
-  width: 900,
+  width: 680,
   maxWidth: "96vw",
   mx: "auto",
   p: 0,
@@ -564,7 +574,6 @@ const formatPickupGroupTooltipTitle = (text) => {
   return normalized;
 };
 
-const PICKUP_GROUP_MODAL_LABEL_WIDTH = 140;
 const PICKUP_GROUP_MODAL_SECTION_BG = "#f8fafc";
 const PICKUP_GROUP_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
@@ -602,14 +611,20 @@ const PickupGroupFieldLabel = ({
   );
 };
 
-const PickupGroupFieldRow = ({ label, tooltipKey, required, children }) => (
+const PickupGroupFieldRow = ({
+  label,
+  tooltipKey,
+  required,
+  children,
+  labelWidth = PICKUP_GROUP_MODAL_LABEL_WIDTH,
+}) => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
     {tooltipKey ? (
       <PickupGroupFieldLabel
         tooltipKey={tooltipKey}
         required={required}
         style={{
-          width: PICKUP_GROUP_MODAL_LABEL_WIDTH,
+          width: labelWidth,
           flexShrink: 0,
         }}
       >
@@ -621,7 +636,7 @@ const PickupGroupFieldRow = ({ label, tooltipKey, required, children }) => (
           fontSize: 13,
           fontWeight: 600,
           color: C.labelText,
-          width: PICKUP_GROUP_MODAL_LABEL_WIDTH,
+          width: labelWidth,
           flexShrink: 0,
         }}
       >
@@ -766,7 +781,8 @@ const pickupGroupMemberCodecDualListBtnStyle = {
   boxSizing: "border-box",
   flexShrink: 0,
   boxShadow: "none",
-  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  transition:
+    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
   userSelect: "none",
 };
 
@@ -1342,7 +1358,9 @@ const PickupGroup = () => {
                         ? "#f8fafc"
                         : "#ffffff";
                     const lastRowCellStyle = {
-                      borderBottom: isLastRow ? "none" : pickupGroupTdStyle.borderBottom,
+                      borderBottom: isLastRow
+                        ? "none"
+                        : pickupGroupTdStyle.borderBottom,
                     };
 
                     return (
@@ -1481,18 +1499,24 @@ const PickupGroup = () => {
         PaperProps={{ sx: pickupGroupModalPaperSx }}
       >
         <DialogTitle style={pickupGroupModalTitleStyle}>
-          {editId != null ? `Edit ${PICKUP_GROUP_TITLE}` : `Add ${PICKUP_GROUP_TITLE}`}
+          {editId != null
+            ? `Edit ${PICKUP_GROUP_TITLE}`
+            : `Add ${PICKUP_GROUP_TITLE}`}
         </DialogTitle>
 
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div style={pickupGroupModalSectionStyle}>
-            <PickupGroupFieldRow label="Name" tooltipKey="name" required>
+            <PickupGroupFieldRow
+              label="Name"
+              tooltipKey="name"
+              required
+              labelWidth={PICKUP_GROUP_MODAL_NAME_LABEL_WIDTH}
+            >
               <TextField
                 size="small"
-                fullWidth
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                sx={pickupGroupModalTextFieldFullSx}
+                sx={pickupGroupModalNameTextFieldSx}
               />
             </PickupGroupFieldRow>
 

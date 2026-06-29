@@ -1,25 +1,133 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
-import { Button, CircularProgress } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import {
+  SYSTEM_INFO_BREADCRUMB_SEGMENTS,
+  SYSTEM_INFO_CARD_TITLES,
+  SYSTEM_INFO_LAN_NAME_MAP,
+  SYSTEM_INFO_LAN_SORT_ORDER,
+  SYSTEM_INFO_REFRESH_INTERVAL_MS,
+  SYSTEM_INFO_STAT_LABELS,
+} from "../../../constants/SystemInfoConstants";
 
-const REFRESH_INTERVAL_MS = 5000;
-
-// ── Color palette ─────────────────────────────────────────────────────────────
+// ── Color palette (PBX / Status theme) ──────────────────────────────────────
 const C = {
+  pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#dde4ed",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   cardHeader: "#1e2d42",
-  labelText: "#64748b",
-  valueText: "#1e293b",
-  mutedText: "#94a3b8",
-  accent: "#29a8e0",
+  labelText: "#3E5475",
+  valueText: "#0f172a",
+  mutedText: "#6b7280",
+  accent: "#3E5475",
   successGreen: "#16a34a",
   warningAmber: "#d97706",
-  pageBg: "#f8fafc",
+  errorRed: "#dc2626",
 };
 
-// ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
+const SYSTEM_INFO_CARD_RADIUS = 10;
+
+const SYSTEM_INFO_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
+
+/** Lighter shadow for top metric tiles — subtle, not same as section cards */
+const SYSTEM_INFO_STAT_CARD_SHADOW =
+  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    default: {
+      background: C.cardBg,
+      color: C.valueText,
+      border: "1px solid #9ca3af",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+    },
+  };
+  const s = styles[variant] || styles.default;
+  const hoverBg =
+    {
+      cancel: "#b6c2d3",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      cancel: "#a3b1c2",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow = "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
+  return (
+    <button
+      type={type || "button"}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 18px",
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        transition: "all 0.15s ease",
+        height: 30,
+        gap: 6,
+        whiteSpace: "nowrap",
+        userSelect: "none",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+    >
+      {children}
+    </button>
+  );
+};
 const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
@@ -111,7 +219,7 @@ const renderCellValue = (key, val) => {
       <span
         style={{
           background: running ? "#dcfce7" : "#fee2e2",
-          color: running ? C.successGreen : "#dc2626",
+          color: running ? C.successGreen : C.errorRed,
           padding: "1px 8px",
           borderRadius: 10,
           fontSize: 11,
@@ -131,8 +239,9 @@ const Card = ({ title, children, style }) => (
     style={{
       background: C.cardBg,
       border: `1px solid ${C.cardBorder}`,
-      borderRadius: 8,
+      borderRadius: SYSTEM_INFO_CARD_RADIUS,
       overflow: "hidden",
+      boxShadow: SYSTEM_INFO_CARD_SHADOW,
       ...style,
     }}
   >
@@ -167,7 +276,7 @@ const InfoTableRow = ({ label, value, keyName, even }) => (
   <div
     style={{
       display: "flex",
-      borderBottom: "0.5px solid #f1f5f9",
+      borderBottom: `1px solid ${C.divider}`,
       padding: "5px 14px",
       minHeight: 28,
       alignItems: "center",
@@ -180,7 +289,7 @@ const InfoTableRow = ({ label, value, keyName, even }) => (
         fontSize: 12,
         width: "42%",
         flexShrink: 0,
-        fontWeight: 500,
+        fontWeight: 600,
       }}
     >
       {label}
@@ -203,9 +312,9 @@ const StatCard = ({ label, value, type, accentColor }) => {
         <span
           style={{
             background: running ? "#dcfce7" : "#fee2e2",
-            color: running ? C.successGreen : "#dc2626",
+            color: running ? C.successGreen : C.errorRed,
             padding: "3px 12px",
-            borderRadius: 12,
+            borderRadius: 10,
             fontSize: 13,
             fontWeight: 700,
             display: "inline-block",
@@ -243,15 +352,15 @@ const StatCard = ({ label, value, type, accentColor }) => {
     <div
       style={{
         background: C.cardBg,
-        border: "0.5px solid #dde6f0",
+        border: `1px solid ${C.cardBorder}`,
         borderLeft: `3px solid ${accent}`,
-        borderRadius: 8,
+        borderRadius: SYSTEM_INFO_CARD_RADIUS,
         padding: "16px 18px",
         minHeight: 80,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        boxShadow: SYSTEM_INFO_STAT_CARD_SHADOW,
       }}
     >
       <div
@@ -302,7 +411,6 @@ const SystemInfo = () => {
       // Handle system info
       if (systemData.status === "fulfilled" && systemData.value.success) {
         const data = systemData.value;
-        console.log(data);
 
         // Extract interfaces robustly from multiple possible response shapes
         const details = data.details || {};
@@ -339,17 +447,16 @@ const SystemInfo = () => {
           })
           .map((iface) => {
             if (iface.name === "eth0") {
-              return { ...iface, name: "LAN 1" };
-            } else if (iface.name === "eth1") {
-              return { ...iface, name: "LAN 2" };
+              return { ...iface, name: SYSTEM_INFO_LAN_NAME_MAP.eth0 };
+            }
+            if (iface.name === "eth1") {
+              return { ...iface, name: SYSTEM_INFO_LAN_NAME_MAP.eth1 };
             }
             return iface;
           })
-          // Ensure predictable ordering: LAN 1, LAN 2, then others
           .sort((a, b) => {
-            const order = { "LAN 1": 1, "LAN 2": 2 };
-            const aOrder = order[a.name] || 99;
-            const bOrder = order[b.name] || 99;
+            const aOrder = SYSTEM_INFO_LAN_SORT_ORDER[a.name] || 99;
+            const bOrder = SYSTEM_INFO_LAN_SORT_ORDER[b.name] || 99;
             return aOrder - bOrder;
           });
 
@@ -475,7 +582,7 @@ const SystemInfo = () => {
     loadSystemInfo(false);
     const interval = setInterval(
       () => loadSystemInfo(true),
-      REFRESH_INTERVAL_MS,
+      SYSTEM_INFO_REFRESH_INTERVAL_MS,
     );
     return () => clearInterval(interval);
   }, [loadSystemInfo]);
@@ -494,24 +601,6 @@ const SystemInfo = () => {
   const dcmsStatus = getMetric(["dcms"]);
   const packetLoss = getMetric(["packet loss", "packet_loss", "rx loss"]);
 
-  const refreshBtnSx = {
-    background: "#ffffff",
-    color: C.accent,
-    fontWeight: 600,
-    fontSize: 13,
-    border: `1px solid ${C.accent}`,
-    borderRadius: 24,
-    textTransform: "none",
-    px: 3,
-    py: 1,
-    boxShadow: "0 1px 4px rgba(41,168,224,0.12)",
-    "&:hover": {
-      background: "#f0f7fd",
-      borderColor: C.accent,
-      color: C.accent,
-    },
-  };
-
   return (
     <div
       style={{
@@ -525,11 +614,11 @@ const SystemInfo = () => {
           <div
             style={{
               background: "#fef2f2",
-              borderLeft: `3px solid #f87171`,
-              color: "#b91c1c",
-              padding: "8px 14px",
-              borderRadius: 6,
-              marginBottom: 14,
+              borderLeft: `3px solid ${C.errorRed}`,
+              color: C.errorRed,
+              padding: "10px 14px",
+              borderRadius: 8,
+              marginBottom: 16,
               fontSize: 13,
             }}
           >
@@ -537,7 +626,39 @@ const SystemInfo = () => {
           </div>
         )}
 
-        <PageBreadcrumb segments={["Status", "System Status", "System Info"]} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <PageBreadcrumb
+            segments={SYSTEM_INFO_BREADCRUMB_SEGMENTS}
+            style={{ marginBottom: 0 }}
+          />
+          <Btn
+            onClick={() => loadSystemInfo(false)}
+            disabled={isRefreshing}
+            variant="cancel"
+            style={{
+              height: 30,
+              padding: "6px 14px",
+              fontSize: 12,
+              flexShrink: 0,
+            }}
+          >
+            {isRefreshing ? (
+              <CircularProgress size={11} style={{ color: "#374151" }} />
+            ) : (
+              <RefreshIcon sx={{ fontSize: 16 }} />
+            )}
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Btn>
+        </div>
 
         {/* Top stat cards — equal height, accent borders */}
         <div
@@ -550,28 +671,28 @@ const SystemInfo = () => {
           }}
         >
           <StatCard
-            label="RUNTIME"
+            label={SYSTEM_INFO_STAT_LABELS.runtime}
             value={runtime}
             type="default"
             accentColor={C.accent}
           />
           <StatCard
-            label="CPU USAGE"
+            label={SYSTEM_INFO_STAT_LABELS.cpuUsage}
             value={cpuUsage}
             type="cpu"
             accentColor={C.successGreen}
           />
           <StatCard
-            label="DCMS STATUS"
+            label={SYSTEM_INFO_STAT_LABELS.dcmsStatus}
             value={dcmsStatus}
             type="status"
             accentColor={C.successGreen}
           />
           <StatCard
-            label="PACKET LOSS (RX)"
+            label={SYSTEM_INFO_STAT_LABELS.packetLoss}
             value={packetLoss}
             type="default"
-            accentColor="#94a3b8"
+            accentColor={C.mutedText}
           />
         </div>
 
@@ -605,7 +726,7 @@ const SystemInfo = () => {
                 </Card>
               ))}
               <Card
-                title="Version Info"
+                title={SYSTEM_INFO_CARD_TITLES.versionInfo}
                 style={{
                   height: "100%",
                   display: "flex",
@@ -625,7 +746,7 @@ const SystemInfo = () => {
                   style={{
                     flex: 1,
                     background: "#f8fafc",
-                    borderTop: "0.5px solid #f1f5f9",
+                    borderTop: `1px solid ${C.divider}`,
                     minHeight: 8,
                   }}
                 />
@@ -643,7 +764,7 @@ const SystemInfo = () => {
               }}
             >
               <Card
-                title="System Details"
+                title={SYSTEM_INFO_CARD_TITLES.systemDetails}
                 style={{
                   height: "100%",
                   display: "flex",
@@ -663,7 +784,7 @@ const SystemInfo = () => {
                   style={{
                     flex: 1,
                     background: "#f8fafc",
-                    borderTop: "0.5px solid #f1f5f9",
+                    borderTop: `1px solid ${C.divider}`,
                     minHeight: 8,
                   }}
                 />
@@ -714,7 +835,7 @@ const SystemInfo = () => {
               }}
             >
               <Card
-                title="System Details"
+                title={SYSTEM_INFO_CARD_TITLES.systemDetails}
                 style={{
                   height: "100%",
                   display: "flex",
@@ -734,13 +855,13 @@ const SystemInfo = () => {
                   style={{
                     flex: 1,
                     background: "#f8fafc",
-                    borderTop: "0.5px solid #f1f5f9",
+                    borderTop: `1px solid ${C.divider}`,
                     minHeight: 8,
                   }}
                 />
               </Card>
               <Card
-                title="Version Info"
+                title={SYSTEM_INFO_CARD_TITLES.versionInfo}
                 style={{
                   height: "100%",
                   display: "flex",
@@ -760,7 +881,7 @@ const SystemInfo = () => {
                   style={{
                     flex: 1,
                     background: "#f8fafc",
-                    borderTop: "0.5px solid #f1f5f9",
+                    borderTop: `1px solid ${C.divider}`,
                     minHeight: 8,
                   }}
                 />
@@ -769,26 +890,6 @@ const SystemInfo = () => {
           </>
         )}
 
-        {/* Refresh button — tight below cards, no floating space */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            paddingBottom: 16,
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={
-              isRefreshing ? <CircularProgress size={16} /> : <RefreshIcon />
-            }
-            onClick={() => loadSystemInfo(false)}
-            disabled={isRefreshing}
-            sx={refreshBtnSx}
-          >
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </Button>
-        </div>
       </div>
     </div>
   );

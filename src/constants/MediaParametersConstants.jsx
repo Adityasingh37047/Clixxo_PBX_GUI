@@ -1,3 +1,21 @@
+export const FXS_VOIP_MEDIA_BREADCRUMB_ROOT = "FXS";
+export const FXS_VOIP_MEDIA_BREADCRUMB_SECTION = "VoIP";
+export const FXS_VOIP_MEDIA_PAGE_TITLE = "Media Parameters";
+
+export const FXS_VOIP_MEDIA_LEFT_SECTION_TITLE = "System Settings";
+export const FXS_VOIP_MEDIA_RIGHT_SECTION_TITLE = "CODEC Priority";
+
+export const FXS_VOIP_MEDIA_SAVE_LABEL = "Save";
+export const FXS_VOIP_MEDIA_RESET_LABEL = "Reset";
+
+/** Matches PBX main-page section headings */
+export const FXS_VOIP_MEDIA_SECTION_HEADING_LEFT = -20;
+export const FXS_VOIP_MEDIA_SECTION_HEADING_COLOR = "#30415A";
+
+export const FXS_VOIP_MEDIA_CODEC_AVAILABLE_LABEL = "Available";
+export const FXS_VOIP_MEDIA_CODEC_SELECTED_LABEL = "Selected";
+export const FXS_VOIP_MEDIA_NOTE_LABEL = "Note:";
+
 export const MEDIA_PARAMETERS_NOTE = `At present, the maximum number of concurrent sessions supported by G723 encoding is 9. When the concurrent sessions are more than 9, the encoding of the next priority will be automatically used (it is recommended to configure G711A/U as the encoding of the next priority).
 
 The maximum number of concurrent sessions supported by AMR/iLBC encoding is 15. When the concurrent sessions are more than 15, the encoding of the next priority will be automatically used (it is recommended to configure G711A/U as the encoding of the next priority).`;

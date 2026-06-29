@@ -1,3 +1,37 @@
+export const FXS_PAGE_BREADCRUMB_ROOT = "FXS";
+export const FXS_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const FXS_PAGE_TITLE = "FXS";
+export const FXS_PAGE_CARD_TITLE = "FXS";
+
+export const FXS_SAVE_LABEL = "Save";
+export const FXS_RESET_LABEL = "Reset";
+
+export const FXS_LEFT_COLUMN_FIELD_KEYS = [
+  "toneEnergy",
+  "ringingSchemeEnabled",
+  "ringMode",
+  "hookFlashDetection",
+  "minHangupTime",
+  "hookFlashMinTime",
+  "hookFlashMaxTime",
+  "preferred18xResponse",
+  "pressKeyCallForward",
+  "callForwardKey",
+  "callForwardMethod",
+  "cidTransmitMode",
+  "occasionToSendFSKCallerID",
+];
+
+export const FXS_RIGHT_COLUMN_FIELD_KEYS = [
+  "sendPolarityReversal",
+  "offHookDitherSignalDuration",
+  "handlingOfCallFromInternalStation",
+  "lightUpModeForVoiceMessage",
+  "openSessionInAdvance",
+  "reportFXSStatus",
+  "enableSendDTMFWhileReceiving183",
+];
+
 export const FXS_FIELDS = [
   { label: 'Tone Energy (dB)', type: 'text', key: 'toneEnergy', default: '-11', keyPressType: 'number-minus' },
   { label: 'Ringing Scheme Setting', type: 'checkbox', key: 'ringingSchemeEnabled', default: false},

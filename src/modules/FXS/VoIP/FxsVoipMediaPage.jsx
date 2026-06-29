@@ -3,10 +3,22 @@ import { Alert, Tooltip } from "@mui/material";
 import {
   MEDIA_PARAMETERS_NOTE,
   FXS_MEDIA_FIELD_TOOLTIPS,
+  FXS_VOIP_MEDIA_BREADCRUMB_ROOT,
+  FXS_VOIP_MEDIA_BREADCRUMB_SECTION,
+  FXS_VOIP_MEDIA_PAGE_TITLE,
+  FXS_VOIP_MEDIA_LEFT_SECTION_TITLE,
+  FXS_VOIP_MEDIA_RIGHT_SECTION_TITLE,
+  FXS_VOIP_MEDIA_SAVE_LABEL,
+  FXS_VOIP_MEDIA_RESET_LABEL,
+  FXS_VOIP_MEDIA_SECTION_HEADING_LEFT,
+  FXS_VOIP_MEDIA_SECTION_HEADING_COLOR,
+  FXS_VOIP_MEDIA_CODEC_AVAILABLE_LABEL,
+  FXS_VOIP_MEDIA_CODEC_SELECTED_LABEL,
+  FXS_VOIP_MEDIA_NOTE_LABEL,
 } from "../../../constants/MediaParametersConstants";
 
 // ── Page-local field label tooltip UI (matches Extensions page pattern) ──
-const FIELD_LABEL_COLOR = "#374151";
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const MEDIA_FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -94,8 +106,13 @@ const MediaFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
 
   return (
     <div
-      className="flex flex-row items-center w-full"
-      style={{ minHeight: 36 }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        minHeight: 36,
+      }}
     >
       {tooltip ? (
         <Tooltip
@@ -120,13 +137,15 @@ const C = {
   cardShadow:
     "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
-  accent: "#4A5D75",
+  accent: "#3E5475",
   accentDark: "#3a4a5e",
+  fieldBg: "#ffffff",
+  fieldReadonlyBg: "#f1f5f9",
   codecBoxBorder: "#c5ccd6",
   codecBoxAvailableBg: "#f8fafc",
   codecStripBg: "#ffffff",
@@ -336,7 +355,7 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: FIELD_RADIUS,
   outline: "none",
-  backgroundColor: "#fff",
+  backgroundColor: C.fieldBg,
   color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
@@ -408,6 +427,8 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
@@ -439,28 +460,82 @@ const dashboardColumnStyle = {
 const dashboardColumnLeftStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
 };
 
 const dashboardColumnRightStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
-const dashboardDividerStyle = {
-  background: C.divider,
-  width: 1,
+const dashboardDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
   alignSelf: "stretch",
-  margin: "14px 0",
+  padding: "14px 0",
+  boxSizing: "border-box",
 };
 
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 700,
-  color: C.strongText,
-  marginBottom: 2,
+const dashboardDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
 };
 
-const VoipBreadcrumb = ({ current }) => (
+const fxsVoipMediaFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  width: "100%",
+};
+
+const FxsVoipMediaSectionHeading = ({
+  title,
+  tooltipKey,
+  isFirst = false,
+}) => {
+  const titleStyle = {
+    fontSize: 14,
+    fontWeight: 600,
+    color: FXS_VOIP_MEDIA_SECTION_HEADING_COLOR,
+  };
+  const titleNode = tooltipKey ? (
+    <MediaTooltipLabel tooltipKey={tooltipKey} style={titleStyle}>
+      {title}
+    </MediaTooltipLabel>
+  ) : (
+    <span style={titleStyle}>{title}</span>
+  );
+
+  return (
+    <div
+      style={{
+        margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.divider}` }} />
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: FXS_VOIP_MEDIA_SECTION_HEADING_LEFT,
+          background: C.cardBg,
+          paddingRight: 8,
+          display: "inline-flex",
+          alignItems: "center",
+        }}
+      >
+        {titleNode}
+      </span>
+    </div>
+  );
+};
+
+const FxsVoipMediaBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -474,15 +549,17 @@ const VoipBreadcrumb = ({ current }) => (
       flexShrink: 0,
     }}
   >
-    <span>FXS</span>
+    <span>{FXS_VOIP_MEDIA_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>VoIP</span>
+    <span>{FXS_VOIP_MEDIA_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {FXS_VOIP_MEDIA_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children }) => (
+const FxsVoipMediaPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
@@ -654,23 +731,6 @@ const CodecListBox = ({
     </div>
   );
 };
-
-const SectionHeading = ({ title, tooltipKey }) => (
-  <div style={{ marginBottom: 2 }}>
-    {tooltipKey ? (
-      <MediaTooltipLabel
-        tooltipKey={tooltipKey}
-        style={{ fontSize: 14, fontWeight: 700, color: C.strongText }}
-      >
-        {title}
-      </MediaTooltipLabel>
-    ) : (
-      <span style={{ fontSize: 14, fontWeight: 700, color: C.strongText }}>
-        {title}
-      </span>
-    )}
-  </div>
-);
 
 const FxsVoipMediaPage = () => {
   // Media Parameters state
@@ -1007,7 +1067,7 @@ const FxsVoipMediaPage = () => {
   ];
 
   return (
-    <AdvancedPageShell>
+    <FxsVoipMediaPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -1026,13 +1086,15 @@ const FxsVoipMediaPage = () => {
         </Alert>
       )}
 
-      <VoipBreadcrumb current="Media Parameters" />
+      <FxsVoipMediaBreadcrumb />
       <div style={advancedTableContainerStyle}>
         <div style={dashboardGridStyle}>
-          {/* Column 1 — System Settings */}
           <div style={dashboardColumnLeftStyle}>
-            <div style={dashboardSectionTitleStyle}>System Settings</div>
-            <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+            <FxsVoipMediaSectionHeading
+              title={FXS_VOIP_MEDIA_LEFT_SECTION_TITLE}
+              isFirst
+            />
+            <div style={fxsVoipMediaFieldsColStyle}>
               {mediaParameterRows.map((row) => (
                 <MediaFieldRow
                   key={row.name}
@@ -1076,11 +1138,16 @@ const FxsVoipMediaPage = () => {
             </div>
           </div>
 
-          <div style={dashboardDividerStyle} aria-hidden="true" />
+          <div style={dashboardDividerCellStyle} aria-hidden="true">
+            <div style={dashboardDividerLineStyle} />
+          </div>
 
-          {/* Column 2 — CODEC Priority */}
           <div style={dashboardColumnRightStyle}>
-            <SectionHeading title="CODEC Priority" tooltipKey="codecPriority" />
+            <FxsVoipMediaSectionHeading
+              title={FXS_VOIP_MEDIA_RIGHT_SECTION_TITLE}
+              tooltipKey="codecPriority"
+              isFirst
+            />
             <div
               style={{
                 display: "grid",
@@ -1100,7 +1167,7 @@ const FxsVoipMediaPage = () => {
                     marginBottom: 8,
                   }}
                 >
-                  Available
+                  {FXS_VOIP_MEDIA_CODEC_AVAILABLE_LABEL}
                 </div>
                 <CodecListBox
                   variant="available"
@@ -1150,7 +1217,7 @@ const FxsVoipMediaPage = () => {
                     marginBottom: 8,
                   }}
                 >
-                  Selected
+                  {FXS_VOIP_MEDIA_CODEC_SELECTED_LABEL}
                 </div>
                 <CodecListBox
                   variant="selected"
@@ -1208,7 +1275,7 @@ const FxsVoipMediaPage = () => {
                   marginBottom: 8,
                 }}
               >
-                Note:
+                {FXS_VOIP_MEDIA_NOTE_LABEL}
               </div>
               <div style={{ width: "100%", boxSizing: "border-box" }}>
                 {MEDIA_PARAMETERS_NOTE.split("\n")
@@ -1241,7 +1308,7 @@ const FxsVoipMediaPage = () => {
             variant="primary"
             style={advancedFormBtnStyle}
           >
-            Save
+            {FXS_VOIP_MEDIA_SAVE_LABEL}
           </Btn>
           <Btn
             type="button"
@@ -1249,11 +1316,11 @@ const FxsVoipMediaPage = () => {
             variant="cancel"
             style={advancedFormBtnStyle}
           >
-            Reset
+            {FXS_VOIP_MEDIA_RESET_LABEL}
           </Btn>
         </div>
       </div>
-    </AdvancedPageShell>
+    </FxsVoipMediaPageShell>
   );
 };
 

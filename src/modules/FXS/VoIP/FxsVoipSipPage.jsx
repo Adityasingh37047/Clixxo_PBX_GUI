@@ -1,9 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, CircularProgress, Tooltip } from "@mui/material";
+import { Alert, Checkbox, CircularProgress, Tooltip } from "@mui/material";
 import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
   FXS_SIP_FIELD_TOOLTIPS,
+  FXS_VOIP_SIP_BREADCRUMB_ROOT,
+  FXS_VOIP_SIP_BREADCRUMB_SECTION,
+  FXS_VOIP_SIP_PAGE_TITLE,
+  FXS_VOIP_SIP_LEFT_SECTION_TITLE,
+  FXS_VOIP_SIP_RIGHT_SECTION_TITLE,
+  FXS_VOIP_SIP_LOCAL_MODE_PREFIX,
+  FXS_VOIP_SIP_SAVE_LABEL,
+  FXS_VOIP_SIP_RESET_LABEL,
+  FXS_VOIP_SIP_SAVING_LABEL,
+  FXS_VOIP_SIP_LOCAL_REGISTER_STATUS,
+  FXS_VOIP_SIP_STATUS_POLL_MS,
+  FXS_VOIP_SIP_LEFT_COLUMN_FIELD_KEYS,
+  FXS_VOIP_SIP_RIGHT_COLUMN_FIELD_KEYS,
+  FXS_VOIP_SIP_SECTION_HEADING_LEFT,
+  FXS_VOIP_SIP_SECTION_HEADING_COLOR,
 } from "../../../constants/FxsVoipSipConstants";
 import {
   listFxsSipSettings,
@@ -13,7 +28,7 @@ import {
 } from "../../../api/apiService";
 
 // ── Page-local field label tooltip UI (not shared) ──
-const FIELD_LABEL_COLOR = "#374151";
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -72,8 +87,13 @@ const SipFieldRow = ({ label, tooltipKey, children }) => {
 
   return (
     <div
-      className="flex flex-row items-center w-full"
-      style={{ minHeight: 36 }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%",
+        minHeight: 36,
+      }}
     >
       {tooltip ? (
         <Tooltip
@@ -98,12 +118,14 @@ const C = {
   cardShadow:
     "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   strongText: "#1f2937",
-  accent: "#4A5D75",
+  accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
+  fieldReadonlyBg: "#f1f5f9",
 };
 
 const CARD_RADIUS = 10;
@@ -304,7 +326,7 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: FIELD_RADIUS,
   outline: "none",
-  backgroundColor: "#f8fafc",
+  backgroundColor: C.fieldBg,
   color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
@@ -376,6 +398,8 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
@@ -407,28 +431,71 @@ const dashboardColumnStyle = {
 const dashboardColumnLeftStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
 };
 
 const dashboardColumnRightStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
-const dashboardDividerStyle = {
-  background: C.divider,
-  width: 1,
+const dashboardDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
   alignSelf: "stretch",
-  margin: "14px 0",
+  padding: "14px 0",
+  boxSizing: "border-box",
 };
 
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 700,
-  color: C.strongText,
-  marginBottom: 2,
+const dashboardDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
 };
 
-const VoipBreadcrumb = ({ current }) => (
+const fxsVoipSipFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  width: "100%",
+};
+
+const fxsVoipSipCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const FxsVoipSipSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: FXS_VOIP_SIP_SECTION_HEADING_LEFT,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: FXS_VOIP_SIP_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const FxsVoipSipBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -442,43 +509,25 @@ const VoipBreadcrumb = ({ current }) => (
       flexShrink: 0,
     }}
   >
-    <span>FXS</span>
+    <span>{FXS_VOIP_SIP_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>VoIP</span>
+    <span>{FXS_VOIP_SIP_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {FXS_VOIP_SIP_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children }) => (
+const FxsVoipSipPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
 
-const LEFT_COLUMN_FIELD_KEYS = [
-  "registerStatus",
-  "registrarIp",
-  "registrarPort",
-  "registerInterval",
-  "registryValidity",
-  "reregistrationInterval",
-];
-
-const RIGHT_COLUMN_FIELD_KEYS = [
-  "sipTransportProtocol",
-  "spareRegistrarServer",
-  "spareRegistrarIp",
-  "spareRegistrarPort",
-  "multiRegistrarMode",
-  "switchSignalPort",
-];
-
-const LOCAL_PBX_REGISTER_STATUS_TEXT = "Local PBX (registration not required)";
-
-const getRegisterStatusDisplay = (mode, status, localMsg) => {
+const getRegisterStatusDisplay = (mode, status) => {
   if (mode === "local") {
-    return LOCAL_PBX_REGISTER_STATUS_TEXT;
+    return FXS_VOIP_SIP_LOCAL_REGISTER_STATUS;
   }
   return status || "";
 };
@@ -540,14 +589,14 @@ const FxsVoipSipPage = () => {
           setRegistrationMode(mode);
           const localMsg =
             mode === "local"
-              ? settingsRes.message || LOCAL_PBX_REGISTER_STATUS_TEXT
+              ? settingsRes.message || FXS_VOIP_SIP_LOCAL_REGISTER_STATUS
               : "";
           setLocalModeMsg(localMsg);
           applyApiData(settingsRes.data || {});
           if (mode === "local") {
             setForm((prev) => ({
               ...prev,
-              registerStatus: LOCAL_PBX_REGISTER_STATUS_TEXT,
+              registerStatus: FXS_VOIP_SIP_LOCAL_REGISTER_STATUS,
             }));
           }
         }
@@ -576,7 +625,7 @@ const FxsVoipSipPage = () => {
             }));
           }
         } catch (_) {}
-      }, 30000);
+      }, FXS_VOIP_SIP_STATUS_POLL_MS);
     }
     return () => {
       if (statusPollRef.current) clearInterval(statusPollRef.current);
@@ -609,13 +658,13 @@ const FxsVoipSipPage = () => {
       const mode = res.registrationMode || "local";
       setRegistrationMode(mode);
       const localMsg =
-        mode === "local" ? res.message || LOCAL_PBX_REGISTER_STATUS_TEXT : "";
+        mode === "local" ? res.message || FXS_VOIP_SIP_LOCAL_REGISTER_STATUS : "";
       setLocalModeMsg(localMsg);
       if (res.data) applyApiData(res.data);
       if (mode === "local") {
         setForm((prev) => ({
           ...prev,
-          registerStatus: LOCAL_PBX_REGISTER_STATUS_TEXT,
+          registerStatus: FXS_VOIP_SIP_LOCAL_REGISTER_STATUS,
         }));
       } else if (res.registerStatus) {
         setForm((prev) => ({ ...prev, registerStatus: res.registerStatus }));
@@ -666,7 +715,7 @@ const FxsVoipSipPage = () => {
 
   const fieldReadonlyStyle = {
     ...fieldInputStyle,
-    backgroundColor: "#e5e7eb",
+    backgroundColor: C.fieldReadonlyBg,
     lineHeight: "36px",
     height: 36,
     whiteSpace: "normal",
@@ -692,10 +741,10 @@ const FxsVoipSipPage = () => {
   };
 
   const leftColumnFields = SIP_SETTINGS_FIELDS.filter((f) =>
-    LEFT_COLUMN_FIELD_KEYS.includes(f.key),
+    FXS_VOIP_SIP_LEFT_COLUMN_FIELD_KEYS.includes(f.key),
   );
   const rightColumnFields = SIP_SETTINGS_FIELDS.filter((f) =>
-    RIGHT_COLUMN_FIELD_KEYS.includes(f.key),
+    FXS_VOIP_SIP_RIGHT_COLUMN_FIELD_KEYS.includes(f.key),
   );
 
   const renderField = (field) => {
@@ -725,7 +774,6 @@ const FxsVoipSipPage = () => {
                   ? getRegisterStatusDisplay(
                       registrationMode,
                       form.registerStatus,
-                      localModeMsg,
                     )
                   : form[field.key]}
               </div>
@@ -765,28 +813,13 @@ const FxsVoipSipPage = () => {
 
           {field.type === "checkbox" && (
             <div style={controlSlotStyle}>
-              <label
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  cursor: saving ? "not-allowed" : "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  name={field.key}
-                  checked={!!form[field.key]}
-                  onChange={() => handleCheckbox(field.key)}
-                  disabled={saving}
-                  style={{
-                    width: 16,
-                    height: 16,
-                    margin: 0,
-                    cursor: saving ? "not-allowed" : "pointer",
-                    accentColor: "#3E5475",
-                  }}
-                />
-              </label>
+              <Checkbox
+                size="small"
+                checked={!!form[field.key]}
+                onChange={() => handleCheckbox(field.key)}
+                disabled={saving}
+                sx={fxsVoipSipCheckboxSx}
+              />
             </div>
           )}
 
@@ -811,7 +844,7 @@ const FxsVoipSipPage = () => {
   };
 
   return (
-    <AdvancedPageShell>
+    <FxsVoipSipPageShell>
       {message.text && (
         <Alert
           severity={
@@ -837,7 +870,7 @@ const FxsVoipSipPage = () => {
       )}
 
 
-      <VoipBreadcrumb current="SIP Settings" />
+      <FxsVoipSipBreadcrumb />
 
       {registrationMode === "local" && localModeMsg && (
         <div
@@ -855,7 +888,7 @@ const FxsVoipSipPage = () => {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontWeight: 700 }}>ℹ Local PBX mode:</span>
+          <span style={{ fontWeight: 700 }}>{FXS_VOIP_SIP_LOCAL_MODE_PREFIX}</span>
           <span>{localModeMsg}</span>
         </div>
       )}
@@ -876,17 +909,25 @@ const FxsVoipSipPage = () => {
         ) : (
           <div style={dashboardGridStyle}>
             <div style={dashboardColumnLeftStyle}>
-              <div style={dashboardSectionTitleStyle}>Registration</div>
-              <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+              <FxsVoipSipSectionHeading
+                title={FXS_VOIP_SIP_LEFT_SECTION_TITLE}
+                isFirst
+              />
+              <div style={fxsVoipSipFieldsColStyle}>
                 {leftColumnFields.map((field) => renderField(field))}
               </div>
             </div>
 
-            <div style={dashboardDividerStyle} aria-hidden="true" />
+            <div style={dashboardDividerCellStyle} aria-hidden="true">
+              <div style={dashboardDividerLineStyle} />
+            </div>
 
             <div style={dashboardColumnRightStyle}>
-              <div style={dashboardSectionTitleStyle}>Protocol & Options</div>
-              <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+              <FxsVoipSipSectionHeading
+                title={FXS_VOIP_SIP_RIGHT_SECTION_TITLE}
+                isFirst
+              />
+              <div style={fxsVoipSipFieldsColStyle}>
                 {rightColumnFields.map((field) => renderField(field))}
               </div>
               {SIP_SETTINGS_NOTE ? (
@@ -917,11 +958,11 @@ const FxsVoipSipPage = () => {
             >
               {saving ? (
                 <>
-                  <CircularProgress size={14} sx={{ color: "inherit" }} />
-                  Saving…
+                  <CircularProgress size={11} sx={{ color: "inherit" }} />
+                  {FXS_VOIP_SIP_SAVING_LABEL}
                 </>
               ) : (
-                "Save"
+                FXS_VOIP_SIP_SAVE_LABEL
               )}
             </Btn>
             <Btn
@@ -931,12 +972,12 @@ const FxsVoipSipPage = () => {
               disabled={saving || loadingPage}
               style={advancedFormBtnStyle}
             >
-              Reset
+              {FXS_VOIP_SIP_RESET_LABEL}
             </Btn>
           </div>
         )}
       </div>
-    </AdvancedPageShell>
+    </FxsVoipSipPageShell>
   );
 };
 

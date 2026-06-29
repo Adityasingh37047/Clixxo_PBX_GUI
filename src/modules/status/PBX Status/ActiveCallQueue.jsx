@@ -10,19 +10,35 @@ import {
   fetchCallQueueAgentStats,
   fetchCallQueueQueueStats,
 } from "../../../api/apiService";
+import {
+  ACTIVE_CALL_QUEUE_AGENT_SEARCH_PLACEHOLDER,
+  ACTIVE_CALL_QUEUE_BREADCRUMB_SEGMENTS,
+  ACTIVE_CALL_QUEUE_COMPACT_MQ,
+  ACTIVE_CALL_QUEUE_EMPTY_MESSAGE,
+  ACTIVE_CALL_QUEUE_LIST_HEADING,
+  ACTIVE_CALL_QUEUE_POLL_INTERVAL_MS,
+  ACTIVE_CALL_QUEUE_STATS_BREADCRUMB_SEGMENTS,
+  ACTIVE_CALL_QUEUE_STATS_BTN_LABEL,
+  ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
+  ACTIVE_CALL_QUEUE_TAB_LABELS,
+  ACTIVE_CALL_QUEUE_TAB_VALUES,
+} from "../../../constants/ActiveCallQueueConstants";
 import { CircularProgress, Tabs, Tab, useMediaQuery } from "@mui/material";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
 };
 
 // ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
@@ -80,7 +96,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background =
+      {
+        primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+        cancel: "#a3b1c2",
+        danger: "#f87171",
+        outline: "#d1d9e6",
+        default: "#d1d5db",
+      }[variant] || "#d1d5db";
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -102,6 +143,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -109,7 +151,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -235,27 +289,28 @@ const pbxHeaderTabsSx = {
   },
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
-const PBX_TOOLBAR_SEARCH_WIDTH = 168;
-const PBX_SEARCH_ICON_SLOT = 18;
-const PBX_SEARCH_BAR_PADDING_FIT = 16;
-const PBX_SEARCH_BAR_PADDING_DEFAULT = 20;
-const PBX_TOOLBAR_SEARCH_FOCUS_RING = `0 0 0 1px ${OUTLINED_FOCUS}`;
-const PBX_TOOLBAR_SEARCH_INPUT_FONT = {
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_HEIGHT = 30;
+const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_WIDTH = 168;
+const ACTIVE_CALL_QUEUE_SEARCH_ICON_SLOT = 18;
+const ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_FIT = 16;
+const ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_DEFAULT = 20;
+const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_FOCUS_RING =
+  "0 0 0 2px rgba(62, 84, 117, 0.15)";
+const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_INPUT_FONT = {
   fontSize: 12,
   fontFamily: "Inter, sans-serif",
   letterSpacing: "normal",
   fontWeight: 400,
 };
 
-const PbxToolbarSearchBar = ({
+const ActiveCallQueueToolbarSearchBar = ({
   value,
   onChange,
   placeholder = "Search...",
-  width = PBX_TOOLBAR_SEARCH_WIDTH,
+  width = ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_WIDTH,
   fitPlaceholder = false,
 }) => {
   const wrapRef = useRef(null);
@@ -271,12 +326,12 @@ const PbxToolbarSearchBar = ({
 
   const resolvedWidth =
     fitPlaceholder && placeholderWidth != null
-      ? placeholderWidth + PBX_SEARCH_BAR_PADDING_FIT + PBX_SEARCH_ICON_SLOT
+      ? placeholderWidth + ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_FIT + ACTIVE_CALL_QUEUE_SEARCH_ICON_SLOT
       : width;
 
   const horizontalPadding = fitPlaceholder
-    ? PBX_SEARCH_BAR_PADDING_FIT / 2
-    : PBX_SEARCH_BAR_PADDING_DEFAULT / 2;
+    ? ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_FIT / 2
+    : ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_DEFAULT / 2;
 
   const setDefault = () => {
     const el = wrapRef.current;
@@ -296,7 +351,7 @@ const PbxToolbarSearchBar = ({
     const el = wrapRef.current;
     if (!el) return;
     el.style.borderColor = OUTLINED_FOCUS;
-    el.style.boxShadow = PBX_TOOLBAR_SEARCH_FOCUS_RING;
+    el.style.boxShadow = ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_FOCUS_RING;
   };
 
   const handleMouseLeave = () => {
@@ -311,9 +366,9 @@ const PbxToolbarSearchBar = ({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        height: PBX_TOOLBAR_SEARCH_HEIGHT,
+        height: ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_HEIGHT,
         boxSizing: "border-box",
-        background: "#ffffff",
+        background: "#f8fafc",
         border: `1px solid ${OUTLINED_BORDER}`,
         borderRadius: 10,
         padding: `0 ${horizontalPadding}px`,
@@ -337,7 +392,7 @@ const PbxToolbarSearchBar = ({
             visibility: "hidden",
             whiteSpace: "pre",
             pointerEvents: "none",
-            ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+            ...ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_INPUT_FONT,
           }}
         />
       ) : null}
@@ -362,7 +417,7 @@ const PbxToolbarSearchBar = ({
           padding: 0,
           paddingRight: value ? 14 : 0,
           margin: 0,
-          ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+          ...ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_INPUT_FONT,
           color: C.valueText,
         }}
       />
@@ -399,55 +454,61 @@ const PbxToolbarSearchBar = ({
   );
 };
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
-const SIP_PCM_FORM_HEADER_RADIUS = 20;
+const ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS = 10;
+const ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS = 20;
 
-const sipPcmCardStyle = {
+const ACTIVE_CALL_QUEUE_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
+
+const ACTIVE_CALL_QUEUE_STAT_CARD_SHADOW =
+  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
+
+const activeCallQueueCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: ACTIVE_CALL_QUEUE_CARD_SHADOW,
 };
 
-const sipPcmFormCardStyle = {
+const activeCallQueueStatsCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: ACTIVE_CALL_QUEUE_CARD_SHADOW,
 };
 
-const sipPcmFormHeaderStyle = {
+const activeCallQueueStatsHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: SIP_PCM_FORM_HEADER_RADIUS,
-  borderTopRightRadius: SIP_PCM_FORM_HEADER_RADIUS,
+  borderTopLeftRadius: ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS,
+  borderTopRightRadius: ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS,
   display: "flex",
   alignItems: "center",
   padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
 };
 
-const sipPcmToolbarStyle = {
+const activeCallQueueToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
+  borderTopRightRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
 };
 
-const sipPcmCancelBtnStyle = {
+const activeCallQueueCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -455,45 +516,34 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const activeCallQueuePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmAuthFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
+const activeCallQueueStatsToolbarBtnStyle = {
+  ...activeCallQueueCancelBtnStyle,
+  height: 30,
+  fontSize: 12,
   margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
+  padding: "6px 14px",
+  lineHeight: 1,
   boxSizing: "border-box",
+  minWidth: 84,
+  width: 84,
 };
 
-const statsToolbarBtnStyle = {
-  ...sipPcmAuthFormBtnStyle,
-  ...sipPcmCancelBtnStyle,
-  boxShadow: "none",
-};
-
-const POLL_INTERVAL = 5000;
-
-const CARD_RADIUS = 10;
-const successGreen = "#16a34a";
-const cardHeader = "#1e2d42";
-const teal = "#0e7490";
-
-const statsFooterStyle = {
+const activeCallQueueStatsFooterStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
 };
 
 // ── Shared: Answered rate progress bar ───────────────────────────────────────
@@ -510,7 +560,7 @@ const AnsweredRateBar = ({ rate }) => (
     <div
       style={{
         width: `${Math.min(Number(rate) || 0, 100)}%`,
-        background: successGreen,
+        background: C.successGreen,
         height: "100%",
         borderRadius: 3,
         transition: "width 0.3s ease",
@@ -525,10 +575,10 @@ const StatCard = ({ label, value, color }) => (
     style={{
       background: C.cardBg,
       border: `1px solid ${C.cardBorder}`,
-      borderRadius: CARD_RADIUS,
+      borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
       padding: "14px 16px",
       textAlign: "center",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      boxShadow: ACTIVE_CALL_QUEUE_STAT_CARD_SHADOW,
     }}
   >
     <div
@@ -557,8 +607,8 @@ const TH = ({ children, align = "center", style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: align,
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -573,8 +623,8 @@ const tdStyle = {
   padding: "7px 14px",
   fontSize: 13,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
@@ -700,7 +750,7 @@ const RatePill = ({ value }) => (
   <span
     style={{
       background: Number(value) > 0 ? "#dcfce7" : "#f1f5f9",
-      color: Number(value) > 0 ? successGreen : C.labelText,
+      color: Number(value) > 0 ? C.successGreen : C.labelText,
       padding: "2px 9px",
       borderRadius: 10,
       fontSize: 10.5,
@@ -747,12 +797,9 @@ const EmptyRow = ({ cols, msg = "No data available" }) => (
 // ═══════════════════════════════════════════════════════════════════════════
 // CALL QUEUE STATISTICS VIEW
 // ═══════════════════════════════════════════════════════════════════════════
-const STATS_COMPACT_MQ = "(max-width: 768px)";
-const STATS_TABLE_MIN_WIDTH = 900;
-
 const CallQueueStatistics = ({ onBack, initialQueue }) => {
-  const isCompact = useMediaQuery(STATS_COMPACT_MQ);
-  const [activeTab, setActiveTab] = useState("agent");
+  const isCompact = useMediaQuery(ACTIVE_CALL_QUEUE_COMPACT_MQ);
+  const [activeTab, setActiveTab] = useState(ACTIVE_CALL_QUEUE_TAB_VALUES.agent);
   const [agentSearch, setAgentSearch] = useState("");
   const [agentData, setAgentData] = useState([]);
   const [queueData, setQueueData] = useState([]);
@@ -815,10 +862,10 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
   // Poll on active tab
   useEffect(() => {
     clearInterval(pollRef.current);
-    if (activeTab === "agent") {
-      pollRef.current = setInterval(loadAgentStats, POLL_INTERVAL);
+    if (activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.agent) {
+      pollRef.current = setInterval(loadAgentStats, ACTIVE_CALL_QUEUE_POLL_INTERVAL_MS);
     } else {
-      pollRef.current = setInterval(loadQueueStats, POLL_INTERVAL);
+      pollRef.current = setInterval(loadQueueStats, ACTIVE_CALL_QUEUE_POLL_INTERVAL_MS);
     }
     return () => clearInterval(pollRef.current);
   }, [activeTab, loadAgentStats, loadQueueStats]);
@@ -857,12 +904,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           }}
         >
           <PageBreadcrumb
-            segments={[
-              "Status",
-              "PBX Status",
-              "Active Call Queue",
-              "Call Queue Statistics",
-            ]}
+            segments={ACTIVE_CALL_QUEUE_STATS_BREADCRUMB_SEGMENTS}
             style={{ marginBottom: 0 }}
           />
           {lastUpdated && (
@@ -879,10 +921,10 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           )}
         </div>
 
-        <div style={sipPcmFormCardStyle}>
+        <div style={activeCallQueueStatsCardStyle}>
           <div
             style={{
-              ...sipPcmFormHeaderStyle,
+              ...activeCallQueueStatsHeaderStyle,
               padding: "0 8px 0 6px",
               display: "flex",
               alignItems: "center",
@@ -911,8 +953,8 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                 ...pbxHeaderTabsSx,
               }}
             >
-              <Tab label="AGENT STATISTICS" value="agent" />
-              <Tab label="QUEUE STATISTICS" value="queue" />
+              <Tab label={ACTIVE_CALL_QUEUE_TAB_LABELS.agent} value={ACTIVE_CALL_QUEUE_TAB_VALUES.agent} />
+              <Tab label={ACTIVE_CALL_QUEUE_TAB_LABELS.queue} value={ACTIVE_CALL_QUEUE_TAB_VALUES.queue} />
             </Tabs>
 
             <div
@@ -932,11 +974,11 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   : {}),
               }}
             >
-              {activeTab === "agent" && (
-                <PbxToolbarSearchBar
+              {activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.agent && (
+                <ActiveCallQueueToolbarSearchBar
                   value={agentSearch}
                   onChange={(e) => setAgentSearch(e.target.value)}
-                  placeholder="Search agent number, name..."
+                  placeholder={ACTIVE_CALL_QUEUE_AGENT_SEARCH_PLACEHOLDER}
                   fitPlaceholder
                 />
               )}
@@ -946,14 +988,14 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   setAgentData([]);
                   setQueueData([]);
                 }}
-                style={statsToolbarBtnStyle}
+                style={activeCallQueueStatsToolbarBtnStyle}
               >
                 Clear
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={onBack}
-                style={statsToolbarBtnStyle}
+                style={activeCallQueueStatsToolbarBtnStyle}
               >
                 ← Back
               </Btn>
@@ -961,7 +1003,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           </div>
 
           {/* ── AGENT STATISTICS TAB ── */}
-          {activeTab === "agent" && (
+          {activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.agent && (
             <>
               {/* Agent table */}
               <div
@@ -980,7 +1022,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                     ...statsTableStyle,
                     ...(isCompact
                       ? {
-                          minWidth: STATS_TABLE_MIN_WIDTH,
+                          minWidth: ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
                           tableLayout: "auto",
                         }
                       : {}),
@@ -1090,7 +1132,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
               </div>
 
               {agentData.length > 0 && (
-                <div style={statsFooterStyle}>
+                <div style={activeCallQueueStatsFooterStyle}>
                   <span style={{ fontSize: 11, color: C.mutedText }}>
                     Showing {filteredAgents.length} Agent
                     {filteredAgents.length !== 1 ? "s" : ""}
@@ -1101,7 +1143,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
           )}
 
           {/* ── QUEUE STATISTICS TAB ── */}
-          {activeTab === "queue" && (
+          {activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.queue && (
             <>
               {/* Queue table */}
               <div
@@ -1120,7 +1162,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
                     ...statsTableStyle,
                     ...(isCompact
                       ? {
-                          minWidth: STATS_TABLE_MIN_WIDTH,
+                          minWidth: ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
                           tableLayout: "auto",
                         }
                       : {}),
@@ -1223,7 +1265,7 @@ const CallQueueStatistics = ({ onBack, initialQueue }) => {
               </div>
 
               {queueData.length > 0 && (
-                <div style={statsFooterStyle}>
+                <div style={activeCallQueueStatsFooterStyle}>
                   <span style={{ fontSize: 11, color: C.mutedText }}>
                     Showing {queueData.length} Queue
                     {queueData.length !== 1 ? "s" : ""}
@@ -1295,7 +1337,7 @@ const ActiveCallQueue = () => {
 
   useEffect(() => {
     loadActivity(false);
-    pollRef.current = setInterval(() => loadActivity(true), POLL_INTERVAL);
+    pollRef.current = setInterval(() => loadActivity(true), ACTIVE_CALL_QUEUE_POLL_INTERVAL_MS);
     return () => clearInterval(pollRef.current);
   }, [loadActivity]);
 
@@ -1347,7 +1389,7 @@ const ActiveCallQueue = () => {
           }}
         >
           <PageBreadcrumb
-            segments={["Status", "PBX Status", "Active Call Queue"]}
+            segments={ACTIVE_CALL_QUEUE_BREADCRUMB_SEGMENTS}
             style={{ marginBottom: 0 }}
           />
           {lastUpdated && (
@@ -1364,8 +1406,8 @@ const ActiveCallQueue = () => {
           )}
         </div>
 
-        <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
+        <div style={activeCallQueueCardStyle}>
+          <div style={activeCallQueueToolbarStyle}>
             {hasLoaded && queueList.length > 0 && (
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {queueList.length} queue
@@ -1384,11 +1426,11 @@ const ActiveCallQueue = () => {
                 variant="cancel"
                 onClick={() => loadActivity(false)}
                 disabled={isRefreshing}
-                style={sipPcmCancelBtnStyle}
+                style={activeCallQueueCancelBtnStyle}
               >
                 {isRefreshing ? (
                   <>
-                    <CircularProgress size={14} sx={{ color: "inherit" }} />
+                    <CircularProgress size={11} style={{ color: "#374151" }} />
                     Refreshing...
                   </>
                 ) : (
@@ -1398,9 +1440,9 @@ const ActiveCallQueue = () => {
               <Btn
                 variant="primary"
                 onClick={() => setShowStats(true)}
-                style={sipPcmPrimaryBtnStyle}
+                style={activeCallQueuePrimaryBtnStyle}
               >
-                Call Queue Statistics
+                {ACTIVE_CALL_QUEUE_STATS_BTN_LABEL}
               </Btn>
             </div>
           </div>
@@ -1411,10 +1453,10 @@ const ActiveCallQueue = () => {
               <div
                 style={{
                   background: "#fef2f2",
-                  borderLeft: `3px solid #f87171`,
-                  color: "#b91c1c",
+                  borderLeft: `3px solid ${C.errorRed}`,
+                  color: C.errorRed,
                   padding: "10px 14px",
-                  borderRadius: 6,
+                  borderRadius: 8,
                   marginBottom: 14,
                   fontSize: 13,
                 }}
@@ -1430,7 +1472,7 @@ const ActiveCallQueue = () => {
 
             {hasLoaded && !error && queueList.length === 0 && (
               <TableListEmptyState
-                message="No active queues found."
+                message={ACTIVE_CALL_QUEUE_EMPTY_MESSAGE}
                 showButton={false}
               />
             )}
@@ -1463,7 +1505,7 @@ const ActiveCallQueue = () => {
                         marginBottom: 8,
                       }}
                     >
-                      Call Queues ({queueList.length})
+                      {ACTIVE_CALL_QUEUE_LIST_HEADING} ({queueList.length})
                     </div>
                     {queueList.map((q, i) => {
                       const n = norm(q);
@@ -1473,10 +1515,10 @@ const ActiveCallQueue = () => {
                           key={i}
                           onClick={() => setSelectedQueue(q)}
                           style={{
-                            background: isSelected ? "#f0f9ff" : C.cardBg,
+                            background: isSelected ? "#eff6ff" : C.cardBg,
                             border: `1px solid ${isSelected ? C.accent : C.cardBorder}`,
                             borderLeft: `3px solid ${isSelected ? C.accent : "transparent"}`,
-                            borderRadius: CARD_RADIUS,
+                            borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
                             padding: "10px 12px",
                             marginBottom: 8,
                             cursor: "pointer",
@@ -1521,7 +1563,7 @@ const ActiveCallQueue = () => {
                               alignItems: "center",
                               gap: 4,
                               // background: "#dcfce7",
-                              color: successGreen,
+                              color: C.successGreen,
                               fontSize: 12,
                               fontWeight: 700,
                               padding: "1px 8px",
@@ -1534,7 +1576,7 @@ const ActiveCallQueue = () => {
                                 width: 5,
                                 height: 5,
                                 borderRadius: "50%",
-                                background: successGreen,
+                                background: C.successGreen,
                               }}
                             />
                             {n.status}
@@ -1570,12 +1612,12 @@ const ActiveCallQueue = () => {
                         style={{
                           background: C.cardBg,
                           border: `1px solid ${C.cardBorder}`,
-                          borderRadius: CARD_RADIUS,
+                          borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
                           padding: "12px 18px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                          boxShadow: ACTIVE_CALL_QUEUE_STAT_CARD_SHADOW,
                         }}
                       >
                         <div>
@@ -1605,7 +1647,7 @@ const ActiveCallQueue = () => {
                                 alignItems: "center",
                                 gap: 4,
                                 // background: "#dcfce7",
-                                color: successGreen,
+                                color: C.successGreen,
                                 fontSize: 12,
                                 fontWeight: 700,
                                 padding: "2px 10px",
@@ -1617,7 +1659,7 @@ const ActiveCallQueue = () => {
                                   width: 6,
                                   height: 6,
                                   borderRadius: "50%",
-                                  background: successGreen,
+                                  background: C.successGreen,
                                 }}
                               />
                               {sel.status}
@@ -1732,12 +1774,12 @@ const ActiveCallQueue = () => {
                             style={{
                               background: C.cardBg,
                               border: `1px solid ${C.cardBorder}`,
-                              borderRadius: CARD_RADIUS,
+                              borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
                               padding: "12px 18px",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                              boxShadow: ACTIVE_CALL_QUEUE_STAT_CARD_SHADOW,
                             }}
                           >
                             <span

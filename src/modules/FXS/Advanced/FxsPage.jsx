@@ -1,7 +1,19 @@
-import React, { useState } from "react";
-import { FXS_INITIAL_FORM, FXS_FIELD_TOOLTIPS } from "../../../constants/FxsConstants";
+﻿import React, { useState } from "react";
+import {
+  FXS_INITIAL_FORM,
+  FXS_FIELD_TOOLTIPS,
+  FXS_FIELDS,
+  FXS_PAGE_BREADCRUMB_ROOT,
+  FXS_PAGE_BREADCRUMB_SECTION,
+  FXS_PAGE_TITLE,
+  FXS_PAGE_CARD_TITLE,
+  FXS_SAVE_LABEL,
+  FXS_RESET_LABEL,
+  FXS_LEFT_COLUMN_FIELD_KEYS,
+  FXS_RIGHT_COLUMN_FIELD_KEYS,
+} from "../../../constants/FxsConstants";
 import { Alert, Checkbox, Tooltip } from "@mui/material";
-// ── Local page UI (inlined from fxsSharedUi) ──
+// â”€â”€ Local page UI (inlined from fxsSharedUi) â”€â”€
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -40,42 +52,24 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
-  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
-  const labelNode = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return labelNode;
-  return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
-      {labelNode}
-    </Tooltip>
-  );
-};
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
 
 const Btn = ({
   children,
@@ -131,6 +125,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -143,24 +163,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -168,65 +205,11 @@ const Btn = ({
   );
 };
 
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -243,7 +226,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInteraction = {
@@ -271,32 +254,37 @@ const nativeFieldInteraction = {
   },
 };
 
-const getNativeFieldInteraction = (disabled) =>
-  disabled ? {} : nativeFieldInteraction;
-
-const getFxsNativeFieldInteraction = getNativeFieldInteraction;
+const FIELD_CONTROL_WIDTH = 220;
+const FIELD_CONTROL_HEIGHT = 36;
 
 const nativeFieldInputStyle = {
-  height: 28,
-  width: 200,
-  padding: "0 8px",
+  width: "100%",
+  minWidth: FIELD_CONTROL_WIDTH,
+  maxWidth: FIELD_CONTROL_WIDTH,
+  height: FIELD_CONTROL_HEIGHT,
+  minHeight: FIELD_CONTROL_HEIGHT,
+  padding: "0 12px",
   fontSize: 13,
+  lineHeight: `${FIELD_CONTROL_HEIGHT - 2}px`,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
 const nativeFieldSelectStyle = {
-  width: nativeFieldInputStyle.width,
-  minHeight: 32,
-  padding: "6px 28px 6px 8px",
+  width: "100%",
+  minWidth: FIELD_CONTROL_WIDTH,
+  maxWidth: FIELD_CONTROL_WIDTH,
+  height: FIELD_CONTROL_HEIGHT,
+  minHeight: FIELD_CONTROL_HEIGHT,
+  padding: "0 28px 0 12px",
   fontSize: nativeFieldInputStyle.fontSize,
-  lineHeight: 1.35,
+  lineHeight: `${FIELD_CONTROL_HEIGHT - 2}px`,
   border: nativeFieldInputStyle.border,
   borderRadius: nativeFieldInputStyle.borderRadius,
   outline: nativeFieldInputStyle.outline,
@@ -305,120 +293,115 @@ const nativeFieldSelectStyle = {
   boxSizing: nativeFieldInputStyle.boxSizing,
   transition: nativeFieldInputStyle.transition,
   appearance: "auto",
+  cursor: "pointer",
 };
 
-
-const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+const fxsPageCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
+const FxsFieldRow = ({ label, tooltipKey, children, isLongLabel = false }) => {
+  const tooltip = tooltipKey ? FXS_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        flex: "1 1 auto",
+        minWidth: 0,
+        paddingRight: 16,
+        textAlign: "left",
+        lineHeight: 1.45,
+        cursor: tooltip ? "help" : undefined,
+        whiteSpace: "normal",
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
+      }}
+    >
+      {label}
+    </label>
+  );
 
-const FormEnableCheckbox = ({
-  checked,
-  onChange,
-  name,
-  label = "Enable",
-  id,
-}) => (
-  <label
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      cursor: "pointer",
-    }}
-  >
-    <Checkbox
-      id={id || name}
-      name={name}
-      size="small"
-      checked={!!checked}
-      onChange={onChange}
-      sx={checkboxSx}
-    />
-    <span style={{ fontSize: 13, color: C.valueText }}>{label}</span>
-  </label>
-);
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        width: "100%",
+        minHeight: 36,
+        alignItems: isLongLabel ? "flex-start" : "center",
+        paddingTop: isLongLabel ? 6 : 0,
+        paddingBottom: isLongLabel ? 6 : 0,
+      }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatFieldTooltipTitle(tooltip)}
+          {...FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      {children}
+    </div>
+  );
+};
 
 
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: "stretch",
   boxSizing: "border-box",
 };
 
 const advancedPageInnerStyle = {
   width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
 };
 
 const advancedTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  overflow: "hidden",
-  marginBottom: 24,
-};
-
-const advancedBlueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
+  margin: 0,
   display: "flex",
   flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
+  background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
 };
 
 const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
@@ -431,7 +414,72 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const AdvancedBreadcrumb = ({ current }) => (
+const advancedCardTitleBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "10px 28px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+};
+
+const dashboardGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+  alignContent: "start",
+};
+
+const dashboardColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "20px 36px 20px",
+};
+
+const dashboardColumnLeftStyle = {
+  ...dashboardColumnStyle,
+  background: C.cardBg,
+};
+
+const dashboardColumnRightStyle = {
+  ...dashboardColumnStyle,
+  background: C.cardBg,
+};
+
+const dashboardDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "stretch",
+  padding: "14px 0",
+  boxSizing: "border-box",
+};
+
+const dashboardDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
+};
+
+const fxsPageFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  width: "100%",
+};
+
+const FxsAdvancedBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -444,119 +492,23 @@ const AdvancedBreadcrumb = ({ current }) => (
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{FXS_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{FXS_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {FXS_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
+const FxsAdvancedPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
+    <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
 
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-const inputStyle = nativeFieldInputStyle;
-const selectStyle = nativeFieldSelectStyle;
-const fieldInteraction = nativeFieldInteraction;
-
-const labelCellStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  paddingRight: 24,
-  textAlign: "left",
-  verticalAlign: "middle",
-};
+const getFieldByKey = (key) => FXS_FIELDS.find((field) => field.key === key);
 
 const FxsPage = () => {
   // Form state
@@ -620,13 +572,13 @@ const FxsPage = () => {
         const sum = parseInt(strArr[1]) + parseInt(strArr[2]);
         if (sum > 16000) {
           alert(
-            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！",
+            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000msï¼",
           );
           return false;
         }
         if (parseInt(strArr[1]) > 12000 || parseInt(strArr[2]) > 12000) {
           alert(
-            "The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！",
+            "The duration at ON/OFF state for ringing scheme cannot be more than 12000msï¼",
           );
           return false;
         }
@@ -652,7 +604,7 @@ const FxsPage = () => {
           parseInt(strArr[4]);
         if (sum > 16000) {
           alert(
-            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！",
+            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000msï¼",
           );
           return false;
         }
@@ -663,7 +615,7 @@ const FxsPage = () => {
           parseInt(strArr[4]) > 12000
         ) {
           alert(
-            "The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！",
+            "The duration at ON/OFF state for ringing scheme cannot be more than 12000msï¼",
           );
           return false;
         }
@@ -746,17 +698,117 @@ const FxsPage = () => {
     setFormData({ ...FXS_INITIAL_FORM });
   };
 
-  const renderEnableCheckbox = (name, label = "Enable") => (
-    <FormEnableCheckbox
-      name={name}
-      checked={!!formData[name]}
-      onChange={handleInputChange}
-      label={label}
-    />
+  const shouldShowField = (field) => {
+    if (!field?.conditional) return true;
+    const conditionalValue = formData[field.conditional];
+    if (field.conditionalValue !== undefined) {
+      return conditionalValue === field.conditionalValue;
+    }
+    return !!conditionalValue;
+  };
+
+  const fieldInputStyle = {
+    ...nativeFieldInputStyle,
+  };
+
+  const fieldSelectStyle = {
+    ...nativeFieldSelectStyle,
+  };
+
+  const valueColStyle = {
+    flex: "0 0 auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  };
+
+  const controlSlotStyle = {
+    width: FIELD_CONTROL_WIDTH,
+    minWidth: FIELD_CONTROL_WIDTH,
+    maxWidth: FIELD_CONTROL_WIDTH,
+    height: FIELD_CONTROL_HEIGHT,
+    flexShrink: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  };
+
+  const renderField = (fieldKey) => {
+    const field = getFieldByKey(fieldKey);
+    if (!field || !shouldShowField(field)) return null;
+
+    const isLongLabel =
+      field.label.length >= 42 ||
+      field.key === "minHangupTime" ||
+      field.key === "preferred18xResponse";
+
+    return (
+      <FxsFieldRow
+        key={field.key}
+        label={field.label}
+        tooltipKey={field.key}
+        isLongLabel={isLongLabel}
+      >
+        <div style={valueColStyle}>
+          <div style={controlSlotStyle}>
+            {field.type === "text" && (
+              <input
+                type="text"
+                name={field.key}
+                value={formData[field.key]}
+                onChange={handleInputChange}
+                onKeyPress={(e) =>
+                  handleKeyPress(e, field.keyPressType || "number")
+                }
+                style={fieldInputStyle}
+                {...nativeFieldInteraction}
+                maxLength={field.maxLength || "31"}
+              />
+            )}
+            {field.type === "select" && (
+              <select
+                name={field.key}
+                value={formData[field.key]}
+                onChange={handleInputChange}
+                style={fieldSelectStyle}
+                {...nativeFieldInteraction}
+              >
+                {field.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            )}
+            {field.type === "checkbox" && (
+              <Checkbox
+                size="small"
+                name={field.key}
+                checked={!!formData[field.key]}
+                onChange={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    [field.key]: !prev[field.key],
+                  }))
+                }
+                sx={fxsPageCheckboxSx}
+              />
+            )}
+          </div>
+        </div>
+      </FxsFieldRow>
+    );
+  };
+
+  const leftColumnFields = FXS_LEFT_COLUMN_FIELD_KEYS.map((key) =>
+    renderField(key),
+  );
+  const rightColumnFields = FXS_RIGHT_COLUMN_FIELD_KEYS.map((key) =>
+    renderField(key),
   );
 
   return (
-    <AdvancedPageShell>
+    <FxsAdvancedPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -774,440 +826,47 @@ const FxsPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="FXS" />
-      <AdvancedFormCard
-        title="FXS"
-        footer={
-          <>
-            <Btn
-              variant="primary"
-              onClick={handleSave}
-              style={advancedFormBtnStyle}
-            >
-              Save
-            </Btn>
-            <Btn
-              variant="cancel"
-              onClick={handleReset}
-              style={advancedFormBtnStyle}
-            >
-              Reset
-            </Btn>
-          </>
-        }
-      >
-            <div style={{ width: "100%", maxWidth: 750, margin: "0 auto" }}>
-              <table
-                className="text-sm"
-                style={{ tableLayout: "fixed", width: "750px" }}
-              >
-                <colgroup>
-                  <col style={{ width: "48%" }} />
-                  <col style={{ width: "52%" }} />
-                </colgroup>
-                <tbody>
-                  {/* Tone Energy (dB) */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="toneEnergy" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Tone Energy (dB)
-                      </FxsFieldLabel>
-                    </td>
-                    <td style={{ textAlign: "left" }}>
-                      <input
-                        type="text"
-                        name="toneEnergy"
-                        value={formData.toneEnergy}
-                        onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, "number-minus")}
-                        style={inputStyle}
-                        {...fieldInteraction}
-                        maxLength="20"
-                      />
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
 
-                  {/* Ringing Scheme Setting */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="ringingSchemeEnabled" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Ringing Scheme Setting
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("ringingSchemeEnabled")}
-                    </td>
-                  </tr>
+      <FxsAdvancedBreadcrumb />
 
-                  {/* Ringing Mode - conditional */}
-                  {formData.ringingSchemeEnabled && (
-                    <>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="ringMode" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Ringing Mode
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <input
-                            type="text"
-                            name="ringMode"
-                            value={formData.ringMode}
-                            onChange={handleInputChange}
-                            onKeyPress={(e) =>
-                              handleKeyPress(e, "number-comma-minus")
-                            }
-                            style={inputStyle}
-                        {...fieldInteraction}
-                            maxLength="128"
-                          />
-                        </td>
-                      </tr>
-                    </>
-                  )}
-                  <tr className="h-3" />
+      <div style={advancedTableContainerStyle}>
+        <div style={advancedCardTitleBarStyle}>
+          <span>{FXS_PAGE_CARD_TITLE}</span>
+        </div>
+        <div style={dashboardGridStyle}>
+          <div style={dashboardColumnLeftStyle}>
+            <div style={fxsPageFieldsColStyle}>{leftColumnFields}</div>
+          </div>
 
-                  {/* Hook-flash Detection */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="hookFlashDetection" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Hook-flash Detection
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("hookFlashDetection")}
-                    </td>
-                  </tr>
+          <div style={dashboardDividerCellStyle} aria-hidden="true">
+            <div style={dashboardDividerLineStyle} />
+          </div>
 
-                  {/* Minimum Time Length of On-hook Detection - shown when Hook-flash Detection is unchecked */}
-                  {!formData.hookFlashDetection && (
-                    <>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="minHangupTime" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Minimum Time Length of On-hook Detection (ms)
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <input
-                            type="text"
-                            name="minHangupTime"
-                            value={formData.minHangupTime}
-                            onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, "number")}
-                            style={inputStyle}
-                        {...fieldInteraction}
-                            maxLength="5"
-                          />
-                        </td>
-                      </tr>
-                    </>
-                  )}
+          <div style={dashboardColumnRightStyle}>
+            <div style={fxsPageFieldsColStyle}>{rightColumnFields}</div>
+          </div>
+        </div>
 
-                  {/* Minimum Time and Maximum Time - shown when Hook-flash Detection is checked */}
-                  {formData.hookFlashDetection && (
-                    <>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="hookFlashMinTime" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Minimum Time (ms)
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <input
-                            type="text"
-                            name="hookFlashMinTime"
-                            value={formData.hookFlashMinTime}
-                            onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, "number")}
-                            style={inputStyle}
-                        {...fieldInteraction}
-                            maxLength="5"
-                          />
-                        </td>
-                      </tr>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="hookFlashMaxTime" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Maximum Time (ms)
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <input
-                            type="text"
-                            name="hookFlashMaxTime"
-                            value={formData.hookFlashMaxTime}
-                            onChange={handleInputChange}
-                            onKeyPress={(e) => handleKeyPress(e, "number")}
-                            style={inputStyle}
-                        {...fieldInteraction}
-                            maxLength="5"
-                          />
-                        </td>
-                      </tr>
-                    </>
-                  )}
-                  <tr className="h-3" />
-
-                  {/* Preferred 18x Response */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="preferred18xResponse" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Preferred 18x Response (NO valid P_Early_Media)
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      <select
-                        name="preferred18xResponse"
-                        value={formData.preferred18xResponse}
-                        onChange={handleInputChange}
-                        style={selectStyle}
-                        {...fieldInteraction}
-                      >
-                        <option value="0">IMS Ringback</option>
-                        <option value="1">Local Ringback</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Enable Press-Key Call-Forward */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="pressKeyCallForward" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Enable Press-Key Call-Forward
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("pressKeyCallForward")}
-                    </td>
-                  </tr>
-
-                  {/* Call-Forward Key - conditional */}
-                  {formData.pressKeyCallForward && (
-                    <>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="callForwardKey" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Call-Forward Key
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <select
-                            name="callForwardKey"
-                            value={formData.callForwardKey}
-                            onChange={handleInputChange}
-                            style={selectStyle}
-                        {...fieldInteraction}
-                          >
-                            <option value="35">#</option>
-                            <option value="42">*</option>
-                          </select>
-                        </td>
-                      </tr>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="callForwardMethod" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Call-Forward Method
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <select
-                            name="callForwardMethod"
-                            value={formData.callForwardMethod}
-                            onChange={handleInputChange}
-                            style={selectStyle}
-                        {...fieldInteraction}
-                          >
-                            <option value="0">
-                              Call Forward with Negotiation
-                            </option>
-                            <option value="1">Blind Transfer</option>
-                          </select>
-                        </td>
-                      </tr>
-                    </>
-                  )}
-                  <tr className="h-3" />
-
-                  {/* CID Transmit Mode */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="cidTransmitMode" tooltips={FXS_FIELD_TOOLTIPS}>
-                        CID Transmit Mode
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      <select
-                        name="cidTransmitMode"
-                        value={formData.cidTransmitMode}
-                        onChange={handleInputChange}
-                        style={selectStyle}
-                        {...fieldInteraction}
-                      >
-                        <option value="0">DTMF</option>
-                        <option value="1">FSK</option>
-                      </select>
-                    </td>
-                  </tr>
-
-                  {/* Occasion to Send FSK CallerID - shown when CID Transmit Mode is FSK */}
-                  {formData.cidTransmitMode === "1" && (
-                    <>
-                      <tr className="h-3" />
-                      <tr>
-                        <td style={labelCellStyle}>
-                          <FxsFieldLabel tooltipKey="occasionToSendFSKCallerID" tooltips={FXS_FIELD_TOOLTIPS}>
-                            Occasion to Send FSK CallerID
-                          </FxsFieldLabel>
-                        </td>
-                        <td className="align-middle text-left">
-                          <select
-                            name="occasionToSendFSKCallerID"
-                            value={formData.occasionToSendFSKCallerID}
-                            onChange={handleInputChange}
-                            style={selectStyle}
-                        {...fieldInteraction}
-                          >
-                            <option value="0">Before ring</option>
-                            <option value="1">After the first ring</option>
-                          </select>
-                        </td>
-                      </tr>
-                    </>
-                  )}
-                  <tr className="h-3" />
-
-                  {/* Send Polarity Reversal Signal */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="sendPolarityReversal" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Send Polarity Reversal Signal
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("sendPolarityReversal")}
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Off-hook Dither Signal Duration */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="offHookDitherSignalDuration" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Off-hook Dither Signal Duration (ms)
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      <input
-                        type="text"
-                        name="offHookDitherSignalDuration"
-                        value={formData.offHookDitherSignalDuration}
-                        onChange={handleInputChange}
-                        onKeyPress={(e) => handleKeyPress(e, "number")}
-                        style={inputStyle}
-                        {...fieldInteraction}
-                        maxLength="5"
-                      />
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Handling of Call from Internal Station */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="handlingOfCallFromInternalStation" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Handling of Call from Internal Station
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      <select
-                        name="handlingOfCallFromInternalStation"
-                        value={formData.handlingOfCallFromInternalStation}
-                        onChange={handleInputChange}
-                        style={selectStyle}
-                        {...fieldInteraction}
-                      >
-                        <option value="0">Internal Handling</option>
-                        <option value="1">Platform Handling</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Light Up Mode for Voice Message */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="lightUpModeForVoiceMessage" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Light Up Mode for Voice Message
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      <select
-                        name="lightUpModeForVoiceMessage"
-                        value={formData.lightUpModeForVoiceMessage}
-                        onChange={handleInputChange}
-                        style={selectStyle}
-                        {...fieldInteraction}
-                      >
-                        <option value="0">Not Light Up</option>
-                        <option value="1">FSK Light Up</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Open Session In Advance */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="openSessionInAdvance" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Open Session In Advance
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("openSessionInAdvance")}
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Report FXS Status */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="reportFXSStatus" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Report FXS Status
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("reportFXSStatus")}
-                    </td>
-                  </tr>
-                  <tr className="h-3" />
-
-                  {/* Enable Send DTMF while receiving 183 */}
-                  <tr>
-                    <td style={labelCellStyle}>
-                      <FxsFieldLabel tooltipKey="enableSendDTMFWhileReceiving183" tooltips={FXS_FIELD_TOOLTIPS}>
-                        Enable Send DTMF while receiving 183
-                      </FxsFieldLabel>
-                    </td>
-                    <td className="align-middle text-left">
-                      {renderEnableCheckbox("enableSendDTMFWhileReceiving183")}
-                    </td>
-                  </tr>
-                  <tr className="h-4" />
-                </tbody>
-              </table>
-            </div>
-
-      </AdvancedFormCard>
-    </AdvancedPageShell>
+        <div style={advancedFormInlineFooterStyle}>
+          <Btn
+            type="button"
+            variant="primary"
+            onClick={handleSave}
+            style={advancedFormBtnStyle}
+          >
+            {FXS_SAVE_LABEL}
+          </Btn>
+          <Btn
+            type="button"
+            variant="cancel"
+            onClick={handleReset}
+            style={advancedFormBtnStyle}
+          >
+            {FXS_RESET_LABEL}
+          </Btn>
+        </div>
+      </div>
+    </FxsAdvancedPageShell>
   );
 };
 

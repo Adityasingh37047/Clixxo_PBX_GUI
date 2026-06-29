@@ -1,12 +1,21 @@
 import React, { useState } from "react";
-import { Alert, Tooltip } from "@mui/material";
+import { Alert, Checkbox, Tooltip } from "@mui/material";
 import {
   SIP_COMPATIBILITY_FIELDS,
   SIP_COMPATIBILITY_FIELD_TOOLTIPS,
+  FXS_SIP_COMPATIBILITY_BREADCRUMB_ROOT,
+  FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION,
+  FXS_SIP_COMPATIBILITY_PAGE_TITLE,
+  FXS_SIP_COMPATIBILITY_LEFT_SECTION_TITLE,
+  FXS_SIP_COMPATIBILITY_RIGHT_SECTION_TITLE,
+  FXS_SIP_COMPATIBILITY_SAVE_LABEL,
+  FXS_SIP_COMPATIBILITY_RESET_LABEL,
+  FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT,
+  FXS_SIP_COMPATIBILITY_SECTION_HEADING_COLOR,
 } from "../../../constants/SipCompatibilityConstants";
 
 // ── Page-local field label tooltip UI (not shared) ──
-const FIELD_LABEL_COLOR = "#374151";
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -71,9 +80,12 @@ const CompatibilityFieldRow = ({ label, tooltipKey, children, nested = false }) 
 
   return (
     <div
-      className={`flex flex-row w-full ${isLongLabel ? "items-start" : "items-center"}`}
       style={{
+        display: "flex",
+        flexDirection: "row",
+        width: "100%",
         minHeight: 36,
+        alignItems: isLongLabel ? "flex-start" : "center",
         paddingTop: isLongLabel ? 6 : 0,
         paddingBottom: isLongLabel ? 6 : 0,
       }}
@@ -101,12 +113,14 @@ const C = {
   cardShadow:
     "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#374151",
+  labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   strongText: "#1f2937",
-  accent: "#4A5D75",
+  accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
+  fieldReadonlyBg: "#f1f5f9",
 };
 
 const CARD_RADIUS = 10;
@@ -304,7 +318,7 @@ const nativeFieldInputStyle = {
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: FIELD_RADIUS,
   outline: "none",
-  backgroundColor: "#f8fafc",
+  backgroundColor: C.fieldBg,
   color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
@@ -433,15 +447,47 @@ const dashboardDividerLineStyle = {
   margin: "0 auto",
 };
 
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 700,
-  color: "#3e5475",
-  marginBottom: 2,
-  textAlign: "left",
+const fxsSipCompatibilityFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  width: "100%",
 };
 
-const VoipBreadcrumb = ({ current }) => (
+const fxsSipCompatibilityCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const FxsSipCompatibilitySectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: FXS_SIP_COMPATIBILITY_SECTION_HEADING_COLOR,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const FxsSipCompatibilityBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -455,15 +501,17 @@ const VoipBreadcrumb = ({ current }) => (
       flexShrink: 0,
     }}
   >
-    <span>FXS</span>
+    <span>{FXS_SIP_COMPATIBILITY_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>VoIP</span>
+    <span>{FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {FXS_SIP_COMPATIBILITY_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children }) => (
+const FxsSipCompatibilityPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
@@ -679,27 +727,12 @@ const SipCompatibilityPage = () => {
 
           {field.type === "checkbox" && (
             <div style={controlSlotStyle}>
-              <label
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  name={field.key}
-                  checked={!!form[field.key]}
-                  onChange={() => handleCheckbox(field.key)}
-                  style={{
-                    width: 16,
-                    height: 16,
-                    margin: 0,
-                    cursor: "pointer",
-                    accentColor: "#3E5475",
-                  }}
-                />
-              </label>
+              <Checkbox
+                size="small"
+                checked={!!form[field.key]}
+                onChange={() => handleCheckbox(field.key)}
+                sx={fxsSipCompatibilityCheckboxSx}
+              />
             </div>
           )}
         </div>
@@ -751,7 +784,7 @@ const SipCompatibilityPage = () => {
     });
 
   return (
-    <AdvancedPageShell>
+    <FxsSipCompatibilityPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -771,13 +804,16 @@ const SipCompatibilityPage = () => {
       )}
 
 
-      <VoipBreadcrumb current="SIP Compatibility" />
+      <FxsSipCompatibilityBreadcrumb />
 
       <div style={advancedTableContainerStyle}>
         <div style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
-            <div style={dashboardSectionTitleStyle}>Core Configuration</div>
-            <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+            <FxsSipCompatibilitySectionHeading
+              title={FXS_SIP_COMPATIBILITY_LEFT_SECTION_TITLE}
+              isFirst
+            />
+            <div style={fxsSipCompatibilityFieldsColStyle}>
               {renderColumnLayout(LEFT_COLUMN_LAYOUT)}
             </div>
           </div>
@@ -787,8 +823,11 @@ const SipCompatibilityPage = () => {
           </div>
 
           <div style={dashboardColumnRightStyle}>
-            <div style={dashboardSectionTitleStyle}>Feature Options</div>
-            <div className="flex flex-col gap-3" style={{ width: "100%" }}>
+            <FxsSipCompatibilitySectionHeading
+              title={FXS_SIP_COMPATIBILITY_RIGHT_SECTION_TITLE}
+              isFirst
+            />
+            <div style={fxsSipCompatibilityFieldsColStyle}>
               {renderColumnLayout(RIGHT_COLUMN_LAYOUT)}
             </div>
           </div>
@@ -801,7 +840,7 @@ const SipCompatibilityPage = () => {
             variant="primary"
             style={advancedFormBtnStyle}
           >
-            Save
+            {FXS_SIP_COMPATIBILITY_SAVE_LABEL}
           </Btn>
           <Btn
             type="button"
@@ -809,11 +848,11 @@ const SipCompatibilityPage = () => {
             variant="cancel"
             style={advancedFormBtnStyle}
           >
-            Reset
+            {FXS_SIP_COMPATIBILITY_RESET_LABEL}
           </Btn>
         </div>
       </div>
-    </AdvancedPageShell>
+    </FxsSipCompatibilityPageShell>
   );
 };
 

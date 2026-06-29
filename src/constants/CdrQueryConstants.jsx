@@ -1,30 +1,76 @@
-// Initial form data for CDR Query page
+export const CDR_QUERY_PAGE_BREADCRUMB_ROOT = "FXS";
+export const CDR_QUERY_PAGE_BREADCRUMB_SECTION = "Advanced";
+export const CDR_QUERY_PAGE_TITLE = "CDR Query";
+export const CDR_QUERY_CARD_TITLE = "CDR Query";
+export const CDR_QUERY_BUTTON_LABEL = "Query";
+
 export const CDR_QUERY_INITIAL_FORM = {
-  startdate: '',
-  enddate: '',
-  port: '255', // All
-  billtype: '255', // All
-  callingnum: '',
-  callednum: '',
-  mintalktime: '',
-  maxtalktime: '',
-  keyword: '',
+  startdate: "",
+  enddate: "",
+  port: "255",
+  billtype: "255",
+  callingnum: "",
+  callednum: "",
+  mintalktime: "",
+  maxtalktime: "",
+  keyword: "",
 };
 
-// Port options (All + 1-32)
 export const PORT_OPTIONS = [
-  { value: '255', label: 'All' },
+  { value: "255", label: "All" },
   ...Array.from({ length: 32 }, (_, i) => ({
     value: String(i + 1),
     label: String(i + 1),
   })),
 ];
 
-// Call Direction options
 export const CALL_DIRECTION_OPTIONS = [
-  { value: '255', label: 'All' },
-  { value: '1', label: 'InBound' },
-  { value: '2', label: 'OutBound' },
+  { value: "255", label: "All" },
+  { value: "1", label: "InBound" },
+  { value: "2", label: "OutBound" },
+];
+
+export const CDR_QUERY_FIELDS = [
+  { key: "startdate", label: "Starting Date", type: "date" },
+  { key: "enddate", label: "Ending Date", type: "date" },
+  {
+    key: "port",
+    label: "Port",
+    type: "select",
+    options: PORT_OPTIONS,
+  },
+  {
+    key: "billtype",
+    label: "Call Direction",
+    type: "select",
+    options: CALL_DIRECTION_OPTIONS,
+  },
+  {
+    key: "callingnum",
+    label: "CallerID",
+    type: "text",
+    keyPressType: "string",
+  },
+  {
+    key: "callednum",
+    label: "CalleeID",
+    type: "text",
+    keyPressType: "string",
+  },
+  {
+    key: "duration",
+    label: "Call Duration(s)",
+    type: "duration",
+    tooltipKey: "mintalktime",
+    minKey: "mintalktime",
+    maxKey: "maxtalktime",
+  },
+  {
+    key: "keyword",
+    label: "Keyword",
+    type: "text",
+    keyPressType: "string",
+  },
 ];
 
 /** CDR Query page */

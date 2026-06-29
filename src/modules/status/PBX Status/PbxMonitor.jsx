@@ -7,18 +7,30 @@ import React, {
 } from "react";
 import { CircularProgress, Tabs, Tab } from "@mui/material";
 import { monitorBoth } from "../../../api/apiService";
+import {
+  PBX_MONITOR_BREADCRUMB_SEGMENTS,
+  PBX_MONITOR_EMPTY_MESSAGES,
+  PBX_MONITOR_REFRESH_INTERVAL_MS,
+  PBX_MONITOR_SEARCH_PLACEHOLDERS,
+  PBX_MONITOR_STAT_LABELS,
+  PBX_MONITOR_TAB_LABELS,
+  PBX_MONITOR_TAB_VALUES,
+} from "../../../constants/PbxMonitorConstants";
 
 // ── Color Palette ─────────────────────────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  successGreen: "#16a34a",
+  errorRed: "#dc2626",
 };
 
 // ── Local page UI (inlined from statusSharedUi) ───────────────────────────────
@@ -76,7 +88,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background =
+      {
+        primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+        cancel: "#a3b1c2",
+        danger: "#f87171",
+        outline: "#d1d9e6",
+        default: "#d1d5db",
+      }[variant] || "#d1d5db";
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -98,6 +135,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -105,7 +143,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -231,26 +281,27 @@ const pbxHeaderTabsSx = {
   },
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const PBX_TOOLBAR_SEARCH_HEIGHT = 30;
-const PBX_TOOLBAR_SEARCH_WIDTH = 168;
-const PBX_SEARCH_ICON_SLOT = 18;
-const PBX_SEARCH_BAR_PADDING_FIT = 16;
-const PBX_SEARCH_BAR_PADDING_DEFAULT = 20;
-const PBX_TOOLBAR_SEARCH_FOCUS_RING = `0 0 0 1px ${OUTLINED_FOCUS}`;
-const PBX_TOOLBAR_SEARCH_INPUT_FONT = {
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const PBX_MONITOR_TOOLBAR_SEARCH_HEIGHT = 30;
+const PBX_MONITOR_TOOLBAR_SEARCH_WIDTH = 168;
+const PBX_MONITOR_SEARCH_ICON_SLOT = 18;
+const PBX_MONITOR_SEARCH_BAR_PADDING_FIT = 16;
+const PBX_MONITOR_SEARCH_BAR_PADDING_DEFAULT = 20;
+const PBX_MONITOR_TOOLBAR_SEARCH_FOCUS_RING =
+  "0 0 0 2px rgba(62, 84, 117, 0.15)";
+const PBX_MONITOR_TOOLBAR_SEARCH_INPUT_FONT = {
   fontSize: 12,
   fontFamily: "Inter, sans-serif",
   letterSpacing: "normal",
 };
 
-const PbxToolbarSearchBar = ({
+const PbxMonitorToolbarSearchBar = ({
   value,
   onChange,
   placeholder = "Search...",
-  width = PBX_TOOLBAR_SEARCH_WIDTH,
+  width = PBX_MONITOR_TOOLBAR_SEARCH_WIDTH,
   fitPlaceholder = false,
 }) => {
   const wrapRef = useRef(null);
@@ -266,12 +317,12 @@ const PbxToolbarSearchBar = ({
 
   const resolvedWidth =
     fitPlaceholder && placeholderWidth != null
-      ? placeholderWidth + PBX_SEARCH_BAR_PADDING_FIT + PBX_SEARCH_ICON_SLOT
+      ? placeholderWidth + PBX_MONITOR_SEARCH_BAR_PADDING_FIT + PBX_MONITOR_SEARCH_ICON_SLOT
       : width;
 
   const horizontalPadding = fitPlaceholder
-    ? PBX_SEARCH_BAR_PADDING_FIT / 2
-    : PBX_SEARCH_BAR_PADDING_DEFAULT / 2;
+    ? PBX_MONITOR_SEARCH_BAR_PADDING_FIT / 2
+    : PBX_MONITOR_SEARCH_BAR_PADDING_DEFAULT / 2;
 
   const setDefault = () => {
     const el = wrapRef.current;
@@ -291,7 +342,7 @@ const PbxToolbarSearchBar = ({
     const el = wrapRef.current;
     if (!el) return;
     el.style.borderColor = OUTLINED_FOCUS;
-    el.style.boxShadow = PBX_TOOLBAR_SEARCH_FOCUS_RING;
+    el.style.boxShadow = PBX_MONITOR_TOOLBAR_SEARCH_FOCUS_RING;
   };
 
   const handleMouseLeave = () => {
@@ -307,9 +358,9 @@ const PbxToolbarSearchBar = ({
         display: "flex",
         alignItems: "center",
         gap: 6,
-        height: PBX_TOOLBAR_SEARCH_HEIGHT,
+        height: PBX_MONITOR_TOOLBAR_SEARCH_HEIGHT,
         boxSizing: "border-box",
-        background: "#ffffff",
+        background: "#f8fafc",
         border: `1px solid ${OUTLINED_BORDER}`,
         borderRadius: 10,
         padding: `0 ${horizontalPadding}px`,
@@ -332,7 +383,7 @@ const PbxToolbarSearchBar = ({
             visibility: "hidden",
             whiteSpace: "pre",
             pointerEvents: "none",
-            ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+            ...PBX_MONITOR_TOOLBAR_SEARCH_INPUT_FONT,
           }}
         />
       ) : null}
@@ -355,7 +406,7 @@ const PbxToolbarSearchBar = ({
           padding: 0,
           paddingRight: value ? 14 : 0,
           margin: 0,
-          ...PBX_TOOLBAR_SEARCH_INPUT_FONT,
+          ...PBX_MONITOR_TOOLBAR_SEARCH_INPUT_FONT,
           color: C.valueText,
         }}
       />
@@ -392,47 +443,24 @@ const PbxToolbarSearchBar = ({
   );
 };
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
-const SIP_PCM_FORM_HEADER_RADIUS = 20;
+const PBX_MONITOR_TABLE_CARD_RADIUS = 10;
+const PBX_MONITOR_FORM_HEADER_RADIUS = 20;
 
-const sipPcmFormCardStyle = {
+const PBX_MONITOR_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
+
+const PBX_MONITOR_STAT_CARD_SHADOW =
+  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
+
+const pbxMonitorCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: PBX_MONITOR_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: PBX_MONITOR_CARD_SHADOW,
 };
 
-const sipPcmFormHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: SIP_PCM_FORM_HEADER_RADIUS,
-  borderTopRightRadius: SIP_PCM_FORM_HEADER_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const sipPcmToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
-};
-
-const sipPcmCancelBtnStyle = {
+const pbxMonitorCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -440,43 +468,29 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const monitorFooterStyle = {
+const pbxMonitorFooterStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: PBX_MONITOR_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: PBX_MONITOR_TABLE_CARD_RADIUS,
 };
 
-const sipPcmAuthFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const successGreen = "#16A34A";
-const errorRed = "#DC2626";
-const purple = "#8b5cf6";
+const PBX_MONITOR_TRUNK_ACCENT = "#8b5cf6";
 
 const StatCard = ({ label, value, accent, ready }) => (
   <div
     style={{
       background: "#ffffff",
-      borderRadius: 8,
+      borderRadius: 10,
       padding: "8px 12px",
       minHeight: 52,
-      borderTop: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
-      borderBottom: `1px solid ${C.cardBorder}`,
+      border: `1px solid ${C.cardBorder}`,
       borderLeft: `3px solid ${accent}`,
-      boxShadow: "0 2px 6px rgba(15,23,42,0.04)",
+      boxShadow: PBX_MONITOR_STAT_CARD_SHADOW,
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -514,14 +528,12 @@ const STATUS_BADGE_WIDTH = 118;
 const StatusBadge = ({ tone, text }) => {
   const colors = {
     ok: {
-      // bg: "#dcfce7",
-      color: successGreen,
-      dot: successGreen,
+      color: C.successGreen,
+      dot: C.successGreen,
     },
     bad: {
-      // bg: "#fee2e2",
-      color: errorRed,
-      dot: errorRed,
+      color: C.errorRed,
+      dot: C.errorRed,
     },
     neutral: {
       // bg: "#f1f5f9",
@@ -609,8 +621,8 @@ const TH = ({ children, width, align = "center", style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: align,
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       width: width || "auto",
       letterSpacing: "0.14em",
@@ -627,8 +639,8 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -650,7 +662,7 @@ const TD = ({ children, align = "center", mono, style: extra, bg }) => (
 );
 
 const PbxMonitor = () => {
-  const [activeTab, setActiveTab] = useState("extension");
+  const [activeTab, setActiveTab] = useState(PBX_MONITOR_TAB_VALUES.extension);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [extensionRows, setExtensionRows] = useState([]);
   const [trunkRows, setTrunkRows] = useState([]);
@@ -697,7 +709,7 @@ const PbxMonitor = () => {
   useEffect(() => {
     loadData(false);
 
-    const interval = setInterval(() => loadData(true), 30000);
+    const interval = setInterval(() => loadData(true), PBX_MONITOR_REFRESH_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [loadData]);
@@ -747,17 +759,19 @@ const PbxMonitor = () => {
   });
 
   const tableRows =
-    activeTab === "extension" ? filteredExtensions : filteredTrunks;
+    activeTab === PBX_MONITOR_TAB_VALUES.extension
+      ? filteredExtensions
+      : filteredTrunks;
   const searchPlaceholder =
-    activeTab === "extension"
-      ? "Search extension, name, status, IP & port..."
-      : "Search trunk name, type, status, host...";
+    activeTab === PBX_MONITOR_TAB_VALUES.extension
+      ? PBX_MONITOR_SEARCH_PLACEHOLDERS.extension
+      : PBX_MONITOR_SEARCH_PLACEHOLDERS.trunk;
   const emptyMessage =
-    activeTab === "extension"
-      ? "No extensions found."
-      : "No trunks found.";
+    activeTab === PBX_MONITOR_TAB_VALUES.extension
+      ? PBX_MONITOR_EMPTY_MESSAGES.extension
+      : PBX_MONITOR_EMPTY_MESSAGES.trunk;
   const recordLabel =
-    activeTab === "extension"
+    activeTab === PBX_MONITOR_TAB_VALUES.extension
       ? `extension${tableRows.length !== 1 ? "s" : ""}`
       : `trunk${tableRows.length !== 1 ? "s" : ""}`;
 
@@ -775,7 +789,7 @@ const PbxMonitor = () => {
           }}
         >
           <PageBreadcrumb
-            segments={["Status", "PBX Status", "PBX Monitor"]}
+            segments={PBX_MONITOR_BREADCRUMB_SEGMENTS}
             style={{ marginBottom: 0 }}
           />
           {lastUpdated && (
@@ -803,35 +817,35 @@ const PbxMonitor = () => {
   }}
 >
           <StatCard
-            label="Total Extensions"
+            label={PBX_MONITOR_STAT_LABELS.totalExtensions}
             value={extensionRows.length}
             accent={C.accent}
             ready={hasLoaded}
           />
 
           <StatCard
-            label="Registered"
+            label={PBX_MONITOR_STAT_LABELS.registered}
             value={extRegistered}
-            accent={successGreen}
+            accent={C.successGreen}
             ready={hasLoaded}
           />
 
           <StatCard
-            label="Unregistered"
+            label={PBX_MONITOR_STAT_LABELS.unregistered}
             value={extUnregistered}
-            accent={errorRed}
+            accent={C.errorRed}
             ready={hasLoaded}
           />
 
           <StatCard
-            label="Registered Trunks"
+            label={PBX_MONITOR_STAT_LABELS.registeredTrunks}
             value={trkRegistered}
-            accent={purple}
+            accent={PBX_MONITOR_TRUNK_ACCENT}
             ready={hasLoaded}
           />
         </div>
 
-        <div style={sipPcmFormCardStyle}>
+        <div style={pbxMonitorCardStyle}>
           <div
             style={{
               display: "flex",
@@ -840,9 +854,9 @@ const PbxMonitor = () => {
               minHeight: 44,
               padding: 0,
               background: C.cardBg,
-              borderBottom: `1px solid ${C.cardBorder}`,
-              borderTopLeftRadius: SIP_PCM_FORM_HEADER_RADIUS,
-              borderTopRightRadius: SIP_PCM_FORM_HEADER_RADIUS,
+              borderBottom: `1px solid ${C.divider}`,
+              borderTopLeftRadius: PBX_MONITOR_FORM_HEADER_RADIUS,
+              borderTopRightRadius: PBX_MONITOR_FORM_HEADER_RADIUS,
               flexWrap: "wrap",
               gap: 8,
             }}
@@ -859,8 +873,8 @@ const PbxMonitor = () => {
               }}
               sx={pbxHeaderTabsSx}
             >
-              <Tab label="EXTENSIONS" value="extension" />
-              <Tab label="TRUNKS" value="trunk" />
+              <Tab label={PBX_MONITOR_TAB_LABELS.extension} value={PBX_MONITOR_TAB_VALUES.extension} />
+              <Tab label={PBX_MONITOR_TAB_LABELS.trunk} value={PBX_MONITOR_TAB_VALUES.trunk} />
             </Tabs>
 
             <div
@@ -873,7 +887,7 @@ const PbxMonitor = () => {
                 padding: "7px 6px 7px 0",
               }}
             >
-              <PbxToolbarSearchBar
+              <PbxMonitorToolbarSearchBar
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
@@ -884,15 +898,11 @@ const PbxMonitor = () => {
                 variant="cancel"
                 onClick={() => loadData(false)}
                 disabled={isRefreshing}
-                style={{
-                  ...sipPcmAuthFormBtnStyle,
-                  ...sipPcmCancelBtnStyle,
-                  boxShadow: "none",
-                }}
+                style={pbxMonitorCancelBtnStyle}
               >
                 {isRefreshing ? (
                   <>
-                    <CircularProgress size={14} sx={{ color: "inherit" }} />
+                    <CircularProgress size={11} style={{ color: "#374151" }} />
                     Refreshing...
                   </>
                 ) : (
@@ -908,7 +918,7 @@ const PbxMonitor = () => {
             <TableListEmptyState message={emptyMessage} showButton={false} />
           ) : (
           <div style={tableWrapStyle}>
-            {activeTab === "extension" ? (
+            {activeTab === PBX_MONITOR_TAB_VALUES.extension ? (
               <table style={tableStyle}>
                 <thead>
                   <tr>
@@ -1048,7 +1058,7 @@ const PbxMonitor = () => {
           )}
 
           {hasLoaded && tableRows.length > 0 && (
-            <div style={monitorFooterStyle}>
+            <div style={pbxMonitorFooterStyle}>
               <span style={{ fontSize: 11, color: C.mutedText }}>
                 Showing {tableRows.length} {recordLabel}
               </span>

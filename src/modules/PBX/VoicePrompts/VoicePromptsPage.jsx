@@ -45,7 +45,6 @@ import {
   VOICE_PROMPTS_TABS,
   VOICE_PROMPTS_TITLE,
 } from "../../../constants/VoicePromptsConstants";
-import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
 const VOICE_PROMPTS_COMPACT_MQ = "(max-width: 768px)";
 
@@ -417,7 +416,7 @@ const VoicePromptsSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: PBX_MAIN_SECTION_HEADING_LEFT,
+        left: 0,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -580,6 +579,14 @@ const voicePromptsModalTitleStyle = {
   textAlign: "center",
   borderTopLeftRadius: 8,
   borderTopRightRadius: 8,
+  margin: 0,
+};
+
+const voicePromptsModalContentStyle = {
+  padding: "24px",
+  paddingTop: 24,
+  backgroundColor: "#ffffff",
+  boxSizing: "border-box",
 };
 
 const voicePromptsModalSectionStyle = {
@@ -1853,10 +1860,8 @@ const VoicePromptsPage = () => {
           {VOICE_PROMPTS_RECORD_MODAL_TITLE}
         </DialogTitle>
         <DialogContent
-          sx={{
-            padding: "24px",
-            backgroundColor: "#ffffff",
-          }}
+          style={voicePromptsModalContentStyle}
+          sx={{ "&.MuiDialogContent-root": { paddingTop: "24px" } }}
         >
           <div style={voicePromptsModalSectionStyle}>
             <FieldRow label="File Name" required>

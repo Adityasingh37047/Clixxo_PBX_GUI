@@ -10,17 +10,33 @@ import {
   Tooltip,
 } from "@mui/material";
 import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
-import { CALL_COUNT_FILTER_TOOLTIPS } from "../../constants/CallCountConstants";
+import {
+  CALL_COUNT_BREADCRUMB_SEGMENTS,
+  CALL_COUNT_COLUMNS,
+  CALL_COUNT_COMPACT_MQ,
+  CALL_COUNT_DEFAULT_FILTERS,
+  CALL_COUNT_DIRECTION_OPTIONS,
+  CALL_COUNT_EMPTY_MESSAGE,
+  CALL_COUNT_FILTER_MODAL_TITLE,
+  CALL_COUNT_FILTER_TOOLTIPS,
+  CALL_COUNT_FOOTER_LIMIT_NOTE,
+  CALL_COUNT_ITEMS_PER_PAGE,
+  CALL_COUNT_STATUS_OPTIONS,
+  CALL_COUNT_TABLE_MIN_WIDTH,
+  CALL_COUNT_TALK_DURATION_OPERATOR_OPTIONS,
+} from "../../constants/CallCountConstants";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
+  placeholderText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
@@ -81,7 +97,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
   const Component = component || "button";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background =
+      {
+        primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+        cancel: "#a3b1c2",
+        danger: "#f87171",
+        outline: "#d1d9e6",
+        default: "#d1d5db",
+      }[variant] || "#d1d5db";
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <Component
       type={type}
@@ -103,6 +144,7 @@ const Btn = ({
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -110,7 +152,19 @@ const Btn = ({
         if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (!disabled) {
+          e.currentTarget.style.background = baseBg;
+          clearPressStyle(e.currentTarget);
+        }
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -127,8 +181,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -237,31 +291,31 @@ const TableListEmptyState = ({
   </div>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const CALL_COUNT_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const callCountCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: CALL_COUNT_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const callCountToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: CALL_COUNT_TABLE_CARD_RADIUS,
+  borderTopRightRadius: CALL_COUNT_TABLE_CARD_RADIUS,
 };
 
-const sipPcmSelectedBadgeStyle = {
+const callCountSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -271,7 +325,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const callCountCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -279,19 +333,19 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPaginationStyle = {
+const callCountPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: CALL_COUNT_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: CALL_COUNT_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmPageBadgeStyle = {
+const callCountPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -301,7 +355,7 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const CallCountPagination = ({
   page,
   totalPages,
   recordCount,
@@ -312,7 +366,7 @@ const SipPcmPagination = ({
 }) => (
   <div
     style={{
-      ...sipPcmPaginationStyle,
+      ...callCountPaginationStyle,
       ...(compact
         ? {
             flexDirection: "column",
@@ -348,7 +402,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={callCountPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -364,13 +418,11 @@ const SipPcmPagination = ({
 
 /** Separator line left of vertical scrollbar only — see index.css `.trunk-table-scroll` */
 const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
-const CALL_COUNT_TABLE_MIN_WIDTH = 1070;
-const CALL_COUNT_COMPACT_BREAKPOINT = "(max-width: 768px)";
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -387,7 +439,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -426,8 +478,8 @@ const callCountTableTdStyle = {
   color: C.valueText,
   textAlign: "center",
   background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
@@ -447,27 +499,7 @@ const callCountTableCheckboxSx = {
 };
 
 // ── Column definitions ────────────────────────────────────────────────────────
-const columns = [
-  { key: "calldate", label: "Start", width: "12%" },
-
-  { key: "src", label: "Call From", width: "8%" }, // 10 → 8
-
-  { key: "src_ip", label: "Call From IP", width: "10%" }, // 11 → 10
-
-  { key: "dst", label: "Call To", width: "8%" }, // 10 → 8
-
-  { key: "dst_ip", label: "Call To IP", width: "10%" }, // 11 → 10
-
-  { key: "call_direction", label: "Direction", width: "6%", compact: true }, // 7 → 6
-
-  { key: "disposition", label: "Call Status", width: "8%", compact: true },
-
-  { key: "billsec", label: "Duration", width: "7%", compact: true },
-
-  { key: "dcontext", label: "Context", width: "5%" }, // 6 → 5
-
-  { key: "hangup_cause", label: "Hangup Cause", width: "16%" }, // 10 → 16
-];
+const columns = CALL_COUNT_COLUMNS;
 
 const getCallCountCellPadding = (key) => {
   const col = columns.find((c) => c.key === key);
@@ -479,7 +511,50 @@ const getCallCountHeaderPadding = (key) => {
   return col?.compact ? callCountCompactHeaderPadding : callCountHeaderPadding;
 };
 
-const cardBorderSoft = "#f1f5f9";
+const cardBorderSoft = C.divider;
+
+const callCountFilterModalPaperSx = {
+  width: 760,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const callCountFilterModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  textAlign: "center",
+  padding: "16px 24px",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const callCountFilterModalFormStyle = {
+  display: "grid",
+  gap: 14,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const callCountFilterModalActionsStyle = {
+  background: "#f8fafc",
+  padding: "16px 24px",
+  borderTop: `1px solid ${C.divider}`,
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const normalizeValue = (value) =>
   String(value || "")
@@ -720,44 +795,7 @@ const formatDate = (value) => {
   }
 };
 
-const DEFAULT_FILTERS = {
-  callStatus: "all",
-  direction: "all",
-  search: "",
-  trunkName: "",
-  callFrom: "",
-  callTo: "",
-  startDate: "",
-  endDate: "",
-};
-
-const CALL_STATUS_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "answered", label: "Answered" },
-  { value: "noanswer", label: "No Answer" },
-  { value: "voicemail", label: "Voicemail" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "failed", label: "Failed" },
-  { value: "ivr", label: "IVR" },
-  { value: "call queue", label: "Call Queue" },
-  { value: "conference", label: "Conference" },
-];
-
-const DIRECTION_OPTIONS = [
-  { value: "all", label: "All" },
-  { value: "inbound", label: "Inbound" },
-  { value: "outbound", label: "Outbound" },
-  { value: "local", label: "Local" },
-  { value: "forwarded", label: "Forwarded" },
-];
-
-const TALK_DURATION_OPERATOR_OPTIONS = [
-  { value: "<", label: "<" },
-  { value: ">", label: ">" },
-  { value: "<=", label: "<=" },
-  { value: ">=", label: ">=" },
-  { value: "=", label: "=" },
-];
+const DEFAULT_FILTERS = { ...CALL_COUNT_DEFAULT_FILTERS };
 
 const matchesCallStatus = (row, status) => {
   const selectedStatus = normalizeValue(status);
@@ -1052,7 +1090,7 @@ const FilterDate = ({
 );
 
 const CallCount = () => {
-  const isCompact = useMediaQuery(CALL_COUNT_COMPACT_BREAKPOINT);
+  const isCompact = useMediaQuery(CALL_COUNT_COMPACT_MQ);
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1060,7 +1098,7 @@ const CallCount = () => {
   const hasInitialLoadRef = useRef(false);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [limit] = useState(50);
+  const [limit] = useState(CALL_COUNT_ITEMS_PER_PAGE);
   const [selectedIds, setSelectedIds] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isModifyMode, setIsModifyMode] = useState(false);
@@ -1339,7 +1377,7 @@ const CallCount = () => {
           }}
         >
           <PageBreadcrumb
-            segments={["CDR", "Call Detail Records", "Call Count"]}
+            segments={CALL_COUNT_BREADCRUMB_SEGMENTS}
             style={{ marginBottom: 0 }}
           />
           {lastUpdated && (
@@ -1351,10 +1389,10 @@ const CallCount = () => {
           )}
         </div>
 
-        <div style={sipPcmCardStyle}>
+        <div style={callCountCardStyle}>
           <div
             style={{
-              ...sipPcmToolbarStyle,
+              ...callCountToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch" }
                 : {}),
@@ -1362,7 +1400,7 @@ const CallCount = () => {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {selectedIds.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={callCountSelectedBadgeStyle}>
                   {selectedIds.length} selected
                 </span>
               )}
@@ -1384,7 +1422,7 @@ const CallCount = () => {
                   onClick={handleModifyOpen}
                   disabled={loading}
                   variant="cancel"
-                  style={sipPcmCancelBtnStyle}
+                  style={callCountCancelBtnStyle}
                 >
                   Filter
                 </Btn>
@@ -1393,7 +1431,7 @@ const CallCount = () => {
                   onClick={handleModifyReset}
                   disabled={loading}
                   variant="cancel"
-                  style={sipPcmCancelBtnStyle}
+                  style={callCountCancelBtnStyle}
                 >
                   Reset
                 </Btn>
@@ -1402,10 +1440,10 @@ const CallCount = () => {
                 onClick={() => loadCdr(page)}
                 disabled={loading}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={callCountCancelBtnStyle}
               >
                 {loading ? (
-                  <CircularProgress size={16} sx={{ color: "#374151" }} />
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : (
                   "Refresh"
                 )}
@@ -1414,7 +1452,7 @@ const CallCount = () => {
                 onClick={handleDelete}
                 disabled={loading || selectedIds.length === 0}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={callCountCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -1423,7 +1461,7 @@ const CallCount = () => {
                 onClick={handleDownload}
                 disabled={loading}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={callCountCancelBtnStyle}
               >
                 ⬇ Download CDR
               </Btn>
@@ -1434,7 +1472,7 @@ const CallCount = () => {
             <TableListLoading />
           ) : rows.length === 0 && !hasActiveFilters ? (
             <TableListEmptyState
-              message="No call records found."
+              message={CALL_COUNT_EMPTY_MESSAGE}
               showButton={false}
             />
           ) : (
@@ -1534,7 +1572,7 @@ const CallCount = () => {
                         const isSelected =
                           row.uniqueid && selectedIds.includes(row.uniqueid);
                         const rowBg = isSelected
-                          ? "#f0f9ff"
+                          ? "#eff6ff"
                           : idx % 2 === 1
                             ? "#f8fafc"
                             : "#ffffff";
@@ -1732,7 +1770,7 @@ const CallCount = () => {
               </div>
 
               {filteredData.length > 0 && (
-                <SipPcmPagination
+                <CallCountPagination
                   page={page}
                   totalPages={totalPages}
                   recordCount={filteredData.length}
@@ -1752,28 +1790,10 @@ const CallCount = () => {
           open={showModifyModal}
           onClose={() => setShowModifyModal(false)}
           maxWidth={false}
-          PaperProps={{
-            sx: {
-              width: 760,
-              maxWidth: "96vw",
-              mx: "auto",
-              p: 0,
-              borderRadius: "8px",
-              overflow: "hidden",
-            },
-          }}
+          PaperProps={{ sx: callCountFilterModalPaperSx }}
         >
-          <DialogTitle
-            style={{
-              background: "#1e2d42",
-              color: "#ffffff",
-              fontWeight: 600,
-              fontSize: 16,
-              textAlign: "center",
-              padding: "16px 24px",
-            }}
-          >
-            Filter Call Count
+          <DialogTitle style={callCountFilterModalTitleStyle}>
+            {CALL_COUNT_FILTER_MODAL_TITLE}
           </DialogTitle>
 
           <DialogContent
@@ -1781,14 +1801,8 @@ const CallCount = () => {
           >
             <div
               style={{
-                display: "grid",
+                ...callCountFilterModalFormStyle,
                 gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
-                gap: 14,
-                width: "100%",
-                background: "#f8fafc",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 8,
-                padding: 20,
               }}
             >
               <FilterField
@@ -1806,7 +1820,7 @@ const CallCount = () => {
                     setAppliedFilters((f) => ({ ...f, callStatus: value }));
                     setPage(1);
                   }}
-                  options={CALL_STATUS_OPTIONS}
+                  options={CALL_COUNT_STATUS_OPTIONS}
                 />
               </FilterField>
 
@@ -1825,7 +1839,7 @@ const CallCount = () => {
                     setAppliedFilters((f) => ({ ...f, direction: value }));
                     setPage(1);
                   }}
-                  options={DIRECTION_OPTIONS}
+                  options={CALL_COUNT_DIRECTION_OPTIONS}
                 />
               </FilterField>
 
@@ -1908,7 +1922,7 @@ const CallCount = () => {
                         talkDurationOperator: e.target.value,
                       }))
                     }
-                    options={TALK_DURATION_OPERATOR_OPTIONS}
+                    options={CALL_COUNT_TALK_DURATION_OPERATOR_OPTIONS}
                   />
                   <input
                     type="number"
@@ -1946,13 +1960,13 @@ const CallCount = () => {
                     onChange={(e) =>
                       applyDateFilter("startDate", e.target.value)
                     }
-                    style={{ borderRadius: 4 }}
+                    style={{ borderRadius: 10 }}
                   />
                   <FilterDate
                     aria-label="End Date"
                     value={filterDraft.endDate}
                     onChange={(e) => applyDateFilter("endDate", e.target.value)}
-                    style={{ borderRadius: 4 }}
+                    style={{ borderRadius: 10 }}
                   />
                 </div>
               </FilterField>
@@ -2000,16 +2014,7 @@ const CallCount = () => {
             )}
           </DialogContent>
 
-          <DialogActions
-            style={{
-              background: "#f8fafc",
-              padding: "12px 24px 16px",
-              borderTop: `1px solid ${C.cardBorder}`,
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-            }}
-          >
+          <DialogActions style={callCountFilterModalActionsStyle}>
             <Btn
               onClick={handleModifyReset}
               variant="cancel"
@@ -2040,7 +2045,7 @@ const CallCount = () => {
             textAlign: "center",
           }}
         >
-          <span>Only latest 500 records shown</span>
+          <span>{CALL_COUNT_FOOTER_LIMIT_NOTE}</span>
         </div>
       </div>
     </div>

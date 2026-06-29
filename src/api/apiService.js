@@ -3279,9 +3279,13 @@ export const restoreBackup = async (file) => {
 // ==============================
 // CDR API
 // ==============================
-export const fetchCdr = async (page = 1, limit = 50) => {
+export const fetchCdr = async (page = 1, limit = 50, filters = {}) => {
   try {
-    const response = await axiosInstance.post('/cdr', { page, limit });
+    const payload = { page, limit };
+    if (filters.startdate) payload.startdate = filters.startdate;
+    if (filters.enddate) payload.enddate = filters.enddate;
+    if (filters.trunk_name) payload.trunk_name = filters.trunk_name;
+    const response = await axiosInstance.post('/cdr', payload);
     return response.data;
   } catch (error) {
     console.error('Error fetching CDR data:', error.message);

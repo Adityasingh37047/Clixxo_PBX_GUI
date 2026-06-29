@@ -1,20 +1,20 @@
 import React, { useState } from "react";
+import { Alert, Tooltip } from "@mui/material";
 import {
   CDR_QUERY_INITIAL_FORM,
-  PORT_OPTIONS,
-  CALL_DIRECTION_OPTIONS,
   CDR_QUERY_FIELD_TOOLTIPS,
+  CDR_QUERY_FIELDS,
+  CDR_QUERY_PAGE_BREADCRUMB_ROOT,
+  CDR_QUERY_PAGE_BREADCRUMB_SECTION,
+  CDR_QUERY_PAGE_TITLE,
+  CDR_QUERY_CARD_TITLE,
+  CDR_QUERY_BUTTON_LABEL,
 } from "../../../constants/CdrQueryConstants";
-import {
-  Alert,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
-  Tooltip,
-} from "@mui/material";
-// ── Page-local field label tooltip UI (not shared) ──
+
 const FIELD_LABEL_COLOR = "#3E5475";
+const CDR_LABEL_WIDTH = 190;
+const CDR_FIELD_WIDTH = 132;
+const CDR_DURATION_FIELD_WIDTH = 56;
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -51,44 +51,25 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
-  const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
-  const labelNode = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return labelNode;
-  return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
-      {labelNode}
-    </Tooltip>
-  );
-};
-
-// ── Local page UI (inlined from fxsSharedUi) ──
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
+  fieldBg: "#ffffff",
 };
 
 const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
+const FIELD_CONTROL_HEIGHT = 36;
 
 const Btn = ({
   children,
@@ -144,6 +125,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -156,24 +163,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -181,93 +205,171 @@ const Btn = ({
   );
 };
 
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW();
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
+const nativeFieldBaseStyle = {
+  height: FIELD_CONTROL_HEIGHT,
+  minHeight: FIELD_CONTROL_HEIGHT,
+  padding: "0 12px",
   fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  lineHeight: `${FIELD_CONTROL_HEIGHT - 2}px`,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
+const compactFieldStyle = {
+  ...nativeFieldBaseStyle,
+  width: CDR_FIELD_WIDTH,
+  minWidth: CDR_FIELD_WIDTH,
+  maxWidth: CDR_FIELD_WIDTH,
+};
+
+const durationFieldStyle = {
+  ...nativeFieldBaseStyle,
+  width: CDR_DURATION_FIELD_WIDTH,
+  minWidth: CDR_DURATION_FIELD_WIDTH,
+  maxWidth: CDR_DURATION_FIELD_WIDTH,
+  padding: "0 8px",
+};
+
+const nativeFieldSelectStyle = {
+  ...compactFieldStyle,
+  padding: "0 28px 0 12px",
+  appearance: "auto",
+  cursor: "pointer",
+};
+
+const CdrQueryFieldRow = ({ label, tooltipKey, children }) => {
+  const tooltip = tooltipKey ? CDR_QUERY_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <label
+      style={{
+        width: CDR_LABEL_WIDTH,
+        flexShrink: 0,
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
+        textAlign: "left",
+        lineHeight: 1.45,
+        cursor: tooltip ? "help" : undefined,
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        width: "fit-content",
+        maxWidth: "100%",
+      }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatFieldTooltipTitle(tooltip)}
+          {...FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      <div style={{ flexShrink: 0 }}>{children}</div>
+    </div>
+  );
+};
 
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  padding: 16,
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
   display: "flex",
   flexDirection: "column",
-  alignItems: "center",
+  alignItems: "stretch",
   boxSizing: "border-box",
 };
 
 const advancedPageInnerStyle = {
   width: "100%",
-  maxWidth: 1000,
-  margin: "0 auto",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
 };
 
 const advancedTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
 };
 
-const advancedBlueBarStyle = {
+const advancedCardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
@@ -276,43 +378,46 @@ const advancedBlueBarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: "10px 28px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
-const advancedFormBodyStyle = {
-  padding: "12px 20px 0",
-};
-
-const advancedFormPanelStyle = {
+const cdrQueryFormBodyStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
+  alignItems: "center",
+  padding: "20px 36px 24px",
+  width: "100%",
+  boxSizing: "border-box",
 };
 
-const advancedFormInlineFooterStyle = {
+const cdrQueryFieldsColStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  width: "fit-content",
+  maxWidth: "100%",
+};
+
+const cdrQueryFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
   justifyContent: "center",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
@@ -325,7 +430,7 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const AdvancedBreadcrumb = ({ current }) => (
+const CdrQueryBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -338,133 +443,19 @@ const AdvancedBreadcrumb = ({ current }) => (
       flexWrap: "wrap",
     }}
   >
-    <span>FXS</span>
+    <span>{CDR_QUERY_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Advanced</span>
+    <span>{CDR_QUERY_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {CDR_QUERY_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children, fullWidth = false }) => (
+const CdrQueryPageShell = ({ children }) => (
   <div style={advancedPageWrapStyle}>
-    <div
-      style={{
-        ...advancedPageInnerStyle,
-        maxWidth: fullWidth ? "100%" : advancedPageInnerStyle.maxWidth,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const wavFileNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: 0,
-  lineHeight: 1.45,
-  whiteSpace: "normal",
-  overflowWrap: "break-word",
-  textAlign: "center",
-  width: "100%",
-};
-
-const FieldRow = ({
-  label,
-  children,
-  required,
-  align = "center",
-  labelWidth = 170,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: align,
-      justifyContent: "center",
-      gap: 12,
-      minHeight: align === "flex-start" ? undefined : 32,
-    }}
-  >
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: labelWidth,
-        flexShrink: 0,
-        textAlign: "left",
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label}
-      {required && <span style={{ color: "#dc2626" }}> *</span>}
-    </label>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
-  </div>
-);
-
-const AdvancedFormCard = ({
-  title,
-  children,
-  footer,
-  fullWidthContent = false,
-}) => (
-  <div style={advancedTableContainerStyle}>
-    <div style={advancedBlueBarStyle}>
-      <span>{title}</span>
-    </div>
-    <div
-      style={{
-        ...advancedFormBodyStyle,
-        paddingBottom: footer ? 0 : 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          maxWidth: fullWidthContent ? "100%" : 560,
-          width: fullWidthContent ? "100%" : undefined,
-          margin: fullWidthContent ? 0 : "0 auto",
-        }}
-      >
-        {children}
-      </div>
-      {footer ? (
-        <div style={advancedFormInlineFooterStyle}>{footer}</div>
-      ) : null}
-    </div>
-  </div>
-);
-
-const CDR_LABEL_WIDTH = 190;
-const CDR_FIELD_GAP = 16;
-
-const CdrFieldRow = ({ label, children, tooltipKey }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: CDR_FIELD_GAP,
-    }}
-  >
-    <label
-      style={{
-        width: CDR_LABEL_WIDTH,
-        flexShrink: 0,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        textAlign: "left",
-      }}
-    >
-      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={CDR_QUERY_FIELD_TOOLTIPS}>
-        {label}
-      </FxsFieldLabel>
-    </label>
-    <div style={{ flexShrink: 0 }}>{children}</div>
+    <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
 
@@ -482,16 +473,9 @@ const CdrQueryPage = () => {
     showToast(msg, isSuccess ? "success" : "error");
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleDateKeyPress = (e) => {
-    const key = e.keyCode || e.which;
-    if ((key > 47 && key < 59) || key === 45 || key === 32) {
-    } else if (key !== 8) {
-      e.preventDefault();
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleStringKeyPress = (e) => {
@@ -505,17 +489,17 @@ const CdrQueryPage = () => {
       (key >= 65 && key <= 90) ||
       (key >= 97 && key <= 122)
     ) {
-    } else {
-      e.preventDefault();
+      return;
     }
+    e.preventDefault();
   };
 
   const handleNumberKeyPress = (e) => {
     const key = e.keyCode || e.which;
-    if (key > 47 && key < 58) {
-    } else if (key !== 8) {
-      e.preventDefault();
+    if ((key > 47 && key < 58) || key === 8) {
+      return;
     }
+    e.preventDefault();
   };
 
   const handleQuery = () => {
@@ -544,13 +528,86 @@ const CdrQueryPage = () => {
     alert("Query submitted successfully!");
   };
 
-  const compactFieldSx = {
-    ...muiTextFieldSx,
-    width: 132,
+  const renderFieldControl = (field) => {
+    if (field.type === "date") {
+      return (
+        <input
+          id={field.key}
+          type="date"
+          name={field.key}
+          value={formData[field.key] || ""}
+          onChange={handleInputChange}
+          style={compactFieldStyle}
+          {...nativeFieldInteraction}
+        />
+      );
+    }
+
+    if (field.type === "select") {
+      return (
+        <select
+          id={field.key}
+          name={field.key}
+          value={formData[field.key]}
+          onChange={handleInputChange}
+          style={nativeFieldSelectStyle}
+          {...nativeFieldInteraction}
+        >
+          {field.options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === "duration") {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <input
+            id={field.minKey}
+            type="text"
+            name={field.minKey}
+            value={formData[field.minKey] || ""}
+            onChange={handleInputChange}
+            onKeyPress={handleNumberKeyPress}
+            style={durationFieldStyle}
+            {...nativeFieldInteraction}
+          />
+          <span style={{ fontSize: 13, color: C.mutedText }}>—</span>
+          <input
+            id={field.maxKey}
+            type="text"
+            name={field.maxKey}
+            value={formData[field.maxKey] || ""}
+            onChange={handleInputChange}
+            onKeyPress={handleNumberKeyPress}
+            style={durationFieldStyle}
+            {...nativeFieldInteraction}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <input
+        id={field.key}
+        type="text"
+        name={field.key}
+        value={formData[field.key] || ""}
+        onChange={handleInputChange}
+        onKeyPress={
+          field.keyPressType === "string" ? handleStringKeyPress : undefined
+        }
+        style={compactFieldStyle}
+        {...nativeFieldInteraction}
+      />
+    );
   };
 
   return (
-    <AdvancedPageShell>
+    <CdrQueryPageShell>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -568,172 +625,40 @@ const CdrQueryPage = () => {
           {toast.msg}
         </Alert>
       )}
-      <AdvancedBreadcrumb current="CDR Query" />
-      <AdvancedFormCard
-        title="CDR Query"
-        footer={
+
+      <CdrQueryBreadcrumb />
+
+      <div style={advancedTableContainerStyle}>
+        <div style={advancedCardTitleBarStyle}>
+          <span>{CDR_QUERY_CARD_TITLE}</span>
+        </div>
+
+        <div style={cdrQueryFormBodyStyle}>
+          <div style={cdrQueryFieldsColStyle}>
+            {CDR_QUERY_FIELDS.map((field) => (
+              <CdrQueryFieldRow
+                key={field.key}
+                label={field.label}
+                tooltipKey={field.tooltipKey || field.key}
+              >
+                {renderFieldControl(field)}
+              </CdrQueryFieldRow>
+            ))}
+          </div>
+        </div>
+
+        <div style={cdrQueryFooterStyle}>
           <Btn
+            type="button"
             variant="primary"
             onClick={handleQuery}
             style={advancedFormBtnStyle}
           >
-            Query
+            {CDR_QUERY_BUTTON_LABEL}
           </Btn>
-        }
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-            paddingTop: 8,
-            paddingBottom: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-              width: "fit-content",
-              maxWidth: "100%",
-            }}
-          >
-            <CdrFieldRow label="Starting Date" tooltipKey="startdate">
-              <TextField
-                id="startdate"
-                type="date"
-                value={formData.startdate || ""}
-                onChange={(e) => handleInputChange("startdate", e.target.value)}
-                size="small"
-                variant="outlined"
-                sx={compactFieldSx}
-                inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-              />
-            </CdrFieldRow>
-            <CdrFieldRow label="Ending Date" tooltipKey="enddate">
-              <TextField
-                id="enddate"
-                type="date"
-                value={formData.enddate || ""}
-                onChange={(e) => handleInputChange("enddate", e.target.value)}
-                size="small"
-                variant="outlined"
-                sx={compactFieldSx}
-                inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-              />
-            </CdrFieldRow>
-            <CdrFieldRow label="Port" tooltipKey="port">
-              <FormControl size="small" sx={{ width: 132 }}>
-                <MuiSelect
-                  value={formData.port}
-                  onChange={(e) => handleInputChange("port", e.target.value)}
-                  sx={muiSelectSx}
-                >
-                  {PORT_OPTIONS.map((opt) => (
-                    <MenuItem
-                      key={opt.value}
-                      value={opt.value}
-                      sx={{ fontSize: 13 }}
-                    >
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
-              </FormControl>
-            </CdrFieldRow>
-            <CdrFieldRow label="Call Direction" tooltipKey="billtype">
-              <FormControl size="small" sx={{ width: 132 }}>
-                <MuiSelect
-                  value={formData.billtype}
-                  onChange={(e) =>
-                    handleInputChange("billtype", e.target.value)
-                  }
-                  sx={muiSelectSx}
-                >
-                  {CALL_DIRECTION_OPTIONS.map((opt) => (
-                    <MenuItem
-                      key={opt.value}
-                      value={opt.value}
-                      sx={{ fontSize: 13 }}
-                    >
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
-              </FormControl>
-            </CdrFieldRow>
-            <CdrFieldRow label="CallerID" tooltipKey="callingnum">
-              <TextField
-                id="callingnum"
-                value={formData.callingnum || ""}
-                onChange={(e) =>
-                  handleInputChange("callingnum", e.target.value)
-                }
-                onKeyPress={handleStringKeyPress}
-                size="small"
-                variant="outlined"
-                sx={compactFieldSx}
-                inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-              />
-            </CdrFieldRow>
-            <CdrFieldRow label="CalleeID" tooltipKey="callednum">
-              <TextField
-                id="callednum"
-                value={formData.callednum || ""}
-                onChange={(e) => handleInputChange("callednum", e.target.value)}
-                onKeyPress={handleStringKeyPress}
-                size="small"
-                variant="outlined"
-                sx={compactFieldSx}
-                inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-              />
-            </CdrFieldRow>
-            <CdrFieldRow label="Call Duration(s)" tooltipKey="mintalktime">
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <TextField
-                  id="mintalktime"
-                  value={formData.mintalktime || ""}
-                  onChange={(e) =>
-                    handleInputChange("mintalktime", e.target.value)
-                  }
-                  onKeyPress={handleNumberKeyPress}
-                  size="small"
-                  variant="outlined"
-                  sx={{ ...muiTextFieldSx, width: 54.5 }}
-                  inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-                />
-                <span style={{ fontSize: 13, color: C.mutedText }}>—</span>
-                <TextField
-                  id="maxtalktime"
-                  value={formData.maxtalktime || ""}
-                  onChange={(e) =>
-                    handleInputChange("maxtalktime", e.target.value)
-                  }
-                  onKeyPress={handleNumberKeyPress}
-                  size="small"
-                  variant="outlined"
-                  sx={{ ...muiTextFieldSx, width: 54.5 }}
-                  inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-                />
-              </div>
-            </CdrFieldRow>
-            <CdrFieldRow label="Keyword" tooltipKey="keyword">
-              <TextField
-                id="keyword"
-                value={formData.keyword || ""}
-                onChange={(e) => handleInputChange("keyword", e.target.value)}
-                onKeyPress={handleStringKeyPress}
-                size="small"
-                variant="outlined"
-                sx={compactFieldSx}
-                inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
-              />
-            </CdrFieldRow>
-          </div>
         </div>
-      </AdvancedFormCard>
-    </AdvancedPageShell>
+      </div>
+    </CdrQueryPageShell>
   );
 };
 

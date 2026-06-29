@@ -1,3 +1,42 @@
+export const FXS_VOIP_SIP_BREADCRUMB_ROOT = "FXS";
+export const FXS_VOIP_SIP_BREADCRUMB_SECTION = "VoIP";
+export const FXS_VOIP_SIP_PAGE_TITLE = "SIP Settings";
+
+export const FXS_VOIP_SIP_LEFT_SECTION_TITLE = "Registration";
+export const FXS_VOIP_SIP_RIGHT_SECTION_TITLE = "Protocol & Options";
+export const FXS_VOIP_SIP_LOCAL_MODE_PREFIX = "ℹ Local PBX mode:";
+
+export const FXS_VOIP_SIP_SAVE_LABEL = "Save";
+export const FXS_VOIP_SIP_RESET_LABEL = "Reset";
+export const FXS_VOIP_SIP_SAVING_LABEL = "Saving…";
+
+export const FXS_VOIP_SIP_LOCAL_REGISTER_STATUS =
+  "Local PBX (registration not required)";
+
+export const FXS_VOIP_SIP_STATUS_POLL_MS = 30000;
+
+/** Matches PBX main-page section headings (Voicemail, Record Settings) */
+export const FXS_VOIP_SIP_SECTION_HEADING_LEFT = -20;
+export const FXS_VOIP_SIP_SECTION_HEADING_COLOR = "#30415A";
+
+export const FXS_VOIP_SIP_LEFT_COLUMN_FIELD_KEYS = [
+  "registerStatus",
+  "registrarIp",
+  "registrarPort",
+  "registerInterval",
+  "registryValidity",
+  "reregistrationInterval",
+];
+
+export const FXS_VOIP_SIP_RIGHT_COLUMN_FIELD_KEYS = [
+  "sipTransportProtocol",
+  "spareRegistrarServer",
+  "spareRegistrarIp",
+  "spareRegistrarPort",
+  "multiRegistrarMode",
+  "switchSignalPort",
+];
+
 export const SIP_SETTINGS_FIELDS = [
   {
     label: "Register Status",

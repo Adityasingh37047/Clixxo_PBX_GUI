@@ -1,3 +1,17 @@
+export const FXS_SIP_COMPATIBILITY_BREADCRUMB_ROOT = "FXS";
+export const FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION = "VoIP";
+export const FXS_SIP_COMPATIBILITY_PAGE_TITLE = "SIP Compatibility";
+
+export const FXS_SIP_COMPATIBILITY_LEFT_SECTION_TITLE = "Core Configuration";
+export const FXS_SIP_COMPATIBILITY_RIGHT_SECTION_TITLE = "Feature Options";
+
+export const FXS_SIP_COMPATIBILITY_SAVE_LABEL = "Save";
+export const FXS_SIP_COMPATIBILITY_RESET_LABEL = "Reset";
+
+/** Matches PBX main-page section headings */
+export const FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT = -20;
+export const FXS_SIP_COMPATIBILITY_SECTION_HEADING_COLOR = "#30415A";
+
 export const SIP_COMPATIBILITY_FIELDS = [
   { label: 'Obtain CalleeID from', type: 'select', key: 'obtainCalleeId', options: ["'Username' Field", "'Request' Field", "'Display Name' Field"], default: "'Request' Field" },
   { label: 'Set CallerID position', type: 'select', key: 'callerIdPosition', options: ['Username of From Field', 'Display Name of From Field'], default: 'Username of From Field' },
