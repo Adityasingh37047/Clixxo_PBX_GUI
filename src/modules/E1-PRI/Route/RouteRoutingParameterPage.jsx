@@ -19,6 +19,7 @@ const FIELD_TOOLTIP_PROPS = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        
         fontSize: 13,
         maxWidth: 500,
         padding: "12px 16px",
@@ -50,30 +51,35 @@ const RouteFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
   const tooltip = tooltipKey
     ? ROUTE_ROUTING_PARAMETER_TOOLTIPS[tooltipKey] || ""
     : "";
-  const labelNode = (
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: FIELD_LABEL_COLOR,
-        flex: "1 1 auto",
-        minWidth: 0,
-        paddingRight: 16,
-        textAlign: "left",
-        lineHeight: 1.4,
-        cursor: tooltip ? "help" : undefined,
-        ...labelStyle,
-      }}
-    >
-      {label}
-    </label>
-  );
+    const labelNode = (
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: FIELD_LABEL_COLOR,
+          
+          width: 180,          // fixed width
+          flexShrink: 0,
+          paddingRight: 32,    // thoda gap
+          textAlign: "left",
+          lineHeight: 1.4,
+          cursor: tooltip ? "help" : undefined,
+          ...labelStyle,
+        }}
+      >
+        {label}
+      </label>
+    );
 
-  return (
-    <div
-      className="flex flex-row items-center w-full"
-      style={{ minHeight: 34 }}
-    >
+    return (
+      <div
+        className="flex flex-row items-center w-full"
+        style={{
+          minHeight: 34,
+          justifyContent: "center", // important
+          gap: 80,                  // label aur dropdown ke beech spacing
+        }}
+      >
       {tooltip ? (
         <Tooltip
           title={formatFieldTooltipTitle(tooltip)}
@@ -295,10 +301,10 @@ const nativeFieldInteraction = {
 
 const nativeFieldSelectStyle = {
   width: "100%",
-  maxWidth: 220,
-  minHeight: 32,
-  height: 32,
-  padding: "4px 28px 4px 10px",
+  maxWidth: 400,      // width badhi rahegi
+  minHeight: 32,      // 40 -> 32
+  height: 36,         // 40 -> 32
+  padding: "4px 28px 4px 10px", // vertical padding kam
   fontSize: 13,
   lineHeight: 1.35,
   border: `1px solid ${OUTLINED_BORDER}`,
@@ -311,7 +317,6 @@ const nativeFieldSelectStyle = {
   appearance: "auto",
   cursor: "pointer",
 };
-
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
@@ -331,10 +336,9 @@ const advancedPageInnerStyle = {
   display: "flex",
   flexDirection: "column",
 };
-
 const advancedTableContainerStyle = {
   width: "100%",
-  maxWidth: 1000,
+  maxWidth: "100%",
   margin: 0,
   display: "flex",
   flexDirection: "column",
@@ -343,6 +347,7 @@ const advancedTableContainerStyle = {
   borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
+  boxSizing: "border-box",
 };
 
 const advancedFormInlineFooterStyle = {
@@ -424,20 +429,20 @@ const AdvancedPageShell = ({ children }) => (
 );
 
 const valueColStyle = {
-  flex: "1 1 auto",
-  minWidth: 0,
+  flex: "0 0 400px",
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "flex-start",
 };
 
+
 const controlSlotStyle = {
-  width: 220,
+  width: 400,
   maxWidth: "100%",
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "flex-start",
 };
 
 const fieldSelectStyle = {
@@ -515,6 +520,17 @@ const RouteRoutingParameterPage = () => {
       <div style={advancedTableContainerStyle}>
         <div style={formColumnStyle}>
           <div style={dashboardSectionTitleStyle}>Route Settings</div>
+          <div
+  style={{
+    width: "calc(100% + 80px)", // agar left-right padding 40px hai
+    marginLeft: -40,
+    marginRight: -40,
+    borderBottom: "1px solid #d9dee7",
+    marginTop: -6,
+    marginBottom: 24,
+  }}
+/>
+
           <div
             className="flex flex-col"
             style={{ width: "100%", gap: 10 }}

@@ -14,9 +14,7 @@ import {
   listIpPstnRoutes,
   listNumberManipulations,
 } from "../../../api/apiService";
-import { FaPencilAlt, FaTrash } from "react-icons/fa";
 import {
-  Button,
   Checkbox,
   Select,
   MenuItem,
@@ -29,7 +27,6 @@ import {
   DialogActions,
   Tooltip,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 // ── Local page UI (inlined from e1PriSharedUi)
 // ── Page-local field label tooltip UI (not shared) ──
@@ -96,14 +93,15 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  mutedText: "#94a3b8",
+  mutedText: "#6b7280",
   strongText: "#0f172a",
   accent: "#3E5475",
-  errorRed: "#ef4444",
   amber: "#dc2626",
+  errorRed: "#dc2626",
 };
 
 const Btn = ({
@@ -129,9 +127,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -159,7 +154,33 @@ const Btn = ({
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -178,23 +199,46 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
     </Component>
   );
+};
+
+const sipTrunkGroupModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 const TH = ({ children, style: extra }) => (
@@ -206,8 +250,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -226,103 +270,121 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
+const sipTrunkGroupFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
 };
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const getSipTrunkGroupTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
+const getSipTrunkGroupRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const sipTrunkGroupOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const sipTrunkGroupModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": sipTrunkGroupOutlinedInputRootSx,
+  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiOutlinedInput-input": {
     backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+    fontSize: 13,
+    padding: "8px 12px",
   },
 };
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
-
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
-};
-
-const nativeFieldInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
+const sipTrunkGroupModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...sipTrunkGroupOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
   },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldHover(e.target);
-    }
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldDefault(e.target);
-    }
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "7px 32px 7px 10px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
   },
 };
 
-const pbxPageWrapStyle = {
+const sipTrunkGroupPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const sipTrunkGroupPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const SipTrunkGroupBreadcrumb = ({ current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -338,12 +400,13 @@ const PbxBreadcrumb = ({ section, current, style }) => (
   >
     <span>E1-PRI</span>
     <span>&gt;</span>
-    <span>{section}</span>
+    <span>SIP</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
   </div>
 );
-const TableListLoading = () => (
+
+const SipTrunkGroupTableListLoading = () => (
   <div
     style={{
       display: "flex",
@@ -356,7 +419,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({
+const SipTrunkGroupTableListEmptyState = ({
   message,
   onAddNew,
   buttonLabel = "+ Add New",
@@ -395,43 +458,43 @@ const TableListEmptyState = ({
   </div>
 );
 
-const SIP_PCM_TABLE_CARD_RADIUS = 10;
+const SIP_TRUNK_GROUP_TABLE_CARD_RADIUS = 10;
 
-const sipPcmCardStyle = {
+const sipTrunkGroupCardStyle = {
   background: "#ffffff",
-  borderRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const sipPcmToolbarStyle = {
+const sipTrunkGroupToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTopLeftRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
+  borderTopRightRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
 };
 
-const sipPcmPaginationStyle = {
+const sipTrunkGroupPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: SIP_PCM_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_PCM_TABLE_CARD_RADIUS,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
+  borderBottomRightRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const sipPcmSelectedBadgeStyle = {
+const sipTrunkGroupSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -441,7 +504,7 @@ const sipPcmSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const sipPcmCancelBtnStyle = {
+const sipTrunkGroupCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -449,14 +512,14 @@ const sipPcmCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const sipPcmPrimaryBtnStyle = {
+const sipTrunkGroupPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const sipPcmPageBadgeStyle = {
+const sipTrunkGroupPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -466,7 +529,7 @@ const sipPcmPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const SipPcmPagination = ({
+const SipTrunkGroupPagination = ({
   page,
   totalPages,
   recordCount,
@@ -474,7 +537,7 @@ const SipPcmPagination = ({
   recordLabel = "record",
   style,
 }) => (
-  <div style={{ ...sipPcmPaginationStyle, ...style }}>
+  <div style={{ ...sipTrunkGroupPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} {recordLabel}
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -487,7 +550,7 @@ const SipPcmPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={sipPcmPageBadgeStyle}>
+      <span style={sipTrunkGroupPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -501,27 +564,11 @@ const SipPcmPagination = ({
   </div>
 );
 
-const sipPcmCheckboxSx = {
+const sipTrunkGroupTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const sipPcmPageWrapStyle = pbxPageWrapStyle;
-const sipPcmInnerStyle = pbxPageInnerStyle;
-
-const SipPcmBreadcrumb = ({ current }) => (
-  <PbxBreadcrumb section="SIP" current={current} />
-);
-
-const pbxModalCancelBtnStyle = {
-  minWidth: 100,
-  height: 33,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 const getGroupIdValue = (group) =>
@@ -1032,8 +1079,7 @@ const SipTrunkGroup = () => {
   };
 
   return (
-    <div style={sipPcmPageWrapStyle}>
-      {/* Toast Alert */}
+    <div style={sipTrunkGroupPageWrapStyle}>
       {message.text && (
         <Alert
           severity={
@@ -1044,37 +1090,45 @@ const SipTrunkGroup = () => {
                 : "info"
           }
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
+          sx={sipTrunkGroupFixedAlertSx}
         >
           {message.text}
         </Alert>
       )}
 
-      <div style={sipPcmInnerStyle}>
-        <SipPcmBreadcrumb current="SIP Trunk Group" />
+      <div style={sipTrunkGroupPageInnerStyle}>
+        <SipTrunkGroupBreadcrumb current="SIP Trunk Group" />
 
-        <div style={sipPcmCardStyle}>
-          <div style={sipPcmToolbarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={sipTrunkGroupCardStyle}>
+          <div style={sipTrunkGroupToolbarStyle}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
               {selected.length > 0 && (
-                <span style={sipPcmSelectedBadgeStyle}>
+                <span style={sipTrunkGroupSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
               <Btn
                 onClick={handleInverse}
                 disabled={loading.delete}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={sipTrunkGroupCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1082,11 +1136,11 @@ const SipTrunkGroup = () => {
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={sipTrunkGroupCancelBtnStyle}
               >
-                {loading.delete && (
-                  <CircularProgress size={11} style={{ color: C.accent }} />
-                )}
+                {loading.delete ? (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
               </Btn>
@@ -1094,7 +1148,7 @@ const SipTrunkGroup = () => {
                 onClick={handleClearAll}
                 disabled={loading.delete}
                 variant="cancel"
-                style={sipPcmCancelBtnStyle}
+                style={sipTrunkGroupCancelBtnStyle}
               >
                 Clear All
               </Btn>
@@ -1102,331 +1156,298 @@ const SipTrunkGroup = () => {
                 onClick={handleAddNew}
                 disabled={loading.fetch}
                 variant="primary"
-                style={sipPcmPrimaryBtnStyle}
+                style={sipTrunkGroupPrimaryBtnStyle}
               >
                 + Add New
               </Btn>
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
-            {isInitialLoad ? (
+          {isInitialLoad ? (
+            <SipTrunkGroupTableListLoading />
+          ) : groups.length === 0 ? (
+            <SipTrunkGroupTableListEmptyState
+              message="No SIP trunk groups found."
+              onAddNew={handleAddNew}
+            />
+          ) : (
+            <>
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  padding: 48,
+                  overflowX: "auto",
+                  overflowY: "auto",
+                  flex: 1,
                 }}
               >
-                <CircularProgress size={28} style={{ color: C.accent }} />
-              </div>
-            ) : groups.length === 0 ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  minHeight: 240,
-                  padding: 24,
-                  textAlign: "center",
-                }}
-              >
-                <div
+                <table
                   style={{
-                    color: "#3E5475",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    marginBottom: 16,
+                    width: "100%",
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                    tableLayout: "auto",
+                    minWidth: 900,
                   }}
                 >
-                  No SIP trunk groups found.
-                </div>
-                <Btn
-                  variant="cancel"
-                  onClick={handleAddNew}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-                >
-                  + Add New
-                </Btn>
-              </div>
-            ) : (
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
-                tableLayout: "auto",
-                minWidth: 900,
-              }}
-            >
-              <thead>
-                <tr>
-                  <TH
-                    style={{
-                      width: 40,
-                      padding: 0,
-                      borderLeft: "none",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={allPageSelected}
-                      indeterminate={somePageSelected}
-                      onChange={handleTogglePageSelection}
-                      disabled={loading.delete}
-                      sx={sipPcmCheckboxSx}
-                    />
-                  </TH>
-                  {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                    (c) => c.key !== "check",
-                  ).map((col) => (
-                    <TH key={col.key}>{col.label}</TH>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                  {pagedGroups.map((item, idx) => {
-                    const realIdx = (page - 1) * itemsPerPage + idx;
-                    const isSel = selected.includes(realIdx);
-                    const isLastRow = idx === pagedGroups.length - 1;
-                    const rowBg = isSel
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
-                    return (
-                      <tr
-                        key={realIdx}
+                  <thead>
+                    <tr>
+                      <TH
                         style={{
-                          background: rowBg,
-                          transition: "background 0.15s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSel)
-                            e.currentTarget.style.background = "#f8fafc";
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSel) e.currentTarget.style.background = rowBg;
+                          width: 40,
+                          padding: 0,
+                          borderLeft: "none",
                         }}
                       >
-                        <td
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleTogglePageSelection}
+                          disabled={loading.delete}
+                          sx={sipTrunkGroupTableCheckboxSx}
+                        />
+                      </TH>
+                      {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                        (c) => c.key !== "check",
+                      ).map((col, colIdx, cols) => (
+                        <TH
+                          key={col.key}
+                          style={
+                            colIdx === cols.length - 1
+                              ? { borderRight: "none" }
+                              : undefined
+                          }
+                        >
+                          {col.label}
+                        </TH>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedGroups.map((item, idx) => {
+                      const realIdx = (page - 1) * itemsPerPage + idx;
+                      const isSel = selected.includes(realIdx);
+                      const rowBg = getSipTrunkGroupRowBg(isSel, idx);
+                      const isLastRow = idx === pagedGroups.length - 1;
+                      const lastRowCellStyle = isLastRow
+                        ? { borderBottom: "none" }
+                        : {};
+                      const dataCellStyle = { fontWeight: 400 };
+
+                      return (
+                        <tr
+                          key={realIdx}
                           style={{
-                            ...tdStyle,
                             background: rowBg,
-                            borderBottom: isLastRow
-                              ? "none"
-                              : tdStyle.borderBottom,
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSel)
+                              e.currentTarget.style.background = "#f8fafc";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSel)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          <Checkbox
-                            size="small"
-                            checked={isSel}
-                            onChange={() => handleSelectRow(realIdx)}
-                            disabled={loading.delete}
-                            sx={sipPcmCheckboxSx}
-                          />
-                        </td>
-                        {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
-                          (c) => c.key !== "check",
-                        ).map((col) => {
-                          let value = item[col.key];
-                          if (col.key === "index") value = realIdx + 1;
-                          return (
-                            <td
-                              key={col.key}
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                borderBottom: isLastRow
-                                  ? "none"
-                                  : tdStyle.borderBottom,
-                              }}
-                            >
-                              {value !== undefined &&
-                              value !== null &&
-                              value !== ""
-                                ? value
-                                : "--"}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-            )}
-          </div>
+                          <td
+                            style={getSipTrunkGroupTdStyle(rowBg, lastRowCellStyle, {
+                              width: 40,
+                              borderLeft: "none",
+                            })}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSel}
+                              onChange={() => handleSelectRow(realIdx)}
+                              disabled={loading.delete}
+                              sx={sipTrunkGroupTableCheckboxSx}
+                            />
+                          </td>
+                          {SIP_TRUNK_GROUP_TABLE_COLUMNS.filter(
+                            (c) => c.key !== "check",
+                          ).map((col, colIdx, cols) => {
+                            let value = item[col.key];
+                            if (col.key === "index") value = realIdx + 1;
+                            const isLastCol = colIdx === cols.length - 1;
+                            return (
+                              <td
+                                key={col.key}
+                                style={getSipTrunkGroupTdStyle(
+                                  rowBg,
+                                  lastRowCellStyle,
+                                  {
+                                    ...dataCellStyle,
+                                    ...(isLastCol
+                                      ? { borderRight: "none" }
+                                      : {}),
+                                  },
+                                )}
+                              >
+                                {value !== undefined &&
+                                value !== null &&
+                                value !== "" ? (
+                                  value
+                                ) : (
+                                  <span style={{ color: C.mutedText }}>—</span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-          {!isInitialLoad && groups.length > 0 && (
-            <SipPcmPagination
-              page={page}
-              totalPages={totalPages}
-              recordCount={pagedGroups.length}
-              onPageChange={(nextPage) =>
-                setPage(Math.min(totalPages, Math.max(1, nextPage)))
-              }
-            />
+              <SipTrunkGroupPagination
+                page={page}
+                totalPages={totalPages}
+                recordCount={pagedGroups.length}
+                recordLabel="group"
+                onPageChange={(nextPage) =>
+                  setPage(Math.min(totalPages, Math.max(1, nextPage)))
+                }
+              />
+            </>
           )}
         </div>
       </div>
 
-      {/* Modal for Add/Edit */}
       <Dialog
         open={showModal}
         onClose={() => !loading.save && setShowModal(false)}
         maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
         PaperProps={{
           sx: {
             width: 520,
-            maxWidth: "90vw",
+            maxWidth: "96vw",
             mx: "auto",
             p: 0,
-            borderRadius: 2,
+            borderRadius: "8px",
+            overflow: "hidden",
           },
         }}
       >
         <DialogTitle
           style={{
             background: "#1e2d42",
-            color: "#fff",
-            fontWeight: 700,
+            color: "#ffffff",
+            fontWeight: 600,
             fontSize: 16,
+            padding: "16px 24px",
             textAlign: "center",
-            padding: "14px 24px",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
           }}
         >
-          {editingRecordId != null ? "Edit SIP Trunk Group" : "Add SIP Trunk Group"}
+          {editingRecordId != null
+            ? "Edit SIP Trunk Group"
+            : "Add SIP Trunk Group"}
         </DialogTitle>
-        <DialogContent
-          style={{ padding: "20px 24px", backgroundColor: "#ffffff" }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                background: "#f5f7fa",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 6,
-                padding: 16,
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {/* SIP Trunk ID */}
-                <div
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <E1PriFieldLabel
+                  tooltipKey="sip_trunk_id"
+                  tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
+                    fontSize: 13,
+                    width: 120,
+                    flexShrink: 0,
+                    display: "inline-block",
                   }}
                 >
-                  <E1PriFieldLabel
-                    tooltipKey="sip_trunk_id"
-                    tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
-                    style={{
-                      fontSize: 13,
-                      width: 120,
-                      flexShrink: 0,
-                      display: "inline-block",
-                    }}
-                  >
-                    SIP Trunk ID:
-                  </E1PriFieldLabel>
+                  SIP Trunk ID:
+                </E1PriFieldLabel>
 
-                  <div style={{ flex: 1 }}>
-                    <Select
-                      name="sip_trunk_id"
-                      value={formData.sip_trunk_id}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      displayEmpty
-                      variant="outlined"
-                      sx={{
-                        fontSize: 13,
-                        backgroundColor: "#fff",
-                        "& .MuiOutlinedInput-root": {
-                          height: "auto",
-                          minHeight: "unset",
-                        },
-                        "& .MuiSelect-select": {
-                          padding: "6px 32px 6px 8px !important",
-                          fontSize: 13,
-                          lineHeight: 1.35,
-                          minHeight: "unset !important",
-                          boxSizing: "border-box",
-                          display: "flex",
-                          alignItems: "center",
-                        },
-                      }}
-                    >
+                <div style={{ flex: 1 }}>
+                  <Select
+                    name="sip_trunk_id"
+                    value={formData.sip_trunk_id}
+                    onChange={handleInputChange}
+                    size="small"
+                    fullWidth
+                    displayEmpty
+                    variant="outlined"
+                    sx={sipTrunkGroupModalSelectSx}
+                  >
+                    <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+                      Select SIP Trunk ID
+                    </MenuItem>
+
+                    {trunkIds.length === 0 ? (
                       <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                        Select SIP Trunk ID
+                        No options
                       </MenuItem>
-
-                      {trunkIds.length === 0 ? (
-                        <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                          No options
+                    ) : (
+                      trunkIds.map((opt) => (
+                        <MenuItem
+                          key={opt.value}
+                          value={opt.value}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {opt.label}
                         </MenuItem>
-                      ) : (
-                        trunkIds.map((opt) => (
-                          <MenuItem
-                            key={opt.value}
-                            value={opt.value}
-                            sx={{ fontSize: 13 }}
-                          >
-                            {opt.label}
-                          </MenuItem>
-                        ))
-                      )}
-                    </Select>
-                  </div>
+                      ))
+                    )}
+                  </Select>
                 </div>
+              </div>
 
-                {/* Group ID */}
-                <div
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <E1PriFieldLabel
+                  tooltipKey="group_id"
+                  tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
+                    fontSize: 13,
+                    width: 120,
+                    flexShrink: 0,
+                    display: "inline-block",
                   }}
                 >
-                  <E1PriFieldLabel
-                    tooltipKey="group_id"
-                    tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
-                    style={{
-                      fontSize: 13,
-                      width: 120,
-                      flexShrink: 0,
-                      display: "inline-block",
-                    }}
-                  >
-                    Group ID:
-                  </E1PriFieldLabel>
+                  Group ID:
+                </E1PriFieldLabel>
 
-                  <div style={{ flex: 1 }}>
-                    <TextField
-                      type="text"
-                      name="group_id"
-                      value={formData.group_id}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      placeholder="Enter Group ID"
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          padding: "6px 8px",
-                          backgroundColor: "#fff",
-                        },
-                      }}
-                    />
-                  </div>
+                <div style={{ flex: 1 }}>
+                  <TextField
+                    type="text"
+                    name="group_id"
+                    value={formData.group_id}
+                    onChange={handleInputChange}
+                    size="small"
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Enter Group ID"
+                    sx={sipTrunkGroupModalTextFieldSx}
+                  />
                 </div>
               </div>
             </div>
@@ -1434,11 +1455,14 @@ const SipTrunkGroup = () => {
         </DialogContent>
         <DialogActions
           style={{
-            padding: "16px 24px",
-            background: C.pageBg,
-            borderTop: `1px solid ${C.cardBorder}`,
+            display: "flex",
             justifyContent: "center",
-            gap: 12,
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: 8,
+            borderBottomRightRadius: 8,
           }}
         >
           <Btn
@@ -1459,7 +1483,7 @@ const SipTrunkGroup = () => {
             onClick={() => setShowModal(false)}
             variant="cancel"
             disabled={loading.save}
-            style={pbxModalCancelBtnStyle}
+            style={sipTrunkGroupModalCancelBtnStyle}
           >
             Close
           </Btn>

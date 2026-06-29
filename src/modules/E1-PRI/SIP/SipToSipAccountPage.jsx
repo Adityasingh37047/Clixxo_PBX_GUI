@@ -111,6 +111,15 @@ const C = {
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
+  placeholderText: "#9aa3b2",
+  codecBoxBorder: "#c5ccd6",
+  codecBoxAvailableBg: "#f8fafc",
+  codecStripBg: "#ffffff",
+  codecStripBorder: "#ced4de",
+  codecStripSelectedBg: "#f1f5f9",
+  codecStripSelectedBorder: "#8fa3b8",
+  codecBtnBg: "#d9dde3",
+  codecBtnBorder: "#c9d0d9",
 };
 
 const Btn = ({
@@ -276,37 +285,71 @@ const tdStyle = {
 };
 
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const sipToSipOutlinedInputRootSx = {
+  backgroundColor: "#fff",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "& fieldset": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover fieldset": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover fieldset": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
 };
 
-const muiSelectSx = {
+const sipToSipModalTextFieldSx = {
+  "& .MuiOutlinedInput-root": sipToSipOutlinedInputRootSx,
+  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: "#fff",
+    fontSize: 13,
+    padding: "8px 12px",
+  },
+};
+
+const sipToSipModalSelectSx = {
   fontSize: 13,
   backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
+  width: "100%",
+  minHeight: 36,
+  height: 36,
+  ...sipToSipOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
   },
   "& .MuiSelect-select": {
     display: "flex",
@@ -314,42 +357,10 @@ const muiSelectSx = {
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
     boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
+    fontSize: 13,
     backgroundColor: "#fff",
   },
 };
-
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
-};
-
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -366,7 +377,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -407,7 +418,7 @@ const pbxPageInnerStyle = {
   margin: "0 auto",
 };
 
-const PbxBreadcrumb = ({ section, current, style }) => (
+const SipToSipBreadcrumb = ({ section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -593,117 +604,305 @@ const sipToSipTableCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const pbxDualListLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "#3E5475",
-  textAlign: "center",
-  marginBottom: 8,
-};
+const SIP_TO_SIP_MODAL_SECTION_BG = "#f8fafc";
+const SIP_TO_SIP_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const pbxDualListSelectStyle = {
-  width: "100%",
-  height: 160,
-  border: `1px solid ${C.cardBorder}`,
-  background: "#fff",
-  borderRadius: 4,
-  padding: "4px 8px",
-  fontSize: 13,
-  outline: "none",
-  boxSizing: "border-box",
-  overflowY: "auto",
-};
-
-const CODEC_PRIORITY_HEADING_COLOR = "#30415A";
-const SIP_TO_SIP_SECTION_HEADING_FONT_SIZE = 14;
-
-const SipToSipSectionHeading = ({ title, required = false, tooltipKey, tooltips }) => (
-  <div style={{ margin: "16px 0 24px 0", position: "relative" }}>
+const SipToSipModalSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
         left: 0,
-        background: "#f8fafc",
+        background: SIP_TO_SIP_MODAL_SECTION_BG,
         paddingRight: 8,
-        fontSize: SIP_TO_SIP_SECTION_HEADING_FONT_SIZE,
+        fontSize: 14,
         fontWeight: 600,
-        color: CODEC_PRIORITY_HEADING_COLOR,
+        color: SIP_TO_SIP_MODAL_SECTION_HEADING_COLOR,
       }}
     >
-      {tooltipKey && tooltips ? (
-        <E1PriFieldLabel
-          tooltipKey={tooltipKey}
-          tooltips={tooltips}
-          style={{ fontSize: SIP_TO_SIP_SECTION_HEADING_FONT_SIZE, color: CODEC_PRIORITY_HEADING_COLOR }}
-        >
-          {title}
-          {required && <span style={{ color: C.errorRed }}> *</span>}
-        </E1PriFieldLabel>
-      ) : (
-        <>
-          {title}
-          {required && <span style={{ color: C.errorRed }}> *</span>}
-        </>
-      )}
+      {title}
     </span>
   </div>
 );
 
-const pbxDualListBtnStyle = {
-  height: 36,
+const SipToSipAllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
+  <div
+    style={{ margin: "16px 0 24px 0", position: "relative", width: "100%" }}
+  >
+    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: 0,
+        background: SIP_TO_SIP_MODAL_SECTION_BG,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: SIP_TO_SIP_MODAL_SECTION_HEADING_COLOR,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 0,
+      }}
+    >
+      <E1PriFieldLabel
+        tooltipKey={tooltipKey}
+        tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+        style={{
+          fontSize: 14,
+          color: SIP_TO_SIP_MODAL_SECTION_HEADING_COLOR,
+        }}
+      >
+        Allow Codecs
+      </E1PriFieldLabel>
+      {required && <span style={{ color: C.errorRed }}> *</span>}
+    </span>
+  </div>
+);
+
+const SipToSipSectionCard = ({ title, children, isFirst = false }) => (
+  <div style={{ marginBottom: 8 }}>
+    <SipToSipModalSectionHeading title={title} isFirst={isFirst} />
+    <div>{children}</div>
+  </div>
+);
+
+const SipToSipErrMsg = ({ children }) => (
+  <div style={{ color: "#dc2626", fontSize: 11, marginTop: 2 }}>{children}</div>
+);
+
+const SipToSipFieldRow = ({
+  label,
+  children,
+  wide = false,
+  labelWidth = 130,
+  tooltipKey,
+}) => {
+  const tooltip = tooltipKey ? SIP_TO_SIP_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelStyle = {
+    fontSize: 13,
+    color: C.labelText,
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+    textAlign: "left",
+    width: labelWidth,
+    flexShrink: 0,
+    paddingTop: wide ? 4 : 0,
+    cursor: tooltip ? "help" : undefined,
+  };
+  const labelNode = <label style={labelStyle}>{label}</label>;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: wide ? "flex-start" : "center",
+        gap: 12,
+        width: "100%",
+      }}
+    >
+      {tooltip ? (
+        <Tooltip
+          title={formatFieldTooltipTitle(tooltip)}
+          {...FIELD_TOOLTIP_PROPS}
+        >
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
+    </div>
+  );
+};
+
+const SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT = 188;
+const SIP_TO_SIP_CODEC_BTN_COL_WIDTH = 40;
+const SIP_TO_SIP_CODEC_BTN_GAP = 6;
+const SIP_TO_SIP_CODEC_BTN_HEIGHT =
+  (SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT - SIP_TO_SIP_CODEC_BTN_GAP * 3) / 4;
+const SIP_TO_SIP_CODEC_LIST_LABEL_OFFSET = 28;
+
+const sipToSipCodecColumnLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "center",
+  marginBottom: 8,
+};
+
+const getSipToSipCodecListBoxStyle = (variant, isEmpty) => ({
   width: "100%",
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
+  minHeight: SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT,
+  height: SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT,
+  border: `1px solid ${C.codecBoxBorder}`,
+  background: C.codecBoxAvailableBg,
+  borderRadius: 6,
+  padding: isEmpty ? 0 : "8px 8px",
+  boxSizing: "border-box",
+  overflowY: "auto",
+  overflowX: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: isEmpty ? "center" : "stretch",
+  justifyContent: isEmpty ? "center" : "flex-start",
+  gap: 4,
+});
+
+const sipToSipCodecListEmptyStyle = {
+  color: C.placeholderText,
+  fontSize: 13,
+  fontWeight: 400,
+  textAlign: "center",
+  userSelect: "none",
+  padding: "0 16px",
+};
+
+const sipToSipCodecStripStyle = (isSelected) => ({
+  display: "block",
+  width: "100%",
+  padding: "6px 8px",
+  borderRadius: 5,
+  fontSize: 13,
+  fontWeight: 400,
+  color: C.valueText,
+  textAlign: "center",
+  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
+  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
+  cursor: "pointer",
+  userSelect: "none",
+  boxSizing: "border-box",
+  lineHeight: 1.35,
+  flexShrink: 0,
+  transition: "background 0.12s ease, border-color 0.12s ease",
+});
+
+const sipToSipCodecDualListBtnStyle = {
+  width: SIP_TO_SIP_CODEC_BTN_COL_WIDTH,
+  height: SIP_TO_SIP_CODEC_BTN_HEIGHT,
+  borderRadius: 6,
+  border: `1px solid ${C.codecBtnBorder}`,
+  background: C.codecBtnBg,
   color: "#111827",
-  fontSize: 14,
+  fontSize: 12,
   fontWeight: 600,
   fontFamily: "inherit",
   lineHeight: 1,
   padding: 0,
   margin: 0,
   cursor: "pointer",
-  display: "block",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   boxSizing: "border-box",
-  textAlign: "center",
+  flexShrink: 0,
+  boxShadow: "none",
+  transition:
+    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  userSelect: "none",
 };
 
-const PbxDualListBtn = ({ onClick, title, children, reorder = false }) => (
+const sipToSipCodecDualListReorderBtnStyle = {
+  ...sipToSipCodecDualListBtnStyle,
+  fontSize: 11,
+  fontWeight: 500,
+  color: C.mutedText,
+};
+
+const sipToSipCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: SIP_TO_SIP_CODEC_BTN_GAP,
+  height: SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT,
+  width: SIP_TO_SIP_CODEC_BTN_COL_WIDTH,
+};
+
+const SipToSipCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   <button
     type="button"
     title={title}
     onClick={onClick}
-    style={{
-      ...pbxDualListBtnStyle,
-      fontWeight: reorder ? 400 : pbxDualListBtnStyle.fontWeight,
-      transition:
-        "background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-      userSelect: "none",
-    }}
+    style={
+      reorder ? sipToSipCodecDualListReorderBtnStyle : sipToSipCodecDualListBtnStyle
+    }
     onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.background = "#c5cbd3";
     }}
     onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = "#d9dde3";
+      e.currentTarget.style.background = C.codecBtnBg;
       e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "";
+      e.currentTarget.style.boxShadow = "none";
     }}
     onMouseDown={(e) => {
-      e.currentTarget.style.backgroundColor = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.97)";
+      e.currentTarget.style.background = "#b3bac4";
+      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
       e.currentTarget.style.boxShadow =
         "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
     }}
     onMouseUp={(e) => {
-      e.currentTarget.style.backgroundColor = "#c5cbd3";
+      e.currentTarget.style.background = "#c5cbd3";
       e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "";
+      e.currentTarget.style.boxShadow = "none";
     }}
   >
     {children}
   </button>
 );
+
+const SipToSipCodecListBox = ({
+  items,
+  selectedIds,
+  onToggle,
+  emptyText,
+  getLabel,
+  variant = "available",
+}) => {
+  const isEmpty = items.length === 0;
+  return (
+    <div style={getSipToSipCodecListBoxStyle(variant, isEmpty)}>
+      {isEmpty ? (
+        <div style={sipToSipCodecListEmptyStyle}>{emptyText}</div>
+      ) : (
+        items.map((item) => {
+          const id = typeof item === "string" ? item : item.value;
+          const label = getLabel ? getLabel(id) : item.label || id;
+          const isSelected = selectedIds.includes(id);
+          return (
+            <div
+              key={id}
+              role="option"
+              aria-selected={isSelected}
+              onClick={() => onToggle(id)}
+              style={sipToSipCodecStripStyle(isSelected)}
+            >
+              {label}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+const sipToSipModalFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  width: "100%",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
 
 const parseCodecList = (value) => {
   if (!value) return [];
@@ -723,8 +922,8 @@ const normalizeAllowCodecs = (value) => parseCodecList(value).join(",");
 const sipToSipPageWrapStyle = pbxPageWrapStyle;
 const sipToSipInnerStyle = pbxPageInnerStyle;
 
-const SipToSipBreadcrumb = ({ current }) => (
-  <PbxBreadcrumb section="SIP" current={current} />
+const SipToSipModalBreadcrumb = ({ current }) => (
+  <SipToSipBreadcrumb section="SIP" current={current} />
 );
 
 const sipToSipModalCancelBtnStyle = {
@@ -780,6 +979,16 @@ const SipToSipAccountPage = () => {
 
   const getCodecLabel = (value) =>
     CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+
+  const toggleCodecAvailableSelect = (id) =>
+    setCodecAvailableSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const toggleCodecChosenSelect = (id) =>
+    setCodecChosenSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const updateCodecList = (newList) => {
     const newCodecsString = newList.join(",");
@@ -1267,125 +1476,113 @@ const SipToSipAccountPage = () => {
     page * itemsPerPage,
   );
 
-  const formFieldLabelStyle = {
-    fontSize: 13,
-    fontWeight: 600,
-    color: C.labelText,
-    width: 120,
-    flexShrink: 0,
-  };
+  const formFieldLabel = (field) => `${field.label}:`;
 
   const renderAllowCodecsSection = () => (
     <div style={{ width: "100%" }}>
-      <SipToSipSectionHeading
-        title="Allow Codecs"
-        required
+      <SipToSipAllowCodecsSectionHeading
         tooltipKey="allow_codecs"
-        tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+        required
       />
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 48px 1fr 48px",
-          gap: 12,
+          gridTemplateColumns: `1fr ${SIP_TO_SIP_CODEC_BTN_COL_WIDTH}px 1fr ${SIP_TO_SIP_CODEC_BTN_COL_WIDTH}px`,
+          gap: 10,
           width: "100%",
+          alignItems: "start",
         }}
       >
         <div>
-          <div style={pbxDualListLabelStyle}>Available</div>
-          <select
-            multiple
-            size={6}
-            value={codecAvailableSelected}
-            onChange={(e) =>
-              setCodecAvailableSelected(
-                Array.from(e.target.selectedOptions, (opt) => opt.value),
-              )
-            }
-            style={pbxDualListSelectStyle}
-          >
-            {availableCodecList.length === 0 ? (
-              <option disabled value="">
-                No codecs
-              </option>
-            ) : (
-              availableCodecList.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))
-            )}
-          </select>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            paddingTop: 28,
-          }}
-        >
-          <PbxDualListBtn onClick={addSelectedCodecs}>&gt;</PbxDualListBtn>
-          <PbxDualListBtn onClick={addAllCodecs}>&gt;&gt;</PbxDualListBtn>
-          <PbxDualListBtn onClick={removeSelectedCodecs}>&lt;</PbxDualListBtn>
-          <PbxDualListBtn onClick={removeAllCodecs}>&lt;&lt;</PbxDualListBtn>
+          <div style={sipToSipCodecColumnLabelStyle}>Available</div>
+          <SipToSipCodecListBox
+            variant="available"
+            items={availableCodecList}
+            selectedIds={codecAvailableSelected}
+            onToggle={toggleCodecAvailableSelect}
+            emptyText="Available codecs"
+            getLabel={(id) => getCodecLabel(id)}
+          />
         </div>
         <div>
-          <div style={pbxDualListLabelStyle}>Selected</div>
-          <select
-            multiple
-            size={6}
-            value={codecChosenSelected}
-            onChange={(e) =>
-              setCodecChosenSelected(
-                Array.from(e.target.selectedOptions, (opt) => opt.value),
-              )
-            }
-            style={pbxDualListSelectStyle}
-          >
-            {selectedCodecList.length === 0 ? (
-              <option disabled value="">
-                No selected codecs
-              </option>
-            ) : (
-              selectedCodecList.map((id) => (
-                <option key={id} value={id}>
-                  {getCodecLabel(id)}
-                </option>
-              ))
-            )}
-          </select>
+          <div
+            style={{ height: SIP_TO_SIP_CODEC_LIST_LABEL_OFFSET }}
+            aria-hidden="true"
+          />
+          <div style={sipToSipCodecBtnColumnStyle}>
+            <SipToSipCodecDualListBtn
+              onClick={addSelectedCodecs}
+              title="Add selected"
+            >
+              &gt;
+            </SipToSipCodecDualListBtn>
+            <SipToSipCodecDualListBtn onClick={addAllCodecs} title="Add all">
+              &gt;&gt;
+            </SipToSipCodecDualListBtn>
+            <SipToSipCodecDualListBtn
+              onClick={removeSelectedCodecs}
+              title="Remove selected"
+            >
+              &lt;
+            </SipToSipCodecDualListBtn>
+            <SipToSipCodecDualListBtn
+              onClick={removeAllCodecs}
+              title="Remove all"
+            >
+              &lt;&lt;
+            </SipToSipCodecDualListBtn>
+          </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            paddingTop: 28,
-          }}
-        >
-          <PbxDualListBtn
-            reorder
-            title="Move to bottom"
-            onClick={moveCodecToBottom}
-          >
-            vv
-          </PbxDualListBtn>
-          <PbxDualListBtn reorder title="Move up" onClick={moveCodecUp}>
-            ^
-          </PbxDualListBtn>
-          <PbxDualListBtn reorder title="Move down" onClick={moveCodecDown}>
-            v
-          </PbxDualListBtn>
-          <PbxDualListBtn reorder title="Move to top" onClick={moveCodecToTop}>
-            ^^
-          </PbxDualListBtn>
+        <div>
+          <div style={sipToSipCodecColumnLabelStyle}>Selected</div>
+          <SipToSipCodecListBox
+            variant="selected"
+            items={selectedCodecList}
+            selectedIds={codecChosenSelected}
+            onToggle={toggleCodecChosenSelect}
+            emptyText="No selected codecs"
+            getLabel={(id) => getCodecLabel(id)}
+          />
+        </div>
+        <div>
+          <div
+            style={{ height: SIP_TO_SIP_CODEC_LIST_LABEL_OFFSET }}
+            aria-hidden="true"
+          />
+          <div style={sipToSipCodecBtnColumnStyle}>
+            <SipToSipCodecDualListBtn
+              reorder
+              title="Move to top"
+              onClick={moveCodecToTop}
+            >
+              ^^
+            </SipToSipCodecDualListBtn>
+            <SipToSipCodecDualListBtn
+              reorder
+              title="Move up"
+              onClick={moveCodecUp}
+            >
+              ^
+            </SipToSipCodecDualListBtn>
+            <SipToSipCodecDualListBtn
+              reorder
+              title="Move down"
+              onClick={moveCodecDown}
+            >
+              v
+            </SipToSipCodecDualListBtn>
+            <SipToSipCodecDualListBtn
+              reorder
+              title="Move to bottom"
+              onClick={moveCodecToBottom}
+            >
+              vv
+            </SipToSipCodecDualListBtn>
+          </div>
         </div>
       </div>
-          {validationErrors.allow_codecs && (
-        <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
-          {validationErrors.allow_codecs}
-        </div>
+      {validationErrors.allow_codecs && (
+        <SipToSipErrMsg>{validationErrors.allow_codecs}</SipToSipErrMsg>
       )}
     </div>
   );
@@ -1393,7 +1590,7 @@ const SipToSipAccountPage = () => {
   const renderFormFieldControl = (field) => {
     if (field.type === "password") {
       return (
-        <div style={{ width: "100%" }}>
+        <>
           <TextField
             type={showPassword ? "text" : "password"}
             value={form[field.name] || ""}
@@ -1403,15 +1600,7 @@ const SipToSipAccountPage = () => {
             variant="outlined"
             placeholder="Enter password"
             error={!!validationErrors[field.name]}
-            inputProps={{
-              style: {
-                fontSize: 13,
-                height: 32,
-                padding: "0 8px",
-                boxSizing: "border-box",
-              },
-            }}
-            sx={modalTextFieldSx}
+            sx={sipToSipModalTextFieldSx}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -1432,17 +1621,15 @@ const SipToSipAccountPage = () => {
             }}
           />
           {validationErrors[field.name] && (
-            <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
-              {validationErrors[field.name]}
-            </div>
+            <SipToSipErrMsg>{validationErrors[field.name]}</SipToSipErrMsg>
           )}
-        </div>
+        </>
       );
     }
 
     if (field.name === "context") {
       return (
-        <div style={{ width: "100%" }}>
+        <>
           <FormControl
             fullWidth
             size="small"
@@ -1452,11 +1639,9 @@ const SipToSipAccountPage = () => {
               value={form.context || ""}
               displayEmpty
               onChange={(e) => handleChange("context", e.target.value)}
-              inputProps={{ "aria-label": "Select Context" }}
-              variant="outlined"
-              sx={modalSelectSx}
+              sx={sipToSipModalSelectSx}
             >
-              <MenuItem value="" disabled sx={{ fontSize: 13 }}>
+              <MenuItem value="" disabled>
                 <em>Select Context</em>
               </MenuItem>
               {Array.from({ length: 10 }, (_, i) => `sip${i + 1}`).map(
@@ -1469,17 +1654,15 @@ const SipToSipAccountPage = () => {
             </MuiSelect>
           </FormControl>
           {validationErrors.context && (
-            <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
-              {validationErrors.context}
-            </div>
+            <SipToSipErrMsg>{validationErrors.context}</SipToSipErrMsg>
           )}
-        </div>
+        </>
       );
     }
 
-    return (
-      <div style={{ width: "100%" }}>
-        {field.name === "contact" ? (
+    if (field.name === "contact") {
+      return (
+        <>
           <TextField
             type="text"
             value={
@@ -1491,87 +1674,59 @@ const SipToSipAccountPage = () => {
             variant="outlined"
             error={!!validationErrors.contact}
             placeholder="e.g., 15.158.34.15"
-            inputProps={{
-              style: {
-                fontSize: 13,
-                height: 32,
-                padding: "0 8px",
-                boxSizing: "border-box",
-              },
-            }}
-            sx={modalTextFieldSx}
+            sx={sipToSipModalTextFieldSx}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">sip:</InputAdornment>
               ),
             }}
           />
-        ) : (
-          <TextField
-            type="text"
-            value={form[field.name] || ""}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            size="small"
-            fullWidth
-            variant="outlined"
-            error={!!validationErrors[field.name]}
-            placeholder={
-              field.name === "extension"
-                ? "e.g., 1001"
-                : field.name === "from_domain"
-                  ? "e.g., sip.domain.in"
-                  : field.name === "contact_user"
-                    ? "+91XXXXXXXXXX"
-                    : field.name === "outbound_proxy"
-                      ? "e.g., 15.158.34.15"
-                      : `Enter ${field.label.toLowerCase()}`
-            }
-            disabled={field.name === "extension" && editIndex !== null}
-            inputProps={{
-              style: {
-                fontSize: 13,
-                height: 32,
-                padding: "0 8px",
-                boxSizing: "border-box",
-              },
-            }}
-            sx={modalTextFieldSx}
-          />
-        )}
+          {validationErrors.contact && (
+            <SipToSipErrMsg>{validationErrors.contact}</SipToSipErrMsg>
+          )}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <TextField
+          type="text"
+          value={form[field.name] || ""}
+          onChange={(e) => handleChange(field.name, e.target.value)}
+          size="small"
+          fullWidth
+          variant="outlined"
+          error={!!validationErrors[field.name]}
+          placeholder={
+            field.name === "extension"
+              ? "e.g., 1001"
+              : field.name === "from_domain"
+                ? "e.g., sip.domain.in"
+                : field.name === "contact_user"
+                  ? "+91XXXXXXXXXX"
+                  : field.name === "outbound_proxy"
+                    ? "e.g., 15.158.34.15"
+                    : `Enter ${field.label.toLowerCase()}`
+          }
+          disabled={field.name === "extension" && editIndex !== null}
+          sx={sipToSipModalTextFieldSx}
+        />
         {validationErrors[field.name] && (
-          <div style={{ color: C.errorRed, fontSize: 12, marginTop: 4 }}>
-            {validationErrors[field.name]}
-          </div>
+          <SipToSipErrMsg>{validationErrors[field.name]}</SipToSipErrMsg>
         )}
-      </div>
+      </>
     );
   };
 
   const renderFormField = (field) => (
-    <div
+    <SipToSipFieldRow
       key={field.name}
-      style={{
-        width: "100%",
-        display: "grid",
-        gridTemplateColumns: "120px 1fr",
-        gap: 12,
-        alignItems: "center",
-      }}
+      label={formFieldLabel(field)}
+      tooltipKey={field.name}
     >
-      <label style={formFieldLabelStyle}>
-        <E1PriFieldLabel
-          tooltipKey={field.name}
-          tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
-          style={{ fontSize: 13, display: "inline" }}
-        >
-          {field.label}
-        </E1PriFieldLabel>{" "}
-        <span style={{ color: C.errorRed }}>*</span>
-      </label>
-      <div style={{ width: "100%", minWidth: 0 }}>
-        {renderFormFieldControl(field)}
-      </div>
-    </div>
+      {renderFormFieldControl(field)}
+    </SipToSipFieldRow>
   );
 
   return (
@@ -1876,7 +2031,7 @@ const SipToSipAccountPage = () => {
         }}
         PaperProps={{
           sx: {
-            width: 700,
+            width: 760,
             maxWidth: "96vw",
             mx: "auto",
             p: 0,
@@ -1901,43 +2056,40 @@ const SipToSipAccountPage = () => {
             ? "Edit SIP To SIP Account"
             : "Add SIP To SIP Account"}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <DialogContent
+          style={{ padding: "24px", backgroundColor: "#ffffff" }}
+          sx={{
+            maxHeight: "calc(100vh - 180px)",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <div style={sipToSipModalFormPanelStyle}>
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 14,
-                width: "100%",
-                background: "#f8fafc",
-                border: `1px solid ${C.cardBorder}`,
-                borderRadius: 8,
-                padding: 20,
+                gap: 10,
+                paddingBottom: 8,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                  paddingBottom: 8,
-                }}
-              >
-                {SIP_TO_SIP_FORM_LAYOUT.map((rowFields, rowIdx) => {
-                  const fields = rowFields
+              <SipToSipSectionCard title="General" isFirst>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px 32px",
+                  }}
+                >
+                  {SIP_TO_SIP_FORM_LAYOUT.flat()
                     .map((name) =>
                       SIP_TO_SIP_FIELDS.find((f) => f.name === name),
                     )
-                    .filter(Boolean);
-
-                  return (
-                    <div key={rowIdx} style={{ width: "100%", minWidth: 0 }}>
-                      {fields.map((field) => renderFormField(field))}
-                    </div>
-                  );
-                })}
+                    .filter(Boolean)
+                    .map((field) => renderFormField(field))}
+                </div>
                 {renderAllowCodecsSection()}
-              </div>
+              </SipToSipSectionCard>
             </div>
           </div>
         </DialogContent>
@@ -1959,12 +2111,6 @@ const SipToSipAccountPage = () => {
             disabled={loading.save}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? (
-              <CircularProgress
-                size={14}
-                style={{ color: "#fff", marginRight: 8 }}
-              />
-            ) : null}
             {loading.save ? "Saving..." : "Save"}
           </Btn>
           <Btn
