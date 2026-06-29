@@ -1,6 +1,7 @@
 export const FXS_NAT_SETTINGS_BREADCRUMB_ROOT = "FXS";
 export const FXS_NAT_SETTINGS_BREADCRUMB_SECTION = "VoIP";
 export const FXS_NAT_SETTINGS_PAGE_TITLE = "NAT Settings";
+export const FXS_NAT_SETTINGS_CARD_TITLE = "NAT Settings";
 
 export const FXS_NAT_SETTINGS_LEFT_SECTION_TITLE = "Core Networking";
 export const FXS_NAT_SETTINGS_RIGHT_SECTION_TITLE = "Traversal & Options";

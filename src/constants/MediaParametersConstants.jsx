@@ -1,6 +1,7 @@
 export const FXS_VOIP_MEDIA_BREADCRUMB_ROOT = "FXS";
 export const FXS_VOIP_MEDIA_BREADCRUMB_SECTION = "VoIP";
 export const FXS_VOIP_MEDIA_PAGE_TITLE = "Media Parameters";
+export const FXS_VOIP_MEDIA_CARD_TITLE = "Media Parameters";
 
 export const FXS_VOIP_MEDIA_LEFT_SECTION_TITLE = "System Settings";
 export const FXS_VOIP_MEDIA_RIGHT_SECTION_TITLE = "CODEC Priority";

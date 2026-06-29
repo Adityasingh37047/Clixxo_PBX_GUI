@@ -1,6 +1,7 @@
 export const FXS_VOIP_SIP_BREADCRUMB_ROOT = "FXS";
 export const FXS_VOIP_SIP_BREADCRUMB_SECTION = "VoIP";
 export const FXS_VOIP_SIP_PAGE_TITLE = "SIP Settings";
+export const FXS_VOIP_SIP_CARD_TITLE = "SIP Settings";
 
 export const FXS_VOIP_SIP_LEFT_SECTION_TITLE = "Registration";
 export const FXS_VOIP_SIP_RIGHT_SECTION_TITLE = "Protocol & Options";

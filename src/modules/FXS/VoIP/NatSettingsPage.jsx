@@ -7,6 +7,7 @@ import {
   FXS_NAT_SETTINGS_BREADCRUMB_ROOT,
   FXS_NAT_SETTINGS_BREADCRUMB_SECTION,
   FXS_NAT_SETTINGS_PAGE_TITLE,
+  FXS_NAT_SETTINGS_CARD_TITLE,
   FXS_NAT_SETTINGS_LEFT_SECTION_TITLE,
   FXS_NAT_SETTINGS_RIGHT_SECTION_TITLE,
   FXS_NAT_SETTINGS_SAVE_LABEL,
@@ -402,6 +403,23 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const advancedCardTitleBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  padding: "10px 28px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+};
+
 const dashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
@@ -421,13 +439,11 @@ const dashboardColumnStyle = {
 const dashboardColumnLeftStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
-  borderTopLeftRadius: CARD_RADIUS,
 };
 
 const dashboardColumnRightStyle = {
   ...dashboardColumnStyle,
   background: C.cardBg,
-  borderTopRightRadius: CARD_RADIUS,
 };
 
 const noteSectionStyle = {
@@ -754,6 +770,9 @@ const NatSettingsPage = () => {
       <FxsNatSettingsBreadcrumb />
 
       <div style={advancedTableContainerStyle}>
+        <div style={advancedCardTitleBarStyle}>
+          <span>{FXS_NAT_SETTINGS_CARD_TITLE}</span>
+        </div>
         <div style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
             <FxsNatSettingsSectionHeading

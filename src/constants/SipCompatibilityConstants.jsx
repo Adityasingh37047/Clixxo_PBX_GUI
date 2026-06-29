@@ -1,6 +1,7 @@
 export const FXS_SIP_COMPATIBILITY_BREADCRUMB_ROOT = "FXS";
 export const FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION = "VoIP";
 export const FXS_SIP_COMPATIBILITY_PAGE_TITLE = "SIP Compatibility";
+export const FXS_SIP_COMPATIBILITY_CARD_TITLE = "SIP Compatibility";
 
 export const FXS_SIP_COMPATIBILITY_LEFT_SECTION_TITLE = "Core Configuration";
 export const FXS_SIP_COMPATIBILITY_RIGHT_SECTION_TITLE = "Feature Options";
