@@ -289,26 +289,54 @@ const recordSettingsOutlinedInputRootSx = {
 const recordSettingsFieldControlFullSx = {
   width: "100%",
   maxWidth: "100%",
-  ...recordSettingsOutlinedInputRootSx,
-  "& .MuiInputBase-input": {
+  "& .MuiOutlinedInput-root": {
+    ...recordSettingsOutlinedInputRootSx,
+    minHeight: 34,
+    height: 34,
     fontSize: 13,
+  },
+  "& .MuiOutlinedInput-input": {
     padding: "7px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+    backgroundColor: "#fff",
     color: C.valueText,
+    cursor: "text",
   },
 };
 
 const recordSettingsSelectFullSx = {
-  width: "100%",
-  maxWidth: "100%",
   fontSize: 13,
   backgroundColor: "#fff",
+  width: "100%",
+  maxWidth: "100%",
+  minHeight: 34,
   height: 34,
   ...recordSettingsOutlinedInputRootSx,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
   "& .MuiSelect-select": {
     padding: "7px 32px 7px 10px !important",
     display: "flex",
     alignItems: "center",
     color: C.valueText,
+    cursor: "pointer",
   },
 };
 
@@ -934,13 +962,15 @@ const RecordSettings = () => {
         <TextField
           size="small"
           fullWidth
+          variant="outlined"
           value={form[field.key]}
           onChange={(e) => handleChange(field.key, e.target.value)}
           sx={recordSettingsFieldControlFullSx}
         />
       ) : (
-        <FormControl size="small" fullWidth>
+        <FormControl size="small" fullWidth variant="outlined">
           <MuiSelect
+            variant="outlined"
             value={form[field.key]}
             onChange={(e) => handleChange(field.key, e.target.value)}
             sx={recordSettingsSelectFullSx}
