@@ -6,6 +6,7 @@ import {
   NETWORK_SETTINGS_INITIAL_FORM,
 } from "../../../constants/NetworkConstants";
 import { Alert, CircularProgress } from "@mui/material";
+import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 import {
   fetchNetwork,
   resetNetworkSettings,
@@ -30,6 +31,7 @@ const C = {
   accentDark: "#3a4a5e",
   amber: "#dc2626",
   errorRed: "#dc2626",
+  sectionHeading: "#30415A",
 };
 
 const CARD_RADIUS = 10;
@@ -312,8 +314,9 @@ const disabledInputStyle = {
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
       position: "relative",
+      width: "100%",
     }}
   >
     <div style={{ borderTop: `1px solid ${C.divider}` }} />
@@ -321,13 +324,12 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: PBX_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 500,
-        color: C.labelText,
-        letterSpacing: "0.01em",
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
       }}
     >
       {title}
@@ -377,11 +379,28 @@ const networkTableContainerStyle = {
   boxSizing: "border-box",
 };
 
+const networkHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: "7px 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+};
+
 const networkDashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
   alignItems: "stretch",
+  minHeight: "100%",
 };
 
 const networkDashboardColumnStyle = {
@@ -396,20 +415,10 @@ const networkDashboardColumnStyle = {
 const networkDashboardDividerStyle = {
   background: C.divider,
   width: 1,
-  alignSelf: "stretch",
-  margin: "14px 0",
   flexShrink: 0,
+  marginTop: "-13px", // adjust 10-20px as needed
+  marginBottom: "-24px",
 };
-
-const networkDashboardSectionTitleStyle = {
-  fontSize: 13,
-  fontWeight: 500,
-  color: C.labelText,
-  marginBottom: 2,
-  flexShrink: 0,
-  letterSpacing: "0.01em",
-};
-
 const networkDashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
@@ -1396,27 +1405,31 @@ const Network = () => {
 
       <div style={networkCardShellStyle}>
         <div style={networkTableContainerStyle}>
-          {loading ? (
-            <div
-              className="flex items-center justify-center w-full"
-              style={{ minHeight: 400, padding: "48px 32px" }}
-            >
-              <div className="text-center">
-                <CircularProgress size={40} sx={{ color: C.accent }} />
-                <div
-                  style={{
-                    marginTop: 12,
-                    fontSize: 13,
-                    color: C.mutedText,
-                    fontWeight: 500,
-                  }}
-                >
-                  Loading network settings...
+          <div style={networkHeaderStyle}>
+            <span>Network</span>
+          </div>
+
+          <div style={{ padding: "12px 0 0", boxSizing: "border-box" }}>
+            {loading ? (
+              <div
+                className="flex items-center justify-center w-full"
+                style={{ minHeight: 400, padding: "48px 32px" }}
+              >
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontSize: 13,
+                      color: C.mutedText,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Loading network settings...
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <>
+            ) : (
               <form
                 id="network-settings-form"
                 onSubmit={handleSave}
@@ -1424,9 +1437,7 @@ const Network = () => {
               >
                 <div style={networkDashboardGridStyle}>
                   <div style={networkDashboardColumnStyle}>
-                    <div style={networkDashboardSectionTitleStyle}>
-                      Interfaces &amp; VLAN
-                    </div>
+                    <SectionHeading title="Interfaces & VLAN" isFirst />
                     <div style={networkDashboardFieldsStackStyle}>
                   {/* Dynamically render LAN sections */}
                   {!vlanEnabled &&
@@ -1435,10 +1446,7 @@ const Network = () => {
                         key={lan.name || idx}
                         className="flex flex-col gap-0"
                       >
-                        <SectionHeading
-                          title={lan.name || `LAN ${idx + 1}`}
-                          isFirst={idx === 0}
-                        />
+                        <SectionHeading title={lan.name || `LAN ${idx + 1}`} />
 
                         <div
                           className="flex flex-col gap-3 w-full"
@@ -1826,10 +1834,7 @@ const Network = () => {
 
                   {/* VLAN Enable */}
                   <div className="flex flex-col gap-0">
-                    <SectionHeading
-                      title="VLAN Configuration"
-                      isFirst={vlanEnabled}
-                    />
+                    <SectionHeading title="VLAN Configuration" />
                     <div
                       className="flex flex-col gap-4 w-full"
                       style={networkFieldGroupStyle}
@@ -2102,13 +2107,11 @@ const Network = () => {
                   <div style={networkDashboardDividerStyle} aria-hidden="true" />
 
                   <div style={networkDashboardColumnStyle}>
-                    <div style={networkDashboardSectionTitleStyle}>
-                      DNS &amp; Routing
-                    </div>
+                    <SectionHeading title="DNS & Routing" isFirst />
                     <div style={networkDashboardFieldsStackStyle}>
                   {/* DNS Server Set */}
                   <div className="flex flex-col gap-0">
-                    <SectionHeading title="DNS Server Set" isFirst />
+                    <SectionHeading title="DNS Server Set" />
                     <div
                       className="flex flex-col gap-3 w-full"
                       style={networkFieldGroupStyle}
@@ -2327,28 +2330,30 @@ const Network = () => {
                   </div>
                 </div>
               </form>
+            )}
+          </div>
 
-              <div style={advancedFormInlineFooterStyle}>
-                <Btn
-                  variant="primary"
-                  type="submit"
-                  form="network-settings-form"
-                  disabled={loading || resetting || networkRestarting}
-                  style={advancedFormBtnStyle}
-                >
-                  {loading && !resetting ? "Saving..." : "Save"}
-                </Btn>
-                <Btn
-                  variant="cancel"
-                  type="button"
-                  onClick={handleReset}
-                  disabled={resetting || networkRestarting}
-                  style={advancedFormBtnStyle}
-                >
-                  {resetting ? "Resetting..." : "Reset"}
-                </Btn>
-              </div>
-            </>
+          {!loading && (
+            <div style={advancedFormInlineFooterStyle}>
+              <Btn
+                variant="primary"
+                type="submit"
+                form="network-settings-form"
+                disabled={loading || resetting || networkRestarting}
+                style={advancedFormBtnStyle}
+              >
+                {loading && !resetting ? "Saving..." : "Save"}
+              </Btn>
+              <Btn
+                variant="cancel"
+                type="button"
+                onClick={handleReset}
+                disabled={resetting || networkRestarting}
+                style={advancedFormBtnStyle}
+              >
+                {resetting ? "Resetting..." : "Reset"}
+              </Btn>
+            </div>
           )}
         </div>
       </div>

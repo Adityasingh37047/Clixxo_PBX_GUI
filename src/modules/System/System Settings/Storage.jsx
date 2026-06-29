@@ -393,9 +393,9 @@ const storageDashboardColumnStyle = {
 const storageDashboardDividerStyle = {
   background: C.divider,
   width: 1,
-  alignSelf: "stretch",
-  margin: "14px 0",
   flexShrink: 0,
+  marginTop: "-1px", // adjust 10-20px as needed
+  marginBottom: "-24px",
 };
 
 const storageFieldGroupStyle = {

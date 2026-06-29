@@ -112,6 +112,7 @@ const systemFieldInputStyle = {
   width: "100%",
   padding: "6px 10px",
   borderRadius: FIELD_RADIUS,
+  
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
@@ -125,6 +126,7 @@ const systemFieldInputStyleNarrow = {
 const systemFieldSelectStyle = {
   ...systemFieldInputStyle,
   appearance: "auto",
+  
   minHeight: 36,
   height: 36,
   paddingTop: 7,
@@ -145,7 +147,7 @@ const advancedFormInlineFooterStyle = {
   width: "100%",
   margin: 0,
   padding: "10px 28px",
-  borderTop: `1px solid ${C.divider}`,
+    borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
@@ -159,6 +161,7 @@ const advancedFormBtnStyle = {
   padding: "0 28px",
   lineHeight: "34px",
   boxSizing: "border-box",
+  
 };
 
 const checkboxSx = {
@@ -414,19 +417,20 @@ const managementDashboardColumnStyle = {
 const managementDashboardDividerStyle = {
   background: C.divider,
   width: 1,
-  alignSelf: "stretch",
-  margin: "14px 0",
   flexShrink: 0,
+  marginTop: "-1px", // adjust 10-20px as needed
+  marginBottom: "-24px",
 };
 
-const managementDashboardSectionTitleStyle = {
-  fontSize: 13,
-  fontWeight: 500,
-  color: C.labelText,
-  marginBottom: 12,
-  flexShrink: 0,
-  letterSpacing: "0.01em",
-};
+  const managementDashboardSectionTitleStyle = {
+    fontSize: 13,
+    fontWeight: 500,
+    color: C.labelText,
+    marginBottom: 12,
+    flexShrink: 0,
+    letterSpacing: "0.01em",
+   
+  };
 
 const managementDashboardFieldsStackStyle = {
   display: "flex",
@@ -2037,9 +2041,25 @@ const Management = () => {
               >
                 <div style={managementDashboardGridStyle}>
                   <div style={managementDashboardColumnStyle}>
-                    <div style={managementDashboardSectionTitleStyle}>
-                      Access &amp; Services
-                    </div>
+                  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  }}
+>
+  <span style={managementDashboardSectionTitleStyle}>
+    Access &amp; Services
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      borderTop: `1px solid ${C.divider}`,
+    }}
+  />
+</div>
                     <div style={managementDashboardFieldsStackStyle}>
                       {leftSections.map((section, idx) =>
                         renderManagementSection(section, idx === 0),
@@ -2053,9 +2073,25 @@ const Management = () => {
                   />
 
                   <div style={managementDashboardColumnStyle}>
-                    <div style={managementDashboardSectionTitleStyle}>
-                      Logging, CDR &amp; Time
-                    </div>
+                  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  }}
+>
+  <span style={managementDashboardSectionTitleStyle}>
+    Logging, CDR &amp; Time
+  </span>
+
+  <div
+    style={{
+      flex: 1,
+      borderTop: `1px solid ${C.divider}`,
+    }}
+  />
+</div>
                     <div style={managementDashboardFieldsStackStyle}>
                       {rightSections.map((section, idx) =>
                         renderManagementSection(section, idx === 0),

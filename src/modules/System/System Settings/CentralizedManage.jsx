@@ -13,23 +13,27 @@ import axiosInstance from "../../../api/axiosInstance";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   errorRed: "#dc2626",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -46,19 +50,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -95,7 +99,7 @@ const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
   padding: "6px 10px",
-  borderRadius: 10,
+  borderRadius: FIELD_RADIUS,
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
@@ -110,28 +114,129 @@ const systemFieldSelectStyle = {
   ...systemFieldInputStyle,
   appearance: "auto",
   minHeight: 36,
+  height: 36,
   paddingTop: 7,
   paddingBottom: 7,
   lineHeight: 1.35,
+  cursor: "pointer",
 };
 
-const inputStyle = systemFieldInputStyle;
-const selectStyle = systemFieldSelectStyle;
+const inputStyle = systemFieldInputStyleNarrow;
+const selectStyle = {
+  ...systemFieldSelectStyle,
+  maxWidth: "280px",
+};
+
+const centralizedManagePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const centralizedManagePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const centralizedManageCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const centralizedManageTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const centralizedManageToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const centralizedManageContentStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: "16px 36px 0",
+  background: C.cardBg,
+};
+
+const centralizedManageFieldsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  gap: 10,
+  marginBottom: 12,
+};
+
+const centralizedManageFieldRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  width: "100%",
+};
+
+const centralizedManageFieldControlStyle = {
+  flex: 1,
+  minWidth: 0,
+  width: "100%",
+  maxWidth: 280,
+};
+
+const centralizedManageFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
 
 const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const advancedFormBtnStyle = {
@@ -144,25 +249,30 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const checkboxSx = {
+  padding: "4px",
+  color: OUTLINED_BORDER,
+  "&.Mui-checked": { color: OUTLINED_FOCUS },
+  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
+};
+
 const tooltipProps = {
   arrow: true,
   placement: "top",
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
@@ -206,7 +316,17 @@ const tooltips = {
 };
 
 const FieldLabel = ({ name, style, children }) => {
-  const label = <label style={style}>{children}</label>;
+  const labelStyle = {
+    fontSize: 12,
+    fontWeight: 600,
+    color: C.labelText,
+    width: "100%",
+    maxWidth: 220,
+    flexShrink: 0,
+    cursor: tooltips[name] ? "help" : "default",
+    ...style,
+  };
+  const label = <label style={labelStyle}>{children}</label>;
 
   if (!tooltips[name]) return label;
 
@@ -216,6 +336,36 @@ const FieldLabel = ({ name, style, children }) => {
     </Tooltip>
   );
 };
+
+const CentralizedManagePageShell = ({ children }) => (
+  <div style={centralizedManagePageWrapStyle} data-native-scroll>
+    <div style={centralizedManagePageInnerStyle}>{children}</div>
+  </div>
+);
+
+const CentralizedManageBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      Centralized Manage
+    </span>
+  </div>
+);
 
 const Btn = ({
   children,
@@ -237,29 +387,50 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
   };
 
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
@@ -271,24 +442,41 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -808,75 +996,22 @@ fi`;
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              maxWidth: 500, // Added to prevent long errors from going off-screen
-              wordBreak: "break-word", // Ensures long text wraps to the next line
-              boxShadow: 3,
-            }}
-          >
-            {message.text}
-          </Alert>
-        )}
-
-        {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
+    <CentralizedManagePageShell>
+      {message.text && (
+        <Alert
+          severity={message.type}
+          onClose={() => setMessage({ type: "", text: "" })}
+          sx={centralizedManageFixedAlertSx}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Centralized Manage
-          </span>
-        </div>
+          {message.text}
+        </Alert>
+      )}
 
-        {/* ── Main Card ── */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Header */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
+      <CentralizedManageBreadcrumb />
+
+      <div style={centralizedManageCardShellStyle}>
+        <div style={centralizedManageTableContainerStyle}>
+          <div style={centralizedManageToolbarStyle}>
             <span
               style={{
                 fontSize: 13,
@@ -889,17 +1024,9 @@ fi`;
             </span>
           </div>
 
-          {/* Card Body */}
-          <div style={{ padding: "8px 32px 0" }}>
-            <form
-              id="centralized-manage-form"
-              onSubmit={handleSave}
-              className="flex flex-col"
-            >
-              <div
-                className="flex flex-col gap-4 items-center w-full"
-                style={{ marginBottom: 12 }}
-              >
+          <div style={centralizedManageContentStyle}>
+            <form id="centralized-manage-form" onSubmit={handleSave}>
+              <div style={centralizedManageFieldsStackStyle}>
                 {CENTRALIZED_MANAGE_FIELDS.map((field) => {
                   if (field.name === "monitoringPortValue") return null;
                   if (field.name === "workingStatus") return null;
@@ -925,16 +1052,11 @@ fi`;
                   return (
                     <div
                       key={field.name}
-                      className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full justify-center"
+                      style={centralizedManageFieldRowStyle}
                     >
                       <FieldLabel
                         name={field.name}
                         style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 220, // slightly wider for longer labels
-                          flexShrink: 0,
                           opacity:
                             isEditable || field.name === "centralizedManage"
                               ? 1
@@ -943,20 +1065,22 @@ fi`;
                       >
                         {field.label}
                       </FieldLabel>
-                      <div className="flex flex-col w-full max-w-[280px]">
+                      <div style={centralizedManageFieldControlStyle}>
                         {field.name === "monitoringPort" ? (
-                          <div className="flex items-center gap-2">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
                             <Checkbox
                               size="small"
                               checked={!!form.monitoringPort}
                               onChange={handleChange}
                               name="monitoringPort"
                               disabled={!isEditable}
-                              sx={{
-                                padding: "4px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                              sx={checkboxSx}
                             />
                             <input
                               type="text"
@@ -992,7 +1116,14 @@ fi`;
                             />
                           </div>
                         ) : field.type === "checkbox" ? (
-                          <div className="flex items-center gap-2 h-[32px]">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              minHeight: 32,
+                            }}
+                          >
                             <Checkbox
                               size="small"
                               checked={!!form[field.name]}
@@ -1002,11 +1133,7 @@ fi`;
                                 !form.centralizedManage &&
                                 field.name !== "centralizedManage"
                               }
-                              sx={{
-                                padding: "4px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: C.accent },
-                              }}
+                              sx={checkboxSx}
                             />
                             <span style={{ fontSize: 12, color: C.valueText }}>
                               Enable
@@ -1086,11 +1213,17 @@ fi`;
 
             {isApplying && (
               <div
-                className="flex justify-center items-center gap-3 mt-3"
-                style={{ color: C.valueText }}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 12,
+                  marginTop: 12,
+                  color: C.valueText,
+                }}
               >
                 <CircularProgress size={18} sx={{ color: C.accent }} />
-                <span style={{ fontSize: 14 }}>
+                <span style={{ fontSize: 13, fontWeight: 500 }}>
                   {applyStatus || "Applying…"}
                 </span>
               </div>
@@ -1128,7 +1261,7 @@ fi`;
           </div>
         </div>
       </div>
-    </div>
+    </CentralizedManagePageShell>
   );
 };
 

@@ -7,6 +7,7 @@ import {
 import { Checkbox, Tooltip } from "@mui/material";
 import { listSipSettings, updateSipSettings } from "../../../api/apiService";
 import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
+import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
 // ── Page-local field label tooltip UI (matches FxsVoipMediaPage pattern) ──
 const FIELD_TOOLTIP_PROPS = {
@@ -62,6 +63,7 @@ const C = {
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
+  sectionHeading: "#30415A",
 };
 
 const CARD_RADIUS = 10;
@@ -421,40 +423,56 @@ const advancedFormBtnStyle = {
 
 const SIP_FORM_PAD_X = 36;
 
+const sipHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: "7px 14px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+};
+
 const formBodyStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  padding: `8px ${SIP_FORM_PAD_X}px 24px`,
+  padding: `0 ${SIP_FORM_PAD_X}px 24px`,
   background: C.cardBg,
   boxSizing: "border-box",
 };
 
-const formSectionTitleBarStyle = {
-  padding: "12px 0",
-  minHeight: 44,
-  display: "flex",
-  alignItems: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  marginBottom: 10,
-  boxSizing: "border-box",
-};
-
-const formSectionTitleBarSecondaryStyle = {
-  ...formSectionTitleBarStyle,
-  marginTop: 8,
-  paddingTop: 20,
-  borderTop: `1px solid ${C.divider}`,
-};
-
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: C.labelText,
-  margin: 0,
-  lineHeight: 1.35,
-  flexShrink: 0,
-};
+const SipSipSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: PBX_MAIN_SECTION_HEADING_LEFT,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
 
 const dashboardFieldsStackStyle = {
   display: "flex",
@@ -936,78 +954,80 @@ const SipSipPage = () => {
 
       <div style={advancedCardShellStyle}>
         <div style={advancedTableContainerStyle}>
-        {loading ? (
-          <div
-            className="flex items-center justify-center w-full"
-            style={{ minHeight: 400, padding: "48px 32px" }}
-          >
-            <div className="text-center">
-              <CircularProgress size={40} sx={{ color: C.accent }} />
-              <div
-                style={{
-                  marginTop: 12,
-                  fontSize: 13,
-                  color: C.mutedText,
-                  fontWeight: 500,
-                }}
-              >
-                Loading SIP settings...
-              </div>
-            </div>
+          <div style={sipHeaderStyle}>
+            <span>SIP Settings</span>
           </div>
-        ) : (
-          <>
-            <div style={formBodyStyle}>
-              <div style={formSectionTitleBarStyle}>
-                <div style={dashboardSectionTitleStyle}>
-                  Network &amp; Signaling
-                </div>
-              </div>
-              <div style={dashboardFieldsStackStyle}>
-                {SIP_NETWORK_SECTION_FIELDS.map((field) =>
-                  renderFormField(field),
-                )}
-              </div>
 
-              <div style={formSectionTitleBarSecondaryStyle}>
-                <div style={dashboardSectionTitleStyle}>
-                  Registration &amp; Timers
-                </div>
-              </div>
-              <div style={dashboardFieldsStackStyle}>
-                {SIP_REGISTRATION_SECTION_FIELDS.map((field) =>
-                  renderFormField(field),
-                )}
-              </div>
-
-              {SIP_SETTINGS_NOTE && (
-                <div style={{ marginTop: 16 }}>
+          <div style={{ padding: "12px 0 0", boxSizing: "border-box" }}>
+            {loading ? (
+              <div
+                className="flex items-center justify-center w-full"
+                style={{ minHeight: 400, padding: "48px 32px" }}
+              >
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
                   <div
                     style={{
-                      ...sipFormTextStyle,
-                      fontWeight: 700,
-                      marginBottom: 8,
+                      marginTop: 12,
+                      fontSize: 13,
+                      color: C.mutedText,
+                      fontWeight: 500,
                     }}
                   >
-                    Note:
+                    Loading SIP settings...
                   </div>
-                  <p
-                    style={{
-                      margin: 0,
-                      ...sipFormTextStyle,
-                      lineHeight: 1.5,
-                      whiteSpace: "normal",
-                      overflowWrap: "break-word",
-                      wordBreak: "break-word",
-                      textAlign: "left",
-                    }}
-                  >
-                    {SIP_SETTINGS_NOTE.replace(/^Note:\s*/i, "")}
-                  </p>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div style={formBodyStyle}>
+                <SipSipSectionHeading
+                  title="Network & Signaling"
+                  isFirst
+                />
+                <div style={dashboardFieldsStackStyle}>
+                  {SIP_NETWORK_SECTION_FIELDS.map((field) =>
+                    renderFormField(field),
+                  )}
+                </div>
 
+                <SipSipSectionHeading title="Registration & Timers" />
+                <div style={dashboardFieldsStackStyle}>
+                  {SIP_REGISTRATION_SECTION_FIELDS.map((field) =>
+                    renderFormField(field),
+                  )}
+                </div>
+
+                {SIP_SETTINGS_NOTE && (
+                  <div style={{ marginTop: 16 }}>
+                    <div
+                      style={{
+                        ...sipFormTextStyle,
+                        fontWeight: 700,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Note:
+                    </div>
+                    <p
+                      style={{
+                        margin: 0,
+                        ...sipFormTextStyle,
+                        lineHeight: 1.5,
+                        whiteSpace: "normal",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                        textAlign: "left",
+                      }}
+                    >
+                      {SIP_SETTINGS_NOTE.replace(/^Note:\s*/i, "")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {!loading && (
             <div style={advancedFormInlineFooterStyle}>
               <Btn
                 variant="primary"
@@ -1032,8 +1052,7 @@ const SipSipPage = () => {
                 Reset
               </Btn>
             </div>
-          </>
-        )}
+          )}
         </div>
       </div>
     </AdvancedPageShell>
