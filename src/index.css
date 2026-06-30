@@ -40,8 +40,9 @@ body, html {
   background-color: #dde0e4 !important;
 }
 
-/* App-wide smooth scroll (anchors, keyboard, programmatic scroll).
-   Mouse-wheel easing is wired in Layout.jsx — pure CSS cannot slow wheel scroll. */
+/* App-wide smooth scroll for anchors, keyboard and programmatic scroll.
+   Mouse-wheel scrolling is left native (GPU-accelerated) so it stays smooth
+   on large/high-DPI monitors. */
 html {
   scroll-behavior: smooth;
 }
@@ -155,48 +156,6 @@ div[style*="background-color: #ffffff"]:not(td):not(th):not(.table-cell) {
   border-left: 1px solid #9ca3af;
 }
 
-/* Windows Notepad–like scrollbar: slim by default, slightly wider on scrollbar hover */
-.notepad-scrollbar {
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
-}
-
-.notepad-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  transition: width 0.2s ease, height 0.2s ease;
-}
-
-.notepad-scrollbar::-webkit-scrollbar:hover {
-  width: 11px;
-  height: 11px;
-}
-
-.notepad-scrollbar::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
-.notepad-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.notepad-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(148, 163, 184, 0.5);
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-  min-height: 32px;
-  transition:
-    background-color 0.2s ease,
-    border-width 0.2s ease;
-}
-
-.notepad-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(71, 85, 105, 0.65);
-  border: 1px solid transparent;
-}
-
 /* Match fill-box corner curve with Authorization page */
 input[type="text"],
 input[type="number"],
@@ -204,7 +163,7 @@ input[type="password"],
 input[type="email"],
 input[type="search"],
 input[type="tel"],
-input[type="\75rl"],
+input[type="url"],
 textarea,
 select,
 .MuiOutlinedInput-root,
@@ -241,4 +200,3 @@ select.system-settings-native-field {
   max-width: 280px !important;
   overflow: hidden;
 }
- 

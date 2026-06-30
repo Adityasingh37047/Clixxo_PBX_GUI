@@ -446,7 +446,9 @@ const FeatureCodeFieldRow = ({ field, isCompact, children }) => {
           {field.label}
         </span>
       </Tooltip>
-      <div style={{ minWidth: 0, flexShrink: 0 }}>{children}</div>
+      <div style={{ minWidth: 0, flexShrink: 0, width: stacked ? "100%" : undefined }}>
+        {children}
+      </div>
     </div>
   );
 };
@@ -578,8 +580,11 @@ const FeatureCodePage = () => {
 
   const renderFieldControl = (field) => {
     if (field.type === "select") {
-      const options =
-        field.key === "timeout_destinations" ? timeoutDestinationOptions : [];
+      const options = field.options
+        ? field.options
+        : field.key === "timeout_destinations"
+          ? timeoutDestinationOptions
+          : [];
       return (
         <FormControl
           size="small"
@@ -645,7 +650,7 @@ const FeatureCodePage = () => {
             <span>{FEATURE_CODE_TITLE}</span>
           </div>
 
-          <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
+          <div style={{ padding: isCompact ? "12px 12px 0" : "12px 20px 0", boxSizing: "border-box" }}>
             {loading ? (
               <TableListLoading />
             ) : (
@@ -687,7 +692,7 @@ const FeatureCodePage = () => {
                             style={{
                               display: "flex",
                               flexWrap: "wrap",
-                              alignItems: "flex-start",
+                              alignItems: isCompact ? "stretch" : "flex-start",
                               gap: isCompact
                                 ? "0"
                                 : `${FEATURE_CODE_GRID_COLUMN_GAP}px`,
@@ -697,7 +702,12 @@ const FeatureCodePage = () => {
                             }}
                           >
                             {row.map((field) => (
-                              <div key={field.key}>{renderFieldCell(field)}</div>
+                              <div
+                                key={field.key}
+                                style={isCompact ? { width: "100%" } : undefined}
+                              >
+                                {renderFieldCell(field)}
+                              </div>
                             ))}
                           </div>
                         );
