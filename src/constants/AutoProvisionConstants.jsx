@@ -3,7 +3,7 @@ export const AUTO_PROVISION_BREADCRUMB_SECTION = "Auto Provision";
 
 export const AUTO_PROVISION_ITEMS_PER_PAGE = 20;
 
-export const AUTO_PROVISION_SEARCH_PLACEHOLDER = "Search devices...";
+export const AUTO_PROVISION_SEARCH_PLACEHOLDER = "Search devices, MAC Address, Extension, Manufacturer / Model, IP...";
 
 export const AUTO_PROVISION_EMPTY_MESSAGE =
   "No auto provision devices found.";

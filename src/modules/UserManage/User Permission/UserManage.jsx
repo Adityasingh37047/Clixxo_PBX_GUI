@@ -25,7 +25,7 @@ const C = {
   cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
   labelText: "#3E5475",
   valueText: "#0f172a",
-  strongText: "#0f172a",
+  strongText: "#0f172a", 
   mutedText: "#94a3b8",
   accent: "#3E5475",
   primary: "#2563eb",
