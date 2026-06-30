@@ -335,15 +335,29 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
+  boxSizing: "border-box",
 };
 
+const SignalingCapturePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+  const SignalingCapturePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
 const blueBarStyle = {
   width: "100%",
   minHeight: 44,
@@ -977,10 +991,8 @@ const SignalingCapture = () => {
     isCapturing || isStopping || isAnySlotRecording();
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
+  <div style={SignalingCapturePageWrapStyle} data-native-scroll>
+    <div style={SignalingCapturePageInnerStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -998,7 +1010,6 @@ const SignalingCapture = () => {
         </Alert>
       )}
 
-      <div className="w-full" style={{ maxWidth: 1600 }}>
         <div
           style={{
             fontSize: 12,
@@ -1019,7 +1030,10 @@ const SignalingCapture = () => {
           </span>
         </div>
 
-        <div style={tableContainerStyle}>
+        <div style={{
+    ...tableContainerStyle,
+    marginTop: 20,
+  }}>
           <div style={blueBarStyle}>
             <span>{SC_SECTIONS[0]}</span>
           </div>
@@ -1198,7 +1212,10 @@ const SignalingCapture = () => {
           </div>
         </div>
 
-        <div style={tableContainerStyle}>
+        <div style={{
+    ...tableContainerStyle,
+    marginTop: 20,
+  }}>
           <div style={blueBarStyle}>
             <span>{SC_SECTIONS[1]}</span>
           </div>
@@ -1297,7 +1314,10 @@ const SignalingCapture = () => {
           </div>
         </div>
 
-        <div style={{ ...tableContainerStyle, marginBottom: 0 }}>
+        <div style={{
+    ...tableContainerStyle,
+    marginTop: 20,
+  }}>
           <div style={blueBarStyle}>
             <span>{SC_SECTIONS[2]}</span>
           </div>

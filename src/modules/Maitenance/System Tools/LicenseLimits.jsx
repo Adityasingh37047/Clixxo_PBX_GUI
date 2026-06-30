@@ -103,6 +103,8 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  component,
+  startIcon,
 }) => {
   const styles = {
     default: {
@@ -124,13 +126,45 @@ const Btn = ({
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
-    variant === "primary"
-      ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
-      : "#e2e8f0";
-  const baseBg = s.background;
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      error: "#b91c1c",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      error: "#991b1b",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
+  const Component = component || "button";
   return (
-    <button
+    <Component
       type={type}
       onClick={onClick}
       disabled={disabled}
@@ -140,39 +174,74 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: 36,
         gap: 6,
         whiteSpace: "nowrap",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
+      {startIcon && (
+        <span style={{ display: "inline-flex" }}>
+          {startIcon}
+        </span>
+      )}
       {children}
-    </button>
+    </Component>
   );
 };
 
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
+  boxSizing: "border-box",
 };
+
+const LicenseLimitsPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+  const LicenseLimitsPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
 
 const blueBarStyle = {
   width: "100%",
@@ -304,11 +373,8 @@ const LicenseLimits = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1600 }}>
+   <div style={LicenseLimitsPageWrapStyle} data-native-scroll>
+      <div style={LicenseLimitsPageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}

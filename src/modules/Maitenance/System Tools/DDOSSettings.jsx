@@ -341,12 +341,28 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 8,
+  boxSizing: "border-box",
+};
+
+const DDOSSettingsPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const DDOSSettingsPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
 };
 
 const blueBarStyle = {
@@ -746,10 +762,9 @@ const DDOSSettings = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
+    <div style={DDOSSettingsPageWrapStyle} data-native-scroll>
+      <div style={DDOSSettingsPageInnerStyle}>
+    
       {/* ── Alerts ── */}
       {message.text && (
         <Alert
@@ -769,7 +784,7 @@ const DDOSSettings = () => {
       )}
 
       {/* ── Breadcrumb ── */}
-      <div className="w-full" style={{ maxWidth: 1600 }}>
+    
         <div
           style={{
             fontSize: 12,

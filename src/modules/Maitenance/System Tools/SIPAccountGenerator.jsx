@@ -308,17 +308,33 @@ const Btn = ({
     </Component>
   );
 };
-
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 24,
+  boxSizing: "border-box",
 };
+
+const SIPAccountGeneratorPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const SIPAccountGeneratorPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
 
 const blueBarStyle = {
   width: "100%",
@@ -387,10 +403,9 @@ const SIPAccountGenerator = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
+    <div style={SIPAccountGeneratorPageWrapStyle} data-native-scroll>
+      <div style={SIPAccountGeneratorPageInnerStyle}>
+    
       {/* ── Alerts ── */}
       {toast.msg && (
         <Alert
@@ -410,7 +425,6 @@ const SIPAccountGenerator = () => {
       )}
 
       {/* ── Breadcrumb ── */}
-      <div className="w-full" style={{ maxWidth: 1600 }}>
         <div
           style={{
             fontSize: 12,
@@ -577,7 +591,10 @@ const SIPAccountGenerator = () => {
         </form>
 
         {/* Upload Section */}
-        <div style={tableContainerStyle}>
+        <div style={{
+    ...tableContainerStyle,
+    marginTop: 20,
+  }}>
           <div style={blueBarStyle}>
             <span>{SIP_ACCOUNT_UPLOAD.title}</span>
           </div>
@@ -632,7 +649,10 @@ const SIPAccountGenerator = () => {
         </div>
 
         {/* Download Section */}
-        <div style={tableContainerStyle}>
+        <div style={{
+    ...tableContainerStyle,
+    marginTop: 20,
+  }}>
           <div style={blueBarStyle}>
             <span>{SIP_ACCOUNT_DOWNLOAD.title}</span>
           </div>

@@ -173,9 +173,9 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
-  form,
+  
   component,
-  title,
+  
 }) => {
   const styles = {
     default: {
@@ -309,13 +309,30 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
   border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
+  boxSizing: "border-box",
 };
+
+const CertificateManagePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const CertificateManagePageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
 
 const labelStyle = {
   fontSize: 13,
@@ -393,9 +410,9 @@ const CertificateManage = () => {
 
   return (
     <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
+      style={CertificateManagePageWrapStyle} data-native-scroll>
+      <div style={CertificateManagePageInnerStyle}>
+    
       {/* ── Alerts ── */}
       {toast.msg && (
         <Alert
@@ -415,7 +432,7 @@ const CertificateManage = () => {
       )}
 
       {/* ── Breadcrumb ── */}
-      <div className="w-full" style={{ maxWidth: 1600 }}>
+   
         <div
           style={{
             fontSize: 12,
@@ -436,7 +453,7 @@ const CertificateManage = () => {
           </span>
         </div>
 
-        <div style={{ ...tableContainerStyle, marginBottom: 12 }}>
+        <div style={{ ...tableContainerStyle, }}>
           <div style={blueBarStyle}>
             <span>Certificate Management</span>
           </div>

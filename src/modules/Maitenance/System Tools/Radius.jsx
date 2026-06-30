@@ -408,13 +408,30 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
-  marginBottom: 8,
+  boxSizing: "border-box",
 };
+
+const RadiusPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const RadiusPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
 
 const blueBarStyle = {
   width: "100%",
@@ -519,10 +536,9 @@ const Radius = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
+    <div style={RadiusPageWrapStyle} data-native-scroll>
+      <div style={RadiusPageInnerStyle}>
+    
       {/* ── Alerts ── */}
       {toast.msg && (
         <Alert
@@ -542,7 +558,6 @@ const Radius = () => {
       )}
 
       {/* ── Breadcrumb ── */}
-      <div className="w-full" style={{ maxWidth: 1600 }}>
         <div
           style={{
             fontSize: 12,
