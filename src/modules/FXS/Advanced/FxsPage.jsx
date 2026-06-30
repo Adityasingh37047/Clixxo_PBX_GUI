@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   FXS_INITIAL_FORM,
   FXS_FIELD_TOOLTIPS,
@@ -13,7 +13,7 @@ import {
   FXS_RIGHT_COLUMN_FIELD_KEYS,
 } from "../../../constants/FxsConstants";
 import { Alert, Checkbox, Tooltip } from "@mui/material";
-// â”€â”€ Local page UI (inlined from fxsSharedUi) â”€â”€
+// ── Local page UI (inlined from fxsSharedUi) ──
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -359,7 +359,7 @@ const advancedPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,,
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -572,13 +572,13 @@ const FxsPage = () => {
         const sum = parseInt(strArr[1]) + parseInt(strArr[2]);
         if (sum > 16000) {
           alert(
-            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000msï¼",
+            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！",
           );
           return false;
         }
         if (parseInt(strArr[1]) > 12000 || parseInt(strArr[2]) > 12000) {
           alert(
-            "The duration at ON/OFF state for ringing scheme cannot be more than 12000msï¼",
+            "The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！",
           );
           return false;
         }
@@ -604,7 +604,7 @@ const FxsPage = () => {
           parseInt(strArr[4]);
         if (sum > 16000) {
           alert(
-            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000msï¼",
+            "The sum duration at ON/OFF state for ringing scheme cannot be more than 16000ms！",
           );
           return false;
         }
@@ -615,7 +615,7 @@ const FxsPage = () => {
           parseInt(strArr[4]) > 12000
         ) {
           alert(
-            "The duration at ON/OFF state for ringing scheme cannot be more than 12000msï¼",
+            "The duration at ON/OFF state for ringing scheme cannot be more than 12000ms！",
           );
           return false;
         }

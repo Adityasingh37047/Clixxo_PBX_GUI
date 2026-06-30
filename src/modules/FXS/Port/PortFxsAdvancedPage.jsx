@@ -13,6 +13,7 @@ import {
   WEEK_DAYS,
   PORT_FXS_ADVANCED_FIELD_TOOLTIPS,
 } from "../../../constants/PortFxsAdvancedPageConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
   Alert,
@@ -241,7 +242,7 @@ const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
 
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -258,7 +259,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -287,15 +288,16 @@ const nativeFieldInteraction = {
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
+  lineHeight: 1.35,
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -303,8 +305,9 @@ const nativeFieldInputStyle = {
 
 const nativeFieldSelectStyle = {
   width: nativeFieldInputStyle.width,
+  height: 32,
   minHeight: 32,
-  padding: "6px 28px 6px 8px",
+  padding: "0 28px 0 10px",
   fontSize: nativeFieldInputStyle.fontSize,
   lineHeight: 1.35,
   border: nativeFieldInputStyle.border,
@@ -371,7 +374,7 @@ const portFxsAdvancedPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,,
   boxSizing: "border-box",
 };
 
@@ -428,6 +431,7 @@ const PortFxsAdvancedBreadcrumb = () => (
       fontSize: 12,
       color: "#94a3b8",
       marginBottom: 16,
+      fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
@@ -461,8 +465,8 @@ const advancedFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
-  background: C.pageBg,
-  border: `1px solid ${C.divider}`,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
 };
@@ -473,6 +477,7 @@ const fxsDialogActionsStyle = {
   borderTop: `1px solid ${C.divider}`,
   justifyContent: "center",
   gap: 12,
+  flexShrink: 0,
 };
 
 const FieldRow = ({
@@ -518,8 +523,11 @@ const FieldRow = ({
 const inputStyle = {
   ...fxsNativeFieldInputStyle,
   width: "100%",
-  height: "auto",
-  padding: "6px 8px",
+};
+
+const selectStyle = {
+  ...fxsNativeFieldSelectStyle,
+  width: "100%",
 };
 
 const inputInteraction = fxsNativeFieldInteraction;
@@ -821,7 +829,7 @@ const PortFxsAdvancedPage = () => {
           <select
             value={batchForm.port}
             onChange={(e) => handleFormChange("port", e.target.value)}
-            style={inputStyle}
+            style={selectStyle}
             {...inputInteraction}
           >
             {Array.from({ length: PORT_FXS_ADVANCED_TOTAL_PORTS }, (_, i) => (
@@ -837,7 +845,7 @@ const PortFxsAdvancedPage = () => {
             type="text"
             value={batchForm.type || "FXS"}
             onChange={(e) => handleFormChange("type", e.target.value)}
-            style={inputStyle}
+            style={{ ...inputStyle, backgroundColor: "#f3f4f6" }}
             {...inputInteraction}
             readOnly
           />
@@ -870,7 +878,7 @@ const PortFxsAdvancedPage = () => {
               onChange={(e) =>
                 handleFormChange("wayOfForbidOutgoingCall", e.target.value)
               }
-              style={inputStyle}
+              style={selectStyle}
               {...inputInteraction}
             >
               <option value="All time">All time</option>
@@ -924,8 +932,10 @@ const PortFxsAdvancedPage = () => {
               ...inputStyle,
               height: "80px",
               resize: "vertical",
-              paddingTop: "8px",
+              padding: "8px 10px",
+              lineHeight: 1.4,
             }}
+            {...inputInteraction}
             maxLength={1000}
           />
         </FieldRow>
@@ -1140,20 +1150,12 @@ const PortFxsAdvancedPage = () => {
         </div>
 
         <Dialog
-  open={isModalOpen}
-  onClose={handleCloseModal}
-  maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiPaper-root": {
-      marginTop: "50px",
-      marginBottom: "20px",
-    },
-  }}
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          maxWidth={false}
+          sx={addNewDialogSx}
           PaperProps={{
-            sx: {
+            sx: mergeAddNewDialogPaperSx({
               width: 720,
               maxWidth: "95vw",
               p: 0,
@@ -1161,7 +1163,7 @@ const PortFxsAdvancedPage = () => {
               overflow: "hidden",
               boxShadow:
                 "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            },
+            }),
           }}
           disableRestoreFocus
           disableEnforceFocus
@@ -1176,19 +1178,19 @@ const PortFxsAdvancedPage = () => {
               textAlign: "center",
               borderTopLeftRadius: 8,
               borderTopRightRadius: 8,
+              flexShrink: 0,
             }}
           >
             {PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE}
           </DialogTitle>
           <DialogContent
-  style={{
-    padding: "24px",
-    backgroundColor: "#ffffff",
-    maxHeight: "75vh",
-    overflowY: "auto",
-    overflowX: "hidden",
-  }}
->
+            style={{
+              padding: "24px",
+              backgroundColor: "#ffffff",
+              overflowY: "auto",
+              flex: "1 1 auto",
+            }}
+          >
             <div style={advancedFormPanelStyle}>{renderModalForm()}</div>
           </DialogContent>
           <DialogActions style={fxsDialogActionsStyle}>

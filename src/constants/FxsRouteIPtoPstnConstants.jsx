@@ -28,6 +28,17 @@ export const ROUTE_IP_PSTN_TABLE_COLUMNS = [
   { key: 'callDestination', label: 'Call Destination' },
 ];
 
+export const ROUTE_IP_PSTN_PAGE_BREADCRUMB_ROOT = "FXS";
+export const ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION = "Route";
+export const ROUTE_IP_PSTN_PAGE_TITLE = "IP->Tel Routing Rule";
+export const ROUTE_IP_PSTN_EMPTY_MESSAGE = "No rules configured!";
+export const ROUTE_IP_PSTN_MODAL_TITLE_ADD = "Add IP->Tel Routing Rule";
+export const ROUTE_IP_PSTN_MODAL_TITLE_EDIT = "Edit IP->Tel Routing Rule";
+export const ROUTE_IP_PSTN_ADD_NEW_LABEL = "+ Add New";
+export const ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL = "+ Add New Rule";
+export const ROUTE_IP_PSTN_SAVE_LABEL = "Save";
+export const ROUTE_IP_PSTN_CLOSE_LABEL = "Close";
+
 const PREFIX_VALIDATION =
   "Cannot contain ~, !, &, |, =, %, (, ), ;, \", ', or \\";
 

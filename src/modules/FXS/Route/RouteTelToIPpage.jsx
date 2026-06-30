@@ -3,7 +3,18 @@ import {
   ROUTE_PSTN_IP_INITIAL_FORM,
   ROUTE_PSTN_IP_TABLE_COLUMNS,
   ROUTE_PSTN_IP_FIELD_TOOLTIPS,
+  ROUTE_PSTN_IP_PAGE_BREADCRUMB_ROOT,
+  ROUTE_PSTN_IP_PAGE_BREADCRUMB_SECTION,
+  ROUTE_PSTN_IP_PAGE_TITLE,
+  ROUTE_PSTN_IP_EMPTY_MESSAGE,
+  ROUTE_PSTN_IP_MODAL_TITLE_ADD,
+  ROUTE_PSTN_IP_MODAL_TITLE_EDIT,
+  ROUTE_PSTN_IP_ADD_NEW_LABEL,
+  ROUTE_PSTN_IP_ADD_NEW_EMPTY_LABEL,
+  ROUTE_PSTN_IP_SAVE_LABEL,
+  ROUTE_PSTN_IP_CLOSE_LABEL,
 } from "../../../constants/FxsRoutePstnToIPConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -12,24 +23,21 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
-  TextField,
   Alert,
   Tooltip,
 } from "@mui/material";
-/** Compact table text — original FXS route sizing (not enlarged shared defaults) */
-// ── Local page UI (inlined from fxsSharedUi) ──
 
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -90,6 +98,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -103,23 +137,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -128,69 +176,105 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
+const nativeFieldInputStyle = {
+  height: 32,
+  width: 200,
+  padding: "0 10px",
   fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
   backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
+  color: C.valueText,
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
+const nativeFieldSelectStyle = {
+  width: nativeFieldInputStyle.width,
+  height: 32,
+  minHeight: 32,
+  padding: "0 28px 0 10px",
+  fontSize: nativeFieldInputStyle.fontSize,
+  lineHeight: 1.35,
+  border: nativeFieldInputStyle.border,
+  borderRadius: nativeFieldInputStyle.borderRadius,
+  outline: nativeFieldInputStyle.outline,
+  backgroundColor: nativeFieldInputStyle.backgroundColor,
+  color: nativeFieldInputStyle.color,
+  boxSizing: nativeFieldInputStyle.boxSizing,
+  transition: nativeFieldInputStyle.transition,
+  appearance: "auto",
+};
+
+const inputStyle = {
+  ...nativeFieldInputStyle,
+  width: "100%",
+};
+
+const selectStyle = {
+  ...nativeFieldSelectStyle,
+  width: "100%",
+};
+
+const inputInteraction = nativeFieldInteraction;
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 
@@ -203,8 +287,8 @@ const TH = ({ children, style: extra }) => (
       fontSize: 11,
       padding: "9px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -223,43 +307,109 @@ const tdStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
-const numManipulateCardStyle = {
-  background: "#ffffff",
-  borderRadius: CARD_RADIUS,
-  overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
+
+const telToIpPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: 16,,
+  boxSizing: "border-box",
 };
 
-const numManipulateToolbarStyle = {
+const telToIpPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+};
+
+const telToIpCardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const telToIpHeaderStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  padding: "10px 28px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  boxSizing: "border-box",
 };
 
-const numManipulatePaginationStyle = {
+const telToIpTableBodyStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
+const telToIpPaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: CARD_RADIUS,
-  borderBottomRightRadius: CARD_RADIUS,
+  padding: "10px 28px",
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
   overflow: "hidden",
+};
+
+const TelToIpBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{ROUTE_PSTN_IP_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{ROUTE_PSTN_IP_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {ROUTE_PSTN_IP_PAGE_TITLE}
+    </span>
+  </div>
+);
+
+const telToIpFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const telToIpDialogActionsStyle = {
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  justifyContent: "center",
+  gap: 12,
+  flexShrink: 0,
 };
 
 
@@ -281,7 +431,8 @@ const routeTableMinWidthForZoom = (widePx) => {
 const routeTdStyle = {
   ...tdStyle,
   fontSize: 12,
-  padding: "7px 8px",
+  padding: "6px 8px",
+  lineHeight: 1.2,
 };
 
 const routeThExtra = {
@@ -694,14 +845,8 @@ const RoutePstnToIPPage = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+    <div style={telToIpPageWrapStyle}>
+      <div style={telToIpPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -712,36 +857,18 @@ const RoutePstnToIPPage = () => {
               right: 20,
               zIndex: 9999,
               minWidth: 300,
-              boxShadow: 3,
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+              fontWeight: 500,
             }}
           >
             {toast.msg}
           </Alert>
         )}
 
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>FXS</span>
-          <span>&gt;</span>
-          <span>Route</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            Tel-&gt;IP Routing Rule
-          </span>
-        </div>
+        <TelToIpBreadcrumb />
 
-        <div style={numManipulateCardStyle}>
-          <div style={numManipulateToolbarStyle}>
+        <div style={telToIpCardStyle}>
+          <div style={telToIpHeaderStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span
@@ -795,19 +922,14 @@ const RoutePstnToIPPage = () => {
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
               >
-                + Add New
+                {ROUTE_PSTN_IP_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
+          <div style={telToIpTableBodyStyle}>
             {rules.length === 0 ? (
               <div
                 style={{
@@ -828,14 +950,14 @@ const RoutePstnToIPPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  No rules configured!
+                  {ROUTE_PSTN_IP_EMPTY_MESSAGE}
                 </div>
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
                   style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
                 >
-                  + Add New Rule
+                  {ROUTE_PSTN_IP_ADD_NEW_EMPTY_LABEL}
                 </Btn>
               </div>
             ) : (
@@ -855,6 +977,7 @@ const RoutePstnToIPPage = () => {
                         padding: 0,
                         borderLeft: "none",
                         ...routeThExtra,
+                        ...PCM_TRUNK_GROUP_TH_GAP,
                       }}
                     >
                       <Checkbox
@@ -873,7 +996,10 @@ const RoutePstnToIPPage = () => {
                       />
                     </TH>
                     {ROUTE_PSTN_IP_TABLE_COLUMNS.map((col) => (
-                      <TH key={col.key} style={routeThExtra}>
+                      <TH
+                        key={col.key}
+                        style={{ ...routeThExtra, ...PCM_TRUNK_GROUP_TH_GAP }}
+                      >
                         {col.label}
                       </TH>
                     ))}
@@ -882,6 +1008,7 @@ const RoutePstnToIPPage = () => {
                         width: 70,
                         borderRight: "none",
                         ...routeThExtra,
+                        ...PCM_TRUNK_GROUP_TH_GAP,
                       }}
                     >
                       Modify
@@ -988,8 +1115,8 @@ const RoutePstnToIPPage = () => {
           </div>
 
           {rules.length > 0 && (
-            <div style={numManipulatePaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
+            <div style={telToIpPaginationStyle}>
+              <span style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}>
                 Showing {pagedRules.length} record
                 {pagedRules.length !== 1 ? "s" : ""} on page {page}
               </span>
@@ -1009,7 +1136,7 @@ const RoutePstnToIPPage = () => {
                     background: "#e0f2fe",
                     padding: "5px 14px",
                     borderRadius: 6,
-                    border: `1px solid ${C.cardBorder}`,
+                    border: `1px solid ${C.divider}`,
                   }}
                 >
                   Page {page} of {totalPages}
@@ -1025,14 +1152,14 @@ const RoutePstnToIPPage = () => {
             </div>
           )}
         </div>
-      </div>
 
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
             maxWidth: "95vw",
             p: 0,
@@ -1040,7 +1167,7 @@ const RoutePstnToIPPage = () => {
             overflow: "hidden",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1055,199 +1182,134 @@ const RoutePstnToIPPage = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editIndex !== null
-            ? "Edit Tel->IP Routing Rule"
-            : "Add Tel->IP Routing Rule"}
+            ? ROUTE_PSTN_IP_MODAL_TITLE_EDIT
+            : ROUTE_PSTN_IP_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-              background: "#f8fafc",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
-              padding: 20,
-            }}
-          >
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
+          <div style={telToIpFormPanelStyle}>
             <FieldRow label="Index:" tooltipKey="index" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <FormControl size="small" fullWidth>
-                <MuiSelect
-                  value={indexSelect || ""}
-                  onChange={(e) => handleIndexSelectChange(e.target.value)}
-                  displayEmpty
-                  sx={muiSelectSx}
-                >
-                  {getAvailableIndices(editIndex).map((opt) => (
-                    <MenuItem
-                      key={opt.value}
-                      value={opt.value}
-                      sx={{ fontSize: 13 }}
-                    >
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </MuiSelect>
-              </FormControl>
+              <select
+                value={indexSelect || ""}
+                onChange={(e) => handleIndexSelectChange(e.target.value)}
+                style={selectStyle}
+                {...inputInteraction}
+              >
+                {getAvailableIndices(editIndex).map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </FieldRow>
 
             <FieldRow label="Description:" tooltipKey="description" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <TextField
+              <input
+                type="text"
                 name="description"
                 value={formData.description || ""}
                 onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
+                style={inputStyle}
+                {...inputInteraction}
               />
             </FieldRow>
 
             <FieldRow label="Source Port Group:" tooltipKey="sourcePortGroup" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <FormControl size="small" fullWidth>
-                <MuiSelect
-                  value={formData.sourcePortGroup || "*"}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      sourcePortGroup: e.target.value,
-                    }))
-                  }
-                  sx={muiSelectSx}
-                >
-                  {portGroups.map((group) => {
-                    const groupId = group.group_id ?? group.id ?? group;
-                    return (
-                      <MenuItem
-                        key={String(groupId)}
-                        value={String(groupId)}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {String(groupId)}
-                      </MenuItem>
-                    );
-                  })}
-                </MuiSelect>
-              </FormControl>
+              <select
+                value={formData.sourcePortGroup || "*"}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    sourcePortGroup: e.target.value,
+                  }))
+                }
+                style={selectStyle}
+                {...inputInteraction}
+              >
+                {portGroups.map((group) => {
+                  const groupId = group.group_id ?? group.id ?? group;
+                  return (
+                    <option key={String(groupId)} value={String(groupId)}>
+                      {String(groupId)}
+                    </option>
+                  );
+                })}
+              </select>
             </FieldRow>
 
             <FieldRow label="CallerID Prefix:" tooltipKey="callerIdPrefix" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <TextField
+              <input
+                type="text"
                 name="callerIdPrefix"
                 value={formData.callerIdPrefix || ""}
                 onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
+                style={inputStyle}
+                {...inputInteraction}
               />
             </FieldRow>
 
             <FieldRow label="CalleeID Prefix:" tooltipKey="calleeIdPrefix" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <TextField
+              <input
+                type="text"
                 name="calleeIdPrefix"
                 value={formData.calleeIdPrefix || ""}
                 onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
+                style={inputStyle}
+                {...inputInteraction}
               />
             </FieldRow>
 
             <FieldRow label="Destination Address:" tooltipKey="destinationAddress" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <TextField
+              <input
+                type="text"
                 name="destinationAddress"
                 value={formData.destinationAddress || ""}
                 onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
+                style={inputStyle}
+                {...inputInteraction}
               />
             </FieldRow>
 
             <FieldRow label="Destination Port:" tooltipKey="destinationPort" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>
-              <TextField
+              <input
+                type="text"
                 name="destinationPort"
                 value={formData.destinationPort || ""}
                 onChange={handleInputChange}
-                size="small"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  style: {
-                    fontSize: 13,
-                    height: 32,
-                    padding: "0 8px",
-                    boxSizing: "border-box",
-                  },
-                }}
-                sx={muiTextFieldSx}
+                style={inputStyle}
+                {...inputInteraction}
               />
             </FieldRow>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            justifyContent: "center",
-            gap: 12,
-          }}
-        >
+        <DialogActions style={telToIpDialogActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 34, fontSize: 13 }}
           >
-            Save
+            {ROUTE_PSTN_IP_SAVE_LABEL}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
-            style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 34 }}
           >
-            Close
+            {ROUTE_PSTN_IP_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>
+      </div>
     </div>
   );
 };

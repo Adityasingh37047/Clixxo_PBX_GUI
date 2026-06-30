@@ -11,6 +11,13 @@ export const ROUTE_ROUTING_PARAMETER_INITIAL_FORM = {
   routeCheckPeriod: '0', // Route Detection Cycle
 };
 
+export const ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT = "FXS";
+export const ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION = "Route";
+export const ROUTE_ROUTING_PARAMETER_PAGE_TITLE = "Routing Parameters";
+export const ROUTE_ROUTING_PARAMETER_CARD_TITLE = "Routing Parameters";
+export const ROUTE_ROUTING_PARAMETER_SAVE_LABEL = "Save";
+export const ROUTE_ROUTING_PARAMETER_RESET_LABEL = "Reset";
+
 /** FXS Routing Parameters page */
 export const ROUTE_ROUTING_PARAMETER_TOOLTIPS = {
   ipInRouteMode:

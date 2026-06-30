@@ -222,7 +222,7 @@ const pageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   width: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,,
   boxSizing: "border-box",
 };
 
@@ -358,6 +358,7 @@ const FunctionKeyBreadcrumb = () => (
       fontSize: 12,
       color: "#94a3b8",
       marginBottom: 16,
+      fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,

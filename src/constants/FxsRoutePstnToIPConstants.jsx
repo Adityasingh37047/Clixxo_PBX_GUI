@@ -30,6 +30,17 @@ export const ROUTE_PSTN_IP_TABLE_COLUMNS = [
   { key: 'destinationPort', label: 'Destination Port' },
 ];
 
+export const ROUTE_PSTN_IP_PAGE_BREADCRUMB_ROOT = "FXS";
+export const ROUTE_PSTN_IP_PAGE_BREADCRUMB_SECTION = "Route";
+export const ROUTE_PSTN_IP_PAGE_TITLE = "Tel->IP Routing Rule";
+export const ROUTE_PSTN_IP_EMPTY_MESSAGE = "No rules configured!";
+export const ROUTE_PSTN_IP_MODAL_TITLE_ADD = "Add Tel->IP Routing Rule";
+export const ROUTE_PSTN_IP_MODAL_TITLE_EDIT = "Edit Tel->IP Routing Rule";
+export const ROUTE_PSTN_IP_ADD_NEW_LABEL = "+ Add New";
+export const ROUTE_PSTN_IP_ADD_NEW_EMPTY_LABEL = "+ Add New Rule";
+export const ROUTE_PSTN_IP_SAVE_LABEL = "Save";
+export const ROUTE_PSTN_IP_CLOSE_LABEL = "Close";
+
 const PREFIX_VALIDATION =
   "Cannot contain ~, !, &, |, =, %, (, ), ;, \", ', or \\";
 

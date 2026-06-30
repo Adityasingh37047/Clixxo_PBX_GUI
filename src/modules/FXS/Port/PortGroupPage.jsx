@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -246,7 +247,7 @@ const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
 
 
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -263,7 +264,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -292,15 +293,16 @@ const nativeFieldInteraction = {
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
+  lineHeight: 1.35,
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -308,8 +310,9 @@ const nativeFieldInputStyle = {
 
 const nativeFieldSelectStyle = {
   width: nativeFieldInputStyle.width,
+  height: 32,
   minHeight: 32,
-  padding: "6px 28px 6px 8px",
+  padding: "0 28px 0 10px",
   fontSize: nativeFieldInputStyle.fontSize,
   lineHeight: 1.35,
   border: nativeFieldInputStyle.border,
@@ -377,7 +380,7 @@ const portGroupPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,,
   boxSizing: "border-box",
 };
 
@@ -434,6 +437,7 @@ const PortGroupBreadcrumb = () => (
       fontSize: 12,
       color: "#94a3b8",
       marginBottom: 16,
+      fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
@@ -543,7 +547,6 @@ const FieldRow = ({ label, tooltipKey, children }) => (
 const inputStyle = {
   ...fxsNativeFieldInputStyle,
   width: "100%",
-  height: 32,
 };
 
 const selectStyle = {
@@ -1256,7 +1259,7 @@ const PortGroupPage = () => {
             style={{
               background: "#f8fafc",
 
-              border: `1px solid ${C.divider}`,
+              border: `1px solid ${C.cardBorder}`,
               borderRadius: 8,
               padding: 16,
             }}
@@ -1267,8 +1270,8 @@ const PortGroupPage = () => {
                 fontWeight: 700,
                 color: C.labelText,
                 marginBottom: 14,
-                
-                paddingBottom: 6,
+                paddingBottom: 10,
+                borderBottom: `1px solid ${C.divider}`,
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
@@ -1359,8 +1362,9 @@ const PortGroupPage = () => {
           open={isModalOpen}
           onClose={handleCloseModal}
           maxWidth={false}
+          sx={addNewDialogSx}
           PaperProps={{
-            sx: {
+            sx: mergeAddNewDialogPaperSx({
               width: 720,
               maxWidth: "95vw",
               p: 0,
@@ -1368,7 +1372,7 @@ const PortGroupPage = () => {
               overflow: "hidden",
               boxShadow:
                 "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            },
+            }),
           }}
           disableRestoreFocus
           disableEnforceFocus
@@ -1383,6 +1387,7 @@ const PortGroupPage = () => {
               textAlign: "center",
               borderTopLeftRadius: 8,
               borderTopRightRadius: 8,
+              flexShrink: 0,
             }}
           >
             {editingGroupId !== null
@@ -1393,8 +1398,8 @@ const PortGroupPage = () => {
             style={{
               padding: "24px",
               backgroundColor: "#ffffff",
-              maxHeight: "75vh",
               overflowY: "auto",
+              flex: "1 1 auto",
             }}
           >
             <div
@@ -1406,7 +1411,7 @@ const PortGroupPage = () => {
                   flexDirection: "column",
                   gap: 14,
                   background: "#f8fafc",
-                  border: `1px solid ${C.divider}`,
+                  border: `1px solid ${C.cardBorder}`,
                   borderRadius: 8,
                   padding: 20,
                 }}
@@ -1423,6 +1428,7 @@ const PortGroupPage = () => {
               borderTop: `1px solid ${C.divider}`,
               justifyContent: "center",
               gap: 12,
+              flexShrink: 0,
             }}
           >
             <Btn

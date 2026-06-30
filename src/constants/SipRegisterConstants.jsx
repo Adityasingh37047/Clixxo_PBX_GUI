@@ -128,7 +128,6 @@ export const SIP_REGISTER_INITIAL_FORM = {
 };
 
 export const SIP_REGISTER_TOOLTIPS = {
-  trunk_type: "SIP trunk or FXO trunk.",
   trunk_name:
     "User-defined, consisting of letters and digits. Maximum 32 characters.",
   select_country: "Please select the country of the ITSP.",
@@ -143,8 +142,7 @@ export const SIP_REGISTER_TOOLTIPS = {
   record: "Save the Recording. Default is No.",
   enabled: "Enable or Disable the Trunk. The default setting is Yes.",
   eth_port: "Two options available: LAN (default), WAN.",
-  trunk_ip_domain:
-    "Service providers hostname or IP address:[port]",
+  trunk_ip_domain: "Service providers hostname or IP address:[port]",
   show_outbound_cid_name:
     "When it is ticked, displayname in the SIP message will be the Outbound CallerID Name if set or else the extension name. When it is not ticked, it will show none. By default it is ticked.",
   outbound_cid_name:
@@ -181,16 +179,14 @@ export const SIP_REGISTER_TOOLTIPS = {
     "Add the message header P-Early-Session: supported to the SIP message.",
   enable_early_media:
     "Add the message header P-Early-Media: supported to the SIP message.",
-  user_phone:
-    "You can add content to the To field of the INVITE message.",
+  user_phone: "You can add content to the To field of the INVITE message.",
   call_timeout:
     "Set the maximum response time of the trunk for a call out from it. The default value is 30s.",
   dtmf_transmit:
     "Choose DTMF Transmit Mode: inbound DTMF, RFC2833, SIP-INFO. Default is RFC2833.",
   max_call_duration:
     "Select the maximum call duration in seconds for every call of this trunk. If you wish to customize, enter the value in the text box directly. This option priority is higher than extensions. The default value is 6000(s). 0 means no limit.",
-  dnis:
-    "Dial Number Identification Service is used to identify which trunk a call comes in. It allows users to define the display name of an incoming call instead of the called number so that the phone will display the DNIS name when a call comes in on the corresponding trunk. It is unticked by default.",
+  dnis: "Dial Number Identification Service is used to identify which trunk a call comes in. It allows users to define the display name of an incoming call instead of the called number so that the phone will display the DNIS name when a call comes in on the corresponding trunk. It is unticked by default.",
   dod_name:
     'Configure DOD number and the associated DOD name. There are 2 ways to configure this:<br>· Bind one DOD number with one DOD name: enter one number in the "DOD Number" field and one name in the "DOD Name" field.<br>· Bind consecutive DOD numbers with one DOD name. To do this, enter the DOD number range and fill in a name in the "DOD Name" field.',
   dod_number:

@@ -345,7 +345,7 @@ const toneDetecterPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,,
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -355,7 +355,7 @@ const toneDetecterPageWrapStyle = {
 const toneDetecterPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };
@@ -466,15 +466,12 @@ const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
   boxSizing: "border-box",
 };
 
 const advancedPageInnerStyle = {
   width: "100%",
-  maxWidth: 1000,
+  maxWidth: "100%",
   margin: "0 auto",
 };
 

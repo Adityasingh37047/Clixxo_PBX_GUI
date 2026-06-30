@@ -3,244 +3,16 @@ import {
   ROUTE_MODE_OPTIONS,
   ROUTE_ROUTING_PARAMETER_INITIAL_FORM,
   ROUTE_ROUTING_PARAMETER_TOOLTIPS,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION,
+  ROUTE_ROUTING_PARAMETER_PAGE_TITLE,
+  ROUTE_ROUTING_PARAMETER_CARD_TITLE,
+  ROUTE_ROUTING_PARAMETER_SAVE_LABEL,
+  ROUTE_ROUTING_PARAMETER_RESET_LABEL,
 } from "../../../constants/FxsRouteRoutingParameterPageConstants";
-import {
-  Select,
-  MenuItem,
-  FormControl,
-  TextField,
-  Alert,
-  CircularProgress,
-  Tooltip,
-} from "@mui/material";
-/** Match E1-PRI Route Routing Parameters card radii (10px, not table 20px kit). */
-// ── Local page UI (inlined from fxsSharedUi) ──
+import { Alert, Tooltip } from "@mui/material";
 
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-};
-
-const CARD_RADIUS = 10;
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const baseBg = extraStyle?.background ?? s.background;
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
-
-
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectInnerSx = {
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  ...muiSelectInnerSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const ROUTE_CARD_RADIUS = 10;
-
-const cardStyle = {
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: ROUTE_CARD_RADIUS,
-  overflow: "hidden",
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-};
-
-const cardHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: ROUTE_CARD_RADIUS,
-  borderTopRightRadius: ROUTE_CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
-};
-
-const fieldLabelStyle = {
-  width: "auto",
-  minWidth: 130,
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "left",
-  marginRight: 10,
-  whiteSpace: "nowrap",
-  flexShrink: 0,
-};
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -282,6 +54,9 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const labelNode = (
     <span
       style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: FIELD_LABEL_COLOR,
         cursor: tooltip ? "help" : undefined,
         ...style,
       }}
@@ -297,25 +72,310 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-const fieldControlSx = {
-  ...muiSelectSx,
-  width: 240,
+const C = {
+  pageBg: "#f8fafc",
+  cardBg: "#ffffff",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
+  labelText: "#3E5475",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  accent: "#3E5475",
+  fieldBg: "#ffffff",
 };
 
-const routeCheckPeriodFieldSx = {
-  ...muiTextFieldSx,
-  width: 240,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 8;
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+
+const Btn = ({
+  children,
+  onClick,
+  disabled,
+  variant = "default",
+  style: extraStyle,
+  type,
+}) => {
+  const styles = {
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+  };
+  const s = styles[variant] || styles.primary;
+  const hoverBg =
+    variant === "cancel"
+      ? "#b6c2d3"
+      : "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    variant === "cancel"
+      ? "#a3b1c2"
+      : "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
+  return (
+    <button
+      type={type || "button"}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0 28px",
+        borderRadius: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        height: 34,
+        lineHeight: "34px",
+        boxSizing: "border-box",
+        minWidth: 110,
+        gap: 8,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        userSelect: "none",
+        ...s,
+        ...extraStyle,
+      }}
+      onMouseEnter={(e) => {
+        if (!disabled) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const nativeFieldInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
   },
-  "& .MuiInputBase-input": {
-    fontSize: 13,
-    padding: "6px 10px",
-    height: "auto",
-    boxSizing: "border-box",
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
+
+const FIELD_CONTROL_WIDTH = 240;
+const FIELD_CONTROL_HEIGHT = 36;
+
+const nativeFieldInputStyle = {
+  width: "100%",
+  minWidth: FIELD_CONTROL_WIDTH,
+  maxWidth: FIELD_CONTROL_WIDTH,
+  height: FIELD_CONTROL_HEIGHT,
+  minHeight: FIELD_CONTROL_HEIGHT,
+  padding: "0 12px",
+  fontSize: 13,
+  lineHeight: `${FIELD_CONTROL_HEIGHT - 2}px`,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: FIELD_RADIUS,
+  outline: "none",
+  backgroundColor: C.fieldBg,
+  color: C.valueText,
+  boxSizing: "border-box",
+  boxShadow: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const nativeFieldSelectStyle = {
+  ...nativeFieldInputStyle,
+  padding: "0 28px 0 12px",
+  lineHeight: 1.35,
+  appearance: "auto",
+};
+
+const pageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: 16,,
+  boxSizing: "border-box",
+};
+
+const cardStyle = {
+  width: "100%",
+  background: C.cardBg,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const cardTitleBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  padding: "10px 28px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+  background: C.cardBg,
+};
+
+const formBodyStyle = {
+  padding: "20px 28px 8px",
+  display: "flex",
+  flexDirection: "column",
+  maxWidth: 720,
+  width: "100%",
+  margin: "0 auto",
+  boxSizing: "border-box",
+};
+
+const footerStyle = {
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: 12,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const RouteRoutingParameterBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {ROUTE_ROUTING_PARAMETER_PAGE_TITLE}
+    </span>
+  </div>
+);
+
+const RouteFieldRow = ({ label, tooltipKey, children }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "row",
+      width: "100%",
+      minHeight: 36,
+      alignItems: "center",
+      marginBottom: 10,
+    }}
+  >
+    <div
+      style={{
+        flex: "1 1 auto",
+        minWidth: 0,
+        paddingRight: 24,
+        textAlign: "left",
+        lineHeight: 1.45,
+      }}
+    >
+      <FxsFieldLabel tooltipKey={tooltipKey} tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}>
+        {label}
+      </FxsFieldLabel>
+    </div>
+    <div
+      style={{
+        flex: "0 0 auto",
+        width: FIELD_CONTROL_WIDTH,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "flex-start",
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
 
 const RouteRoutingParameterPage = () => {
   const [formData, setFormData] = useState(
@@ -335,9 +395,7 @@ const RouteRoutingParameterPage = () => {
 
   const handleNumberKeyPress = (e) => {
     const key = e.keyCode || e.which;
-    if (key > 47 && key < 58) {
-      // Allow numbers
-    } else if (key !== 8) {
+    if (!((key >= 48 && key <= 57) || key === 8)) {
       e.preventDefault();
     }
   };
@@ -356,171 +414,106 @@ const RouteRoutingParameterPage = () => {
     }
   };
 
-  return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: 1000, margin: "0 auto" }}>
-        {toast.msg && (
-          <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: 16,
-              right: 16,
-              zIndex: 9999,
-              boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-            }}
-          >
-            {toast.msg}
-          </Alert>
-        )}
+  const handleReset = () => {
+    setFormData(ROUTE_ROUTING_PARAMETER_INITIAL_FORM);
+  };
 
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
+  return (
+    <div style={pageWrapStyle}>
+      {toast.msg && (
+        <Alert
+          severity={toast.type}
+          onClose={() => setToast({ msg: "", type: "success" })}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+            fontWeight: 500,
           }}
         >
-          <span>FXS</span>
-          <span>&gt;</span>
-          <span>Route</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            Routing Parameters
-          </span>
+          {toast.msg}
+        </Alert>
+      )}
+
+      <RouteRoutingParameterBreadcrumb />
+
+      <div style={cardStyle}>
+        <div style={cardTitleBarStyle}>
+          {ROUTE_ROUTING_PARAMETER_CARD_TITLE}
         </div>
 
-        <div style={cardStyle}>
-          <div style={cardHeaderStyle}>Routing Parameters</div>
-
-          <div className="w-full px-5 pt-3 pb-0">
-            <div
-              className="space-y-4 w-full max-w-[500px] mx-auto"
-              style={{ marginBottom: 12 }}
+        <div style={formBodyStyle}>
+          <RouteFieldRow label="IP->TEL" tooltipKey="ipInRouteMode">
+            <select
+              name="ipInRouteMode"
+              value={formData.ipInRouteMode}
+              onChange={(e) =>
+                handleInputChange("ipInRouteMode", e.target.value)
+              }
+              style={nativeFieldSelectStyle}
+              {...nativeFieldInteraction}
             >
-              <div className="flex items-center justify-between">
-                <FxsFieldLabel
-                  tooltipKey="ipInRouteMode"
-                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
-                  style={fieldLabelStyle}
-                >
-                  IP-&gt;TEL
-                </FxsFieldLabel>
-                <FormControl size="small">
-                  <Select
-                    name="ipInRouteMode"
-                    value={formData.ipInRouteMode}
-                    onChange={(e) =>
-                      handleInputChange("ipInRouteMode", e.target.value)
-                    }
-                    variant="outlined"
-                    sx={fieldControlSx}
-                  >
-                    {ROUTE_MODE_OPTIONS.map((opt) => (
-                      <MenuItem
-                        key={opt.value}
-                        value={opt.value}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
+              {ROUTE_MODE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </RouteFieldRow>
 
-              <div className="flex items-center justify-between">
-                <FxsFieldLabel
-                  tooltipKey="pstnToIPRouteMode"
-                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
-                  style={fieldLabelStyle}
-                >
-                  TEL-&gt;IP
-                </FxsFieldLabel>
-                <FormControl size="small">
-                  <Select
-                    name="pstnToIPRouteMode"
-                    value={formData.pstnToIPRouteMode}
-                    onChange={(e) =>
-                      handleInputChange("pstnToIPRouteMode", e.target.value)
-                    }
-                    variant="outlined"
-                    sx={fieldControlSx}
-                  >
-                    {ROUTE_MODE_OPTIONS.map((opt) => (
-                      <MenuItem
-                        key={opt.value}
-                        value={opt.value}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
+          <RouteFieldRow label="TEL->IP" tooltipKey="pstnToIPRouteMode">
+            <select
+              name="pstnToIPRouteMode"
+              value={formData.pstnToIPRouteMode}
+              onChange={(e) =>
+                handleInputChange("pstnToIPRouteMode", e.target.value)
+              }
+              style={nativeFieldSelectStyle}
+              {...nativeFieldInteraction}
+            >
+              {ROUTE_MODE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </RouteFieldRow>
 
-              <div className="flex items-center justify-between">
-                <FxsFieldLabel
-                  tooltipKey="routeCheckPeriod"
-                  tooltips={ROUTE_ROUTING_PARAMETER_TOOLTIPS}
-                  style={fieldLabelStyle}
-                >
-                  Route Detection Cycle (s)
-                </FxsFieldLabel>
-                <TextField
-                  id="RouteCheckPeriod"
-                  value={formData.routeCheckPeriod || ""}
-                  onChange={(e) =>
-                    handleInputChange("routeCheckPeriod", e.target.value)
-                  }
-                  onKeyPress={handleNumberKeyPress}
-                  inputProps={{ maxLength: 31 }}
-                  variant="outlined"
-                  size="small"
-                  sx={routeCheckPeriodFieldSx}
-                  autoComplete="off"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              ...advancedFormInlineFooterStyle,
-              width: "100%",
-              marginLeft: 0,
-              marginRight: 0,
-            }}
+          <RouteFieldRow
+            label="Route Detection Cycle (s)"
+            tooltipKey="routeCheckPeriod"
           >
-            <Btn
-              variant="primary"
-              onClick={handleSave}
-              disabled={loading}
-              style={advancedFormBtnStyle}
-            >
-              {loading ? (
-                <>
-                  <CircularProgress size={16} sx={{ color: "inherit" }} />
-                  Saving...
-                </>
-              ) : (
-                "Save"
-              )}
-            </Btn>
-          </div>
+            <input
+              id="RouteCheckPeriod"
+              type="text"
+              value={formData.routeCheckPeriod || ""}
+              onChange={(e) =>
+                handleInputChange("routeCheckPeriod", e.target.value)
+              }
+              onKeyPress={handleNumberKeyPress}
+              maxLength={31}
+              style={nativeFieldInputStyle}
+              {...nativeFieldInteraction}
+              autoComplete="off"
+            />
+          </RouteFieldRow>
+        </div>
+
+        <div style={footerStyle}>
+          <Btn
+            type="button"
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? "Saving..." : ROUTE_ROUTING_PARAMETER_SAVE_LABEL}
+          </Btn>
+          <Btn type="button" variant="cancel" onClick={handleReset}>
+            {ROUTE_ROUTING_PARAMETER_RESET_LABEL}
+          </Btn>
         </div>
       </div>
     </div>

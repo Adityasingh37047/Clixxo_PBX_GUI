@@ -78,11 +78,14 @@ const FxsFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  strongText: "#1f2937",
   accent: "#3E5475",
   amber: "#dc2626",
 };
@@ -181,12 +184,11 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
 
-
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -203,7 +205,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInteraction = {
@@ -232,15 +234,16 @@ const nativeFieldInteraction = {
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
+  lineHeight: 1.35,
   border: `1px solid ${OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -248,8 +251,9 @@ const nativeFieldInputStyle = {
 
 const nativeFieldSelectStyle = {
   width: nativeFieldInputStyle.width,
+  height: 32,
   minHeight: 32,
-  padding: "6px 28px 6px 8px",
+  padding: "0 28px 0 10px",
   fontSize: nativeFieldInputStyle.fontSize,
   lineHeight: 1.35,
   border: nativeFieldInputStyle.border,
@@ -268,11 +272,10 @@ const fxsNativeFieldInteraction = nativeFieldInteraction;
 
 
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 const FWD_TYPE_TO_API = {
@@ -283,14 +286,7 @@ const FWD_TYPE_TO_API = {
 import { ROUTE_PATHS } from "../../../constants/routeConstants";
 const dialogFieldStyle = {
   ...fxsNativeFieldInputStyle,
-  height: 32,
-  width: "180px",
-};
-
-const legacyFieldStyle = {
-  height: "22px",
-  width: "180px",
-  fontSize: "12px",
+  width: "200px",
 };
 
 const BATCH_LABEL_WIDTH = 200;
@@ -647,15 +643,8 @@ const PortFxsBatchModifyPage = ({
     }
   };
 
-  const fieldStyle = inDialog
-    ? dialogFieldStyle
-    : { ...dialogFieldStyle, ...legacyFieldStyle };
-  const wideFieldStyle = inDialog
-    ? { ...dialogFieldStyle, width: "200px" }
-    : { ...dialogFieldStyle, ...legacyFieldStyle, width: "200px" };
-  const fieldClassName = inDialog
-    ? undefined
-    : "border border-gray-400 rounded-sm px-1 bg-white";
+  const fieldStyle = dialogFieldStyle;
+  const wideFieldStyle = { ...dialogFieldStyle, width: "200px" };
 
   const formBody = (
     <>
@@ -692,26 +681,17 @@ const PortFxsBatchModifyPage = ({
       >
         <form id={formId} onSubmit={handleSave} style={fxsModifyFormShellStyle}>
           <div
-            style={
-              inDialog
-                ? {
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 14,
-                    background: "#f8fafc",
-                    border: `1px solid ${C.cardBorder}`,
-                    borderRadius: 8,
-                    padding: 20,
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }
-                : undefined
-            }
-            className={
-              inDialog
-                ? undefined
-                : "bg-[#dde0e4] border-2 rounded-b-lg border-gray-400 border-t-0 shadow-sm py-2 text-xs w-full"
-            }
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 8,
+              padding: 20,
+              width: "100%",
+              boxSizing: "border-box",
+            }}
           >
               <div
                 style={{
@@ -809,7 +789,7 @@ const PortFxsBatchModifyPage = ({
                                   onChange={(e) =>
                                     handleChange(field.key, e.target.value)
                                   }
-                                  className={fieldClassName}
+                                  className={undefined}
                                   style={fieldStyle}
                                   {...fxsNativeFieldInteraction}
                                   maxLength={field.maxLength || 31}
@@ -831,7 +811,7 @@ const PortFxsBatchModifyPage = ({
                                   onChange={(e) =>
                                     handleChange(field.key, e.target.value)
                                   }
-                                  className={fieldClassName}
+                                  className={undefined}
                                   style={fieldStyle}
                                   {...fxsNativeFieldInteraction}
                                   maxLength={field.maxLength || 63}
@@ -842,7 +822,7 @@ const PortFxsBatchModifyPage = ({
                                   onChange={(e) =>
                                     handleChange(field.key, e.target.value)
                                   }
-                                  className={fieldClassName}
+                                  className={undefined}
                                   style={
                                     field.key.includes("Parameter")
                                       ? wideFieldStyle

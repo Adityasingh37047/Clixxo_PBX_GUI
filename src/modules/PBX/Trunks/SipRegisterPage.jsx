@@ -378,7 +378,12 @@ const formatSipRegisterTooltipTitle = (text) => {
 const TRUNK_FIELD_LABEL_CLASS =
   "text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0";
 
-const SipRegisterFieldLabel = ({ tooltipKey, children, style = {}, className }) => {
+const SipRegisterFieldLabel = ({
+  tooltipKey,
+  children,
+  style = {},
+  className,
+}) => {
   const tooltip = SIP_REGISTER_TOOLTIPS[tooltipKey] || "";
   const LabelTag = className ? "label" : "span";
 
@@ -576,7 +581,10 @@ const SipRegisterModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
       onChange={(_, next) => onChange(next)}
       variant={fullWidth ? "fullWidth" : "standard"}
       TabIndicatorProps={{
-        style: { backgroundColor: SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR, height: 2 },
+        style: {
+          backgroundColor: SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR,
+          height: 2,
+        },
       }}
       sx={sipRegisterModalTabsSx}
     >
@@ -698,7 +706,8 @@ const sipRegisterCodecDualListBtnStyle = {
   boxSizing: "border-box",
   flexShrink: 0,
   boxShadow: "none",
-  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
+  transition:
+    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
   userSelect: "none",
 };
 
@@ -724,7 +733,9 @@ const SipRegisterCodecDualListBtn = ({ onClick, title, children, reorder }) => (
     title={title}
     onClick={onClick}
     style={
-      reorder ? sipRegisterCodecDualListReorderBtnStyle : sipRegisterCodecDualListBtnStyle
+      reorder
+        ? sipRegisterCodecDualListReorderBtnStyle
+        : sipRegisterCodecDualListBtnStyle
     }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -737,7 +748,8 @@ const SipRegisterCodecDualListBtn = ({ onClick, title, children, reorder }) => (
     onMouseDown={(e) => {
       e.currentTarget.style.background = "#b3bac4";
       e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
+      e.currentTarget.style.boxShadow =
+        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
     }}
     onMouseUp={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -1453,7 +1465,10 @@ const SipRegisterPage = () => {
   );
 
   const availableCodecList = useMemo(
-    () => SIP_REGISTER_CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    () =>
+      SIP_REGISTER_CODEC_OPTIONS.filter(
+        (c) => !selectedCodecList.includes(c.value),
+      ),
     [selectedCodecList],
   );
 
@@ -2870,7 +2885,12 @@ const SipRegisterPage = () => {
       : "No extensions";
 
   return (
-    <div style={{ ...sipRegisterPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+    <div
+      style={{
+        ...sipRegisterPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
       <div style={sipRegisterPageInnerStyle}>
         {message.text && (
           <Alert
@@ -3410,9 +3430,7 @@ const SipRegisterPage = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
                   <div className="space-y-0.5">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="trunk_type">
-                        Trunk Type
-                      </TrunkFieldLabel>
+                      <TrunkFieldLabel>Trunk Type</TrunkFieldLabel>
                       <div className="flex-1 min-w-0">
                         <RadioGroup
                           row
@@ -3981,7 +3999,9 @@ const SipRegisterPage = () => {
                   }}
                 >
                   <div>
-                    <div style={sipRegisterCodecColumnLabelStyle}>Available</div>
+                    <div style={sipRegisterCodecColumnLabelStyle}>
+                      Available
+                    </div>
                     <SipRegisterCodecListBox
                       items={availableCodecList}
                       selectedIds={codecAvailableSelected}
@@ -4773,7 +4793,9 @@ const SipRegisterPage = () => {
                         </div>
                         <div>
                           <div
-                            style={{ height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET }}
+                            style={{
+                              height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET,
+                            }}
                             aria-hidden="true"
                           />
                           <div style={sipRegisterCodecBtnColumnStyle}>
@@ -4972,7 +4994,9 @@ const SipRegisterPage = () => {
                   <SipRegisterFieldLabel tooltipKey="match_mode">
                     Match Mode
                   </SipRegisterFieldLabel>
-                  <SipRegisterFieldLabel tooltipKey="strip">Strip</SipRegisterFieldLabel>
+                  <SipRegisterFieldLabel tooltipKey="strip">
+                    Strip
+                  </SipRegisterFieldLabel>
                   <SipRegisterFieldLabel tooltipKey="prepend">
                     Prepend
                   </SipRegisterFieldLabel>
