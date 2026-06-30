@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@source not "../public";
+@source not "../dist";
+@source not "../.history";
 
 /* Custom utility classes for responsive content containers */
 .content-container {
@@ -159,7 +162,7 @@ input[type="password"],
 input[type="email"],
 input[type="search"],
 input[type="tel"],
-input[type="url"],
+input[type="\75rl"],
 textarea,
 select,
 .MuiOutlinedInput-root,

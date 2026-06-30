@@ -77,3 +77,10 @@ export const PSTN_CALL_IN_CALLEEID_FIELD_TOOLTIPS = {
     "with_original_calleeid is not shown in this form; create/update always sends No.",
 };
 
+export const PSTN_CALL_IN_CALLEEID_PAGE_BREADCRUMB_ROOT = "FXS";
+export const PSTN_CALL_IN_CALLEEID_PAGE_BREADCRUMB_SECTION = "Num Manipulate";
+export const PSTN_CALL_IN_CALLEEID_PAGE_TITLE = "PSTN Call In CalleeID";
+export const PSTN_CALL_IN_CALLEEID_EMPTY_MESSAGE =
+  "No available number manipulation rule (PSTN Call In CalleeID)!";
+export const PSTN_CALL_IN_CALLEEID_MODAL_TITLE_ADD = "Add PSTN Call In CalleeID";
+export const PSTN_CALL_IN_CALLEEID_MODAL_TITLE_EDIT = "Edit PSTN Call In CalleeID";

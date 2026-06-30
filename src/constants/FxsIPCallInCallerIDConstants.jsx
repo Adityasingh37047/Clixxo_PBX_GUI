@@ -77,3 +77,10 @@ export const IP_CALL_IN_CALLERID_FIELD_TOOLTIPS = {
     "with_original_calleeid is not shown in this form; create/update always sends No.",
 };
 
+export const IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_ROOT = "FXS";
+export const IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION = "Num Manipulate";
+export const IP_CALL_IN_CALLERID_PAGE_TITLE = "IP Call In CallerID";
+export const IP_CALL_IN_CALLERID_EMPTY_MESSAGE =
+  "No available number manipulation rule (IP Call In CallerID)!";
+export const IP_CALL_IN_CALLERID_MODAL_TITLE_ADD = "Add IP Call In CallerID";
+export const IP_CALL_IN_CALLERID_MODAL_TITLE_EDIT = "Edit IP Call In CallerID";

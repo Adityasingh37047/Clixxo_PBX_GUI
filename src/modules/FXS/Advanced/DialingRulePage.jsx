@@ -345,7 +345,7 @@ const dialingRulePageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: 16,,
+  padding: 16,
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -355,7 +355,7 @@ const dialingRulePageWrapStyle = {
 const dialingRulePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };

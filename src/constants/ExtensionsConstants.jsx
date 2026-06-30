@@ -6,7 +6,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
     "The password can be generated randomly while registering a SIP account. It also can be modified by users.The Password length must longer than 8,and must contain  Uppercase Letters,Lowercase Letters,Digit and Special characters three of them. Special characters only accepts ~!@#$%^&*()_+ only,and the username can not be contain to password.",
 
   transport:
-    "Select the SIP signaling transport protocol used by this extension for registration and call setup. Options are UDP, TCP, UDP over IPv6 (udp-ipv6), and TCP over IPv6 (tcp-ipv6).",
+    "Select the SIP signaling transport protocol used by this extension for registration and call setup. Options are UDP, TCP, UDP over IPv6 (udp-ipv6), and TCP over IPv6 (tcp-ipv6). (Global SIP must be created for this)",
 
   context:
     "Select the SIP dial-plan context (SIP1 through SIP10) that this extension belongs to. Contexts group extensions for routing and isolation within the PBX.",

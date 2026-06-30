@@ -222,7 +222,7 @@ const pageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   width: "100%",
-  padding: 16,,
+  padding: 16,
   boxSizing: "border-box",
 };
 

@@ -269,7 +269,7 @@ const pageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: 16,,
+  padding: 16,
   boxSizing: "border-box",
 };
 

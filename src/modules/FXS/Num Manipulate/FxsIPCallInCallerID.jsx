@@ -4,7 +4,17 @@ import {
   IP_CALL_IN_CALLERID_TABLE_COLUMNS,
   IP_CALL_IN_CALLERID_INITIAL_FORM,
   IP_CALL_IN_CALLERID_FIELD_TOOLTIPS,
+  IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_ROOT,
+  IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION,
+  IP_CALL_IN_CALLERID_PAGE_TITLE,
+  IP_CALL_IN_CALLERID_EMPTY_MESSAGE,
+  IP_CALL_IN_CALLERID_MODAL_TITLE_ADD,
+  IP_CALL_IN_CALLERID_MODAL_TITLE_EDIT,
 } from "../../../constants/FxsIPCallInCallerIDConstants";
+import {
+  addNewDialogSx,
+  mergeAddNewDialogPaperSx,
+} from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -27,13 +37,16 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
   strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
+  cardShadow:
+    "0 0 14px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.06)",
 };
 
 const CARD_RADIUS = 10;
@@ -92,6 +105,32 @@ const Btn = ({
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   const Component = component || "button";
   return (
     <Component
@@ -105,23 +144,37 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 8,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -130,9 +183,10 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
@@ -146,11 +200,13 @@ const muiTextFieldSx = {
     },
     "&.Mui-focused fieldset": {
       borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
+      borderWidth: 1,
+      boxShadow: FOCUS_RING_SHADOW,
     },
     "&.Mui-focused:hover fieldset": {
       borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
+      borderWidth: 1,
+      boxShadow: FOCUS_RING_SHADOW,
     },
   },
 };
@@ -182,17 +238,16 @@ const muiSelectSx = {
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: 1,
+    boxShadow: FOCUS_RING_SHADOW,
   },
 };
 
-
 const checkboxSx = {
-  padding: "4px",
-  color: "#64748b",
+  padding: "1px",
+  color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 
@@ -203,10 +258,10 @@ const TH = ({ children, style: extra }) => (
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "9px 14px",
+      padding: "8px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
       letterSpacing: "0.14em",
@@ -221,21 +276,40 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "7px 14px",
+  padding: "6px 8px",
   fontSize: 13,
+  lineHeight: 1.2,
   color: C.valueText,
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
+const ipCallInCallerIdPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const ipCallInCallerIdPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
 const numManipulateCardStyle = {
-  background: "#ffffff",
+  width: "100%",
+  background: C.cardBg,
   borderRadius: CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
 };
 
 const numManipulateToolbarStyle = {
@@ -243,25 +317,59 @@ const numManipulateToolbarStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  padding: "10px 28px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  boxSizing: "border-box",
 };
 
 const numManipulatePaginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.cardBorder}`,
+  padding: "10px 28px",
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
   overflow: "hidden",
+};
+
+const IpCallInCallerIdBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {IP_CALL_IN_CALLERID_PAGE_TITLE}
+    </span>
+  </div>
+);
+
+const numManipulateDialogActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  flexShrink: 0,
 };
 
 const listNumberManipulations = async () => ({ response: true, message: [] });
@@ -698,14 +806,8 @@ const IPCallInCallerID = () => {
   const modalFields = IP_CALL_IN_CALLERID_FIELDS;
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        minHeight: "calc(100vh - 80px)",
-        padding: 16,
-      }}
-    >
-      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+    <div style={ipCallInCallerIdPageWrapStyle}>
+      <div style={ipCallInCallerIdPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -722,26 +824,8 @@ const IPCallInCallerID = () => {
             {toast.msg}
           </Alert>
         )}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>FXS</span>
-          <span>&gt;</span>
-          <span>Num Manipulate</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            IP Call In CallerID
-          </span>
-        </div>
+
+        <IpCallInCallerIdBreadcrumb />
 
         <div style={numManipulateCardStyle}>
           <div style={numManipulateToolbarStyle}>
@@ -825,7 +909,6 @@ const IPCallInCallerID = () => {
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
-                  borderRadius: 10,
                 }}
               >
                 + Add New
@@ -881,7 +964,7 @@ const IPCallInCallerID = () => {
                     marginBottom: 16,
                   }}
                 >
-                  No available number manipulation rule (IP Call In CallerID)!
+                  {IP_CALL_IN_CALLERID_EMPTY_MESSAGE}
                 </div>
                 <Btn
                   variant="cancel"
@@ -1094,24 +1177,22 @@ const IPCallInCallerID = () => {
             )}
           </div>
         </div>
-      </div>
 
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        className="z-50"
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
             maxWidth: "95vw",
-            mx: "auto",
             p: 0,
-            borderRadius: 2,
+            borderRadius: "8px",
             overflow: "hidden",
             boxShadow:
               "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1126,13 +1207,21 @@ const IPCallInCallerID = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editIndex !== null
-            ? "Edit IP Call In CallerID"
-            : "Add IP Call In CallerID"}
+            ? IP_CALL_IN_CALLERID_MODAL_TITLE_EDIT
+            : IP_CALL_IN_CALLERID_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -1217,23 +1306,12 @@ const IPCallInCallerID = () => {
             ))}
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={numManipulateDialogActionsStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 100, height: 34, fontSize: 13 }}
           >
             {loading.save
               ? "Saving..."
@@ -1245,12 +1323,13 @@ const IPCallInCallerID = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 100, height: 34 }}
           >
             Close
           </Btn>
         </DialogActions>
       </Dialog>
+      </div>
     </div>
   );
 };

@@ -380,14 +380,14 @@ const portGroupPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: 16,,
+  padding: 16,
   boxSizing: "border-box",
 };
 
 const portGroupPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
 };
 
 const portGroupCardStyle = {

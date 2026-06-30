@@ -76,3 +76,11 @@ export const IP_CALL_IN_CALLEEID_FIELD_TOOLTIPS = {
     "Saved as description. Free-text field. Default: empty.\n" +
     "with_original_calleeid is not shown in this form; create/update always sends No.",
 };
+
+export const IP_CALL_IN_CALLEEID_PAGE_BREADCRUMB_ROOT = "FXS";
+export const IP_CALL_IN_CALLEEID_PAGE_BREADCRUMB_SECTION = "Num Manipulate";
+export const IP_CALL_IN_CALLEEID_PAGE_TITLE = "IP Call In CalleeID";
+export const IP_CALL_IN_CALLEEID_EMPTY_MESSAGE =
+  "No available number manipulation rule (IP Call In CalleeID)!";
+export const IP_CALL_IN_CALLEEID_MODAL_TITLE_ADD = "Add IP Call In CalleeID";
+export const IP_CALL_IN_CALLEEID_MODAL_TITLE_EDIT = "Edit IP Call In CalleeID";
