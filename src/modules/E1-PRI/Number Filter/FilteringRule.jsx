@@ -1102,7 +1102,7 @@ const FilteringRule = () => {
         sx={{
           "& .MuiDialog-container": {
             alignItems: "flex-start",
-            pt: 8,
+            pt: 0,
           },
         }}
         PaperProps={{

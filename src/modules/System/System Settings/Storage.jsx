@@ -10,6 +10,7 @@ import {
   FormControlLabel,
   Radio,
 } from "@mui/material";
+import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
 const C = {
   pageBg: "#f8fafc",
@@ -27,6 +28,7 @@ const C = {
   accentDark: "#3a4a5e",
   amber: "#dc2626",
   errorRed: "#dc2626",
+  sectionHeading: "#30415A",
 };
 
 const CARD_RADIUS = 10;
@@ -121,13 +123,23 @@ const storageCompactSelectSx = {
 
 const modalTextFieldSx = {
   ...storageTextFieldSx,
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
   "& .MuiOutlinedInput-root": {
     ...storageOutlinedInputRootSx,
     minHeight: 34,
+    width: "100%",
+    maxWidth: "100%",
   },
 };
 
-const modalSelectSx = storageSelectSx;
+const modalSelectSx = {
+  ...storageSelectSx,
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+};
 
 const Btn = ({
   children,
@@ -276,8 +288,9 @@ const storageFormBtnStyle = {
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 28px 0" : "32px 0 28px 0",
       position: "relative",
+      width: "100%",
     }}
   >
     <div style={{ borderTop: `1px solid ${C.divider}` }} />
@@ -286,19 +299,24 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: PBX_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 500,
-        color: C.labelText,
-        letterSpacing: "0.01em",
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
       }}
     >
       {title}
     </span>
   </div>
 );
+
+const STORAGE_FIELD_LABEL_WIDTH = 220;
+const STORAGE_FIELD_INPUT_WIDTH = 280;
+const STORAGE_FIELD_ROW_GAP = 16;
+const STORAGE_FIELD_ROW_MAX_WIDTH =
+  STORAGE_FIELD_LABEL_WIDTH + STORAGE_FIELD_ROW_GAP + STORAGE_FIELD_INPUT_WIDTH;
 
 const storagePageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -378,41 +396,66 @@ const storageDashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
+  minWidth: 0,
   alignItems: "stretch",
+  minHeight: "100%",
 };
 
 const storageDashboardColumnStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: 16,
   minWidth: 0,
-  padding: "20px 36px 24px",
+  overflow: "hidden",
+  padding: "20px clamp(12px, 2.5vw, 36px) 28px",
   background: C.cardBg,
+  boxSizing: "border-box",
 };
 
 const storageDashboardDividerStyle = {
   background: C.divider,
   width: 1,
   flexShrink: 0,
-  marginTop: "-1px", // adjust 10-20px as needed
-  marginBottom: "-24px",
+  alignSelf: "stretch",
+};
+
+const storageDashboardFieldsStackStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  minWidth: 0,
+  gap: 20,
 };
 
 const storageFieldGroupStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 14,
+  gap: 12,
   width: "100%",
+  minWidth: 0,
 };
 
 const storageSingleColumnStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: 16,
   minWidth: 0,
-  padding: "16px 36px 24px",
+  overflow: "hidden",
+  padding: "20px clamp(12px, 2.5vw, 36px) 28px",
   background: C.cardBg,
+  boxSizing: "border-box",
 };
+
+const storageDashboardResponsiveCss = `
+  @media (max-width: 1100px) {
+    .storage-dashboard-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .storage-dashboard-divider {
+      display: none !important;
+    }
+  }
+`;
 
 const StoragePageShell = ({ children }) => (
   <div style={storagePageWrapStyle} data-native-scroll>
@@ -466,45 +509,51 @@ const tooltipProps = {
 
 
 
-const FormFieldRow = ({
-  label,
-  tooltip,
-  required = false,
-  labelWidth = 320,
-  children,
-}) => (
+const FormFieldRow = ({ label, tooltip, required = false, children }) => (
   <div
+    className="w-full min-w-0"
     style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 12,
+      display: "grid",
+      gridTemplateColumns: label
+        ? `minmax(0, ${STORAGE_FIELD_LABEL_WIDTH}px) minmax(0, ${STORAGE_FIELD_INPUT_WIDTH}px)`
+        : `minmax(0, ${STORAGE_FIELD_INPUT_WIDTH}px)`,
+      gap: STORAGE_FIELD_ROW_GAP,
       width: "100%",
+      maxWidth: STORAGE_FIELD_ROW_MAX_WIDTH,
+      marginLeft: "auto",
+      marginRight: "auto",
+      minWidth: 0,
+      alignItems: "center",
+      boxSizing: "border-box",
     }}
   >
-    <Tooltip
-      title={tooltip || ""}
-      disableHoverListener={!tooltip}
-      {...tooltipProps}
-    >
-      <label
-        style={{
-          fontSize: 13,
-          color: C.labelText,
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-          textAlign: "left",
-          width: labelWidth,
-          flexShrink: 0,
-          cursor: tooltip ? "help" : "default",
-        }}
+    {label ? (
+      <Tooltip
+        title={tooltip || ""}
+        disableHoverListener={!tooltip}
+        {...tooltipProps}
       >
-        {label}
-        {required && <span style={{ color: C.errorRed }}> *</span>}
-      </label>
-    </Tooltip>
+        <label
+          style={{
+            fontSize: 12,
+            color: C.labelText,
+            fontWeight: 600,
+            width: "100%",
+            minWidth: 0,
+            lineHeight: 1.35,
+            cursor: tooltip ? "help" : "default",
+            wordBreak: "break-word",
+          }}
+        >
+          {label}
+          {required && <span style={{ color: C.errorRed }}> *</span>}
+        </label>
+      </Tooltip>
+    ) : null}
 
-    <div style={{ width: "min(100%, 320px)", flexShrink: 0 }}>{children}</div>
+    <div className="min-w-0" style={{ width: "100%", minWidth: 0 }}>
+      {children}
+    </div>
   </div>
 );
 const AUTO_CLEANUP_SECTIONS = [
@@ -751,7 +800,6 @@ const Storage = () => {
           key={field.name}
           label={field.name === "startMinute" ? "" : field.label}
           required
-          labelWidth={field.name === "startMinute" ? 0 : 320}
         >
           <div style={{ width: 60 }}>
             {renderSelect(
@@ -782,6 +830,7 @@ const Storage = () => {
 
   return (
     <StoragePageShell>
+      <style>{storageDashboardResponsiveCss}</style>
       <StorageBreadcrumb />
 
       <div style={storageCardShellStyle}>
@@ -824,41 +873,58 @@ const Storage = () => {
           </div>
 
           {tab === 0 && (
-            <div style={storageDashboardGridStyle}>
+            <div
+              className="storage-dashboard-grid"
+              style={storageDashboardGridStyle}
+            >
               <div style={storageDashboardColumnStyle}>
-                {AUTO_CLEANUP_SECTIONS.slice(0, 2).map((section, idx) => (
-                  <div key={section.title}>
-                    <SectionHeading title={section.title} isFirst={idx === 0} />
-                    <div style={storageFieldGroupStyle}>
-                      {section.fields.map((field) =>
-                        renderField(
-                          field,
-                          autoCleanupForm,
-                          handleAutoCleanupChange,
-                        ),
-                      )}
+                <div style={storageDashboardFieldsStackStyle}>
+                  {AUTO_CLEANUP_SECTIONS.slice(0, 3).map((section, idx) => (
+                    <div key={section.title} className="flex flex-col gap-0 min-w-0">
+                      <SectionHeading title={section.title} isFirst={idx === 0} />
+                      <div
+                        className="flex flex-col w-full min-w-0"
+                        style={storageFieldGroupStyle}
+                      >
+                        {section.fields.map((field) =>
+                          renderField(
+                            field,
+                            autoCleanupForm,
+                            handleAutoCleanupChange,
+                          ),
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              <div style={storageDashboardDividerStyle} aria-hidden="true" />
+              <div
+                className="storage-dashboard-divider"
+                style={storageDashboardDividerStyle}
+                aria-hidden="true"
+              />
 
               <div style={storageDashboardColumnStyle}>
-                {AUTO_CLEANUP_SECTIONS.slice(2).map((section, idx) => (
-                  <div key={section.title}>
-                    <SectionHeading title={section.title} isFirst={idx === 0} />
-                    <div style={storageFieldGroupStyle}>
-                      {section.fields.map((field) =>
-                        renderField(
-                          field,
-                          autoCleanupForm,
-                          handleAutoCleanupChange,
-                        ),
-                      )}
+                <div style={storageDashboardFieldsStackStyle}>
+                  {AUTO_CLEANUP_SECTIONS.slice(3).map((section, idx) => (
+                    <div key={section.title} className="flex flex-col gap-0 min-w-0">
+                      <SectionHeading title={section.title} isFirst={idx === 0} />
+                      <div
+                        className="flex flex-col w-full min-w-0"
+                        style={storageFieldGroupStyle}
+                      >
+                        {section.fields.map((field) =>
+                          renderField(
+                            field,
+                            autoCleanupForm,
+                            handleAutoCleanupChange,
+                          ),
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -866,7 +932,10 @@ const Storage = () => {
           {tab === 1 && (
             <div style={storageSingleColumnStyle}>
               <SectionHeading title="Record Backup" isFirst />
-              <div style={storageFieldGroupStyle}>
+              <div
+                className="flex flex-col w-full min-w-0"
+                style={storageFieldGroupStyle}
+              >
                 {BACKUP_FIELDS.map((field) => (
                   <React.Fragment key={field.name}>
                     {renderField(field, backupsForm, handleBackupsChange)}

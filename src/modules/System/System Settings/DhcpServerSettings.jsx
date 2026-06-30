@@ -9,27 +9,33 @@ import {
   fetchSaveDhcpSettings,
   fetchResetDhcpSettings,
 } from "../../../api/apiService";
-import { Alert, Checkbox } from "@mui/material";
+import { Alert, Checkbox, CircularProgress } from "@mui/material";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#30415A",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   errorRed: "#dc2626",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+// ── Local field UI (matches RoutingInterface.jsx design language) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -46,19 +52,19 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
+  height: 32,
   width: 200,
-  padding: "0 8px",
+  padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: FIELD_RADIUS,
   outline: "none",
   backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
@@ -66,15 +72,14 @@ const nativeFieldInputStyle = {
 
 const inputInteraction = {
   onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
+    if (e.target.disabled) return;
     setFieldFocus(e.target);
   },
   onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
     setFieldDefault(e.target);
   },
   onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
+    if (e.target.disabled) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -82,7 +87,6 @@ const inputInteraction = {
     }
   },
   onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -97,7 +101,7 @@ const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
   padding: "6px 10px",
-  borderRadius: 10,
+  borderRadius: FIELD_RADIUS,
   background: "#fff",
   lineHeight: 1.4,
   minHeight: 34,
@@ -114,16 +118,15 @@ const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "center",
+  justifyContent: "flex-end",
   gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const advancedFormBtnStyle = {
@@ -142,19 +145,16 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
@@ -173,16 +173,34 @@ const tooltips = {
 
 const getTooltipKey = (name) => name.replace(/\d+$/, "");
 
-const FieldLabel = ({ name, style, children }) => {
+const FieldRow = ({ name, label, labelStyle, children }) => {
   const tooltipKey = getTooltipKey(name);
-  const label = <label style={style}>{children}</label>;
-
-  if (!tooltips[tooltipKey]) return label;
+  const tooltip = tooltips[tooltipKey];
 
   return (
-    <Tooltip title={tooltips[tooltipKey]} {...tooltipProps}>
-      {label}
-    </Tooltip>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+      <Tooltip
+        title={tooltip || ""}
+        disableHoverListener={!tooltip}
+        {...tooltipProps}
+      >
+        <label
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: C.labelText,
+            width: "100%",
+            maxWidth: 220,
+            flexShrink: 0,
+            cursor: tooltip ? "help" : "default",
+            ...labelStyle,
+          }}
+        >
+          {label}
+        </label>
+      </Tooltip>
+      <div className="flex-1 w-full max-w-[280px]">{children}</div>
+    </div>
   );
 };
 
@@ -193,6 +211,7 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
+  form,
 }) => {
   const styles = {
     default: {
@@ -205,57 +224,95 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   return (
     <button
       type={type}
+      form={form}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
+        padding:
+          variant === "primary" || variant === "cancel"
+            ? "8px 32px"
+            : "6px 14px",
+        borderRadius: 8,
+        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: variant === "primary" || variant === "cancel" ? 38 : 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -274,11 +331,11 @@ const disabledInputStyle = {
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst ? "0 0 28px 0" : "24px 0 28px 0",
       position: "relative",
     }}
   >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
     <span
       style={{
         position: "absolute",
@@ -287,12 +344,114 @@ const SectionHeading = ({ title, isFirst = false }) => (
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 13,
-        fontWeight: 600,
-        color: C.mutedText,
+        fontWeight: 500,
+        color: C.labelText,
+        letterSpacing: "0.01em",
       }}
     >
       {title}
     </span>
+  </div>
+);
+
+const dhcpPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  width: "100%",
+  maxWidth: "100%",
+  padding: "8px 28px 16px",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "stretch",
+  boxSizing: "border-box",
+};
+
+const dhcpPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+};
+
+const dhcpCardShellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+};
+
+const dhcpTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const dhcpToolbarStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  minHeight: 44,
+  padding: "7px 14px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  flexWrap: "wrap",
+  gap: 12,
+};
+
+const dhcpFieldGroupStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 18,
+  width: "100%",
+};
+
+const dhcpFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const DhcpPageShell = ({ children }) => (
+  <div style={dhcpPageWrapStyle} data-native-scroll>
+    <div style={dhcpPageInnerStyle}>{children}</div>
+  </div>
+);
+
+const DhcpBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 12,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>System</span>
+    <span>&gt;</span>
+    <span>System Settings</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>DHCP Server</span>
   </div>
 );
 
@@ -479,90 +638,35 @@ const DhcpServerSettings = () => {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
-        {error && (
-          <Alert
-            severity="error"
-            onClose={() => setError(null)}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {error}
-          </Alert>
-        )}
+    <DhcpPageShell>
+      {error && (
+        <Alert
+          severity="error"
+          onClose={() => setError(null)}
+          sx={dhcpFixedAlertSx}
+        >
+          {error}
+        </Alert>
+      )}
 
-        {success && (
-          <Alert
-            severity="success"
-            onClose={() => setSuccess(null)}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {success}
-          </Alert>
-        )}
-
-        {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
+      {success && (
+        <Alert
+          severity="success"
+          onClose={() => setSuccess(null)}
+          sx={{
+            ...dhcpFixedAlertSx,
+            top: error ? 88 : 20,
           }}
         >
-          <span>System</span>
-          <span>&gt;</span>
-          <span>System Settings</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            DHCP Server
-          </span>
-        </div>
+          {success}
+        </Alert>
+      )}
 
-        {/* ── Main Card ── */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Header */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: C.cardBg,
-            }}
-          >
+      <DhcpBreadcrumb />
+
+      <div style={dhcpCardShellStyle}>
+        <div style={dhcpTableContainerStyle}>
+          <div style={dhcpToolbarStyle}>
             <span
               style={{
                 fontSize: 13,
@@ -575,173 +679,164 @@ const DhcpServerSettings = () => {
             </span>
           </div>
 
-          {/* Card Body */}
-          <div
-            className="w-full flex flex-col"
-            style={{ padding: "24px 32px 0" }}
-          >
-            <form onSubmit={handleSave} className="flex flex-col">
-              <div className="flex flex-col gap-2" style={{ marginBottom: 12 }}>
-              {loading && lanSections.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    fontSize: 13,
-                    color: C.mutedText,
-                    padding: "24px 0",
-                  }}
-                >
-                  Loading DHCP settings...
+          <div style={{ padding: "16px 36px 32px" }}>
+            {loading && lanSections.length === 0 ? (
+              <div
+                className="flex items-center justify-center w-full"
+                style={{ minHeight: 400, padding: "48px 32px" }}
+              >
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontSize: 13,
+                      color: C.mutedText,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Loading DHCP settings...
+                  </div>
                 </div>
-              ) : lanSections.length === 0 ? (
-                <div
-                  style={{
-                    textAlign: "center",
-                    fontSize: 13,
-                    color: C.mutedText,
-                    padding: "24px 0",
-                  }}
-                >
-                  No connected LAN ports found.
-                </div>
-              ) : null}
-              {lanSections.map((lanGroup, idx) => {
-                const isEnabled = form[lanGroup.fields[0].name];
-                return (
-                  <div key={lanGroup.lan} className="flex flex-col gap-0">
-                    <SectionHeading title={lanGroup.lan} isFirst={idx === 0} />
+              </div>
+            ) : (
+              <form
+                id="dhcp-settings-form"
+                onSubmit={handleSave}
+                className="flex flex-col"
+                style={{ gap: 24 }}
+              >
+                {lanSections.length === 0 ? (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontSize: 13,
+                      color: C.mutedText,
+                      padding: "24px 0",
+                    }}
+                  >
+                    No connected LAN ports found.
+                  </div>
+                ) : (
+                  lanSections.map((lanGroup, idx) => {
+                    const isEnabled = form[lanGroup.fields[0].name];
+                    return (
+                      <div key={lanGroup.lan} className="flex flex-col gap-0">
+                        <SectionHeading
+                          title={lanGroup.lan}
+                          isFirst={idx === 0}
+                        />
 
-                    <div
-                      className="flex flex-col gap-3 w-full"
-                      style={{ maxWidth: 640, margin: "0 auto" }}
-                    >
-                      {/* Enable DHCP Checkbox */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                        <FieldLabel
-                          name={lanGroup.fields[0].name}
+                        <div
+                          className="flex flex-col w-full"
                           style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: "100%",
-                            maxWidth: 220,
-                            flexShrink: 0,
+                            ...dhcpFieldGroupStyle,
+                            maxWidth: 640,
+                            margin: "0 auto",
                           }}
                         >
-                          DHCP Server:
-                        </FieldLabel>
-                        <div className="flex flex-col w-full max-w-[280px]">
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              size="small"
-                              name={lanGroup.fields[0].name}
-                              checked={isEnabled || false}
-                              onChange={handleChange}
-                              sx={{
-                                padding: "4px",
-                                color: "#64748b",
-                                "&.Mui-checked": { color: C.accent },
-                              }}
-                            />
-                            <span
-                              style={{
-                                fontSize: 12,
-                                color: C.valueText,
+                          <FieldRow
+                            name={lanGroup.fields[0].name}
+                            label="DHCP Server:"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                size="small"
+                                name={lanGroup.fields[0].name}
+                                checked={isEnabled || false}
+                                onChange={handleChange}
+                                sx={{
+                                  padding: "4px",
+                                  color: "#64748b",
+                                  "&.Mui-checked": { color: C.accent },
+                                }}
+                              />
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  color: C.valueText,
+                                }}
+                              >
+                                Enable
+                              </span>
+                            </div>
+                          </FieldRow>
+
+                          {lanGroup.fields.slice(1).map((field) => (
+                            <FieldRow
+                              key={field.name}
+                              name={field.name}
+                              label={`${field.label}:`}
+                              labelStyle={{
+                                opacity: isEnabled ? 1 : 0.6,
                               }}
                             >
-                              Enable
-                            </span>
-                          </div>
+                              <input
+                                type="text"
+                                name={field.name}
+                                value={form[field.name] || ""}
+                                onChange={handleChange}
+                                disabled={!isEnabled}
+                                style={
+                                  isEnabled ? inputStyle : disabledInputStyle
+                                }
+                                onFocus={
+                                  isEnabled
+                                    ? inputInteraction.onFocus
+                                    : undefined
+                                }
+                                onBlur={
+                                  isEnabled
+                                    ? inputInteraction.onBlur
+                                    : undefined
+                                }
+                                onMouseEnter={
+                                  isEnabled
+                                    ? inputInteraction.onMouseEnter
+                                    : undefined
+                                }
+                                onMouseLeave={
+                                  isEnabled
+                                    ? inputInteraction.onMouseLeave
+                                    : undefined
+                                }
+                              />
+                            </FieldRow>
+                          ))}
                         </div>
                       </div>
-
-                      {/* Other fields */}
-                      {lanGroup.fields.slice(1).map((field) => (
-                        <div
-                          key={field.name}
-                          className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                        >
-                          <FieldLabel
-                            name={field.name}
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: C.labelText,
-                              width: "100%",
-                              maxWidth: 220,
-                              flexShrink: 0,
-                              opacity: isEnabled ? 1 : 0.6,
-                            }}
-                          >
-                            {field.label}:
-                          </FieldLabel>
-                          <div className="flex flex-col w-full max-w-[280px]">
-                            <input
-                              type="text"
-                              name={field.name}
-                              value={form[field.name] || ""}
-                              onChange={handleChange}
-                              disabled={!isEnabled}
-                              style={
-                                isEnabled ? inputStyle : disabledInputStyle
-                              }
-                              onFocus={
-                                isEnabled ? inputInteraction.onFocus : undefined
-                              }
-                              onBlur={
-                                isEnabled ? inputInteraction.onBlur : undefined
-                              }
-                              onMouseEnter={
-                                isEnabled
-                                  ? inputInteraction.onMouseEnter
-                                  : undefined
-                              }
-                              onMouseLeave={
-                                isEnabled
-                                  ? inputInteraction.onMouseLeave
-                                  : undefined
-                              }
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-              </div>
-
-              <div
-                style={{
-                  ...advancedFormInlineFooterStyle,
-                  width: "calc(100% + 64px)",
-                  marginLeft: -32,
-                  marginRight: -32,
-                }}
-              >
-                <Btn
-                  variant="primary"
-                  type="submit"
-                  disabled={loading || lanSections.length === 0}
-                  style={advancedFormBtnStyle}
-                >
-                  {loading ? "Saving..." : "Save"}
-                </Btn>
-                <Btn
-                  variant="cancel"
-                  type="button"
-                  onClick={handleReset}
-                  disabled={loading || lanSections.length === 0}
-                  style={advancedFormBtnStyle}
-                >
-                  {loading ? "Resetting..." : "Reset"}
-                </Btn>
-              </div>
-            </form>
+                    );
+                  })
+                )}
+              </form>
+            )}
           </div>
+
+          {(!loading || lanSections.length > 0) && (
+            <div style={advancedFormInlineFooterStyle}>
+              <Btn
+                variant="cancel"
+                type="button"
+                onClick={handleReset}
+                disabled={loading || lanSections.length === 0}
+                style={advancedFormBtnStyle}
+              >
+                {loading ? "Resetting..." : "Reset"}
+              </Btn>
+              <Btn
+                variant="primary"
+                type="submit"
+                form="dhcp-settings-form"
+                disabled={loading || lanSections.length === 0}
+                style={advancedFormBtnStyle}
+              >
+                {loading ? "Saving..." : "Save"}
+              </Btn>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </DhcpPageShell>
   );
 };
 
