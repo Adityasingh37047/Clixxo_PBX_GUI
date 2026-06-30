@@ -1,10 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  IP_CALL_IN_ORICALLEEID_FIELDS,
-  IP_CALL_IN_ORICALLEEID_TABLE_COLUMNS,
-  IP_CALL_IN_ORICALLEEID_INITIAL_FORM,
-  IP_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS,
-} from "../../../constants/IPCallInOriCalleeIDConstants";
+  IP_CALL_IN_CALLERID_FIELDS,
+  IP_CALL_IN_CALLERID_TABLE_COLUMNS,
+  IP_CALL_IN_CALLERID_INITIAL_FORM,
+  IP_CALL_IN_CALLERID_FIELD_TOOLTIPS,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_ROOT,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_TITLE,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_EMPTY_MESSAGE,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_MODAL_TITLE_ADD,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_MODAL_TITLE_EDIT,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_ADD_NEW_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_ADD_NEW_EMPTY_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_DELETE_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_CLEAR_ALL_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_SAVE_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_CLOSE_LABEL,
+} from "../../../constants/E1PriIPCallInCallerIDConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -12,10 +25,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
   CircularProgress,
   Checkbox,
   Alert,
@@ -30,7 +39,7 @@ import {
   listGroups,
 } from "../../../api/apiService";
 
-const IP_CALL_IN_ORICALLEEID_COMPACT_MQ = "(max-width: 768px)";
+const IP_CALL_IN_CALLERID_COMPACT_MQ = "(max-width: 768px)";
 
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -93,7 +102,36 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-const LOCAL_STORAGE_KEY = "ipCallInOriCalleeIdRules";
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 170,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+  </div>
+);
 
 const C = {
   pageBg: "#f8fafc",
@@ -238,16 +276,16 @@ const Btn = ({
   );
 };
 
-const IP_CALL_IN_ORICALLEEID_CARD_RADIUS = 10;
+const IP_CALL_IN_CALLERID_CARD_RADIUS = 10;
 
-const ipCallInOriCalleeIdPageWrapStyle = {
+const ipCallInCallerIdPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const ipCallInOriCalleeIdPageInnerStyle = {
+const ipCallInCallerIdPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
@@ -263,15 +301,15 @@ const addHostFormPanelStyle = {
   padding: 20,
 };
 
-const ipCallInOriCalleeIdCardStyle = {
+const ipCallInCallerIdCardStyle = {
   background: "#ffffff",
-  borderRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderRadius: IP_CALL_IN_CALLERID_CARD_RADIUS,
   overflow: "hidden",
   border: `1px solid ${C.cardBorder}`,
   boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const ipCallInOriCalleeIdToolbarStyle = {
+const ipCallInCallerIdToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -281,23 +319,23 @@ const ipCallInOriCalleeIdToolbarStyle = {
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
-  borderTopRightRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderTopLeftRadius: IP_CALL_IN_CALLERID_CARD_RADIUS,
+  borderTopRightRadius: IP_CALL_IN_CALLERID_CARD_RADIUS,
 };
 
-const ipCallInOriCalleeIdFooterStyle = {
+const ipCallInCallerIdFooterStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
   borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
-  borderBottomRightRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderBottomLeftRadius: IP_CALL_IN_CALLERID_CARD_RADIUS,
+  borderBottomRightRadius: IP_CALL_IN_CALLERID_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const ipCallInOriCalleeIdSelectedBadgeStyle = {
+const ipCallInCallerIdSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -307,7 +345,7 @@ const ipCallInOriCalleeIdSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const ipCallInOriCalleeIdCancelBtnStyle = {
+const ipCallInCallerIdCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -315,14 +353,14 @@ const ipCallInOriCalleeIdCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const ipCallInOriCalleeIdPrimaryBtnStyle = {
+const ipCallInCallerIdPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const ipCallInOriCalleeIdModalCancelBtnStyle = {
+const ipCallInCallerIdModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -331,7 +369,7 @@ const ipCallInOriCalleeIdModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const ipCallInOriCalleeIdPageBadgeStyle = {
+const ipCallInCallerIdPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -341,7 +379,7 @@ const ipCallInOriCalleeIdPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const IPCallInOriCalleeIdBreadcrumb = () => (
+const IPCallInCallerIdBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -354,12 +392,12 @@ const IPCallInOriCalleeIdBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Num Manipulate</span>
+    <span>{NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      IP Call In OriCalleeID
+      {NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_TITLE}
     </span>
   </div>
 );
@@ -416,13 +454,13 @@ const TableListEmptyState = ({
   </div>
 );
 
-const IpCallInOriCalleeIdPagination = ({
+const IpCallInCallerIdPagination = ({
   page,
   totalPages,
   recordCount,
   onPageChange,
 }) => (
-  <div style={ipCallInOriCalleeIdFooterStyle}>
+  <div style={ipCallInCallerIdFooterStyle}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} record
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -435,7 +473,7 @@ const IpCallInOriCalleeIdPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={ipCallInOriCalleeIdPageBadgeStyle}>
+      <span style={ipCallInCallerIdPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -449,78 +487,75 @@ const IpCallInOriCalleeIdPagination = ({
   </div>
 );
 
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+// ── Native modal field UI ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
+const inputStyle = {
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
 
@@ -558,17 +593,19 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const ipCallInOriCalleeIdTableCheckboxSx = {
+const ipCallInCallerIdTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const IPCallInOriCalleeID = () => {
-  const isCompact = useMediaQuery(IP_CALL_IN_ORICALLEEID_COMPACT_MQ);
+const LOCAL_STORAGE_KEY = "ipCallInCallerIdRules";
+
+const IPCallInCallerID = () => {
+  const isCompact = useMediaQuery(IP_CALL_IN_CALLERID_COMPACT_MQ);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState(IP_CALL_IN_ORICALLEEID_INITIAL_FORM);
+  const [formData, setFormData] = useState(IP_CALL_IN_CALLERID_INITIAL_FORM);
   const [rules, setRules] = useState([]);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
@@ -611,12 +648,12 @@ const IPCallInOriCalleeID = () => {
   const fetchSipTrunkGroups = async () => {
     try {
       const response = await listGroups();
-      console.log("SIP Trunk Groups API Response:", response);
+      // console.log('SIP Trunk Groups API Response:', response);
       if (response.response && response.message) {
         const sipGroups = Array.isArray(response.message)
           ? response.message
           : [response.message];
-        console.log("SIP Groups data:", sipGroups);
+        // console.log('SIP Groups data:', sipGroups);
         setSipTrunkGroups(sipGroups);
 
         // Set default value for new forms if no groups are loaded yet
@@ -626,7 +663,7 @@ const IPCallInOriCalleeID = () => {
           setFormData((prev) => ({ ...prev, call_initiator: firstGroupId }));
         }
       } else {
-        console.log("No SIP groups data found");
+        // console.log('No SIP groups data found');
         setSipTrunkGroups([]);
       }
     } catch (error) {
@@ -644,15 +681,15 @@ const IPCallInOriCalleeID = () => {
   const fetchNumberManipulations = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
-      console.log("Fetching number manipulations...");
-      const response = await listNumberManipulations("ip_in_oricalleeid");
-      console.log("Fetch response:", response);
+      // console.log('Fetching number manipulations...');
+      const response = await listNumberManipulations("ip_in_callerid");
+      // console.log('Fetch response:', response);
 
       if (response.response && response.message) {
-        console.log("Number manipulations data:", response.message);
+        // console.log('Number manipulations data:', response.message);
         setRules(response.message);
       } else {
-        console.log("No data in response, setting empty array");
+        // console.log('No data in response, setting empty array');
         setRules([]);
       }
     } catch (error) {
@@ -677,7 +714,6 @@ const IPCallInOriCalleeID = () => {
       // Editing existing item
       setFormData({
         ...item,
-        with_original_calleeid: item.with_original_calleeid || "No",
         stripped_digits_from_left:
           item.stripped_digits_from_left === "" ||
           item.stripped_digits_from_left == null
@@ -697,7 +733,7 @@ const IPCallInOriCalleeID = () => {
       setEditIndex(item.id);
     } else {
       // Adding new item - set default call_initiator if available
-      const defaultForm = { ...IP_CALL_IN_ORICALLEEID_INITIAL_FORM };
+      const defaultForm = { ...IP_CALL_IN_CALLERID_INITIAL_FORM };
       if (sipTrunkGroups.length > 0) {
         const firstGroupId =
           sipTrunkGroups[0].group_id ||
@@ -713,7 +749,7 @@ const IPCallInOriCalleeID = () => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
-    // Validation: required only Call Initiator, CallerID Prefix, CalleeID Prefix
+    // Validation: required fields (including With Original CalleeID on this page)
     if (!formData.call_initiator) {
       alert("Call Initiator is required.");
       return;
@@ -726,11 +762,14 @@ const IPCallInOriCalleeID = () => {
       alert("CalleeID Prefix is required.");
       return;
     }
+    if (!formData.with_original_calleeid) {
+      alert("With Original CalleeID is required.");
+      return;
+    }
 
     // Normalize optional numeric fields to '0' when empty
     const normalized = {
       ...formData,
-      with_original_calleeid: formData.with_original_calleeid || "No",
       stripped_digits_from_left:
         formData.stripped_digits_from_left === "" ||
         formData.stripped_digits_from_left == null
@@ -766,12 +805,9 @@ const IPCallInOriCalleeID = () => {
           suffix_to_add: normalized.suffix_to_add,
           description: normalized.description,
         };
-        console.log("Update request data:", updateData);
-        response = await updateNumberManipulation(
-          updateData,
-          "ip_in_oricalleeid",
-        );
-        console.log("Update response:", response);
+        // console.log('Update request data:', updateData);
+        response = await updateNumberManipulation(updateData, "ip_in_callerid");
+        // console.log('Update response:', response);
         if (response.response) {
           alert(
             response.message || "Number manipulation updated successfully!",
@@ -780,11 +816,11 @@ const IPCallInOriCalleeID = () => {
           // Try to reload data, but don't fail if it doesn't work
           try {
             await new Promise((resolve) => setTimeout(resolve, 500)); // Allow backend to process
-            console.log("Attempting to reload after successful update...");
+            // console.log('Attempting to reload after successful update...');
             await fetchNumberManipulations();
-            console.log("Reload successful after update");
+            // console.log('Reload successful after update');
           } catch (reloadError) {
-            console.log("Updating item in local state as fallback");
+            // console.log('Updating item in local state as fallback');
             // Update the item in local state
             setRules((prev) =>
               prev.map((rule, idx) =>
@@ -797,12 +833,9 @@ const IPCallInOriCalleeID = () => {
         }
       } else {
         // Create new
-        console.log("Create request data:", normalized);
-        response = await createNumberManipulation(
-          normalized,
-          "ip_in_oricalleeid",
-        );
-        console.log("Create response:", response);
+        // console.log('Create request data:', normalized);
+        response = await createNumberManipulation(normalized, "ip_in_callerid");
+        // console.log('Create response:', response);
         if (response.response) {
           alert(
             response.message || "Number manipulation created successfully!",
@@ -811,16 +844,16 @@ const IPCallInOriCalleeID = () => {
           // Try to reload data, but don't fail if it doesn't work
           try {
             await new Promise((resolve) => setTimeout(resolve, 500)); // Allow backend to process
-            console.log("Attempting to reload after successful creation...");
+            // console.log('Attempting to reload after successful creation...');
             await fetchNumberManipulations();
-            console.log("Reload successful after creation");
+            // console.log('Reload successful after creation');
           } catch (reloadError) {
-            console.log("Adding item to local state as fallback");
+            // console.log('Adding item to local state as fallback');
             // Add the new item to local state
             const newItem = {
               ...normalized,
               id: Date.now(), // Temporary ID for local state
-              manipulation_type: "ip_in_oricalleeid",
+              manipulation_type: "ip_in_callerid",
             };
             setRules((prev) => [...prev, newItem]);
           }
@@ -880,11 +913,11 @@ const IPCallInOriCalleeID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      console.log("Deleting selected items:", selected);
+      // console.log('Deleting selected items:', selected);
       const deletePromises = selected.map(async (idx) => {
         const item = rules[idx];
         if (item && item.id) {
-          console.log("Deleting item with ID:", item.id);
+          // console.log('Deleting item with ID:', item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -899,7 +932,7 @@ const IPCallInOriCalleeID = () => {
       ).length;
       const failCount = results.length - successCount;
 
-      console.log("Delete results:", results);
+      // console.log('Delete results:', results);
 
       if (successCount > 0) {
         alert(`${successCount} item(s) deleted successfully`);
@@ -953,13 +986,10 @@ const IPCallInOriCalleeID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      console.log(
-        "Clearing all number manipulations:",
-        rules.map((item) => item.id),
-      );
+      // console.log('Clearing all number manipulations:', rules.map(item => item.id));
       const deletePromises = rules.map(async (item) => {
         if (item && item.id) {
-          console.log("Deleting item:", item.id);
+          // console.log('Deleting item:', item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -1028,22 +1058,6 @@ const IPCallInOriCalleeID = () => {
       tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
   };
 
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
   // Load data on component mount
   useEffect(() => {
     fetchNumberManipulations();
@@ -1072,9 +1086,25 @@ const IPCallInOriCalleeID = () => {
     return () => window.removeEventListener("resize", update);
   }, [rules, page]);
 
+  const thumbWidth =
+    scrollState.width && scrollState.scrollWidth
+      ? Math.max(
+          40,
+          (scrollState.width / scrollState.scrollWidth) *
+            (scrollState.width - 8),
+        )
+      : 40;
+  const thumbLeft =
+    scrollState.width &&
+    scrollState.scrollWidth &&
+    scrollState.scrollWidth > scrollState.width
+      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
+        (scrollState.width - thumbWidth - 16)
+      : 0;
+
   // Get updated fields with SIP trunk groups
   const getUpdatedFields = () => {
-    return IP_CALL_IN_ORICALLEEID_FIELDS.map((field) => {
+    return IP_CALL_IN_CALLERID_FIELDS.map((field) => {
       if (field.name === "call_initiator") {
         return {
           ...field,
@@ -1091,11 +1121,11 @@ const IPCallInOriCalleeID = () => {
   return (
     <div
       style={{
-        ...ipCallInOriCalleeIdPageWrapStyle,
+        ...ipCallInCallerIdPageWrapStyle,
         ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      <div style={ipCallInOriCalleeIdPageInnerStyle}>
+      <div style={ipCallInCallerIdPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -1113,12 +1143,12 @@ const IPCallInOriCalleeID = () => {
           </Alert>
         )}
 
-        <IPCallInOriCalleeIdBreadcrumb />
+        <IPCallInCallerIdBreadcrumb />
 
-        <div style={ipCallInOriCalleeIdCardStyle}>
+        <div style={ipCallInCallerIdCardStyle}>
           <div
             style={{
-              ...ipCallInOriCalleeIdToolbarStyle,
+              ...ipCallInCallerIdToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1134,7 +1164,7 @@ const IPCallInOriCalleeID = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={ipCallInOriCalleeIdSelectedBadgeStyle}>
+                <span style={ipCallInCallerIdSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1151,7 +1181,7 @@ const IPCallInOriCalleeID = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.fetch || loading.delete || rules.length === 0}
-                style={ipCallInOriCalleeIdCancelBtnStyle}
+                style={ipCallInCallerIdCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1159,27 +1189,27 @@ const IPCallInOriCalleeID = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                style={ipCallInOriCalleeIdCancelBtnStyle}
+                style={ipCallInCallerIdCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {NUM_MANIPULATE_IP_CALL_IN_CALLERID_DELETE_LABEL}
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.fetch || loading.delete || rules.length === 0}
-                style={ipCallInOriCalleeIdCancelBtnStyle}
+                style={ipCallInCallerIdCancelBtnStyle}
               >
-                Clear All
+                {NUM_MANIPULATE_IP_CALL_IN_CALLERID_CLEAR_ALL_LABEL}
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleRefresh}
                 disabled={loading.fetch}
-                style={ipCallInOriCalleeIdCancelBtnStyle}
+                style={ipCallInCallerIdCancelBtnStyle}
               >
                 {loading.fetch ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1190,9 +1220,9 @@ const IPCallInOriCalleeID = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
-                style={ipCallInOriCalleeIdPrimaryBtnStyle}
+                style={ipCallInCallerIdPrimaryBtnStyle}
               >
-                + Add New
+                {NUM_MANIPULATE_IP_CALL_IN_CALLERID_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -1201,8 +1231,9 @@ const IPCallInOriCalleeID = () => {
             <TableListLoading />
           ) : rules.length === 0 ? (
             <TableListEmptyState
-              message="No IP call in ori callee ID rules found."
+              message={NUM_MANIPULATE_IP_CALL_IN_CALLERID_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
+              buttonLabel={NUM_MANIPULATE_IP_CALL_IN_CALLERID_ADD_NEW_EMPTY_LABEL}
             />
           ) : (
             <>
@@ -1252,7 +1283,7 @@ const IPCallInOriCalleeID = () => {
                             if (e.target.checked) handleCheckAll();
                             else handleUncheckAll();
                           }}
-                          sx={ipCallInOriCalleeIdTableCheckboxSx}
+                          sx={ipCallInCallerIdTableCheckboxSx}
                         />
                       </TH>
                       <TH
@@ -1337,7 +1368,7 @@ const IPCallInOriCalleeID = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(idx)}
                               disabled={loading.delete}
-                              sx={ipCallInOriCalleeIdTableCheckboxSx}
+                              sx={ipCallInCallerIdTableCheckboxSx}
                             />
                           </td>
                           <td
@@ -1447,7 +1478,7 @@ const IPCallInOriCalleeID = () => {
                 </table>
               </div>
 
-              <IpCallInOriCalleeIdPagination
+              <IpCallInCallerIdPagination
                 page={page}
                 totalPages={totalPages}
                 recordCount={pagedRules.length}
@@ -1465,24 +1496,17 @@ const IPCallInOriCalleeID = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
-            maxWidth: "96vw",
-            mx: "auto",
+            maxWidth: "95vw",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-          },
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1497,84 +1521,54 @@ const IPCallInOriCalleeID = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editIndex !== null
-            ? "Edit IP Call In OriCalleeID"
-            : "Add IP Call In OriCalleeID"}
+            ? NUM_MANIPULATE_IP_CALL_IN_CALLERID_MODAL_TITLE_EDIT
+            : NUM_MANIPULATE_IP_CALL_IN_CALLERID_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
           <div style={addHostFormPanelStyle}>
             {getUpdatedFields().map((field) => (
-              <div
+              <E1PriFieldRow
                 key={field.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
+                label={field.label}
+                tooltipKey={field.name}
+                tooltips={IP_CALL_IN_CALLERID_FIELD_TOOLTIPS}
               >
-                <E1PriFieldLabel
-                  tooltipKey={field.name}
-                  tooltips={IP_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS}
-                  style={{
-                    fontSize: 13,
-                    width: 170,
-                    lineHeight: 1.2,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                    display: "inline-block",
-                  }}
-                >
-                  {field.label}
-                </E1PriFieldLabel>
-                <div style={{ width: "min(100%, 320px)" }}>
-                  {field.type === "select" ? (
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={formData[field.name] || ""}
-                        onChange={(e) =>
-                          handleInputChange({
-                            target: { name: field.name, value: e.target.value },
-                          })
-                        }
-                        variant="outlined"
-                        sx={modalSelectSx}
-                      >
-                        {field.options.map((opt) => (
-                          <MenuItem
-                            key={opt.value}
-                            value={opt.value}
-                            sx={{ fontSize: 14 }}
-                          >
-                            {opt.label}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  ) : (
-                    <TextField
-                      type={field.type || "text"}
-                      name={field.name}
-                      value={formData[field.name] || ""}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          height: 32,
-                          padding: "0 8px",
-                          boxSizing: "border-box",
-                        },
-                      }}
-                      sx={modalTextFieldSx}
-                    />
-                  )}
-                </div>
-              </div>
+                {field.type === "select" ? (
+                  <select
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleInputChange}
+                    style={selectStyle}
+                    {...inputInteraction}
+                  >
+                    {field.options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={field.type || "text"}
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    {...inputInteraction}
+                  />
+                )}
+              </E1PriFieldRow>
             ))}
           </div>
         </DialogContent>
@@ -1594,21 +1588,21 @@ const IPCallInOriCalleeID = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            {loading.save
-              ? "Saving..."
-              : editIndex !== null
-                ? "Update"
-                : "Save"}
+            {loading.save ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              NUM_MANIPULATE_IP_CALL_IN_CALLERID_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={ipCallInOriCalleeIdModalCancelBtnStyle}
+            style={{ ...ipCallInCallerIdModalCancelBtnStyle, height: 34 }}
           >
-            Close
+            {NUM_MANIPULATE_IP_CALL_IN_CALLERID_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>
@@ -1616,4 +1610,4 @@ const IPCallInOriCalleeID = () => {
   );
 };
 
-export default IPCallInOriCalleeID;
+export default IPCallInCallerID;

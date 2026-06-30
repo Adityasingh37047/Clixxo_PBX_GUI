@@ -1174,10 +1174,12 @@ const AccessControl = () => {
           )}
 
           <div style={accessControlFooterStyle}>
+            {commands.length > 0 && (
             <span style={{ fontSize: 11, color: C.mutedText }}>
               Showing {commands.length} record
               {commands.length !== 1 ? "s" : ""}
             </span>
+            )}
             <div
               style={{
                 display: "flex",

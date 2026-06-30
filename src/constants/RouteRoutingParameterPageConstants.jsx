@@ -9,6 +9,12 @@ export const ROUTE_SETTINGS_OPTIONS = [
   },
 ];
 
+export const ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION = "Route";
+export const ROUTE_ROUTING_PARAMETER_PAGE_TITLE = "Route Settings";
+export const ROUTE_ROUTING_PARAMETER_CARD_TITLE = "Route Settings";
+export const ROUTE_ROUTING_PARAMETER_SAVE_LABEL = "Save";
+
 export const ROUTE_SETTINGS_DEFAULTS = {
   ipIncoming: 'after',
   pstnIncoming: 'after',

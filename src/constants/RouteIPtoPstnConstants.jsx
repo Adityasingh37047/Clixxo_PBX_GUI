@@ -31,6 +31,17 @@ export const ROUTE_IP_PSTN_INITIAL_FORM = {
   description: "default",
 };
 
+export const ROUTE_IP_PSTN_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION = "Route";
+export const ROUTE_IP_PSTN_PAGE_TITLE = "IP->PSTN Routing Rule";
+export const ROUTE_IP_PSTN_EMPTY_MESSAGE = "No rules configured!";
+export const ROUTE_IP_PSTN_MODAL_TITLE_ADD = "Add IP->PSTN Routing Rule";
+export const ROUTE_IP_PSTN_MODAL_TITLE_EDIT = "Edit IP->PSTN Routing Rule";
+export const ROUTE_IP_PSTN_ADD_NEW_LABEL = "+ Add New";
+export const ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL = "+ Add New Rule";
+export const ROUTE_IP_PSTN_SAVE_LABEL = "Save";
+export const ROUTE_IP_PSTN_CLOSE_LABEL = "Close";
+
 export const ROUTE_IP_PSTN_TABLE_COLUMNS = [
   { key: "index", label: "ID" },
   { key: "callSource", label: "Call Source" },

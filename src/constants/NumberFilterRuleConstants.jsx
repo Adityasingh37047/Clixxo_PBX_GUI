@@ -1,4 +1,4 @@
-export const FILTERING_RULE_COLUMNS = [
+export const NUMBER_FILTER_RULE_COLUMNS = [
   { key: 'check', label: 'Check' },
   { key: 'id', label: 'ID' },
   { key: 'callerIdWhitelist', label: 'CallerID Whitelist' },
@@ -11,20 +11,29 @@ export const FILTERING_RULE_COLUMNS = [
   { key: 'calleeIdPoolBlacklist', label: 'CalleeID Pool in Blacklist' },
   { key: 'originalCallerIdPoolWhitelist', label: 'Original CallerID Pool in Whitelist' },
   { key: 'originalCallerIdPoolBlacklist', label: 'Original CallerID Pool in Blacklist' },
-  // Modify column disabled — uncomment next line to show edit icon column:
-  // { key: 'modify', label: 'Modify' },
 ];
 
-export const FILTERING_RULE_DROPDOWN_OPTIONS = [
-  'none'
-];
+export const NUMBER_FILTER_RULE_DROPDOWN_OPTIONS = ['none'];
+
+export const NUMBER_FILTER_RULE_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const NUMBER_FILTER_RULE_PAGE_BREADCRUMB_SECTION = "Number Filter";
+export const NUMBER_FILTER_RULE_PAGE_TITLE = "Filtering Rule";
+export const NUMBER_FILTER_RULE_EMPTY_MESSAGE = "No filtering rules found.";
+export const NUMBER_FILTER_RULE_MODAL_TITLE_ADD = "Add Filtering Rule";
+export const NUMBER_FILTER_RULE_MODAL_TITLE_EDIT = "Edit Filtering Rule";
+export const NUMBER_FILTER_RULE_ADD_NEW_LABEL = "+ Add New";
+export const NUMBER_FILTER_RULE_ADD_NEW_EMPTY_LABEL = "+ Add New";
+export const NUMBER_FILTER_RULE_DELETE_LABEL = "Delete";
+export const NUMBER_FILTER_RULE_CLEAR_ALL_LABEL = "Clear All";
+export const NUMBER_FILTER_RULE_SAVE_LABEL = "Save";
+export const NUMBER_FILTER_RULE_CLOSE_LABEL = "Close";
 
 const GROUP_OPTIONS_NOTE =
   "Options loaded when the modal opens from number-filter and number-pool APIs.\n" +
   "Always includes none; group numbers appear when matching whitelist, blacklist, or pool records exist.";
 
 /** Filtering Rule modal */
-export const FILTERING_RULE_FIELD_TOOLTIPS = {
+export const NUMBER_FILTER_RULE_FIELD_TOOLTIPS = {
   id:
     "Display-only row number in the form.\n" +
     "Not included in the create save payload.",

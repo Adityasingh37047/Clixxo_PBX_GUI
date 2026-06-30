@@ -4,9 +4,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
   Alert,
   CircularProgress,
   Tooltip,
@@ -21,9 +18,26 @@ import {
   deleteNumberFilter,
   deleteAllNumberFilters,
 } from "../../../api/apiService";
-import { BLACKLIST_FIELD_TOOLTIPS } from "../../../constants/BlacklistConstants";
+import {
+  NUMBER_FILTER_BLACKLIST_FIELD_TOOLTIPS,
+  NUMBER_FILTER_BLACKLIST_PAGE_BREADCRUMB_ROOT,
+  NUMBER_FILTER_BLACKLIST_PAGE_BREADCRUMB_SECTION,
+  NUMBER_FILTER_BLACKLIST_PAGE_TITLE,
+  NUMBER_FILTER_BLACKLIST_CALLER_PANEL_TITLE,
+  NUMBER_FILTER_BLACKLIST_CALLEE_PANEL_TITLE,
+  NUMBER_FILTER_BLACKLIST_MODAL_TITLE_CALLER,
+  NUMBER_FILTER_BLACKLIST_MODAL_TITLE_CALLEE,
+  NUMBER_FILTER_BLACKLIST_ADD_NEW_LABEL,
+  NUMBER_FILTER_BLACKLIST_DELETE_LABEL,
+  NUMBER_FILTER_BLACKLIST_CLEAR_ALL_LABEL,
+  NUMBER_FILTER_BLACKLIST_SAVE_LABEL,
+  NUMBER_FILTER_BLACKLIST_CLOSE_LABEL,
+  NUMBER_FILTER_BLACKLIST_LOADING_MESSAGE,
+  NUMBER_FILTER_BLACKLIST_NOTE,
+} from "../../../constants/NumberFilterBlacklistConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 // ── Page-local field label tooltip UI ──
-const FIELD_LABEL_COLOR = "#374151";
+const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
   arrow: true,
@@ -85,13 +99,46 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-// ── Local page UI (matches Whitelist design language) ──
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 140,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+        whiteSpace: "normal",
+        lineHeight: 1.2,
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+  </div>
+);
+
+// ── Local page UI (matches Route PBX design language) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText:  "#3E5475",
   valueText: "#1f2937",
@@ -110,77 +157,72 @@ const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: "1px",
-      boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: "1px",
-      boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
-    },
+// ── Native modal field UI ──
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-    boxShadow: "0 0 0 2px rgba(62, 84, 117, 0.15)",
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
+const inputStyle = {
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-    color: C.labelText,
-  },
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
 const addHostFormPanelStyle = {
@@ -198,7 +240,7 @@ const advancedPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -208,7 +250,7 @@ const advancedPageWrapStyle = {
 const advancedPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };
@@ -238,8 +280,8 @@ const panelToolbarStyle = {
 };
 
 const panelSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 500,
+  fontSize: 13,
+  fontWeight: 700,
   color: C.labelText,
   letterSpacing: "-0.01em",
 };
@@ -253,22 +295,23 @@ const panelFooterStyle = {
   background: C.cardBg,
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
+const panelNoteStyle = {
+  color: C.accent,
+  fontSize: 11,
+  lineHeight: 1.5,
+  margin: "16px 0 0",
+  padding: "0 4px",
+  textAlign: "center",
+  width: "100%",
   boxSizing: "border-box",
 };
 
-const BlacklistBreadcrumb = ({ current }) => (
+const BlacklistBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -277,11 +320,13 @@ const BlacklistBreadcrumb = ({ current }) => (
       flexShrink: 0,
     }}
   >
-    <span>E1-PRI</span>
+    <span>{NUMBER_FILTER_BLACKLIST_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Number Filter</span>
+    <span>{NUMBER_FILTER_BLACKLIST_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {NUMBER_FILTER_BLACKLIST_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -910,7 +955,7 @@ const Blacklist = () => {
                 ) : (
                   <>
                     <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
+                    {NUMBER_FILTER_BLACKLIST_DELETE_LABEL}
                   </>
                 )}
               </Btn>
@@ -920,7 +965,7 @@ const Blacklist = () => {
                 disabled={rows.length === 0 || isDeleting}
                 style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
               >
-                Clear All
+                {NUMBER_FILTER_BLACKLIST_CLEAR_ALL_LABEL}
               </Btn>
               <Btn
                 variant="primary"
@@ -932,12 +977,15 @@ const Blacklist = () => {
                   fontSize: 12,
                 }}
               >
-                + Add New
+                {NUMBER_FILTER_BLACKLIST_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
 
-          <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: 360 }}>
+          <div
+            className="notepad-scrollbar"
+            style={{ overflowX: "auto", overflowY: "auto", maxHeight: 360 }}
+          >
             <table
               style={{
                 width: "100%",
@@ -1058,19 +1106,23 @@ const Blacklist = () => {
                             <EditDocumentIcon
                               titleAccess="Edit"
                               style={{
-                                cursor: "pointer",
-                                color: C.accent,
+                                cursor: isDeleting ? "not-allowed" : "pointer",
+                                color: "#2563eb",
                                 fontSize: 22,
-                                opacity: 0.75,
+                                opacity: isDeleting ? 0.4 : 0.7,
                                 transition: "opacity 0.15s ease",
                               }}
-                              onClick={() => onEdit(row)}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.style.opacity = "1")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.style.opacity = "0.75")
-                              }
+                              onClick={() => {
+                                if (!isDeleting) onEdit(row);
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isDeleting)
+                                  e.currentTarget.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isDeleting)
+                                  e.currentTarget.style.opacity = "0.7";
+                              }}
                             />
                           </div>
                         </td>
@@ -1082,12 +1134,14 @@ const Blacklist = () => {
             </table>
           </div>
 
+          {rows.length > 0 && (
           <div style={panelFooterStyle}>
             <span style={{ fontSize: 11, color: C.mutedText }}>
               Showing {rows.length} record
               {rows.length !== 1 ? "s" : ""}
             </span>
           </div>
+          )}
         </div>
       </div>
     );
@@ -1113,7 +1167,7 @@ const Blacklist = () => {
         </Alert>
       )}
 
-      <BlacklistBreadcrumb current="Blacklist" />
+      <BlacklistBreadcrumb />
 
       {isInitialLoading ? (
         <div
@@ -1128,7 +1182,7 @@ const Blacklist = () => {
         >
           <CircularProgress size={32} style={{ color: C.accent }} />
           <span style={{ fontSize: 13, color: C.mutedText }}>
-            Loading blacklist data...
+            {NUMBER_FILTER_BLACKLIST_LOADING_MESSAGE}
           </span>
         </div>
       ) : (
@@ -1141,11 +1195,10 @@ const Blacklist = () => {
               width: "100%",
               alignItems: "flex-start",
               marginBottom: 16,
-
             }}
           >
             {renderTablePanel({
-              title: "CallerID Blacklist",
+              title: NUMBER_FILTER_BLACKLIST_CALLER_PANEL_TITLE,
               rows: callerRows,
               checkedItems: callerChecked,
               onCheck: handleCallerCheck,
@@ -1157,7 +1210,7 @@ const Blacklist = () => {
               idKey: "callerId",
             })}
             {renderTablePanel({
-              title: "CalleeID Blacklist",
+              title: NUMBER_FILTER_BLACKLIST_CALLEE_PANEL_TITLE,
               rows: calleeRows,
               checkedItems: calleeChecked,
               onCheck: handleCalleeCheck,
@@ -1170,17 +1223,8 @@ const Blacklist = () => {
             })}
           </div>
 
-          <p
-            style={{
-              color: C.accent,
-              fontSize: 11,
-              lineHeight: 1.5,
-              margin: "16px 0 0",
-              padding: "0 4px",
-            }}
-          >
-            Note: The one list, only the latest 200 pieces will be displayed.
-            To check all the records, please backup the file.
+          <p style={panelNoteStyle}>
+            {NUMBER_FILTER_BLACKLIST_NOTE}
           </p>
         </>
       )}
@@ -1190,15 +1234,17 @@ const Blacklist = () => {
         open={showModal}
         onClose={() => setShowModal(false)}
         maxWidth={false}
-        className="z-50"
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
-            mt: 0,
+          sx: mergeAddNewDialogPaperSx({
+            width: 500,
+            maxWidth: "95vw",
             p: 0,
             borderRadius: `${CARD_RADIUS}px`,
             overflow: "hidden",
-            
-          }
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1211,108 +1257,113 @@ const Blacklist = () => {
             fontSize: 16,
             textAlign: "center",
             padding: "14px 24px",
-            textColor: C.labelText,
             letterSpacing: "-0.01em",
+            flexShrink: 0,
           }}
         >
           {modalType === "caller"
-            ? "CallerIDs in Blacklist"
-            : "CalleeIDs in Blacklist"}
+            ? NUMBER_FILTER_BLACKLIST_MODAL_TITLE_CALLER
+            : NUMBER_FILTER_BLACKLIST_MODAL_TITLE_CALLEE}
         </DialogTitle>
 
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent
+          className="notepad-scrollbar"
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
           <div style={{ ...addHostFormPanelStyle, gap: 16 }}>
-            {/* Group No. */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <E1PriFieldLabel
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: 14 }}
+            >
+              <E1PriFieldRow
+                label="Group No.:"
                 tooltipKey="groupNo"
-                tooltips={BLACKLIST_FIELD_TOOLTIPS}
-                style={{
-                  width: 140,
-                  whiteSpace: "normal",
-                  lineHeight: 1.2,
-                  textAlign: "left",
-                  display: "inline-block",
-                }}
+                tooltips={NUMBER_FILTER_BLACKLIST_FIELD_TOOLTIPS}
               >
-                Group No.:
-              </E1PriFieldLabel>
-              <MuiSelect
-                value={modalData.groupNo}
-                onChange={(e) => handleGroupNoChange(e.target.value)}
-                size="small"
-                fullWidth
-                sx={{ ...modalSelectSx, height: 36 }}
-                MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
-              >
-                {[...Array(200).keys()].map((i) => (
-                  <MenuItem key={i} value={String(i)} sx={{ fontSize: 13 }}>
-                    {i}
-                  </MenuItem>
-                ))}
-              </MuiSelect>
-            </div>
+                <select
+                  value={modalData.groupNo}
+                  onChange={(e) => handleGroupNoChange(e.target.value)}
+                  style={selectStyle}
+                  {...inputInteraction}
+                >
+                  {[...Array(200).keys()].map((i) => (
+                    <option key={i} value={String(i)}>
+                      {i}
+                    </option>
+                  ))}
+                </select>
+              </E1PriFieldRow>
 
-            {/* ID Value */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <E1PriFieldLabel
-                tooltipKey={modalType === "caller" ? "callerId" : "calleeId"}
-                tooltips={BLACKLIST_FIELD_TOOLTIPS}
-                style={{
-                  width: 140,
-                  whiteSpace: "normal",
-                  lineHeight: 1.2,
-                  textAlign: "left",
-                  display: "inline-block",
-                }}
-              >
-                {modalType === "caller" ? "CallerID:" : "CalleeID:"}
-              </E1PriFieldLabel>
-              <TextField
-                type="text"
-                value={modalData.idValue}
-                onChange={(e) =>
-                  setModalData({ ...modalData, idValue: e.target.value })
+              <E1PriFieldRow
+                label={
+                  modalType === "caller" ? "CallerID:" : "CalleeID:"
                 }
-                size="small"
-                fullWidth
-                disabled={isEditMode}
-                inputProps={{ style: { fontSize: 13, height: 16 } }}
-                sx={modalTextFieldSx}
-              />
+                tooltipKey={modalType === "caller" ? "callerId" : "calleeId"}
+                tooltips={NUMBER_FILTER_BLACKLIST_FIELD_TOOLTIPS}
+              >
+                <input
+                  type="text"
+                  value={modalData.idValue}
+                  onChange={(e) =>
+                    setModalData({ ...modalData, idValue: e.target.value })
+                  }
+                  disabled={isEditMode}
+                  style={{
+                    ...inputStyle,
+                    ...(isEditMode
+                      ? { backgroundColor: "#f3f4f6", cursor: "not-allowed" }
+                      : {}),
+                  }}
+                  {...inputInteraction}
+                />
+              </E1PriFieldRow>
             </div>
           </div>
         </DialogContent>
 
         <DialogActions
           style={{
-            background: C.cardBg,
-            padding: "12px 24px",
-            borderTop: `1px solid ${C.divider}`,
             display: "flex",
-            justifyContent: "flex-end",
-            gap: 12,
+            justifyContent: "center",
+            gap: 16,
+            padding: "16px 24px",
+            background: "#f8fafc",
+            borderTop: `1px solid ${C.cardBorder}`,
+            borderBottomLeftRadius: CARD_RADIUS,
+            borderBottomRightRadius: CARD_RADIUS,
           }}
         >
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={advancedFormBtnStyle}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
             disabled={isLoading}
           >
             {isLoading ? (
               <CircularProgress size={16} style={{ color: "#fff" }} />
             ) : (
-              "Save"
+              NUMBER_FILTER_BLACKLIST_SAVE_LABEL
             )}
           </Btn>
           <Btn
             onClick={() => setShowModal(false)}
             variant="cancel"
-            style={advancedFormBtnStyle}
+            style={{
+              minWidth: 100,
+              height: 34,
+              fontSize: 13,
+              background: "#cbd5e1",
+              color: "#374151",
+              border: "1px solid #cbd5e1",
+              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+            }}
             disabled={isLoading}
           >
-            Cancel
+            {NUMBER_FILTER_BLACKLIST_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

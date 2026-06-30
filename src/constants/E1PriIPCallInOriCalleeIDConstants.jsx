@@ -1,5 +1,4 @@
-// Table columns for the main table view
-export const PSTN_CALL_IN_ORICALLEEID_TABLE_COLUMNS = [
+export const IP_CALL_IN_ORICALLEEID_TABLE_COLUMNS = [
   { key: 'check', label: 'Check' },
   { key: 'index', label: 'Index' },
   { key: 'call_initiator', label: 'Call Initiator' },
@@ -14,8 +13,7 @@ export const PSTN_CALL_IN_ORICALLEEID_TABLE_COLUMNS = [
   { key: 'modify', label: 'Modify' },
 ];
 
-// Form fields for the modal (no 'With Original CalleeID' field in UI, but hidden field for backend)
-export const PSTN_CALL_IN_ORICALLEEID_FIELDS = [
+export const IP_CALL_IN_ORICALLEEID_FIELDS = [
   { name: 'call_initiator', label: 'Call Initiator:', type: 'select', options: [] },
   { name: 'callerid_prefix', label: 'CallerID Prefix:', type: 'text' },
   { name: 'calleeid_prefix', label: 'CalleeID Prefix:', type: 'text' },
@@ -27,8 +25,7 @@ export const PSTN_CALL_IN_ORICALLEEID_FIELDS = [
   { name: 'description', label: 'Description:', type: 'text' },
 ];
 
-// Initial form state for the modal
-export const PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM = {
+export const IP_CALL_IN_ORICALLEEID_INITIAL_FORM = {
   call_initiator: '',
   callerid_prefix: '*',
   calleeid_prefix: '*',
@@ -41,12 +38,25 @@ export const PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM = {
   description: '',
 };
 
-/** PSTN Call In OriCalleeID (manipulation_type: pstn_in_oricalleeid) */
-export const PSTN_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS = {
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION = "Num Manipulate";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_TITLE = "IP Call In OriCalleeID";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_EMPTY_MESSAGE = "No IP call in ori callee ID rules found.";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_MODAL_TITLE_ADD = "Add IP Call In OriCalleeID";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_MODAL_TITLE_EDIT = "Edit IP Call In OriCalleeID";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_ADD_NEW_LABEL = "+ Add New";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_ADD_NEW_EMPTY_LABEL = "+ Add New Rule";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_DELETE_LABEL = "Delete";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLEAR_ALL_LABEL = "Clear All";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_SAVE_LABEL = "Save";
+export const NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLOSE_LABEL = "Close";
+
+/** IP Call In OriCalleeID (manipulation_type: ip_in_oricalleeid) */
+export const IP_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS = {
   call_initiator:
-    "PCM trunk group for this rule (saved as call_initiator).\n" +
-    "Applies to inbound PSTN calls on the selected trunk when CallerID and CalleeID prefixes match.\n" +
-    "Required. Options loaded from configured PCM trunk groups.",
+    "SIP trunk group for this rule (saved as call_initiator).\n" +
+    "Applies to inbound IP calls on the selected trunk when CallerID and CalleeID prefixes match.\n" +
+    "Required. Options loaded from configured SIP trunk groups.",
 
   callerid_prefix:
     "Incoming CallerID match pattern (saved as callerid_prefix).\n" +

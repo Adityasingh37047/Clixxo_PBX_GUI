@@ -1044,6 +1044,7 @@ const Hosts = () => {
               </tbody>
             </table>
           </div>
+          {hosts.length > 0 && (
           <div
             style={{
               display: "flex",
@@ -1061,6 +1062,7 @@ const Hosts = () => {
               {hosts.length !== 1 ? "s" : ""}
             </span>
           </div>
+          )}
         </div>
       </div>
 

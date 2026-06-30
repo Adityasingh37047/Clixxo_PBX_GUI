@@ -374,7 +374,8 @@ const voicemailSelectSx = (isCompact) => ({
 });
 
 const voicemailCheckboxSx = {
-  padding: "1px",
+  padding: 0,
+  margin: 0,
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
@@ -388,7 +389,7 @@ const VoicemailFieldRow = ({ label, tooltipKey, isCompact, children }) => {
         display: "flex",
         flexDirection: stacked ? "column" : "row",
         alignItems: stacked ? "stretch" : "center",
-        justifyContent: stacked ? "flex-start" : "space-between",
+        justifyContent: "flex-start",
         padding: "8px 0",
         gap: stacked ? 8 : VOICEMAIL_FIELD_MIDDLE_GAP,
         width: "100%",
@@ -419,7 +420,9 @@ const VoicemailFieldRow = ({ label, tooltipKey, isCompact, children }) => {
           minWidth: 0,
           flexShrink: 0,
           display: "flex",
-          justifyContent: stacked ? "flex-start" : "flex-end",
+          justifyContent: "flex-start",
+          width: stacked ? "100%" : VOICEMAIL_INPUT_WIDTH,
+          marginLeft: stacked ? 0 : "auto",
         }}
       >
         {children}

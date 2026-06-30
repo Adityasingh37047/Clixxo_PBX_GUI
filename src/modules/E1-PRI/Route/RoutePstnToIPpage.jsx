@@ -4,17 +4,24 @@ import {
   ROUTE_PSTN_IP_INITIAL_FORM,
   ROUTE_PSTN_IP_TABLE_COLUMNS,
   ROUTE_PSTN_IP_FIELD_TOOLTIPS,
+  ROUTE_PSTN_IP_PAGE_BREADCRUMB_ROOT,
+  ROUTE_PSTN_IP_PAGE_BREADCRUMB_SECTION,
+  ROUTE_PSTN_IP_PAGE_TITLE,
+  ROUTE_PSTN_IP_EMPTY_MESSAGE,
+  ROUTE_PSTN_IP_MODAL_TITLE_ADD,
+  ROUTE_PSTN_IP_MODAL_TITLE_EDIT,
+  ROUTE_PSTN_IP_ADD_NEW_LABEL,
+  ROUTE_PSTN_IP_ADD_NEW_EMPTY_LABEL,
+  ROUTE_PSTN_IP_SAVE_LABEL,
+  ROUTE_PSTN_IP_CLOSE_LABEL,
 } from "../../../constants/RoutePstnToIPConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
   Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
   Alert,
   CircularProgress,
   Tooltip,
@@ -153,80 +160,75 @@ const routePstnToIpPageInnerStyle = {
   margin: "0 auto",
 };
 
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+// ── Native modal field UI ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
+const inputStyle = {
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
 const addHostFormPanelStyle = {
@@ -462,12 +464,12 @@ const RoutePstnToIpBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{ROUTE_PSTN_IP_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Route</span>
+    <span>{ROUTE_PSTN_IP_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      PSTN-&gt;IP Routing Rule
+      {ROUTE_PSTN_IP_PAGE_TITLE}
     </span>
   </div>
 );
@@ -951,7 +953,7 @@ const RoutePstnToIPPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || loading.fetch}
+                disabled={rules.length === 0 || loading.delete || loading.fetch}
                 style={routePstnToIpCancelBtnStyle}
               >
                 Inverse
@@ -986,7 +988,7 @@ const RoutePstnToIPPage = () => {
                 disabled={loading.fetch || loading.save}
                 style={routePstnToIpPrimaryBtnStyle}
               >
-                + Add New
+                {ROUTE_PSTN_IP_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -995,8 +997,9 @@ const RoutePstnToIPPage = () => {
             <TableListLoading />
           ) : rules.length === 0 ? (
             <TableListEmptyState
-              message="No rules configured!"
+              message={ROUTE_PSTN_IP_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
+              buttonLabel={ROUTE_PSTN_IP_ADD_NEW_EMPTY_LABEL}
             />
           ) : (
             <>
@@ -1159,25 +1162,20 @@ const RoutePstnToIPPage = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
-            maxWidth: "96vw",
-            mx: "auto",
+            maxWidth: "95vw",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-          },
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          }),
         }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
@@ -1189,13 +1187,21 @@ const RoutePstnToIPPage = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {formData.originalIndex !== undefined && formData.originalIndex > -1
-            ? "Edit PSTN->IP Routing Rule"
-            : "Add PSTN->IP Routing Rule"}
+            ? ROUTE_PSTN_IP_MODAL_TITLE_EDIT
+            : ROUTE_PSTN_IP_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={addHostFormPanelStyle}>
               <div
@@ -1209,74 +1215,7 @@ const RoutePstnToIPPage = () => {
                     tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}
                   >
                     {field.type === "select" ? (
-                      <FormControl size="small" fullWidth>
-                        <MuiSelect
-                          value={formData[field.key] || ""}
-                          onChange={(e) =>
-                            setFormData((p) => ({
-                              ...p,
-                              [field.key]: e.target.value,
-                            }))
-                          }
-                          displayEmpty
-                          sx={modalSelectSx}
-                        >
-                          <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                            Please select
-                          </MenuItem>
-                          {field.key === "callInitiator" ? (
-                            pcmTrunkGroups.length > 0 ? (
-                              pcmTrunkGroups.map((g) => {
-                                const id = g.group_id ?? g.id ?? g;
-                                return (
-                                  <MenuItem
-                                    key={String(id)}
-                                    value={String(id)}
-                                    sx={{ fontSize: 13 }}
-                                  >
-                                    PCM Trunk Group [{String(id)}]
-                                  </MenuItem>
-                                );
-                              })
-                            ) : (
-                              <MenuItem value="any" sx={{ fontSize: 13 }}>
-                                PCM Trunk Group [Any]
-                              </MenuItem>
-                            )
-                          ) : field.key === "callDestination" ? (
-                            sipTrunkGroups.length > 0 ? (
-                              sipTrunkGroups.map((g) => {
-                                const id = g.group_id ?? g.id ?? g;
-                                return (
-                                  <MenuItem
-                                    key={String(id)}
-                                    value={String(id)}
-                                    sx={{ fontSize: 13 }}
-                                  >
-                                    SIP Trunk Group [{String(id)}]
-                                  </MenuItem>
-                                );
-                              })
-                            ) : (
-                              <MenuItem value="any" sx={{ fontSize: 13 }}>
-                                SIP Trunk Group [Any]
-                              </MenuItem>
-                            )
-                          ) : (
-                            field.options?.map((opt) => (
-                              <MenuItem
-                                key={opt}
-                                value={opt}
-                                sx={{ fontSize: 13 }}
-                              >
-                                {opt}
-                              </MenuItem>
-                            ))
-                          )}
-                        </MuiSelect>
-                      </FormControl>
-                    ) : (
-                      <TextField
+                      <select
                         value={formData[field.key] || ""}
                         onChange={(e) =>
                           setFormData((p) => ({
@@ -1284,18 +1223,58 @@ const RoutePstnToIPPage = () => {
                             [field.key]: e.target.value,
                           }))
                         }
-                        size="small"
-                        fullWidth
-                        variant="outlined"
-                        inputProps={{
-                          style: {
-                            fontSize: 13,
-                            height: 32,
-                            padding: "0 8px",
-                            boxSizing: "border-box",
-                          },
-                        }}
-                        sx={modalTextFieldSx}
+                        style={selectStyle}
+                        {...inputInteraction}
+                      >
+                        <option value="" disabled>
+                          Please select
+                        </option>
+                        {field.key === "callInitiator" ? (
+                          pcmTrunkGroups.length > 0 ? (
+                            pcmTrunkGroups.map((g) => {
+                              const id = g.group_id ?? g.id ?? g;
+                              return (
+                                <option key={String(id)} value={String(id)}>
+                                  PCM Trunk Group [{String(id)}]
+                                </option>
+                              );
+                            })
+                          ) : (
+                            <option value="any">PCM Trunk Group [Any]</option>
+                          )
+                        ) : field.key === "callDestination" ? (
+                          sipTrunkGroups.length > 0 ? (
+                            sipTrunkGroups.map((g) => {
+                              const id = g.group_id ?? g.id ?? g;
+                              return (
+                                <option key={String(id)} value={String(id)}>
+                                  SIP Trunk Group [{String(id)}]
+                                </option>
+                              );
+                            })
+                          ) : (
+                            <option value="any">SIP Trunk Group [Any]</option>
+                          )
+                        ) : (
+                          field.options?.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={formData[field.key] || ""}
+                        onChange={(e) =>
+                          setFormData((p) => ({
+                            ...p,
+                            [field.key]: e.target.value,
+                          }))
+                        }
+                        style={inputStyle}
+                        {...inputInteraction}
                       />
                     )}
                   </E1PriFieldRow>
@@ -1320,21 +1299,21 @@ const RoutePstnToIPPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {loading.save ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              "Save"
+              ROUTE_PSTN_IP_SAVE_LABEL
             )}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={routePstnToIpModalCancelBtnStyle}
+            style={{ ...routePstnToIpModalCancelBtnStyle, height: 34 }}
           >
-            Cancel
+            {ROUTE_PSTN_IP_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

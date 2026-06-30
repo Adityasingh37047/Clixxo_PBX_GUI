@@ -1,5 +1,5 @@
 // Table columns for the main table view
-export const PSTN_CALL_IN_CALLERID_TABLE_COLUMNS = [
+export const IP_CALL_IN_CALLERID_TABLE_COLUMNS = [
   { key: 'check', label: 'Check' },
   { key: 'index', label: 'Index' },
   { key: 'call_initiator', label: 'Call Initiator' },
@@ -15,14 +15,14 @@ export const PSTN_CALL_IN_CALLERID_TABLE_COLUMNS = [
   { key: 'modify', label: 'Modify' },
 ];
 
-// Form fields for the modal (per screenshot)
-export const PSTN_CALL_IN_CALLERID_FIELDS = [
-  { name: 'call_initiator', label: 'Call Initiator:', type: 'select', options: [] },
+// Form fields for the modal
+export const IP_CALL_IN_CALLERID_FIELDS = [
+  { name: 'call_initiator', label: 'Call Initiator:', type: 'select', options: [] }, // Will be populated dynamically with SIP trunk groups
   { name: 'callerid_prefix', label: 'CallerID Prefix:', type: 'text' },
   { name: 'calleeid_prefix', label: 'CalleeID Prefix:', type: 'text' },
   { name: 'with_original_calleeid', label: 'With Original CalleeID:', type: 'select', options: [
     { value: 'Yes', label: 'Yes' },
-    { value: 'No', label: 'No' },
+    { value: 'No', label: 'No' }
   ] },
   { name: 'stripped_digits_from_left', label: 'Stripped Digits from Left:', type: 'number' },
   { name: 'stripped_digits_from_right', label: 'Stripped Digits from Right:', type: 'number' },
@@ -33,11 +33,11 @@ export const PSTN_CALL_IN_CALLERID_FIELDS = [
 ];
 
 // Initial form state for the modal
-export const PSTN_CALL_IN_CALLERID_INITIAL_FORM = {
-  call_initiator: '',
+export const IP_CALL_IN_CALLERID_INITIAL_FORM = {
+  call_initiator: '', // Will be set dynamically to first SIP trunk group
   callerid_prefix: '*',
   calleeid_prefix: '*',
-  with_original_calleeid: 'No',
+  with_original_calleeid: 'No', // Default to "No"
   stripped_digits_from_left: '0',
   stripped_digits_from_right: '0',
   reserved_digits_from_right: '20',
@@ -46,20 +46,36 @@ export const PSTN_CALL_IN_CALLERID_INITIAL_FORM = {
   description: '',
 };
 
-/** PSTN Call In CallerID (manipulation_type: pstn_in_callerid) */
-export const PSTN_CALL_IN_CALLERID_FIELD_TOOLTIPS = {
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION = "Num Manipulate";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_TITLE = "IP Call In CallerID";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_EMPTY_MESSAGE = "No IP call in caller ID rules found.";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_MODAL_TITLE_ADD = "Add IP Call In CallerID";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_MODAL_TITLE_EDIT = "Edit IP Call In CallerID";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_ADD_NEW_LABEL = "+ Add New";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_ADD_NEW_EMPTY_LABEL = "+ Add New Rule";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_DELETE_LABEL = "Delete";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_CLEAR_ALL_LABEL = "Clear All";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_SAVE_LABEL = "Save";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLERID_CLOSE_LABEL = "Close";
+
+const PREFIX_MATCH =
+  "Match pattern for this leg. Only digits (0-9) and * are allowed. Default: *.";
+
+/** IP Call In CallerID (manipulation_type: ip_in_callerid) */
+export const IP_CALL_IN_CALLERID_FIELD_TOOLTIPS = {
   call_initiator:
-    "PCM trunk group for this rule (saved as call_initiator).\n" +
-    "Applies to inbound PSTN calls on the selected trunk when CallerID and CalleeID prefixes match.\n" +
-    "Required. Options loaded from configured PCM trunk groups.",
+    "SIP trunk group for this rule (saved as call_initiator).\n" +
+    "Applies to inbound IP calls on the selected trunk when CallerID and CalleeID prefixes match.\n" +
+    "Required. Options loaded from configured SIP trunk groups.",
 
   callerid_prefix:
     "Incoming CallerID match pattern (saved as callerid_prefix).\n" +
-    "Only digits (0-9) and * are allowed. Default: *. Required.",
+    PREFIX_MATCH + "\nRequired.",
 
   calleeid_prefix:
     "Incoming CalleeID match pattern (saved as calleeid_prefix).\n" +
-    "Only digits (0-9) and * are allowed. Default: *. Required.",
+    PREFIX_MATCH + "\nRequired.",
 
   with_original_calleeid:
     "Whether the original callee ID is kept (saved as with_original_calleeid).\n" +

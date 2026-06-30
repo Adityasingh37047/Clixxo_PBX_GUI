@@ -586,6 +586,15 @@ const SystemInfo = () => {
     );
     return () => clearInterval(interval);
   }, [loadSystemInfo]);
+
+  useEffect(() => {
+    const mainEl = document.querySelector("main.app-main-scroll");
+    if (!mainEl) return undefined;
+    mainEl.classList.add("notepad-scrollbar");
+    return () => {
+      mainEl.classList.remove("notepad-scrollbar");
+    };
+  }, []);
   // Extract top-level stats from SYSTEM_INFO
   const getMetric = (keywords) => {
     const item = (SYSTEM_INFO || []).find((i) =>

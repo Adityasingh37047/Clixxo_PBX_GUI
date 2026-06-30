@@ -1,27 +1,33 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   PSTN_CALL_IN_ORICALLEEID_FIELDS,
   PSTN_CALL_IN_ORICALLEEID_TABLE_COLUMNS,
   PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM,
   PSTN_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS,
-} from "../../../constants/PSTNCallInOriCalleeIDConstants";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_ROOT,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_TITLE,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_EMPTY_MESSAGE,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_MODAL_TITLE_ADD,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_MODAL_TITLE_EDIT,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_ADD_NEW_LABEL,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_ADD_NEW_EMPTY_LABEL,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_SAVE_LABEL,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_CLOSE_LABEL,
+} from "../../../constants/E1PriPSTNCallInOriCalleeIDConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
-  CircularProgress,
-  Checkbox,
   Alert,
+  CircularProgress,
   Tooltip,
-  useMediaQuery,
 } from "@mui/material";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   listNumberManipulations,
   createNumberManipulation,
@@ -29,7 +35,9 @@ import {
   deleteNumberManipulation,
   listPstnGroups,
 } from "../../../api/apiService";
-// ── Page-local field label tooltip UI (not shared) ──
+
+const MANIPULATION_TYPE = "pstn_in_oricalleeid";
+
 const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
@@ -90,7 +98,36 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-const PSTN_CALL_IN_ORICALLEEID_COMPACT_MQ = "(max-width: 768px)";
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 170,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+  </div>
+);
 
 const C = {
   pageBg: "#f8fafc",
@@ -100,11 +137,103 @@ const C = {
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
   accent: "#3E5475",
   amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
+};
+
+const CARD_RADIUS = 10;
+
+const pageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
+  },
+};
+
+const inputStyle = {
+  width: "100%",
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
+};
+
+const formPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
 };
 
 const Btn = ({
@@ -137,11 +266,6 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
     },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: `0.5px solid #fecaca`,
-    },
     outline: {
       background: C.cardBg,
       color: C.labelText,
@@ -153,7 +277,6 @@ const Btn = ({
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
-      danger: "#fca5a5",
       outline: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
@@ -161,7 +284,6 @@ const Btn = ({
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
       cancel: "#a3b1c2",
-      danger: "#f87171",
       outline: "#d1d9e6",
       default: "#d1d5db",
     }[variant] || "#d1d5db";
@@ -185,13 +307,14 @@ const Btn = ({
   };
 
   const Component = component || "button";
+
   return (
     <Component
       type={type}
       form={form}
-      title={title}
       onClick={onClick}
       disabled={disabled}
+      title={title}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -235,40 +358,15 @@ const Btn = ({
   );
 };
 
-const PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS = 10;
-
-const pstnCallInOriCalleeIdPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pstnCallInOriCalleeIdPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const pstnCallInOriCalleeIdFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  padding: 20,
-};
-
-const pstnCallInOriCalleeIdCardStyle = {
+const cardStyle = {
   background: "#ffffff",
-  borderRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderRadius: CARD_RADIUS,
   overflow: "hidden",
   border: `1px solid ${C.cardBorder}`,
   boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const pstnCallInOriCalleeIdToolbarStyle = {
+const toolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -278,23 +376,23 @@ const pstnCallInOriCalleeIdToolbarStyle = {
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
-  borderTopRightRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
-const pstnCallInOriCalleeIdFooterStyle = {
+const paginationStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
   borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
-  borderBottomRightRadius: PSTN_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
   overflow: "hidden",
 };
 
-const pstnCallInOriCalleeIdSelectedBadgeStyle = {
+const selectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -304,7 +402,7 @@ const pstnCallInOriCalleeIdSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const pstnCallInOriCalleeIdCancelBtnStyle = {
+const cancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -312,14 +410,14 @@ const pstnCallInOriCalleeIdCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pstnCallInOriCalleeIdPrimaryBtnStyle = {
+const primaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const pstnCallInOriCalleeIdModalCancelBtnStyle = {
+const modalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -328,7 +426,7 @@ const pstnCallInOriCalleeIdModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pstnCallInOriCalleeIdPageBadgeStyle = {
+const pageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -338,7 +436,7 @@ const pstnCallInOriCalleeIdPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const PSTNCallInOriCalleeIdBreadcrumb = () => (
+const Breadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -351,12 +449,12 @@ const PSTNCallInOriCalleeIdBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Num Manipulate</span>
+    <span>{NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      PSTN Call In OriCalleeID
+      {NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_TITLE}
     </span>
   </div>
 );
@@ -374,12 +472,7 @@ const TableListLoading = () => (
   </div>
 );
 
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
+const TableListEmptyState = ({ message, onAddNew, buttonLabel }) => (
   <div
     style={{
       display: "flex",
@@ -396,30 +489,23 @@ const TableListEmptyState = ({
         color: "#3E5475",
         fontSize: 13,
         fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
+        marginBottom: 16,
       }}
     >
       {message}
     </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
+    <Btn
+      variant="cancel"
+      onClick={onAddNew}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+    >
+      {buttonLabel}
+    </Btn>
   </div>
 );
 
-const PstnCallInOriCalleeIdPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-}) => (
-  <div style={pstnCallInOriCalleeIdFooterStyle}>
+const Pagination = ({ page, totalPages, recordCount, onPageChange }) => (
+  <div style={paginationStyle}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} record
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -432,7 +518,7 @@ const PstnCallInOriCalleeIdPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={pstnCallInOriCalleeIdPageBadgeStyle}>
+      <span style={pageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -445,81 +531,6 @@ const PstnCallInOriCalleeIdPagination = ({
     </div>
   </div>
 );
-
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
-};
-
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -555,7 +566,7 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const pstnCallInOriCalleeIdTableCheckboxSx = {
+const tableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
@@ -563,11 +574,8 @@ const pstnCallInOriCalleeIdTableCheckboxSx = {
 };
 
 const PSTNCallInOriCalleeID = () => {
-  const isCompact = useMediaQuery(PSTN_CALL_IN_ORICALLEEID_COMPACT_MQ);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState(
-    PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM,
-  );
+  const [formData, setFormData] = useState(PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM);
   const [rules, setRules] = useState([]);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
@@ -584,41 +592,28 @@ const PSTNCallInOriCalleeID = () => {
     delete: false,
   });
   const [editIndex, setEditIndex] = useState(null);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [tableMinWidth, setTableMinWidth] = useState("100%");
 
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
-  // Replace default alert with toast
   const alert = (msg) => {
     const isErr =
       /error|failed|required|please/i.test(msg) && !/successfully/i.test(msg);
-    showToast(msg, isErr ? "error" : "success");
+    showMessage(isErr ? "error" : "success", msg);
   };
 
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
-
-  // Fetch PCM Trunk Groups for Call Initiator dropdown
   const fetchPcmTrunkGroups = async () => {
     try {
       const response = await listPstnGroups();
-      console.log("PCM Trunk Groups API Response:", response);
       if (response.response && response.message) {
         const pcmGroups = Array.isArray(response.message)
           ? response.message
           : [response.message];
-        console.log("PCM Groups data:", pcmGroups);
         setPcmTrunkGroups(pcmGroups);
-
-        // Set default value for new forms if no groups are loaded yet
         if (pcmGroups.length > 0 && formData.call_initiator === "") {
           const firstGroupId =
             pcmGroups[0].group_id || pcmGroups[0].id || pcmGroups[0];
@@ -628,7 +623,6 @@ const PSTNCallInOriCalleeID = () => {
           }));
         }
       } else {
-        console.log("No PCM groups data found");
         setPcmTrunkGroups([]);
       }
     } catch (error) {
@@ -642,19 +636,13 @@ const PSTNCallInOriCalleeID = () => {
     }
   };
 
-  // Fetch Number Manipulations
   const fetchNumberManipulations = async () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
-      console.log("Fetching number manipulations...");
-      const response = await listNumberManipulations("pstn_in_oricalleeid");
-      console.log("Fetch response:", response);
-
+      const response = await listNumberManipulations(MANIPULATION_TYPE);
       if (response.response && response.message) {
-        console.log("Number manipulations data:", response.message);
         setRules(response.message);
       } else {
-        console.log("No data in response, setting empty array");
         setRules([]);
       }
     } catch (error) {
@@ -674,9 +662,36 @@ const PSTNCallInOriCalleeID = () => {
     }
   };
 
-  const handleOpenModal = (item = null, index = -1) => {
+  useEffect(() => {
+    fetchNumberManipulations();
+    fetchPcmTrunkGroups();
+  }, []);
+
+  const handleRefresh = async () => {
+    await fetchNumberManipulations();
+  };
+
+  useEffect(() => {
+    const updateTableWidthForZoom = () => {
+      const scale = window.visualViewport?.scale || 1;
+      setTableMinWidth(scale >= 1.15 ? 900 : "100%");
+    };
+
+    updateTableWidthForZoom();
+    window.addEventListener("resize", updateTableWidthForZoom);
+    window.visualViewport?.addEventListener("resize", updateTableWidthForZoom);
+
+    return () => {
+      window.removeEventListener("resize", updateTableWidthForZoom);
+      window.visualViewport?.removeEventListener(
+        "resize",
+        updateTableWidthForZoom,
+      );
+    };
+  }, []);
+
+  const handleOpenModal = (item = null) => {
     if (item) {
-      // Editing existing item
       setFormData({
         ...item,
         with_original_calleeid: item.with_original_calleeid || "No",
@@ -698,7 +713,6 @@ const PSTNCallInOriCalleeID = () => {
       });
       setEditIndex(item.id);
     } else {
-      // Adding new item - set default call_initiator if available
       const defaultForm = { ...PSTN_CALL_IN_ORICALLEEID_INITIAL_FORM };
       if (pcmTrunkGroups.length > 0) {
         const firstGroupId =
@@ -712,10 +726,10 @@ const PSTNCallInOriCalleeID = () => {
     }
     setIsModalOpen(true);
   };
+
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
-    // Validation: required fields only (no With Original CalleeID visible here)
     if (!formData.call_initiator) {
       alert("Call Initiator is required.");
       return;
@@ -729,7 +743,6 @@ const PSTNCallInOriCalleeID = () => {
       return;
     }
 
-    // Normalize optional numeric fields to '0' when empty
     const normalized = {
       ...formData,
       with_original_calleeid: formData.with_original_calleeid || "No",
@@ -754,13 +767,12 @@ const PSTNCallInOriCalleeID = () => {
     try {
       let response;
       if (editIndex !== null) {
-        // Update existing - ensure we have the ID
         const updateData = {
           id: editIndex,
           call_initiator: normalized.call_initiator,
           callerid_prefix: normalized.callerid_prefix,
           calleeid_prefix: normalized.calleeid_prefix,
-          with_original_calleeid: normalized.with_original_calleeid, // Hidden field required by backend
+          with_original_calleeid: normalized.with_original_calleeid,
           stripped_digits_from_left: normalized.stripped_digits_from_left,
           stripped_digits_from_right: normalized.stripped_digits_from_right,
           reserved_digits_from_right: normalized.reserved_digits_from_right,
@@ -768,28 +780,17 @@ const PSTNCallInOriCalleeID = () => {
           suffix_to_add: normalized.suffix_to_add,
           description: normalized.description,
         };
-        console.log("Update request data:", updateData);
-        response = await updateNumberManipulation(
-          updateData,
-          "pstn_in_oricalleeid",
-        );
-        console.log("Update response:", response);
+        response = await updateNumberManipulation(updateData, MANIPULATION_TYPE);
         if (response.response) {
           alert(
             response.message || "Number manipulation updated successfully!",
           );
-
-          // Try to reload data, but don't fail if it doesn't work
           try {
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Allow backend to process
-            console.log("Attempting to reload after successful update...");
+            await new Promise((resolve) => setTimeout(resolve, 500));
             await fetchNumberManipulations();
-            console.log("Reload successful after update");
-          } catch (reloadError) {
-            console.log("Updating item in local state as fallback");
-            // Update the item in local state
+          } catch {
             setRules((prev) =>
-              prev.map((rule, idx) =>
+              prev.map((rule) =>
                 rule.id === editIndex ? { ...rule, ...normalized } : rule,
               ),
             );
@@ -798,31 +799,22 @@ const PSTNCallInOriCalleeID = () => {
           alert("Failed to update number manipulation");
         }
       } else {
-        // Create new
-        console.log("Create request data:", normalized);
         response = await createNumberManipulation(
           normalized,
-          "pstn_in_oricalleeid",
+          MANIPULATION_TYPE,
         );
-        console.log("Create response:", response);
         if (response.response) {
           alert(
             response.message || "Number manipulation created successfully!",
           );
-
-          // Try to reload data, but don't fail if it doesn't work
           try {
-            await new Promise((resolve) => setTimeout(resolve, 500)); // Allow backend to process
-            console.log("Attempting to reload after successful creation...");
+            await new Promise((resolve) => setTimeout(resolve, 500));
             await fetchNumberManipulations();
-            console.log("Reload successful after creation");
-          } catch (reloadError) {
-            console.log("Adding item to local state as fallback");
-            // Add the new item to local state
+          } catch {
             const newItem = {
               ...normalized,
-              id: Date.now(), // Temporary ID for local state
-              manipulation_type: "pstn_in_oricalleeid",
+              id: Date.now(),
+              manipulation_type: MANIPULATION_TYPE,
             };
             setRules((prev) => [...prev, newItem]);
           }
@@ -830,7 +822,6 @@ const PSTNCallInOriCalleeID = () => {
           alert("Failed to create number manipulation");
         }
       }
-
       handleCloseModal();
     } catch (error) {
       console.error("Error saving number manipulation:", error);
@@ -844,11 +835,6 @@ const PSTNCallInOriCalleeID = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handlePageChange = (newPage) =>
     setPage(Math.max(1, Math.min(totalPages, newPage)));
 
@@ -860,6 +846,7 @@ const PSTNCallInOriCalleeID = () => {
         : [...sel, realIdx],
     );
   };
+
   const handleCheckAll = () => setSelected(rules.map((_, idx) => idx));
   const handleUncheckAll = () => setSelected([]);
   const handleInverse = () =>
@@ -868,13 +855,12 @@ const PSTNCallInOriCalleeID = () => {
         .map((_, idx) => (!selected.includes(idx) ? idx : null))
         .filter((i) => i !== null),
     );
+
   const handleDelete = async () => {
     if (selected.length === 0) {
       alert("Please select items to delete");
       return;
     }
-
-    // Show browser confirmation dialog
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selected.length} selected item(s)?`,
     );
@@ -882,11 +868,9 @@ const PSTNCallInOriCalleeID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      console.log("Deleting selected items:", selected);
       const deletePromises = selected.map(async (idx) => {
         const item = rules[idx];
         if (item && item.id) {
-          console.log("Deleting item with ID:", item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -901,29 +885,18 @@ const PSTNCallInOriCalleeID = () => {
       ).length;
       const failCount = results.length - successCount;
 
-      console.log("Delete results:", results);
-
       if (successCount > 0) {
         alert(`${successCount} item(s) deleted successfully`);
-
-        // Try to reload data, but don't fail if it doesn't work
         try {
           await fetchNumberManipulations();
-        } catch (reloadError) {
-          console.warn(
-            "Failed to reload after delete, removing from local state:",
-            reloadError,
-          );
-          // Remove deleted items from local state as fallback
-          const selectedItems = selected.map((idx) => rules[idx]);
-          const selectedIds = selectedItems.map((item) => item.id);
+        } catch {
+          const selectedIds = selected.map((idx) => rules[idx].id);
           setRules((prev) =>
             prev.filter((item) => !selectedIds.includes(item.id)),
           );
         }
-        setSelected([]); // Clear selection
+        setSelected([]);
       }
-
       if (failCount > 0) {
         alert(`Failed to delete ${failCount} item(s)`);
       }
@@ -944,7 +917,6 @@ const PSTNCallInOriCalleeID = () => {
       alert("No data to clear");
       return;
     }
-
     if (
       !window.confirm(
         "Are you sure you want to delete ALL number manipulations? This action cannot be undone.",
@@ -955,13 +927,8 @@ const PSTNCallInOriCalleeID = () => {
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      console.log(
-        "Clearing all number manipulations:",
-        rules.map((item) => item.id),
-      );
       const deletePromises = rules.map(async (item) => {
         if (item && item.id) {
-          console.log("Deleting item:", item.id);
           return await deleteNumberManipulation(item.id);
         }
         return null;
@@ -978,22 +945,14 @@ const PSTNCallInOriCalleeID = () => {
 
       if (successCount > 0) {
         alert(`All ${successCount} item(s) deleted successfully`);
-
-        // Try to reload data, but don't fail if it doesn't work
         try {
           await fetchNumberManipulations();
-        } catch (reloadError) {
-          console.warn(
-            "Failed to reload after clear all, clearing local state:",
-            reloadError,
-          );
-          // Clear all items from local state as fallback
+        } catch {
           setRules([]);
         }
         setSelected([]);
         setPage(1);
       }
-
       if (failCount > 0) {
         alert(`Failed to delete ${failCount} item(s)`);
       }
@@ -1009,72 +968,6 @@ const PSTNCallInOriCalleeID = () => {
     }
   };
 
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
-  // Load data on component mount
-  useEffect(() => {
-    fetchNumberManipulations();
-    fetchPcmTrunkGroups();
-  }, []);
-
-  // Refresh function
-  const handleRefresh = async () => {
-    await fetchNumberManipulations();
-  };
-
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [rules, page]);
-
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
-  // Helper: label is PCM Trunk Group [group_id]
   const getPcmGroupIdLabel = (groupId) => {
     const group = pcmTrunkGroups.find(
       (g) => String(g.group_id || g.id || g) === String(groupId),
@@ -1083,9 +976,19 @@ const PSTNCallInOriCalleeID = () => {
     return String(gid);
   };
 
-  // Get updated fields with PCM trunk groups
-  const getUpdatedFields = () => {
-    return PSTN_CALL_IN_ORICALLEEID_FIELDS.map((field) => {
+  const formatDisplayValue = (key, value, rowIndex = 0) => {
+    if (key === "index") {
+      return (page - 1) * itemsPerPage + rowIndex + 1;
+    }
+    if (value === undefined || value === null || value === "") return "--";
+    if (key === "call_initiator") {
+      return `PCM Trunk Group [${getPcmGroupIdLabel(value)}]`;
+    }
+    return String(value);
+  };
+
+  const getUpdatedFields = () =>
+    PSTN_CALL_IN_ORICALLEEID_FIELDS.map((field) => {
       if (field.name === "call_initiator") {
         return {
           ...field,
@@ -1097,20 +1000,14 @@ const PSTNCallInOriCalleeID = () => {
       }
       return field;
     });
-  };
 
   return (
-    <div
-      style={{
-        ...pstnCallInOriCalleeIdPageWrapStyle,
-        ...(isCompact ? { padding: 8 } : {}),
-      }}
-    >
-      <div style={pstnCallInOriCalleeIdPageInnerStyle}>
-        {toast.msg && (
+    <div style={pageWrapStyle}>
+      <div style={pageInnerStyle}>
+        {message.text && (
           <Alert
-            severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
             sx={{
               position: "fixed",
               top: 20,
@@ -1120,21 +1017,14 @@ const PSTNCallInOriCalleeID = () => {
               boxShadow: 3,
             }}
           >
-            {toast.msg}
+            {message.text}
           </Alert>
         )}
 
-        <PSTNCallInOriCalleeIdBreadcrumb />
+        <Breadcrumb />
 
-        <div style={pstnCallInOriCalleeIdCardStyle}>
-          <div
-            style={{
-              ...pstnCallInOriCalleeIdToolbarStyle,
-              ...(isCompact
-                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
-                : {}),
-            }}
-          >
+        <div style={cardStyle}>
+          <div style={toolbarStyle}>
             <div
               style={{
                 display: "flex",
@@ -1145,7 +1035,7 @@ const PSTNCallInOriCalleeID = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={pstnCallInOriCalleeIdSelectedBadgeStyle}>
+                <span style={selectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1161,16 +1051,16 @@ const PSTNCallInOriCalleeID = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.fetch || loading.delete || rules.length === 0}
-                style={pstnCallInOriCalleeIdCancelBtnStyle}
+                disabled={rules.length === 0 || loading.delete || loading.fetch}
+                style={cancelBtnStyle}
               >
                 Inverse
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleDelete}
-                disabled={loading.delete || selected.length === 0}
-                style={pstnCallInOriCalleeIdCancelBtnStyle}
+                disabled={selected.length === 0 || loading.delete}
+                style={cancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1181,16 +1071,20 @@ const PSTNCallInOriCalleeID = () => {
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
-                disabled={loading.fetch || loading.delete || rules.length === 0}
-                style={pstnCallInOriCalleeIdCancelBtnStyle}
+                disabled={rules.length === 0 || loading.delete}
+                style={cancelBtnStyle}
               >
-                Clear All
+                {loading.delete ? (
+                  <CircularProgress size={11} style={{ color: "#374151" }} />
+                ) : (
+                  "Clear All"
+                )}
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleRefresh}
                 disabled={loading.fetch}
-                style={pstnCallInOriCalleeIdCancelBtnStyle}
+                style={cancelBtnStyle}
               >
                 {loading.fetch ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1198,12 +1092,12 @@ const PSTNCallInOriCalleeID = () => {
                 Refresh
               </Btn>
               <Btn
-                variant="primary"
                 onClick={() => handleOpenModal()}
+                variant="primary"
                 disabled={loading.fetch || loading.save}
-                style={pstnCallInOriCalleeIdPrimaryBtnStyle}
+                style={primaryBtnStyle}
               >
-                + Add New
+                {NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -1212,48 +1106,31 @@ const PSTNCallInOriCalleeID = () => {
             <TableListLoading />
           ) : rules.length === 0 ? (
             <TableListEmptyState
-              message="No PSTN call in ori callee ID rules found."
+              message={NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
+              buttonLabel={
+                NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_ADD_NEW_EMPTY_LABEL
+              }
             />
           ) : (
             <>
-              <div
-                ref={tableScrollRef}
-                onScroll={handleTableScroll}
-                style={{
-                  overflowX: "auto",
-                  overflowY: "auto",
-                  flex: 1,
-                  maxHeight: 460,
-                }}
-              >
+              <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
                 <table
                   style={{
                     width: "100%",
                     borderCollapse: "separate",
                     borderSpacing: 0,
                     tableLayout: "auto",
-                    minWidth: 900,
-                    ...(isCompact ? { minWidth: 720 } : {}),
+                    minWidth: tableMinWidth,
                   }}
                 >
                   <thead>
                     <tr>
-                      <TH
-                        style={{
-                          width: 40,
-                          padding: 0,
-                          borderLeft: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
+                      <TH style={{ width: 40, padding: 0, borderLeft: "none" }}>
                         <Checkbox
                           size="small"
                           checked={
-                            rules.length > 0 &&
-                            selected.length === rules.length
+                            rules.length > 0 && selected.length === rules.length
                           }
                           indeterminate={
                             selected.length > 0 &&
@@ -1263,45 +1140,13 @@ const PSTNCallInOriCalleeID = () => {
                             if (e.target.checked) handleCheckAll();
                             else handleUncheckAll();
                           }}
-                          sx={pstnCallInOriCalleeIdTableCheckboxSx}
+                          sx={tableCheckboxSx}
                         />
                       </TH>
-                      <TH
-                        style={{
-                          width: 36,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        ID
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Call Initiator
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        CallerID Prefix
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        CalleeID Prefix
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Stripped Digits from Right
-                      </TH>
-                      <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                        Reserved Digits from Right
-                      </TH>
-                      <TH
-                        style={{
-                          width: 70,
-                          borderRight: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        Modify
-                      </TH>
+                      {PSTN_CALL_IN_ORICALLEEID_TABLE_COLUMNS.map((col) => (
+                        <TH key={col.key}>{col.label}</TH>
+                      ))}
+                      <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
                     </tr>
                   </thead>
                   <tbody>
@@ -1338,8 +1183,8 @@ const PSTNCallInOriCalleeID = () => {
                             style={{
                               ...tdStyle,
                               background: rowBg,
-                              width: 36,
                               borderLeft: "none",
+                              width: 36,
                               ...lastRowCellStyle,
                             }}
                           >
@@ -1348,70 +1193,26 @@ const PSTNCallInOriCalleeID = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(idx)}
                               disabled={loading.delete}
-                              sx={pstnCallInOriCalleeIdTableCheckboxSx}
+                              sx={tableCheckboxSx}
                             />
                           </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {realIdx + 1}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            PCM Trunk Group [
-                            {getPcmGroupIdLabel(item.call_initiator)}]
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.callerid_prefix}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.calleeid_prefix}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.stripped_digits_from_right}
-                          </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
-                              fontWeight: 400,
-                              ...lastRowCellStyle,
-                            }}
-                          >
-                            {item.reserved_digits_from_right}
-                          </td>
+                          {PSTN_CALL_IN_ORICALLEEID_TABLE_COLUMNS.map((col) => (
+                            <td
+                              key={col.key}
+                              style={{
+                                ...tdStyle,
+                                background: rowBg,
+                                fontWeight: 400,
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {formatDisplayValue(
+                                col.key,
+                                item[col.key],
+                                idx,
+                              )}
+                            </td>
+                          ))}
                           <td
                             style={{
                               ...tdStyle,
@@ -1428,6 +1229,9 @@ const PSTNCallInOriCalleeID = () => {
                             >
                               <EditDocumentIcon
                                 titleAccess="Edit"
+                                onClick={() => {
+                                  if (!loading.delete) handleOpenModal(item);
+                                }}
                                 style={{
                                   cursor: loading.delete
                                     ? "not-allowed"
@@ -1436,10 +1240,6 @@ const PSTNCallInOriCalleeID = () => {
                                   fontSize: 22,
                                   opacity: loading.delete ? 0.4 : 0.7,
                                   transition: "opacity 0.15s ease",
-                                }}
-                                onClick={() => {
-                                  if (!loading.delete)
-                                    handleOpenModal(item, realIdx);
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!loading.delete)
@@ -1459,7 +1259,7 @@ const PSTNCallInOriCalleeID = () => {
                 </table>
               </div>
 
-              <PstnCallInOriCalleeIdPagination
+              <Pagination
                 page={page}
                 totalPages={totalPages}
                 recordCount={pagedRules.length}
@@ -1477,24 +1277,17 @@ const PSTNCallInOriCalleeID = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
-            maxWidth: "96vw",
-            mx: "auto",
+            maxWidth: "95vw",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-          },
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1509,85 +1302,83 @@ const PSTNCallInOriCalleeID = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editIndex !== null
-            ? "Edit PSTN Call In OriCalleeID"
-            : "Add PSTN Call In OriCalleeID"}
+            ? NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_MODAL_TITLE_EDIT
+            : NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div style={pstnCallInOriCalleeIdFormPanelStyle}>
-            {getUpdatedFields().map((field) => (
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={formPanelStyle}>
               <div
-                key={field.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 14 }}
               >
-                <E1PriFieldLabel
-                  tooltipKey={field.name}
-                  tooltips={PSTN_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS}
-                  style={{
-                    fontSize: 13,
-                    width: 170,
-                    lineHeight: 1.2,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                    display: "inline-block",
-                  }}
-                >
-                  {field.label}
-                </E1PriFieldLabel>
-                <div style={{ width: "min(100%, 320px)" }}>
-                  {field.type === "select" ? (
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
+                {getUpdatedFields().map((field) => (
+                  <E1PriFieldRow
+                    key={field.name}
+                    label={field.label}
+                    tooltipKey={field.name}
+                    tooltips={PSTN_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS}
+                  >
+                    {field.type === "select" ? (
+                      <select
+                        name={field.name}
                         value={formData[field.name] || ""}
                         onChange={(e) =>
-                          handleInputChange({
-                            target: { name: field.name, value: e.target.value },
-                          })
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.name]: e.target.value,
+                          }))
                         }
-                        variant="outlined"
-                        sx={modalSelectSx}
+                        style={selectStyle}
+                        {...inputInteraction}
                       >
-                        {field.options.map((opt) => (
-                          <MenuItem
-                            key={opt.value}
-                            value={opt.value}
-                            sx={{ fontSize: 14 }}
-                          >
-                            {opt.label}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  ) : (
-                    <TextField
-                      type={field.type || "text"}
-                      name={field.name}
-                      value={formData[field.name] || ""}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          height: 32,
-                          padding: "0 8px",
-                          boxSizing: "border-box",
-                        },
-                      }}
-                      sx={modalTextFieldSx}
-                    />
-                  )}
-                </div>
+                        {field.name === "call_initiator" ? (
+                          field.options.length > 0 ? (
+                            field.options.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))
+                          ) : (
+                            <option value="">PCM Trunk Group [Any]</option>
+                          )
+                        ) : (
+                          field.options?.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type || "text"}
+                        name={field.name}
+                        value={formData[field.name] || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            [field.name]: e.target.value,
+                          }))
+                        }
+                        style={inputStyle}
+                        {...inputInteraction}
+                      />
+                    )}
+                  </E1PriFieldRow>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </DialogContent>
         <DialogActions
@@ -1606,21 +1397,21 @@ const PSTNCallInOriCalleeID = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            {loading.save
-              ? "Saving..."
-              : editIndex !== null
-                ? "Update"
-                : "Save"}
+            {loading.save ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={pstnCallInOriCalleeIdModalCancelBtnStyle}
+            style={{ ...modalCancelBtnStyle, height: 34 }}
           >
-            Close
+            {NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

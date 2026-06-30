@@ -3,6 +3,11 @@ import {
   ROUTE_SETTINGS_OPTIONS,
   ROUTE_SETTINGS_DEFAULTS,
   ROUTE_ROUTING_PARAMETER_TOOLTIPS,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION,
+  ROUTE_ROUTING_PARAMETER_PAGE_TITLE,
+  ROUTE_ROUTING_PARAMETER_CARD_TITLE,
+  ROUTE_ROUTING_PARAMETER_SAVE_LABEL,
 } from "../../../constants/RouteRoutingParameterPageConstants";
 import { CircularProgress, Alert, Tooltip } from "@mui/material";
 
@@ -101,7 +106,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -317,133 +322,87 @@ const nativeFieldSelectStyle = {
   appearance: "auto",
   cursor: "pointer",
 };
-const advancedPageWrapStyle = {
+const pageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
-const advancedPageInnerStyle = {
+const pageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
+  margin: "0 auto",
 };
-const advancedTableContainerStyle = {
+
+const cardStyle = {
   width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
   background: C.cardBg,
-  border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
   overflow: "hidden",
-  boxSizing: "border-box",
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: C.cardShadow,
+  display: "flex",
+  flexDirection: "column",
 };
 
-const advancedFormInlineFooterStyle = {
+const cardTitleBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  padding: "10px 28px",
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+  background: C.cardBg,
+};
+
+const formBodyStyle = {
+  padding: "20px 28px 8px",
   display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
+  flexDirection: "column",
+  maxWidth: 720,
+  width: "100%",
+  margin: "0 auto",
+  boxSizing: "border-box",
+  gap: 10,
+};
+
+const footerStyle = {
+  display: "flex",
   justifyContent: "flex-end",
   gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "12px 28px",
+  padding: "10px 28px",
   borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
   boxSizing: "border-box",
-  flexShrink: 0,
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const formColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-  minWidth: 0,
-  padding: "18px 32px 16px",
-  background: C.cardBg,
-};
-
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 500,
-  color: C.labelText,
-  marginBottom: 0,
-};
-
-const pageTitleStyle = {
-    fontSize: 22,
-  fontWeight: 700,
-  color: C.labelText,
-  margin: "0 0 6px 0",
-  letterSpacing: "-0.02em",
-  flexShrink: 0,
-};
-
-const RouteBreadcrumb = ({ current }) => (
+const RouteRoutingParameterBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 10,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
-      flexShrink: 0,
     }}
   >
-    <span>E1-PRI</span>
+    <span>{ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Route</span>
+    <span>{ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {ROUTE_ROUTING_PARAMETER_PAGE_TITLE}
+    </span>
   </div>
 );
-
-const AdvancedPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle}>
-    <div style={advancedPageInnerStyle}>{children}</div>
-  </div>
-);
-
-const valueColStyle = {
-  flex: "0 0 400px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-};
-
-
-const controlSlotStyle = {
-  width: 400,
-  maxWidth: "100%",
-  flexShrink: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-};
 
 const fieldSelectStyle = {
   ...nativeFieldSelectStyle,
@@ -495,7 +454,8 @@ const RouteRoutingParameterPage = () => {
   ];
 
   return (
-    <AdvancedPageShell>
+    <div style={pageWrapStyle}>
+      <div style={pageInnerStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -514,56 +474,41 @@ const RouteRoutingParameterPage = () => {
         </Alert>
       )}
 
-      
-      <RouteBreadcrumb current="Route Settings" />
+      <RouteRoutingParameterBreadcrumb />
 
-      <div style={advancedTableContainerStyle}>
-        <div style={formColumnStyle}>
-          <div style={dashboardSectionTitleStyle}>Route Settings</div>
-          <div
-  style={{
-    width: "calc(100% + 80px)", // agar left-right padding 40px hai
-    marginLeft: -40,
-    marginRight: -40,
-    borderBottom: "1px solid #d9dee7",
-    marginTop: -6,
-    marginBottom: 24,
-  }}
-/>
-
-          <div
-            className="flex flex-col"
-            style={{ width: "100%", gap: 10 }}
-          >
-            {routeSettingRows.map((row) => (
-              <RouteFieldRow key={row.name} label={row.label} tooltipKey={row.tooltipKey}>
-                <div style={valueColStyle}>
-                  <div style={controlSlotStyle}>{renderSelect(row.name)}</div>
-                </div>
-              </RouteFieldRow>
-            ))}
-          </div>
+      <div style={cardStyle}>
+        <div style={cardTitleBarStyle}>
+          {ROUTE_ROUTING_PARAMETER_CARD_TITLE}
         </div>
 
-        <div style={advancedFormInlineFooterStyle}>
+        <div style={formBodyStyle}>
+            {routeSettingRows.map((row) => (
+              <RouteFieldRow key={row.name} label={row.label} tooltipKey={row.tooltipKey}>
+                {renderSelect(row.name)}
+              </RouteFieldRow>
+            ))}
+        </div>
+
+        <div style={footerStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading}
-            style={advancedFormBtnStyle}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
             {loading ? (
               <>
-                <CircularProgress size={16} style={{ color: C.labelText }} />
+                <CircularProgress size={16} style={{ color: "#fff" }} />
                 Saving...
               </>
             ) : (
-              "Save"
+              ROUTE_ROUTING_PARAMETER_SAVE_LABEL
             )}
           </Btn>
         </div>
       </div>
-    </AdvancedPageShell>
+      </div>
+    </div>
   );
 };
 

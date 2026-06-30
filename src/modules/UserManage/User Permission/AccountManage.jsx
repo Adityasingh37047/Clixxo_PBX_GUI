@@ -1236,6 +1236,7 @@ const AccountManage = () => {
               </tbody>
             </table>
           </div>
+          {combinedAccounts.length > 0 && (
           <div
             style={{
               display: "flex",
@@ -1253,6 +1254,7 @@ const AccountManage = () => {
               {combinedAccounts.length !== 1 ? "s" : ""}
             </span>
           </div>
+          )}
         </div>
         {/* Table Buttons (removed as they are now in the top bar) */}
         <div style={{ padding: 0 }} />

@@ -46,6 +46,19 @@ export const IP_CALL_IN_CALLEEID_INITIAL_FORM = {
   description: '',
 };
 
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_PAGE_BREADCRUMB_SECTION = "Num Manipulate";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_PAGE_TITLE = "IP Call In CalleeID";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_EMPTY_MESSAGE = "No IP call in callee ID rules found.";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_MODAL_TITLE_ADD = "Add IP Call In CalleeID";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_MODAL_TITLE_EDIT = "Edit IP Call In CalleeID";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_ADD_NEW_LABEL = "+ Add New";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_ADD_NEW_EMPTY_LABEL = "+ Add New Rule";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_DELETE_LABEL = "Delete";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_CLEAR_ALL_LABEL = "Clear All";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_SAVE_LABEL = "Save";
+export const NUM_MANIPULATE_IP_CALL_IN_CALLEEID_CLOSE_LABEL = "Close";
+
 /** IP Call In CalleeID (manipulation_type: ip_in_calleeid) */
 export const IP_CALL_IN_CALLEEID_FIELD_TOOLTIPS = {
   call_initiator:

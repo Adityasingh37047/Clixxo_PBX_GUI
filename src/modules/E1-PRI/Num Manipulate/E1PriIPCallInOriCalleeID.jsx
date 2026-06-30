@@ -1,10 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  PSTN_CALL_IN_CALLERID_FIELDS,
-  PSTN_CALL_IN_CALLERID_TABLE_COLUMNS,
-  PSTN_CALL_IN_CALLERID_INITIAL_FORM,
-  PSTN_CALL_IN_CALLERID_FIELD_TOOLTIPS,
-} from "../../../constants/PSTNCallInCallerIDConstants";
+  IP_CALL_IN_ORICALLEEID_FIELDS,
+  IP_CALL_IN_ORICALLEEID_TABLE_COLUMNS,
+  IP_CALL_IN_ORICALLEEID_INITIAL_FORM,
+  IP_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_ROOT,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_TITLE,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_EMPTY_MESSAGE,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_MODAL_TITLE_ADD,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_MODAL_TITLE_EDIT,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_ADD_NEW_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_ADD_NEW_EMPTY_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_DELETE_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLEAR_ALL_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_SAVE_LABEL,
+  NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLOSE_LABEL,
+} from "../../../constants/E1PriIPCallInOriCalleeIDConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -12,10 +25,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
-  FormControl,
   CircularProgress,
   Checkbox,
   Alert,
@@ -27,8 +36,11 @@ import {
   createNumberManipulation,
   updateNumberManipulation,
   deleteNumberManipulation,
-  listPstnGroups,
+  listGroups,
 } from "../../../api/apiService";
+
+const IP_CALL_IN_ORICALLEEID_COMPACT_MQ = "(max-width: 768px)";
+
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -90,7 +102,38 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-const PSTN_CALL_IN_CALLERID_COMPACT_MQ = "(max-width: 768px)";
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 170,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+  </div>
+);
+
+const LOCAL_STORAGE_KEY = "ipCallInOriCalleeIdRules";
 
 const C = {
   pageBg: "#f8fafc",
@@ -235,22 +278,22 @@ const Btn = ({
   );
 };
 
-const PSTN_CALL_IN_CALLERID_CARD_RADIUS = 10;
+const IP_CALL_IN_ORICALLEEID_CARD_RADIUS = 10;
 
-const pstnCallInCallerIdPageWrapStyle = {
+const ipCallInOriCalleeIdPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pstnCallInCallerIdPageInnerStyle = {
+const ipCallInOriCalleeIdPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const pstnCallInCallerIdFormPanelStyle = {
+const addHostFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
@@ -260,15 +303,15 @@ const pstnCallInCallerIdFormPanelStyle = {
   padding: 20,
 };
 
-const pstnCallInCallerIdCardStyle = {
+const ipCallInOriCalleeIdCardStyle = {
   background: "#ffffff",
-  borderRadius: PSTN_CALL_IN_CALLERID_CARD_RADIUS,
+  borderRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
   overflow: "hidden",
   border: `1px solid ${C.cardBorder}`,
   boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
 };
 
-const pstnCallInCallerIdToolbarStyle = {
+const ipCallInOriCalleeIdToolbarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -278,23 +321,23 @@ const pstnCallInCallerIdToolbarStyle = {
   background: "#ffffff",
   flexWrap: "wrap",
   gap: 12,
-  borderTopLeftRadius: PSTN_CALL_IN_CALLERID_CARD_RADIUS,
-  borderTopRightRadius: PSTN_CALL_IN_CALLERID_CARD_RADIUS,
+  borderTopLeftRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderTopRightRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
 };
 
-const pstnCallInCallerIdFooterStyle = {
+const ipCallInOriCalleeIdFooterStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
   background: "#ffffff",
   borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PSTN_CALL_IN_CALLERID_CARD_RADIUS,
-  borderBottomRightRadius: PSTN_CALL_IN_CALLERID_CARD_RADIUS,
+  borderBottomLeftRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
+  borderBottomRightRadius: IP_CALL_IN_ORICALLEEID_CARD_RADIUS,
   overflow: "hidden",
 };
 
-const pstnCallInCallerIdSelectedBadgeStyle = {
+const ipCallInOriCalleeIdSelectedBadgeStyle = {
   background: "#eff6ff",
   color: C.accent,
   fontSize: 11,
@@ -304,7 +347,7 @@ const pstnCallInCallerIdSelectedBadgeStyle = {
   border: `1px solid ${C.accent}`,
 };
 
-const pstnCallInCallerIdCancelBtnStyle = {
+const ipCallInOriCalleeIdCancelBtnStyle = {
   height: 30,
   background: "#cbd5e1",
   color: "#374151",
@@ -312,14 +355,14 @@ const pstnCallInCallerIdCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pstnCallInCallerIdPrimaryBtnStyle = {
+const ipCallInOriCalleeIdPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
 };
 
-const pstnCallInCallerIdModalCancelBtnStyle = {
+const ipCallInOriCalleeIdModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
   background: "#cbd5e1",
@@ -328,7 +371,7 @@ const pstnCallInCallerIdModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const pstnCallInCallerIdPageBadgeStyle = {
+const ipCallInOriCalleeIdPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
@@ -338,7 +381,7 @@ const pstnCallInCallerIdPageBadgeStyle = {
   border: `1px solid ${C.cardBorder}`,
 };
 
-const PSTNCallInCallerIdBreadcrumb = () => (
+const IPCallInOriCalleeIdBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -351,12 +394,12 @@ const PSTNCallInCallerIdBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Num Manipulate</span>
+    <span>{NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      PSTN Call In CallerID
+      {NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_PAGE_TITLE}
     </span>
   </div>
 );
@@ -413,13 +456,13 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PstnCallInCallerIdPagination = ({
+const IpCallInOriCalleeIdPagination = ({
   page,
   totalPages,
   recordCount,
   onPageChange,
 }) => (
-  <div style={pstnCallInCallerIdFooterStyle}>
+  <div style={ipCallInOriCalleeIdFooterStyle}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
       Showing {recordCount} record
       {recordCount !== 1 ? "s" : ""} on page {page}
@@ -432,7 +475,7 @@ const PstnCallInCallerIdPagination = ({
       >
         ← Prev
       </Btn>
-      <span style={pstnCallInCallerIdPageBadgeStyle}>
+      <span style={ipCallInOriCalleeIdPageBadgeStyle}>
         Page {page} of {totalPages}
       </span>
       <Btn
@@ -446,78 +489,75 @@ const PstnCallInCallerIdPagination = ({
   </div>
 );
 
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+// ── Native modal field UI ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
+const inputStyle = {
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
 
@@ -555,17 +595,17 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const pstnCallInCallerIdTableCheckboxSx = {
+const ipCallInOriCalleeIdTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const PSTNCallInCallerID = () => {
-  const isCompact = useMediaQuery(PSTN_CALL_IN_CALLERID_COMPACT_MQ);
+const IPCallInOriCalleeID = () => {
+  const isCompact = useMediaQuery(IP_CALL_IN_ORICALLEEID_COMPACT_MQ);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState(PSTN_CALL_IN_CALLERID_INITIAL_FORM);
+  const [formData, setFormData] = useState(IP_CALL_IN_ORICALLEEID_INITIAL_FORM);
   const [rules, setRules] = useState([]);
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
@@ -575,7 +615,7 @@ const PSTNCallInCallerID = () => {
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
-  const [pcmTrunkGroups, setPcmTrunkGroups] = useState([]);
+  const [sipTrunkGroups, setSipTrunkGroups] = useState([]);
   const [loading, setLoading] = useState({
     fetch: false,
     save: false,
@@ -604,39 +644,36 @@ const PSTNCallInCallerID = () => {
   });
   const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
 
-  // Fetch PCM Trunk Groups for Call Initiator dropdown
-  const fetchPcmTrunkGroups = async () => {
+  // Fetch SIP Trunk Groups for Call Initiator dropdown
+  const fetchSipTrunkGroups = async () => {
     try {
-      const response = await listPstnGroups();
-      console.log("PCM Trunk Groups API Response:", response);
+      const response = await listGroups();
+      console.log("SIP Trunk Groups API Response:", response);
       if (response.response && response.message) {
-        const pcmGroups = Array.isArray(response.message)
+        const sipGroups = Array.isArray(response.message)
           ? response.message
           : [response.message];
-        console.log("PCM Groups data:", pcmGroups);
-        setPcmTrunkGroups(pcmGroups);
+        console.log("SIP Groups data:", sipGroups);
+        setSipTrunkGroups(sipGroups);
 
         // Set default value for new forms if no groups are loaded yet
-        if (pcmGroups.length > 0 && formData.call_initiator === "") {
+        if (sipGroups.length > 0 && formData.call_initiator === "") {
           const firstGroupId =
-            pcmGroups[0].group_id || pcmGroups[0].id || pcmGroups[0];
-          setFormData((prev) => ({
-            ...prev,
-            call_initiator: String(firstGroupId),
-          }));
+            sipGroups[0].group_id || sipGroups[0].id || sipGroups[0];
+          setFormData((prev) => ({ ...prev, call_initiator: firstGroupId }));
         }
       } else {
-        console.log("No PCM groups data found");
-        setPcmTrunkGroups([]);
+        console.log("No SIP groups data found");
+        setSipTrunkGroups([]);
       }
     } catch (error) {
-      console.error("Error fetching PCM trunk groups:", error);
+      console.error("Error fetching SIP trunk groups:", error);
       if (error.message === "Network Error") {
         alert("Network error. Please check your connection.");
       } else {
-        alert(error.message || "Failed to load PCM trunk groups");
+        alert(error.message || "Failed to load SIP trunk groups");
       }
-      setPcmTrunkGroups([]);
+      setSipTrunkGroups([]);
     }
   };
 
@@ -645,7 +682,7 @@ const PSTNCallInCallerID = () => {
     setLoading((prev) => ({ ...prev, fetch: true }));
     try {
       console.log("Fetching number manipulations...");
-      const response = await listNumberManipulations("pstn_in_callerid");
+      const response = await listNumberManipulations("ip_in_oricalleeid");
       console.log("Fetch response:", response);
 
       if (response.response && response.message) {
@@ -677,6 +714,7 @@ const PSTNCallInCallerID = () => {
       // Editing existing item
       setFormData({
         ...item,
+        with_original_calleeid: item.with_original_calleeid || "No",
         stripped_digits_from_left:
           item.stripped_digits_from_left === "" ||
           item.stripped_digits_from_left == null
@@ -696,13 +734,13 @@ const PSTNCallInCallerID = () => {
       setEditIndex(item.id);
     } else {
       // Adding new item - set default call_initiator if available
-      const defaultForm = { ...PSTN_CALL_IN_CALLERID_INITIAL_FORM };
-      if (pcmTrunkGroups.length > 0) {
+      const defaultForm = { ...IP_CALL_IN_ORICALLEEID_INITIAL_FORM };
+      if (sipTrunkGroups.length > 0) {
         const firstGroupId =
-          pcmTrunkGroups[0].group_id ||
-          pcmTrunkGroups[0].id ||
-          pcmTrunkGroups[0];
-        defaultForm.call_initiator = String(firstGroupId);
+          sipTrunkGroups[0].group_id ||
+          sipTrunkGroups[0].id ||
+          sipTrunkGroups[0];
+        defaultForm.call_initiator = firstGroupId;
       }
       setFormData(defaultForm);
       setEditIndex(null);
@@ -712,7 +750,7 @@ const PSTNCallInCallerID = () => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSave = async () => {
-    // Validation: required fields including With Original CalleeID
+    // Validation: required only Call Initiator, CallerID Prefix, CalleeID Prefix
     if (!formData.call_initiator) {
       alert("Call Initiator is required.");
       return;
@@ -725,14 +763,11 @@ const PSTNCallInCallerID = () => {
       alert("CalleeID Prefix is required.");
       return;
     }
-    if (!formData.with_original_calleeid) {
-      alert("With Original CalleeID is required.");
-      return;
-    }
 
     // Normalize optional numeric fields to '0' when empty
     const normalized = {
       ...formData,
+      with_original_calleeid: formData.with_original_calleeid || "No",
       stripped_digits_from_left:
         formData.stripped_digits_from_left === "" ||
         formData.stripped_digits_from_left == null
@@ -771,7 +806,7 @@ const PSTNCallInCallerID = () => {
         console.log("Update request data:", updateData);
         response = await updateNumberManipulation(
           updateData,
-          "pstn_in_callerid",
+          "ip_in_oricalleeid",
         );
         console.log("Update response:", response);
         if (response.response) {
@@ -802,7 +837,7 @@ const PSTNCallInCallerID = () => {
         console.log("Create request data:", normalized);
         response = await createNumberManipulation(
           normalized,
-          "pstn_in_callerid",
+          "ip_in_oricalleeid",
         );
         console.log("Create response:", response);
         if (response.response) {
@@ -822,7 +857,7 @@ const PSTNCallInCallerID = () => {
             const newItem = {
               ...normalized,
               id: Date.now(), // Temporary ID for local state
-              manipulation_type: "pstn_in_callerid",
+              manipulation_type: "ip_in_oricalleeid",
             };
             setRules((prev) => [...prev, newItem]);
           }
@@ -1030,10 +1065,26 @@ const PSTNCallInCallerID = () => {
       tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
   };
 
+  const thumbWidth =
+    scrollState.width && scrollState.scrollWidth
+      ? Math.max(
+          40,
+          (scrollState.width / scrollState.scrollWidth) *
+            (scrollState.width - 8),
+        )
+      : 40;
+  const thumbLeft =
+    scrollState.width &&
+    scrollState.scrollWidth &&
+    scrollState.scrollWidth > scrollState.width
+      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
+        (scrollState.width - thumbWidth - 16)
+      : 0;
+
   // Load data on component mount
   useEffect(() => {
     fetchNumberManipulations();
-    fetchPcmTrunkGroups();
+    fetchSipTrunkGroups();
   }, []);
 
   // Refresh function
@@ -1058,40 +1109,15 @@ const PSTNCallInCallerID = () => {
     return () => window.removeEventListener("resize", update);
   }, [rules, page]);
 
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
-  // Helper: get label as PCM Trunk Group [group_id]
-  const getPcmGroupIdLabel = (groupId) => {
-    const group = pcmTrunkGroups.find(
-      (g) => String(g.group_id || g.id || g) === String(groupId),
-    );
-    const gid = group ? (group.group_id ?? group.id ?? groupId) : groupId;
-    return String(gid);
-  };
-
-  // Get updated fields with PCM trunk groups
+  // Get updated fields with SIP trunk groups
   const getUpdatedFields = () => {
-    return PSTN_CALL_IN_CALLERID_FIELDS.map((field) => {
+    return IP_CALL_IN_ORICALLEEID_FIELDS.map((field) => {
       if (field.name === "call_initiator") {
         return {
           ...field,
-          options: pcmTrunkGroups.map((group) => ({
-            value: String(group.group_id ?? group.id ?? group),
-            label: `PCM Trunk Group [${String(group.group_id ?? group.id ?? group)}]`,
+          options: sipTrunkGroups.map((group) => ({
+            value: group.group_id || group.id || group,
+            label: `SIP Trunk Group [${group.group_id || group.id || group}]`,
           })),
         };
       }
@@ -1102,11 +1128,11 @@ const PSTNCallInCallerID = () => {
   return (
     <div
       style={{
-        ...pstnCallInCallerIdPageWrapStyle,
+        ...ipCallInOriCalleeIdPageWrapStyle,
         ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      <div style={pstnCallInCallerIdPageInnerStyle}>
+      <div style={ipCallInOriCalleeIdPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -1124,12 +1150,12 @@ const PSTNCallInCallerID = () => {
           </Alert>
         )}
 
-        <PSTNCallInCallerIdBreadcrumb />
+        <IPCallInOriCalleeIdBreadcrumb />
 
-        <div style={pstnCallInCallerIdCardStyle}>
+        <div style={ipCallInOriCalleeIdCardStyle}>
           <div
             style={{
-              ...pstnCallInCallerIdToolbarStyle,
+              ...ipCallInOriCalleeIdToolbarStyle,
               ...(isCompact
                 ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
                 : {}),
@@ -1145,7 +1171,7 @@ const PSTNCallInCallerID = () => {
               }}
             >
               {selected.length > 0 && (
-                <span style={pstnCallInCallerIdSelectedBadgeStyle}>
+                <span style={ipCallInOriCalleeIdSelectedBadgeStyle}>
                   {selected.length} selected
                 </span>
               )}
@@ -1162,7 +1188,7 @@ const PSTNCallInCallerID = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.fetch || loading.delete || rules.length === 0}
-                style={pstnCallInCallerIdCancelBtnStyle}
+                style={ipCallInOriCalleeIdCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1170,27 +1196,27 @@ const PSTNCallInCallerID = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                style={pstnCallInCallerIdCancelBtnStyle}
+                style={ipCallInOriCalleeIdCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_DELETE_LABEL}
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.fetch || loading.delete || rules.length === 0}
-                style={pstnCallInCallerIdCancelBtnStyle}
+                style={ipCallInOriCalleeIdCancelBtnStyle}
               >
-                Clear All
+                {NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLEAR_ALL_LABEL}
               </Btn>
               <Btn
                 variant="cancel"
                 onClick={handleRefresh}
                 disabled={loading.fetch}
-                style={pstnCallInCallerIdCancelBtnStyle}
+                style={ipCallInOriCalleeIdCancelBtnStyle}
               >
                 {loading.fetch ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -1201,9 +1227,9 @@ const PSTNCallInCallerID = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
-                style={pstnCallInCallerIdPrimaryBtnStyle}
+                style={ipCallInOriCalleeIdPrimaryBtnStyle}
               >
-                + Add New
+                {NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -1212,8 +1238,9 @@ const PSTNCallInCallerID = () => {
             <TableListLoading />
           ) : rules.length === 0 ? (
             <TableListEmptyState
-              message="No PSTN call in caller ID rules found."
+              message={NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
+              buttonLabel={NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_ADD_NEW_EMPTY_LABEL}
             />
           ) : (
             <>
@@ -1263,7 +1290,7 @@ const PSTNCallInCallerID = () => {
                             if (e.target.checked) handleCheckAll();
                             else handleUncheckAll();
                           }}
-                          sx={pstnCallInCallerIdTableCheckboxSx}
+                          sx={ipCallInOriCalleeIdTableCheckboxSx}
                         />
                       </TH>
                       <TH
@@ -1348,7 +1375,7 @@ const PSTNCallInCallerID = () => {
                               checked={isSelected}
                               onChange={() => handleSelectRow(idx)}
                               disabled={loading.delete}
-                              sx={pstnCallInCallerIdTableCheckboxSx}
+                              sx={ipCallInOriCalleeIdTableCheckboxSx}
                             />
                           </td>
                           <td
@@ -1369,8 +1396,7 @@ const PSTNCallInCallerID = () => {
                               ...lastRowCellStyle,
                             }}
                           >
-                            PCM Trunk Group [
-                            {getPcmGroupIdLabel(item.call_initiator)}]
+                            SIP Trunk Group [{item.call_initiator}]
                           </td>
                           <td
                             style={{
@@ -1459,7 +1485,7 @@ const PSTNCallInCallerID = () => {
                 </table>
               </div>
 
-              <PstnCallInCallerIdPagination
+              <IpCallInOriCalleeIdPagination
                 page={page}
                 totalPages={totalPages}
                 recordCount={pagedRules.length}
@@ -1477,24 +1503,17 @@ const PSTNCallInCallerID = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
-            maxWidth: "96vw",
-            mx: "auto",
+            maxWidth: "95vw",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-          },
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1509,84 +1528,54 @@ const PSTNCallInCallerID = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editIndex !== null
-            ? "Edit PSTN Call In CallerID"
-            : "Add PSTN Call In CallerID"}
+            ? NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_MODAL_TITLE_EDIT
+            : NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div style={pstnCallInCallerIdFormPanelStyle}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
+          <div style={addHostFormPanelStyle}>
             {getUpdatedFields().map((field) => (
-              <div
+              <E1PriFieldRow
                 key={field.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
+                label={field.label}
+                tooltipKey={field.name}
+                tooltips={IP_CALL_IN_ORICALLEEID_FIELD_TOOLTIPS}
               >
-                <E1PriFieldLabel
-                  tooltipKey={field.name}
-                  tooltips={PSTN_CALL_IN_CALLERID_FIELD_TOOLTIPS}
-                  style={{
-                    fontSize: 13,
-                    width: 170,
-                    lineHeight: 1.2,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                    display: "inline-block",
-                  }}
-                >
-                  {field.label}
-                </E1PriFieldLabel>
-                <div style={{ width: "min(100%, 320px)" }}>
-                  {field.type === "select" ? (
-                    <FormControl size="small" fullWidth>
-                      <MuiSelect
-                        value={formData[field.name] || ""}
-                        onChange={(e) =>
-                          handleInputChange({
-                            target: { name: field.name, value: e.target.value },
-                          })
-                        }
-                        variant="outlined"
-                        sx={modalSelectSx}
-                      >
-                        {field.options.map((opt) => (
-                          <MenuItem
-                            key={opt.value}
-                            value={opt.value}
-                            sx={{ fontSize: 14 }}
-                          >
-                            {opt.label}
-                          </MenuItem>
-                        ))}
-                      </MuiSelect>
-                    </FormControl>
-                  ) : (
-                    <TextField
-                      type={field.type || "text"}
-                      name={field.name}
-                      value={formData[field.name] || ""}
-                      onChange={handleInputChange}
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          height: 32,
-                          padding: "0 8px",
-                          boxSizing: "border-box",
-                        },
-                      }}
-                      sx={modalTextFieldSx}
-                    />
-                  )}
-                </div>
-              </div>
+                {field.type === "select" ? (
+                  <select
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleInputChange}
+                    style={selectStyle}
+                    {...inputInteraction}
+                  >
+                    {field.options.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={field.type || "text"}
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleInputChange}
+                    style={inputStyle}
+                    {...inputInteraction}
+                  />
+                )}
+              </E1PriFieldRow>
             ))}
           </div>
         </DialogContent>
@@ -1606,21 +1595,21 @@ const PSTNCallInCallerID = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            {loading.save
-              ? "Saving..."
-              : editIndex !== null
-                ? "Update"
-                : "Save"}
+            {loading.save ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={pstnCallInCallerIdModalCancelBtnStyle}
+            style={{ ...ipCallInOriCalleeIdModalCancelBtnStyle, height: 34 }}
           >
-            Close
+            {NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>
@@ -1628,4 +1617,4 @@ const PSTNCallInCallerID = () => {
   );
 };
 
-export default PSTNCallInCallerID;
+export default IPCallInOriCalleeID;

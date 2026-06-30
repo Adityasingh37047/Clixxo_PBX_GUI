@@ -114,6 +114,7 @@ export const SIP_REGISTER_UI_DEFAULTS = {
   ui_call_timeout: "30",
   ui_max_call_duration: "6000",
   ui_dnis: false,
+  ui_replace_cid: "No",
   ui_enable_early_session: "No",
   ui_user_phone: false,
   ui_dtmf_transmit: "RFC2833",
@@ -137,6 +138,20 @@ export const SIP_REGISTER_TOOLTIPS = {
     "When it is ticked, the RTP stream is encrypted and the certificate is the same as TLS. By default it is unticked.",
   register:
     "Set whether to register the SIP trunk, which is determined by the trunk provider. The default setting is No.",
+  username: "Username of the registered SIP trunk.",
+  auth_username:
+    "Used for SIP authentication. In most cases, it is the same with the username.",
+  password: "The registration password of the SIP trunk.",
+  expire_in_sec:
+    "Registration validity period in seconds. The default value is 1800 seconds.",
+  reg_fail_retry:
+    "The interval in seconds before retrying registration after a failure. The default value is 30 seconds.",
+  match_username:
+    "Set whether to match the SIP username in incoming requests with the registered trunk username.",
+  enable_proxy:
+    "Support of proxy mode for trunks like IMS. By default it is unticked.",
+  proxy_ip:
+    "Outbound proxy hostname or IP address used when Enable Proxy is ticked.",
   outbound_cid_source:
     "In case of unregistration, use the transparent extension as the caller by default; in case of registration, use the registered account as the caller by default.",
   record: "Save the Recording. Default is No.",
@@ -187,6 +202,11 @@ export const SIP_REGISTER_TOOLTIPS = {
   max_call_duration:
     "Select the maximum call duration in seconds for every call of this trunk. If you wish to customize, enter the value in the text box directly. This option priority is higher than extensions. The default value is 6000(s). 0 means no limit.",
   dnis: "Dial Number Identification Service is used to identify which trunk a call comes in. It allows users to define the display name of an incoming call instead of the called number so that the phone will display the DNIS name when a call comes in on the corresponding trunk. It is unticked by default.",
+  dnis_number:
+    "The number of the caller ID of the incoming call through this SIP trunk according to which users determine the value of DNIS Name.",
+  dnis_name:
+    "The name of the caller ID displayed for the incoming call through this SIP trunk.",
+  replace_cid: "Yes: replace CID; No: DNIS name + CID",
   dod_name:
     'Configure DOD number and the associated DOD name. There are 2 ways to configure this:<br>· Bind one DOD number with one DOD name: enter one number in the "DOD Number" field and one name in the "DOD Name" field.<br>· Bind consecutive DOD numbers with one DOD name. To do this, enter the DOD number range and fill in a name in the "DOD Name" field.',
   dod_number:

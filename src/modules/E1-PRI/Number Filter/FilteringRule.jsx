@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from "react";
 import {
-  FILTERING_RULE_COLUMNS,
-  FILTERING_RULE_DROPDOWN_OPTIONS,
-  FILTERING_RULE_FIELD_TOOLTIPS,
-} from "../../../constants/FilteringRuleConstants";
+  NUMBER_FILTER_RULE_COLUMNS,
+  NUMBER_FILTER_RULE_DROPDOWN_OPTIONS,
+  NUMBER_FILTER_RULE_FIELD_TOOLTIPS,
+  NUMBER_FILTER_RULE_PAGE_BREADCRUMB_ROOT,
+  NUMBER_FILTER_RULE_PAGE_BREADCRUMB_SECTION,
+  NUMBER_FILTER_RULE_PAGE_TITLE,
+  NUMBER_FILTER_RULE_EMPTY_MESSAGE,
+  NUMBER_FILTER_RULE_MODAL_TITLE_ADD,
+  NUMBER_FILTER_RULE_MODAL_TITLE_EDIT,
+  NUMBER_FILTER_RULE_ADD_NEW_LABEL,
+  NUMBER_FILTER_RULE_ADD_NEW_EMPTY_LABEL,
+  NUMBER_FILTER_RULE_DELETE_LABEL,
+  NUMBER_FILTER_RULE_CLEAR_ALL_LABEL,
+  NUMBER_FILTER_RULE_SAVE_LABEL,
+  NUMBER_FILTER_RULE_CLOSE_LABEL,
+} from "../../../constants/NumberFilterRuleConstants";
+import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
   listFinalNumberFilter,
   createFinalNumberFilter,
@@ -16,9 +29,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select as MuiSelect,
-  MenuItem,
   Alert,
   CircularProgress,
   Checkbox,
@@ -92,6 +102,41 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
+const E1PriFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 240,
+}) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+    }}
+  >
+    <E1PriFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        width: labelWidth,
+        flexShrink: 0,
+        whiteSpace: "nowrap",
+        lineHeight: 1.2,
+        textAlign: "left",
+        display: "inline-block",
+      }}
+    >
+      {label}
+    </E1PriFieldLabel>
+    <div style={{ width: "min(100%, 280px)" }}>{children}</div>
+  </div>
+);
+
 // ── Color palette (matches Extensions) ───────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -123,78 +168,82 @@ const filteringRulePageInnerStyle = {
   margin: "0 auto",
 };
 
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+// ── Native modal field UI ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+const setFieldDefault = (el) => {
+  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldHover = (el) => {
+  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const setFieldFocus = (el) => {
+  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = FOCUS_RING_SHADOW;
+};
+
+const inputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    setFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    setFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      setFieldFocus(e.target);
+    } else {
+      setFieldDefault(e.target);
+    }
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
+const inputStyle = {
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const selectStyle = {
+  ...inputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
+};
+
+const disabledInputStyle = {
+  ...inputStyle,
+  backgroundColor: "#f1f5f9",
+  color: "#64748b",
+  cursor: "not-allowed",
 };
 
 const addHostFormPanelStyle = {
@@ -397,7 +446,7 @@ const filteringRulePrimaryBtnStyle = {
 
 const filteringRuleModalCancelBtnStyle = {
   minWidth: 100,
-  height: 33,
+  height: 34,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -417,11 +466,13 @@ const FilteringRuleBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{NUMBER_FILTER_RULE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>Number Filter</span>
+    <span>{NUMBER_FILTER_RULE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Filtering Rule</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {NUMBER_FILTER_RULE_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -441,7 +492,7 @@ const TableListLoading = () => (
 const TableListEmptyState = ({
   message,
   onAddNew,
-  buttonLabel = "+ Add New",
+  buttonLabel = NUMBER_FILTER_RULE_ADD_NEW_EMPTY_LABEL,
   showButton = true,
 }) => (
   <div
@@ -869,7 +920,7 @@ const FilteringRule = () => {
                   <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {NUMBER_FILTER_RULE_DELETE_LABEL}
               </Btn>
               <Btn
                 variant="cancel"
@@ -877,7 +928,7 @@ const FilteringRule = () => {
                 disabled={isInitialLoad || rows.length === 0 || isDeleting}
                 style={filteringRuleCancelBtnStyle}
               >
-                Clear All
+                {NUMBER_FILTER_RULE_CLEAR_ALL_LABEL}
               </Btn>
               <Btn
                 variant="primary"
@@ -885,7 +936,7 @@ const FilteringRule = () => {
                 disabled={isInitialLoad || isDeleting || isLoading}
                 style={filteringRulePrimaryBtnStyle}
               >
-                + Add New
+                {NUMBER_FILTER_RULE_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -894,8 +945,9 @@ const FilteringRule = () => {
             <TableListLoading />
           ) : rows.length === 0 ? (
             <TableListEmptyState
-              message="No filtering rules found."
+              message={NUMBER_FILTER_RULE_EMPTY_MESSAGE}
               onAddNew={() => openModal()}
+              buttonLabel={NUMBER_FILTER_RULE_ADD_NEW_EMPTY_LABEL}
             />
           ) : (
             <>
@@ -918,7 +970,7 @@ const FilteringRule = () => {
                 >
                   <thead>
                     <tr>
-                      {FILTERING_RULE_COLUMNS.map((col) => (
+                      {NUMBER_FILTER_RULE_COLUMNS.map((col) => (
                         <TH
                           key={col.key}
                           style={{
@@ -1007,7 +1059,7 @@ const FilteringRule = () => {
                               e.currentTarget.style.background = rowBg;
                           }}
                         >
-                          {FILTERING_RULE_COLUMNS.map((col) => (
+                          {NUMBER_FILTER_RULE_COLUMNS.map((col) => (
                             <td
                               key={col.key}
                               style={{
@@ -1096,25 +1148,17 @@ const FilteringRule = () => {
           closeModal();
         }}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 0,
-          },
-        }}
+        sx={addNewDialogSx}
         PaperProps={{
-          sx: {
+          sx: mergeAddNewDialogPaperSx({
             width: 600,
-            maxWidth: "96vw",
-            mx: "auto",
+            maxWidth: "95vw",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
-            maxHeight: "95vh",
-          },
+            boxShadow:
+              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+          }),
         }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1129,64 +1173,36 @@ const FilteringRule = () => {
             padding: "16px 24px",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
-          {editIndex !== null ? "Edit" : "Add"} Filtering Rule
+          {editIndex !== null
+            ? NUMBER_FILTER_RULE_MODAL_TITLE_EDIT
+            : NUMBER_FILTER_RULE_MODAL_TITLE_ADD}
         </DialogTitle>
         <DialogContent
           style={{
             padding: "24px",
             backgroundColor: "#ffffff",
-            overflowY: "visible",
+            overflowY: "auto",
+            flex: "1 1 auto",
           }}
         >
           <div style={addHostFormPanelStyle}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 12,
-              }}
+            <E1PriFieldRow
+              label="No.:"
+              tooltipKey="id"
+              tooltips={NUMBER_FILTER_RULE_FIELD_TOOLTIPS}
             >
-              <E1PriFieldLabel
-                tooltipKey="id"
-                tooltips={FILTERING_RULE_FIELD_TOOLTIPS}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  width: 240,
-                  whiteSpace: "nowrap",
-                  lineHeight: 1.2,
-                  textAlign: "left",
-                  display: "inline-block",
-                }}
-              >
-                No.:
-              </E1PriFieldLabel>
-              <div style={{ width: "min(100%, 280px)" }}>
-                <TextField
-                  name="id"
-                  value={editIndex !== null ? editIndex + 1 : rows.length + 1}
-                  disabled
-                  size="small"
-                  fullWidth
-                  inputProps={{ style: { fontSize: 13, height: 16 } }}
-                  sx={{
-                    backgroundColor: "#f1f5f9",
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: C.cardBorder,
-                        transition: "border-color 0.2s ease",
-                      },
-                    },
-                    "& .Mui-disabled": {
-                      WebkitTextFillColor: "#64748b",
-                    },
-                  }}
-                />
-              </div>
-            </div>
+              <input
+                type="text"
+                name="id"
+                value={editIndex !== null ? editIndex + 1 : rows.length + 1}
+                disabled
+                readOnly
+                style={disabledInputStyle}
+              />
+            </E1PriFieldRow>
             {[
               {
                 key: "callerIdWhitelist",
@@ -1239,54 +1255,33 @@ const FilteringRule = () => {
                 options: groupOptions.poolGroups,
               },
             ].map((field) => (
-              <div
+              <E1PriFieldRow
                 key={field.key}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 12,
-                }}
+                label={field.label}
+                tooltipKey={field.key}
+                tooltips={NUMBER_FILTER_RULE_FIELD_TOOLTIPS}
               >
-                <E1PriFieldLabel
-                  tooltipKey={field.key}
-                  tooltips={FILTERING_RULE_FIELD_TOOLTIPS}
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    width: 240,
-                    whiteSpace: "nowrap",
-                    lineHeight: 1.2,
-                    textAlign: "left",
-                    display: "inline-block",
-                  }}
+                <select
+                  name={field.key}
+                  value={form[field.key] || "none"}
+                  onChange={handleFormChange}
+                  style={selectStyle}
+                  {...inputInteraction}
                 >
-                  {field.label}
-                </E1PriFieldLabel>
-                <div style={{ width: "min(100%, 280px)" }}>
-                  <MuiSelect
-                    name={field.key}
-                    value={form[field.key] || "none"}
-                    onChange={handleFormChange}
-                    size="small"
-                    fullWidth
-                    sx={modalSelectSx}
-                  >
-                    {[
-                      "none",
-                      ...Array.from(
-                        new Set(
-                          (field.options || []).filter((o) => o !== "none"),
-                        ),
+                  {[
+                    ...NUMBER_FILTER_RULE_DROPDOWN_OPTIONS,
+                    ...Array.from(
+                      new Set(
+                        (field.options || []).filter((o) => o !== "none"),
                       ),
-                    ].map((opt) => (
-                      <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
-                        {opt === "none" ? "None" : opt}
-                      </MenuItem>
-                    ))}
-                  </MuiSelect>
-                </div>
-              </div>
+                    ),
+                  ].map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt === "none" ? "None" : opt}
+                    </option>
+                  ))}
+                </select>
+              </E1PriFieldRow>
             ))}
           </div>
         </DialogContent>
@@ -1305,10 +1300,14 @@ const FilteringRule = () => {
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
             disabled={isLoading}
           >
-            {isLoading ? "Saving..." : "Save"}
+            {isLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              NUMBER_FILTER_RULE_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             onClick={closeModal}
@@ -1316,7 +1315,7 @@ const FilteringRule = () => {
             style={filteringRuleModalCancelBtnStyle}
             disabled={isLoading}
           >
-            Close
+            {NUMBER_FILTER_RULE_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

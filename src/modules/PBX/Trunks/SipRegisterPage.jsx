@@ -599,7 +599,12 @@ const TRUNK_SECTION_HEADING_COLOR = "#30415A";
 const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
 const SIP_REGISTER_MODAL_SECTION_BG = "#f8fafc";
 
-const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
+const TrunkModalSectionHeading = ({
+  title,
+  isFirst = false,
+  labelBackground = SIP_REGISTER_MODAL_SECTION_BG,
+  titleLeft = -6,
+}) => (
   <div
     style={{
       margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
@@ -612,8 +617,8 @@ const TrunkModalSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
-        background: SIP_REGISTER_MODAL_SECTION_BG,
+        left: titleLeft,
+        background: labelBackground,
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
@@ -893,6 +898,8 @@ const trunkModalCancelBtnStyle = {
 };
 
 const trunkAdaptRowGridColumns = "1fr 1fr 1fr 32px";
+
+const trunkDnisRowGridColumns = "1fr 1fr 32px";
 
 const trunkAdaptTextFieldSx = {
   ...sipRegisterModalTextFieldSx,
@@ -1412,7 +1419,7 @@ const SipRegisterPage = () => {
     { matchMode: "", strip: "", prepend: "" },
   ]);
   const [dnisRows, setDnisRows] = useState([
-    { dnisNumber: "", dnisName: "", replaceCid: "No" },
+    { dnisNumber: "", dnisName: "" },
   ]);
   const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
   const [codecChosenSelected, setCodecChosenSelected] = useState([]);
@@ -2260,7 +2267,7 @@ const SipRegisterPage = () => {
     setModalTab("basic");
     setDodSelected([]);
     setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
-    setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
+    setDnisRows([{ dnisNumber: "", dnisName: "" }]);
     setValidationErrors({});
     setCodecAvailableSelected([]);
     setCodecChosenSelected([]);
@@ -2272,6 +2279,10 @@ const SipRegisterPage = () => {
         ...SIP_REGISTER_INITIAL_FORM,
         ...row,
         ui_register: uiReg,
+        ui_replace_cid:
+          row.ui_replace_cid ??
+          (Array.isArray(row.dnisRows) && row.dnisRows[0]?.replaceCid) ??
+          "No",
         allow_codecs: row.allow_codecs || "ulaw,alaw",
       });
       setEditIndex(idx);
@@ -2283,8 +2294,11 @@ const SipRegisterPage = () => {
       );
       setDnisRows(
         Array.isArray(row.dnisRows) && row.dnisRows.length
-          ? row.dnisRows
-          : [{ dnisNumber: "", dnisName: "", replaceCid: "No" }],
+          ? row.dnisRows.map((r) => ({
+              dnisNumber: r.dnisNumber ?? "",
+              dnisName: r.dnisName ?? "",
+            }))
+          : [{ dnisNumber: "", dnisName: "" }],
       );
     } else {
       const nextIndex = trunks.length.toString();
@@ -2308,7 +2322,7 @@ const SipRegisterPage = () => {
     setDodRows([]);
     setDodSelected([]);
     setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
-    setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
+    setDnisRows([{ dnisNumber: "", dnisName: "" }]);
     setShowPassword(false); // Reset password visibility when closing modal
     setValidationErrors({}); // Clear validation errors when closing modal
     setCodecAvailableSelected([]);
@@ -2628,7 +2642,7 @@ const SipRegisterPage = () => {
       setDodRows([]);
       setDodSelected([]);
       setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
-      setDnisRows([{ dnisNumber: "", dnisName: "", replaceCid: "No" }]);
+      setDnisRows([{ dnisNumber: "", dnisName: "" }]);
       setShowPassword(false);
       setValidationErrors({});
     };
@@ -3569,9 +3583,9 @@ const SipRegisterPage = () => {
                     {form.ui_register === "Yes" && (
                       <>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                            Username <span className="text-red-500">*</span>
-                          </label>
+                          <TrunkFieldLabel tooltipKey="username" required>
+                            Username
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <TextField
                               size="small"
@@ -3592,9 +3606,9 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                          <TrunkFieldLabel tooltipKey="auth_username">
                             Auth Username
-                          </label>
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <TextField
                               size="small"
@@ -3609,10 +3623,9 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                            RegFail Retry{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
+                          <TrunkFieldLabel tooltipKey="reg_fail_retry" required>
+                            RegFail Retry
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <TextField
                               size="small"
@@ -3829,9 +3842,9 @@ const SipRegisterPage = () => {
                     {form.ui_register === "Yes" && (
                       <>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                            Password <span className="text-red-500">*</span>
-                          </label>
+                          <TrunkFieldLabel tooltipKey="password" required>
+                            Password
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <TextField
                               type={showPassword ? "text" : "password"}
@@ -3869,10 +3882,9 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                            Expire Seconds{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
+                          <TrunkFieldLabel tooltipKey="expire_in_sec" required>
+                            Expire Seconds
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <TextField
                               size="small"
@@ -3892,10 +3904,9 @@ const SipRegisterPage = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                            Match Username{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
+                          <TrunkFieldLabel tooltipKey="match_username" required>
+                            Match Username
+                          </TrunkFieldLabel>
                           <div className="flex-1 min-w-0">
                             <FormControl
                               fullWidth
@@ -3929,9 +3940,9 @@ const SipRegisterPage = () => {
 
                         <div className="w-full">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
+                            <TrunkFieldLabel tooltipKey="enable_proxy">
                               Enable Proxy
-                            </label>
+                            </TrunkFieldLabel>
                             <div className="flex-1 min-w-0 flex items-center justify-start">
                               <FormControlLabel
                                 control={
@@ -3955,9 +3966,9 @@ const SipRegisterPage = () => {
 
                           {form.ui_enable_proxy && (
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                              <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0">
-                                Proxy IP <span className="text-red-500">*</span>
-                              </label>
+                              <TrunkFieldLabel tooltipKey="proxy_ip" required>
+                                Proxy IP
+                              </TrunkFieldLabel>
                               <div className="flex-1 min-w-0">
                                 <TextField
                                   size="small"
@@ -4571,125 +4582,130 @@ const SipRegisterPage = () => {
                       </div>
                     </div>
                     {form.ui_dnis && (
-                      <div className="mt-2 bg-white border border-gray-200 rounded-md p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <div
-                            className="font-semibold"
-                            style={{
-                              fontSize: 13,
-                              color: TRUNK_SECTION_HEADING_COLOR,
-                            }}
-                          >
-                            DNIS Settings
-                          </div>
+                      <div className="mt-2 rounded-md border border-gray-200 bg-white p-3 sm:p-5">
+                        <TrunkModalSectionHeading
+                          title="DNIS Settings"
+                          isFirst
+                          labelBackground="#ffffff"
+                          titleLeft={0}
+                        />
+
+                        <div
+                          className="grid gap-2 items-center border-b border-gray-200 pb-2 mb-3"
+                          style={{
+                            gridTemplateColumns: trunkDnisRowGridColumns,
+                          }}
+                        >
+                          <SipRegisterFieldLabel tooltipKey="dnis_number">
+                            DNIS Number
+                          </SipRegisterFieldLabel>
+                          <SipRegisterFieldLabel tooltipKey="dnis_name">
+                            DNIS Name
+                          </SipRegisterFieldLabel>
                           <IconButton
                             size="small"
                             onClick={() =>
                               setDnisRows((r) => [
                                 ...r,
-                                {
-                                  dnisNumber: "",
-                                  dnisName: "",
-                                  replaceCid: "No",
-                                },
+                                { dnisNumber: "", dnisName: "" },
                               ])
                             }
-                            sx={{ border: "1px solid #ccc", borderRadius: 1 }}
+                            sx={trunkAdaptRowActionBtnSx}
                             aria-label="add dnis row"
                           >
                             <AddIcon fontSize="small" />
                           </IconButton>
                         </div>
 
-                        <div className="overflow-x-auto border border-gray-200 rounded">
-                          <table className="w-full min-w-[520px] text-sm">
-                            <thead>
-                              <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
-                                <th className="p-2 text-left font-medium">
-                                  DNIS Number
-                                </th>
-                                <th className="p-2 text-left font-medium">
-                                  DNIS Name
-                                </th>
-                                <th className="p-2 text-left font-medium">
-                                  Replace CID
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {dnisRows.map((row, i) => (
-                                <tr
-                                  key={i}
-                                  className="border-b border-gray-100"
-                                >
-                                  <td className="p-1">
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      value={row.dnisNumber}
-                                      onChange={(e) =>
-                                        setDnisRows((prev) =>
-                                          prev.map((x, j) =>
-                                            j === i
-                                              ? {
-                                                  ...x,
-                                                  dnisNumber: e.target.value,
-                                                }
-                                              : x,
-                                          ),
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td className="p-1">
-                                    <TextField
-                                      size="small"
-                                      fullWidth
-                                      value={row.dnisName}
-                                      onChange={(e) =>
-                                        setDnisRows((prev) =>
-                                          prev.map((x, j) =>
-                                            j === i
-                                              ? {
-                                                  ...x,
-                                                  dnisName: e.target.value,
-                                                }
-                                              : x,
-                                          ),
-                                        )
-                                      }
-                                    />
-                                  </td>
-                                  <td className="p-1 w-[180px]">
-                                    <FormControl fullWidth size="small">
-                                      <MuiSelect
-                                        value={row.replaceCid || "No"}
-                                        onChange={(e) =>
-                                          setDnisRows((prev) =>
-                                            prev.map((x, j) =>
-                                              j === i
-                                                ? {
-                                                    ...x,
-                                                    replaceCid: e.target.value,
-                                                  }
-                                                : x,
-                                            ),
-                                          )
-                                        }
-                                        sx={sipRegisterModalSelectSx}
-                                      >
-                                        {SIP_REGISTER_YES_NO.map((c) => (
-                                          <MenuItem key={c} value={c}>
-                                            {c}
-                                          </MenuItem>
-                                        ))}
-                                      </MuiSelect>
-                                    </FormControl>
-                                  </td>
-                                </tr>
+                        <div className="space-y-2">
+                          {dnisRows.map((row, i) => (
+                            <div
+                              key={i}
+                              className="grid gap-2 items-center"
+                              style={{
+                                gridTemplateColumns: trunkDnisRowGridColumns,
+                              }}
+                            >
+                              <TextField
+                                size="small"
+                                placeholder="DNIS Number"
+                                value={row.dnisNumber}
+                                onChange={(e) =>
+                                  setDnisRows((prev) =>
+                                    prev.map((x, j) =>
+                                      j === i
+                                        ? {
+                                            ...x,
+                                            dnisNumber: e.target.value,
+                                          }
+                                        : x,
+                                    ),
+                                  )
+                                }
+                                sx={trunkAdaptTextFieldSx}
+                              />
+                              <div className="flex items-center gap-1 min-w-0">
+                                <TextField
+                                  size="small"
+                                  fullWidth
+                                  placeholder="DNIS Name"
+                                  value={row.dnisName}
+                                  onChange={(e) =>
+                                    setDnisRows((prev) =>
+                                      prev.map((x, j) =>
+                                        j === i
+                                          ? {
+                                              ...x,
+                                              dnisName: e.target.value,
+                                            }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  sx={trunkAdaptTextFieldSx}
+                                />
+                                {dnisRows.length > 1 ? (
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      setDnisRows((r) =>
+                                        r.filter((_, j) => j !== i),
+                                      )
+                                    }
+                                    sx={trunkAdaptRowActionBtnSx}
+                                    aria-label="remove dnis row"
+                                  >
+                                    <CloseIcon fontSize="small" />
+                                  </IconButton>
+                                ) : null}
+                              </div>
+                              <span aria-hidden="true" />
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+                          <SipRegisterFieldLabel
+                            tooltipKey="replace_cid"
+                            style={{ minWidth: "6.5rem", flexShrink: 0 }}
+                          >
+                            Replace CID
+                          </SipRegisterFieldLabel>
+                          <FormControl size="small" sx={{ width: 160 }}>
+                            <MuiSelect
+                              value={form.ui_replace_cid || "No"}
+                              onChange={(e) =>
+                                handleChange("ui_replace_cid", e.target.value)
+                              }
+                              sx={sipRegisterModalSelectSx}
+                            >
+                              {SIP_REGISTER_YES_NO.map((c) => (
+                                <MenuItem key={c} value={c}>
+                                  {c}
+                                </MenuItem>
                               ))}
-                            </tbody>
-                          </table>
+                            </MuiSelect>
+                          </FormControl>
                         </div>
                       </div>
                     )}

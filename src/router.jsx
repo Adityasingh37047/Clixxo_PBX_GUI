@@ -53,14 +53,14 @@ import Whitelist from "./modules/E1-PRI/Number Filter/Whitelist";
 import Blacklist from "./modules/E1-PRI/Number Filter/Blacklist";
 import NumberPool from "./modules/E1-PRI/Number Filter/NumberPool";
 import FilteringRule from "./modules/E1-PRI/Number Filter/FilteringRule";
-import IPCallInCallerID from "./modules/E1-PRI/Num Manipulate/IPCallInCallerID";
-import IPCallInCalleeID from "./modules/E1-PRI/Num Manipulate/IPCallInCalleeID";
-import IPCallInOriCalleeID from "./modules/E1-PRI/Num Manipulate/IPCallInOriCalleeID";
-import PSTNCallInCallerID from "./modules/E1-PRI/Num Manipulate/PSTNCallInCallerID";
-import PSTNCallInCalleeID from "./modules/E1-PRI/Num Manipulate/PSTNCallInCalleeID";
-import PSTNCallInOriCalleeID from "./modules/E1-PRI/Num Manipulate/PSTNCallInOriCalleeID";
-import CallerIDPool from "./modules/E1-PRI/Num Manipulate/CallerIDPool";
-import CallerIDReservePool from "./modules/E1-PRI/Num Manipulate/CallerIDReservePool";
+import E1PriIPCallInCallerID from "./modules/E1-PRI/Num Manipulate/E1PriIPCallInCallerID";
+import E1PriIPCallInCalleeID from "./modules/E1-PRI/Num Manipulate/E1PriIPCallInCalleeID";
+import E1PriIPCallInOriCalleeID from "./modules/E1-PRI/Num Manipulate/E1PriIPCallInOriCalleeID";
+import E1PriPSTNCallInCallerID from "./modules/E1-PRI/Num Manipulate/E1PriPSTNCallInCallerID";
+import E1PriPSTNCallInCalleeID from "./modules/E1-PRI/Num Manipulate/E1PriPSTNCallInCalleeID";
+import E1PriPSTNCallInOriCalleeID from "./modules/E1-PRI/Num Manipulate/E1PriPSTNCallInOriCalleeID";
+import E1PriCallerIDPool from "./modules/E1-PRI/Num Manipulate/E1PriCallerIDPool";
+import E1PriCallerIDReservePool from "./modules/E1-PRI/Num Manipulate/E1PriCallerIDReservePool";
 import VpnServerSettings from "./modules/System/System Settings/VpnServerSettings";
 import VpnAccount from "./modules/System/System Settings/VpnAccount";
 import DhcpServerSettings from "./modules/System/System Settings/DhcpServerSettings";
@@ -420,35 +420,35 @@ export const router = createBrowserRouter([
       },
       {
         path: ROUTE_PATHS.IP_CALL_IN_CALLERID,
-        element: <IPCallInCallerID />,
+        element: <E1PriIPCallInCallerID />,
       },
       {
         path: ROUTE_PATHS.IP_CALL_IN_CALLEEID,
-        element: <IPCallInCalleeID />,
+        element: <E1PriIPCallInCalleeID />,
       },
       {
         path: ROUTE_PATHS.IP_CALL_IN_ORICALLEEID,
-        element: <IPCallInOriCalleeID />,
+        element: <E1PriIPCallInOriCalleeID />,
       },
       {
         path: ROUTE_PATHS.PSTN_CALL_IN_CALLERID,
-        element: <PSTNCallInCallerID />,
+        element: <E1PriPSTNCallInCallerID />,
       },
       {
         path: ROUTE_PATHS.PSTN_CALL_IN_CALLEEID,
-        element: <PSTNCallInCalleeID />,
+        element: <E1PriPSTNCallInCalleeID />,
       },
       {
         path: ROUTE_PATHS.PSTN_CALL_IN_ORICALLEEID,
-        element: <PSTNCallInOriCalleeID />,
+        element: <E1PriPSTNCallInOriCalleeID />,
       },
       {
         path: ROUTE_PATHS.CALLERID_POOL,
-        element: <CallerIDPool />,
+        element: <E1PriCallerIDPool />,
       },
       {
         path: ROUTE_PATHS.CALLERID_RESERVE_POOL,
-        element: <CallerIDReservePool />,
+        element: <E1PriCallerIDReservePool />,
       },
       {
         path: "/system-tools/network",
