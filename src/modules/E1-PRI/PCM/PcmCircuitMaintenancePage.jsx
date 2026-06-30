@@ -24,7 +24,7 @@ import AppSettingsAltIcon from "@mui/icons-material/AppSettingsAlt";
 import PhoneLockedIcon from "@mui/icons-material/PhoneLocked";
 
 // Square status color block (matches PSTN Status page)
-const STATUS_BOX_PX = 22;
+const STATUS_BOX_PX = 18;
 
 const colorBlock = (color, size = STATUS_BOX_PX) => (
   <div
@@ -48,55 +48,55 @@ const statusCellContentStyle = {
   alignItems: "center",
   justifyContent: "center",
   width: "100%",
-  minHeight: 28,
+  minHeight: 20,
   margin: "0 auto",
 };
 
 // Material-UI icons for status (same as PSTN Status page)
 const ICONS = [
-  <div className="w-6 h-6 bg-green-500 flex items-center justify-center cursor-pointer">
-    <CallEndIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-green-500 flex items-center justify-center cursor-pointer">
+    <CallEndIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Idle (green phone)
   <div
-    className="w-6 h-6 flex items-center justify-center cursor-pointer"
+    className="w-5 h-5 flex items-center justify-center cursor-pointer"
     style={{ backgroundColor: "#D4AF37" }}
   >
-    <RingVolumeIcon style={{ color: "white", fontSize: "15px" }} />
+    <RingVolumeIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Ringing (golden-brown bell)
-  <div className="w-6 h-6 bg-blue-500 flex items-center justify-center cursor-pointer">
-    <SettingsPhoneIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-blue-500 flex items-center justify-center cursor-pointer">
+    <SettingsPhoneIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Wait Answer (blue settings phone)
-  <div className="w-6 h-6 bg-blue-500 flex items-center justify-center cursor-pointer">
-    <PhoneForwardedIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-blue-500 flex items-center justify-center cursor-pointer">
+    <PhoneForwardedIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Dialing (blue phone forwarded)
   <div
-    className="w-6 h-6 flex items-center justify-center cursor-pointer"
+    className="w-5 h-5 flex items-center justify-center cursor-pointer"
     style={{ backgroundColor: "#20B2AA" }}
   >
-    <PhoneInTalkIcon style={{ color: "white", fontSize: "15px" }} />
+    <PhoneInTalkIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Talking (teal phone in talk)
-  <div className="w-6 h-6 bg-red-500 flex items-center justify-center cursor-pointer">
-    <PhonePausedIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-red-500 flex items-center justify-center cursor-pointer">
+    <PhonePausedIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Pending (red phone paused)
-  <div className="w-6 h-6 bg-blue-500 flex items-center justify-center cursor-pointer">
-    <PermPhoneMsgIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-blue-500 flex items-center justify-center cursor-pointer">
+    <PermPhoneMsgIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Wait Message (blue phone message)
   <div
-    className="w-6 h-6 flex items-center justify-center cursor-pointer"
+    className="w-5 h-5 flex items-center justify-center cursor-pointer"
     style={{ backgroundColor: "#8A2BE2" }}
   >
-    <PhoneDisabledIcon style={{ color: "white", fontSize: "15px" }} />
+    <PhoneDisabledIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Blocked (purple phone disabled)
-  <div className="w-6 h-6 bg-orange-500 flex items-center justify-center cursor-pointer">
+  <div className="w-5 h-5 bg-orange-500 flex items-center justify-center cursor-pointer">
     <SystemSecurityUpdateWarningIcon
-      style={{ color: "white", fontSize: "15px" }}
+      style={{ color: "white", fontSize: "13px" }}
     />
   </div>, // Reset (orange warning)
-  <div className="w-6 h-6 bg-gray-500 flex items-center justify-center cursor-pointer">
-    <AppSettingsAltIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-gray-500 flex items-center justify-center cursor-pointer">
+    <AppSettingsAltIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Unavailable (gray settings)
-  <div className="w-6 h-6 bg-red-600 flex items-center justify-center cursor-pointer">
-    <PhoneLockedIcon style={{ color: "white", fontSize: "15px" }} />
+  <div className="w-5 h-5 bg-red-600 flex items-center justify-center cursor-pointer">
+    <PhoneLockedIcon style={{ color: "white", fontSize: "13px" }} />
   </div>, // Unusable (dark red phone locked)
 ];
 
@@ -144,7 +144,7 @@ const advancedPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: "4px 20px 8px",
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -180,7 +180,7 @@ const PcmBreadcrumb = ({ current }) => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 6,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -331,7 +331,7 @@ const Btn = ({
   );
 };
 
-const SECTION_CARD_GAP = 35;
+const SECTION_CARD_GAP = 12;
 
 const sectionCardStyle = {
   background: C.cardBg,
@@ -358,7 +358,7 @@ const sectionCardsStackStyle = {
   gap: SECTION_CARD_GAP,
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 0 12px",
+  padding: "2px 0 4px",
   boxSizing: "border-box",
 };
 
@@ -369,19 +369,19 @@ const channelCardStyle = {
 };
 
 const panelToolbarStyle = {
-  minHeight: 44,
-  padding: "10px 16px",
+  minHeight: 34,
+  padding: "5px 12px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
   flexWrap: "wrap",
-  gap: 10,
+  gap: 6,
   background: C.cardBg,
   borderBottom: `1px solid ${C.divider}`,
 };
 
 const panelSectionTitleStyle = {
-  fontSize: 14,
+  fontSize: 13,
   fontWeight: 700,
   color: C.strongText,
   letterSpacing: "-0.01em",
@@ -392,16 +392,16 @@ const panelFooterStyle = {
   flexWrap: "wrap",
   alignItems: "center",
   justifyContent: "center",
-  gap: 10,
-  padding: "10px 16px",
+  gap: 6,
+  padding: "5px 12px",
   borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
 };
 
 const configActionBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
+  height: 26,
+  padding: "3px 10px",
+  fontSize: 11,
 };
 
 const actionBarStyle = panelFooterStyle;
@@ -415,20 +415,26 @@ const topConfigCardLastStyle = {
   ...panelCardStyle,
 };
 
-const topConfigSectionHeaderStyle = panelToolbarStyle;
+const topConfigSectionHeaderStyle = {
+  ...panelToolbarStyle,
+  minHeight: 30,
+  padding: "4px 12px",
+};
 
 const topConfigActionBarStyle = {
   ...panelFooterStyle,
   overflowX: "hidden",
+  padding: "4px 10px",
+  gap: 5,
 };
 
 const topConfigCellStyle = {
-  padding: "5px 12px",
+  padding: "3px 8px",
 };
 
 const tableCellStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
+  padding: "4px 10px",
+  fontSize: 12,
   color: C.valueText,
   textAlign: "center",
   background: "#ffffff",
@@ -453,8 +459,8 @@ const channelThStyle = {
   background: "#F8FAFC",
   color: C.labelText,
   fontWeight: 700,
-  fontSize: 10,
-  padding: "6px 2px",
+  fontSize: 9,
+  padding: "4px 2px",
   textAlign: "center",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
@@ -463,11 +469,11 @@ const channelThStyle = {
 };
 
 const channelTdStyle = {
-  padding: "4px 2px",
+  padding: "3px 1px",
   textAlign: "center",
   borderBottom: `1px solid ${C.cardBorder}`,
   borderRight: `1px solid ${C.cardBorder}`,
-  fontSize: 12,
+  fontSize: 11,
   color: C.valueText,
   background: "#ffffff",
   overflow: "hidden",
@@ -478,11 +484,11 @@ const channelRowLabelStyle = {
   fontWeight: 600,
   color: C.labelText,
   borderLeft: "none",
-  width: 72,
-  minWidth: 72,
-  maxWidth: 72,
-  padding: "6px 4px",
-  fontSize: 11,
+  width: 68,
+  minWidth: 68,
+  maxWidth: 68,
+  padding: "4px 3px",
+  fontSize: 10,
 };
 
 const channelTableStyle = {
@@ -492,8 +498,8 @@ const channelTableStyle = {
   tableLayout: "fixed",
 };
 
-const CHANNEL_LABEL_COL_WIDTH = 72;
-const CHANNEL_COL_SCROLL_WIDTH = 31;
+const CHANNEL_LABEL_COL_WIDTH = 68;
+const CHANNEL_COL_SCROLL_WIDTH = 29;
 
 /** Locked at ~100% browser zoom. Do NOT refresh while Ctrl+/- shrinks innerWidth. */
 const zoomBaselineRef = { innerWidth: 0, dpr: 1 };
@@ -686,7 +692,7 @@ const PcmCircuitMaintenancePage = () => {
     if (!contentEl) return;
 
     const available = window.innerHeight - PAGE_CHROME_OFFSET;
-    const totalContent = contentEl.scrollHeight + 32; // page padding (16 × 2)
+    const totalContent = contentEl.scrollHeight + 12; // page padding (4 + 8)
     setContentOverflows(totalContent > available + 1);
   }, [isCompact]);
 
@@ -971,7 +977,7 @@ const PcmCircuitMaintenancePage = () => {
                   style={{
                     display: "flex",
                     justifyContent: "center",
-                    minHeight: 20,
+                    minHeight: 16,
                   }}
                 >
                   {colorBlock("#0070a8")}
@@ -1010,7 +1016,7 @@ const PcmCircuitMaintenancePage = () => {
       <div
         style={{
           ...topConfigActionBarStyle,
-          ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+          ...(isCompact ? { justifyContent: "center", gap: 6 } : {}),
         }}
       >
         <Btn
@@ -1097,7 +1103,7 @@ const PcmCircuitMaintenancePage = () => {
                   style={{
                     display: "flex",
                     justifyContent: "center",
-                    minHeight: 20,
+                    minHeight: 16,
                   }}
                 >
                   {colorBlock("#ccc")}
@@ -1136,7 +1142,7 @@ const PcmCircuitMaintenancePage = () => {
       <div
         style={{
           ...topConfigActionBarStyle,
-          ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+          ...(isCompact ? { justifyContent: "center", gap: 6 } : {}),
         }}
       >
         <Btn
@@ -1201,8 +1207,8 @@ const PcmCircuitMaintenancePage = () => {
   const channelThFit = (extra = {}) => ({
     ...channelThStyle,
     whiteSpace: channelScroll ? "nowrap" : "normal",
-    padding: channelScroll ? "6px 2px" : "3px 1px",
-    fontSize: channelScroll ? 10 : 9,
+    padding: channelScroll ? "4px 2px" : "2px 1px",
+    fontSize: channelScroll ? 9 : 8,
     overflow: "hidden",
     ...extra,
   });
@@ -1216,19 +1222,19 @@ const PcmCircuitMaintenancePage = () => {
 
   const channelLabelTdFit = (extra = {}) => ({
     ...channelRowLabelStyle,
-    width: channelScroll ? 72 : "8%",
-    minWidth: channelScroll ? 72 : 0,
-    maxWidth: channelScroll ? 72 : "8%",
-    fontSize: channelScroll ? 11 : 10,
-    padding: channelScroll ? "6px 4px" : "4px 2px",
+    width: channelScroll ? CHANNEL_LABEL_COL_WIDTH : "8%",
+    minWidth: channelScroll ? CHANNEL_LABEL_COL_WIDTH : 0,
+    maxWidth: channelScroll ? CHANNEL_LABEL_COL_WIDTH : "8%",
+    fontSize: channelScroll ? 10 : 9,
+    padding: channelScroll ? "4px 3px" : "3px 2px",
     whiteSpace: channelScroll ? "nowrap" : "normal",
     ...extra,
   });
 
   const channelDataTdFit = (extra = {}) => ({
     ...channelTdStyle,
-    padding: channelScroll ? "4px 2px" : "2px 1px",
-    fontSize: channelScroll ? 12 : 10,
+    padding: channelScroll ? "3px 1px" : "2px 1px",
+    fontSize: channelScroll ? 11 : 10,
     overflow: "hidden",
     ...extra,
   });
@@ -1237,7 +1243,7 @@ const PcmCircuitMaintenancePage = () => {
     ...channelDataTdFit(extra),
     textAlign: "center",
     verticalAlign: "middle",
-    padding: channelScroll ? "6px 2px" : "5px 1px",
+    padding: channelScroll ? "4px 1px" : "3px 1px",
   });
 
   // Update PCM0_HEADERS in the component
@@ -1410,7 +1416,7 @@ const PcmCircuitMaintenancePage = () => {
         <div
           style={{
             ...actionBarStyle,
-            ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+            ...(isCompact ? { justifyContent: "center", gap: 6 } : {}),
           }}
         >
           <Btn onClick={handleCheckAll} style={configActionBtnStyle}>
@@ -1599,7 +1605,7 @@ const PcmCircuitMaintenancePage = () => {
   return (
     <AdvancedPageShell
       shellStyle={{
-        padding: isCompact ? 8 : "8px 28px 16px",
+        padding: isCompact ? 6 : "4px 20px 8px",
         maxWidth: "100vw",
         ...(highZoom || isCompact || contentOverflows
           ? { minHeight: "calc(100vh - 80px)", overflowY: "auto" }
@@ -1611,21 +1617,22 @@ const PcmCircuitMaintenancePage = () => {
       }}
     >
       
-      <PcmBreadcrumb current="Circuit Maintenance" />
-
       <div
         ref={contentRef}
         style={{
           maxWidth: "100%",
           margin: "0 auto",
           overflow: "visible",
-          ...sectionCardsStackStyle,
         }}
       >
-        {renderPcmMaintenance()}
-        {renderPcmLoopback()}
+        <PcmBreadcrumb current="Circuit Maintenance" />
 
-        {spansData.length > 0 ? spansData.map(renderSpanBlock) : renderPcm0()}
+        <div style={sectionCardsStackStyle}>
+          {renderPcmMaintenance()}
+          {renderPcmLoopback()}
+
+          {spansData.length > 0 ? spansData.map(renderSpanBlock) : renderPcm0()}
+        </div>
       </div>
     </AdvancedPageShell>
   );

@@ -396,13 +396,16 @@ const managementFieldGroupStyle = {
   flexDirection: "column",
   gap: 10,
   width: "100%",
+  minWidth: 0,
 };
 
 const managementDashboardGridStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
+  minWidth: 0,
   alignItems: "stretch",
+  minHeight: "100%",
 };
 
 const managementDashboardColumnStyle = {
@@ -412,17 +415,28 @@ const managementDashboardColumnStyle = {
   minWidth: 0,
   padding: "16px 36px 24px",
   background: C.cardBg,
+  boxSizing: "border-box",
 };
 
 const managementDashboardDividerStyle = {
   background: C.divider,
   width: 1,
   flexShrink: 0,
-  marginTop: "-1px", // adjust 10-20px as needed
-  marginBottom: "-24px",
+  alignSelf: "stretch",
 };
 
-  const managementDashboardSectionTitleStyle = {
+const managementDashboardResponsiveCss = `
+  @media (max-width: 767px) {
+    .management-dashboard-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .management-dashboard-divider {
+      display: none !important;
+    }
+  }
+`;
+
+const managementDashboardSectionTitleStyle = {
     fontSize: 13,
     fontWeight: 500,
     color: C.labelText,
@@ -436,6 +450,7 @@ const managementDashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
+  minWidth: 0,
   gap: 0,
 };
 
@@ -595,6 +610,13 @@ const FieldLabel = ({ name, children }) => {
     </Tooltip>
   );
 };
+
+const ManagementFieldRow = ({ label, children }) => (
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full min-w-0 gap-2 sm:gap-4">
+    {label ?? null}
+    <div className="flex-1 w-full max-w-[280px] min-w-0">{children}</div>
+  </div>
+);
 
 const Management = () => {
   const [form, setForm] = useState(MANAGEMENT_INITIAL_FORM);
@@ -1662,70 +1684,66 @@ const Management = () => {
 
   // Helper to render System Time row with Modify checkbox and date/time input inline
   const renderSystemTimeInline = (field, nextField) => (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-      <FieldLabel name={field.name}>{field.label}</FieldLabel>
-      <div className="flex-1 w-full max-w-[280px]">
-        <div className="flex items-center gap-2 w-full">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Checkbox
-              name={nextField.name}
-              size="small"
-              checked={!!form[nextField.name]}
-              onChange={handleCheckboxChange(nextField.name)}
-              sx={checkboxSx}
-            />
-            <Tooltip title={tooltips.modifyTime} {...tooltipProps}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.labelText }}>
-                {nextField.label}
-              </span>
-            </Tooltip>
-          </div>
-          <input
-            type="datetime-local"
-            name={field.name}
-            className="management-system-time-input"
-            value={form[field.name] ? form[field.name].replace(" ", "T") : ""}
-            onChange={handleChange}
-            readOnly={!form[nextField.name]}
-            style={{
-              ...(form[nextField.name] ? inputStyle : disabledInputStyle),
-              flex: 1,
-              minWidth: 0,
-              maxWidth: "none",
-              width: "auto",
-              borderRadius: FIELD_RADIUS,
-              borderColor: fieldErrors[field.name] ? C.errorRed : C.cardBorder,
-            }}
-            onFocus={
-              form[nextField.name] ? inputInteraction.onFocus : undefined
-            }
-            onBlur={form[nextField.name] ? inputInteraction.onBlur : undefined}
-            onMouseEnter={
-              form[nextField.name] ? inputInteraction.onMouseEnter : undefined
-            }
-            onMouseLeave={
-              form[nextField.name] ? inputInteraction.onMouseLeave : undefined
-            }
-            step="1"
+    <ManagementFieldRow
+      label={<FieldLabel name={field.name}>{field.label}</FieldLabel>}
+    >
+      <div className="flex items-center gap-2 w-full min-w-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Checkbox
+            name={nextField.name}
+            size="small"
+            checked={!!form[nextField.name]}
+            onChange={handleCheckboxChange(nextField.name)}
+            sx={checkboxSx}
           />
+          <Tooltip title={tooltips.modifyTime} {...tooltipProps}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: C.labelText }}>
+              {nextField.label}
+            </span>
+          </Tooltip>
         </div>
-        {fieldErrors[field.name] && (
-          <div style={{ fontSize: 11, color: C.errorRed, marginTop: 4 }}>
-            {fieldErrors[field.name]}
-          </div>
-        )}
+        <input
+          type="datetime-local"
+          name={field.name}
+          className="management-system-time-input"
+          value={form[field.name] ? form[field.name].replace(" ", "T") : ""}
+          onChange={handleChange}
+          readOnly={!form[nextField.name]}
+          style={{
+            ...(form[nextField.name] ? inputStyle : disabledInputStyle),
+            flex: 1,
+            minWidth: 0,
+            maxWidth: "100%",
+            width: "auto",
+            borderRadius: FIELD_RADIUS,
+            borderColor: fieldErrors[field.name] ? C.errorRed : C.cardBorder,
+          }}
+          onFocus={
+            form[nextField.name] ? inputInteraction.onFocus : undefined
+          }
+          onBlur={form[nextField.name] ? inputInteraction.onBlur : undefined}
+          onMouseEnter={
+            form[nextField.name] ? inputInteraction.onMouseEnter : undefined
+          }
+          onMouseLeave={
+            form[nextField.name] ? inputInteraction.onMouseLeave : undefined
+          }
+          step="1"
+        />
       </div>
-    </div>
+      {fieldErrors[field.name] && (
+        <div style={{ fontSize: 11, color: C.errorRed, marginTop: 4 }}>
+          {fieldErrors[field.name]}
+        </div>
+      )}
+    </ManagementFieldRow>
   );
 
   const renderManagementSection = (section, isFirst) => (
-    <div key={section.section} className="flex flex-col gap-0">
+    <div key={section.section} className="flex flex-col gap-0 min-w-0">
       <SectionHeading title={section.section} isFirst={isFirst} />
 
-      <div
-        className="flex flex-col gap-3 w-full"
-        style={managementFieldGroupStyle}
-      >
+      <div className="flex flex-col w-full min-w-0" style={managementFieldGroupStyle}>
         {section.fields.map((field, fieldIdx) => {
           if (
             field.conditional &&
@@ -1767,15 +1785,12 @@ const Management = () => {
           }
 
           return (
-            <div
+            <ManagementFieldRow
               key={section.section + field.name}
-              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
+              label={<FieldLabel name={field.name}>{field.label}</FieldLabel>}
             >
-              <FieldLabel name={field.name}>{field.label}</FieldLabel>
-
-              <div className="flex-1 w-full max-w-[280px]">
                 {field.type === "text" && (
-                  <div className="flex flex-col gap-1 w-full">
+                  <div className="flex flex-col gap-1 w-full min-w-0">
                     <input
                       type={
                         field.name === "webPort" ||
@@ -1844,7 +1859,7 @@ const Management = () => {
                 )}
 
                 {field.type === "textarea" && (
-                  <div className="flex flex-col gap-1 w-full">
+                  <div className="flex flex-col gap-1 w-full min-w-0">
                     <textarea
                       name={field.name}
                       value={form[field.name]}
@@ -1871,7 +1886,7 @@ const Management = () => {
                 )}
 
                 {field.type === "select" && (
-                  <div className="flex flex-col gap-1 w-full">
+                  <div className="flex flex-col gap-1 w-full min-w-0">
                     <select
                       name={field.name}
                       value={form[field.name]}
@@ -1954,8 +1969,7 @@ const Management = () => {
                     />
                   </div>
                 )}
-              </div>
-            </div>
+            </ManagementFieldRow>
           );
         })}
       </div>
@@ -1996,6 +2010,8 @@ const Management = () => {
       )}
 
       <ManagementBreadcrumb />
+
+      <style>{managementDashboardResponsiveCss}</style>
 
       <div style={managementCardShellStyle}>
         <div style={managementTableContainerStyle}>
@@ -2039,7 +2055,10 @@ const Management = () => {
                 onSubmit={handleSave}
                 className="flex flex-col gap-2"
               >
-                <div style={managementDashboardGridStyle}>
+                <div
+                  className="management-dashboard-grid"
+                  style={managementDashboardGridStyle}
+                >
                   <div style={managementDashboardColumnStyle}>
                   <div
   style={{
@@ -2068,6 +2087,7 @@ const Management = () => {
                   </div>
 
                   <div
+                    className="management-dashboard-divider"
                     style={managementDashboardDividerStyle}
                     aria-hidden="true"
                   />
