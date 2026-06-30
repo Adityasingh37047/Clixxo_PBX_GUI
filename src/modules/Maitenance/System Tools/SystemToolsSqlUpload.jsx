@@ -2,22 +2,34 @@ import React, { useState, useEffect } from "react";
 import { CircularProgress, Alert } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { uploadSqlPatch } from "../../../api/apiService";
-
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
-  labelText: "#64748b",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#0284c7",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  cardBorder: "#d8dde5",
+  cardShadow:
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
+  labelText: "#3E5475",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
   errorRed: "#dc2626",
+  gridHeaderBg: "#F8FAFC",
 };
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+// ── Local field UI (matches Network.jsx design language) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
+
 
 const Btn = ({
   children,
@@ -189,7 +201,7 @@ const SystemToolsSqlUpload = () => {
       className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
       style={{ backgroundColor: C.pageBg }}
     >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
+      <div className="w-full" style={{ maxWidth: 1600 }}>
         {/* Breadcrumb */}
         <div
           style={{

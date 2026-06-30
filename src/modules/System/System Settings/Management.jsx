@@ -25,7 +25,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -340,29 +340,14 @@ const SectionHeading = ({ title, isFirst = false }) => (
 const managementPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
 const managementPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-};
-
-const managementCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
+  margin: "0 auto",
 };
 
 const managementTableContainerStyle = {
@@ -376,6 +361,7 @@ const managementTableContainerStyle = {
   borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
+  
   boxSizing: "border-box",
 };
 
@@ -411,9 +397,9 @@ const managementDashboardGridStyle = {
 const managementDashboardColumnStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: 8,
   minWidth: 0,
-  padding: "16px 36px 24px",
+  padding: "24px 36px 24px",
   background: C.cardBg,
   boxSizing: "border-box",
 };
@@ -436,22 +422,12 @@ const managementDashboardResponsiveCss = `
   }
 `;
 
-const managementDashboardSectionTitleStyle = {
-    fontSize: 13,
-    fontWeight: 500,
-    color: C.labelText,
-    marginBottom: 12,
-    flexShrink: 0,
-    letterSpacing: "0.01em",
-   
-  };
-
 const managementDashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
   minWidth: 0,
-  gap: 0,
+  gap: 8,
 };
 
 /** UI-only column split — mirrors Network.jsx two-panel layout */
@@ -486,7 +462,7 @@ const ManagementBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -2013,8 +1989,7 @@ const Management = () => {
 
       <style>{managementDashboardResponsiveCss}</style>
 
-      <div style={managementCardShellStyle}>
-        <div style={managementTableContainerStyle}>
+      <div style={managementTableContainerStyle}>
           <div style={managementToolbarStyle}>
             <span
               style={{
@@ -2060,25 +2035,6 @@ const Management = () => {
                   style={managementDashboardGridStyle}
                 >
                   <div style={managementDashboardColumnStyle}>
-                  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 12,
-  }}
->
-  <span style={managementDashboardSectionTitleStyle}>
-    Access &amp; Services
-  </span>
-
-  <div
-    style={{
-      flex: 1,
-      borderTop: `1px solid ${C.divider}`,
-    }}
-  />
-</div>
                     <div style={managementDashboardFieldsStackStyle}>
                       {leftSections.map((section, idx) =>
                         renderManagementSection(section, idx === 0),
@@ -2093,25 +2049,6 @@ const Management = () => {
                   />
 
                   <div style={managementDashboardColumnStyle}>
-                  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 12,
-  }}
->
-  <span style={managementDashboardSectionTitleStyle}>
-    Logging, CDR &amp; Time
-  </span>
-
-  <div
-    style={{
-      flex: 1,
-      borderTop: `1px solid ${C.divider}`,
-    }}
-  />
-</div>
                     <div style={managementDashboardFieldsStackStyle}>
                       {rightSections.map((section, idx) =>
                         renderManagementSection(section, idx === 0),
@@ -2144,7 +2081,6 @@ const Management = () => {
             </>
           )}
         </div>
-      </div>
     </ManagementPageShell>
   );
 };

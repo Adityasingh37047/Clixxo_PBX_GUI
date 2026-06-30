@@ -21,7 +21,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -303,29 +303,14 @@ const SectionHeading = ({ title, isFirst = false }) => (
 const routingPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
 const routingPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-};
-
-const routingCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
+  margin: "0 auto",
 };
 
 const routingTableContainerStyle = {
@@ -384,7 +369,7 @@ const RoutingBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -662,8 +647,7 @@ const RoutingInterface = () => {
 
       <RoutingBreadcrumb />
 
-      <div style={routingCardShellStyle}>
-        <div style={routingTableContainerStyle}>
+      <div style={routingTableContainerStyle}>
           <div style={routingToolbarStyle}>
             <span
               style={{
@@ -689,7 +673,7 @@ const RoutingInterface = () => {
           <div
             style={{
               padding:
-                showForm && !loading ? "16px 36px 0" : "16px 36px 24px",
+                showForm && !loading ? "24px 36px 0" : "24px 36px 24px",
             }}
           >
             {loading ? (
@@ -1000,7 +984,6 @@ const RoutingInterface = () => {
             </div>
           )}
         </div>
-      </div>
     </RoutingPageShell>
   );
 };

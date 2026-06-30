@@ -15,7 +15,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -130,12 +130,7 @@ const selectStyle = {
 const centralizedManagePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
@@ -195,9 +190,9 @@ const centralizedManageFieldsStackStyle = {
   flexDirection: "column",
   width: "100%",
   gap: 10,
-  marginBottom: 12,
+  maxWidth: 550,
+  margin: "0 auto 20px", // top horizontal bottom
 };
-
 const centralizedManageFieldRowStyle = {
   display: "flex",
   alignItems: "center",
@@ -1009,7 +1004,7 @@ fi`;
 
       <CentralizedManageBreadcrumb />
 
-      <div style={centralizedManageCardShellStyle}>
+      <div >
         <div style={centralizedManageTableContainerStyle}>
           <div style={centralizedManageToolbarStyle}>
             <span

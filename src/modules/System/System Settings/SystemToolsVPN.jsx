@@ -40,7 +40,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -149,12 +149,7 @@ const selectStyle = systemFieldSelectStyle;
 const vpnPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
@@ -166,13 +161,7 @@ const vpnPageInnerStyle = {
   flexDirection: "column",
 };
 
-const vpnCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
-};
+
 
 const vpnTableContainerStyle = {
   width: "100%",
@@ -1765,7 +1754,7 @@ const SystemToolsVPN = () => {
         </div>
       </div>
 
-      <div style={vpnCardShellStyle}>
+      <div >
         <div style={vpnTableContainerStyle}>
           <div style={vpnToolbarStyle}>
             <span

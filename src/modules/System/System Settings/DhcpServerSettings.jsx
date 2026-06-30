@@ -16,7 +16,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -357,12 +357,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
 const dhcpPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
@@ -374,13 +369,7 @@ const dhcpPageInnerStyle = {
   flexDirection: "column",
 };
 
-const dhcpCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
-};
+
 
 const dhcpTableContainerStyle = {
   width: "100%",
@@ -664,7 +653,7 @@ const DhcpServerSettings = () => {
 
       <DhcpBreadcrumb />
 
-      <div style={dhcpCardShellStyle}>
+      <div>
         <div style={dhcpTableContainerStyle}>
           <div style={dhcpToolbarStyle}>
             <span
@@ -679,7 +668,7 @@ const DhcpServerSettings = () => {
             </span>
           </div>
 
-          <div style={{ padding: "16px 36px 32px" }}>
+          <div style={{ padding: "24px 36px 32px" }}>
             {loading && lanSections.length === 0 ? (
               <div
                 className="flex items-center justify-center w-full"
