@@ -15,24 +15,30 @@ import {
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 4px 20px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1e293b",
-  strongText: "#0f172a",
-  mutedText: "#94a3b8",
-  accent: "#0284c7",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
+  amber: "#dc2626",
   errorRed: "#dc2626",
+  gridHeaderBg: "#F8FAFC",
 };
-// ── Local field UI (inlined from maitenanceSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
 
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+// ── Local field UI (matches Network.jsx design language) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
   el.style.borderWidth = "1px";
@@ -161,6 +167,7 @@ const advancedFormBtnStyle = {
 
 
 // ── Button Component (same as AccountManage) ─────────────────────────────────
+
 const Btn = ({
   children,
   onClick,
@@ -169,7 +176,9 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
+  form,
   component,
+  title,
 }) => {
   const styles = {
     default: {
@@ -182,29 +191,70 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
+      fontSize: 15,
+      textTransform: "none",
+      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    danger: {
+      background: "#fef2f2",
+      color: C.amber,
+      border: "0.5px solid #fecaca",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+    },
+    error: {
+      background: C.errorRed,
+      color: C.cardBg,
+      border: `1px solid ${C.errorRed}`,
     },
   };
-
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "primary":
-        return "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      danger: "#fca5a5",
+      outline: "#e2e8f0",
+      error: "#b91c1c",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      danger: "#f87171",
+      outline: "#d1d9e6",
+      error: "#991b1b",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const baseBg = s.background;
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
 
   const Component = component || "button";
 
@@ -231,13 +281,29 @@ const Btn = ({
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) e.currentTarget.style.background = baseBg;
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
+      {startIcon && (
+        <span style={{ display: "inline-flex" }}>
+          {startIcon}
+        </span>
+      )}
       {children}
     </Component>
   );
@@ -246,12 +312,28 @@ const Btn = ({
 const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: "0 auto",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
   border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
-  marginBottom: 24,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const authorizationPageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const authorizationPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
 };
 
 const blueBarStyle = {
@@ -279,6 +361,8 @@ const labelStyle = {
   color: C.labelText,
   textAlign: "left",
 };
+
+
 
 /** Authorization read-only fields — 12px (original size) */
 const inputStyleWithAuth = {
@@ -616,10 +700,8 @@ const Authorization = () => {
   ];
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
+    <div style={authorizationPageWrapStyle} data-native-scroll>
+      <div style={authorizationPageInnerStyle}>
       {/* ── Alerts ── */}
       {error && (
         <Alert
@@ -639,7 +721,6 @@ const Authorization = () => {
       )}
 
       {/* ── Breadcrumb ── */}
-      <div className="w-full" style={{ maxWidth: 1000 }}>
         <div
           style={{
             fontSize: 12,
@@ -661,7 +742,7 @@ const Authorization = () => {
         </div>
 
         {/* ── Content ── */}
-        <div style={{ ...tableContainerStyle, marginBottom: 12 }}>
+        <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
             <span>Authorization Information</span>
           </div>
@@ -730,7 +811,7 @@ const Authorization = () => {
             marginTop: 16,
             textAlign: "center",
             fontSize: 12,
-            color: "#dc2626",
+            color: C.accent,
             width: "100%",
             whiteSpace: "nowrap",
             overflowX: "auto",

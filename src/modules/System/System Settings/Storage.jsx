@@ -17,7 +17,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -321,12 +321,7 @@ const STORAGE_FIELD_ROW_MAX_WIDTH =
 const storagePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
@@ -407,7 +402,7 @@ const storageDashboardColumnStyle = {
   gap: 16,
   minWidth: 0,
   overflow: "hidden",
-  padding: "20px clamp(12px, 2.5vw, 36px) 28px",
+  padding: "24px clamp(12px, 2.5vw, 36px) 28px",
   background: C.cardBg,
   boxSizing: "border-box",
 };
@@ -441,7 +436,7 @@ const storageSingleColumnStyle = {
   gap: 16,
   minWidth: 0,
   overflow: "hidden",
-  padding: "20px clamp(12px, 2.5vw, 36px) 28px",
+  padding: "24px clamp(12px, 2.5vw, 36px) 28px",
   background: C.cardBg,
   boxSizing: "border-box",
 };
@@ -468,7 +463,7 @@ const StorageBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -833,7 +828,7 @@ const Storage = () => {
       <style>{storageDashboardResponsiveCss}</style>
       <StorageBreadcrumb />
 
-      <div style={storageCardShellStyle}>
+      <div>
         <div style={storageTableContainerStyle}>
           <div style={storageToolbarStyle}>
             <span

@@ -20,7 +20,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -340,29 +340,14 @@ const SectionHeading = ({ title, isFirst = false }) => (
 const networkPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
-  width: "100%",
-  maxWidth: "100%",
-  padding: "8px 28px 16px",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
+  padding: 16,
   boxSizing: "border-box",
 };
 
 const networkPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-};
-
-const networkCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
+  margin: "0 auto",
 };
 
 const networkTableContainerStyle = {
@@ -406,9 +391,9 @@ const networkDashboardGridStyle = {
 const networkDashboardColumnStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: 8,
   minWidth: 0,
-  padding: "16px 36px 24px",
+  padding: "24px 36px 20px",
   background: C.cardBg,
 };
 
@@ -416,14 +401,13 @@ const networkDashboardDividerStyle = {
   background: C.divider,
   width: 1,
   flexShrink: 0,
-  marginTop: "-13px", // adjust 10-20px as needed
-  marginBottom: "-24px",
+  alignSelf: "stretch",
 };
 const networkDashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  gap: 10,
+  gap: 8,
 };
 
 const networkFieldGroupStyle = {
@@ -456,7 +440,7 @@ const NetworkBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -1403,13 +1387,12 @@ const Network = () => {
 
       <NetworkBreadcrumb />
 
-      <div style={networkCardShellStyle}>
-        <div style={networkTableContainerStyle}>
+      <div style={networkTableContainerStyle}>
           <div style={networkHeaderStyle}>
             <span>Network</span>
           </div>
 
-          <div style={{ padding: "12px 0 0", boxSizing: "border-box" }}>
+          <div style={{ padding: 0, boxSizing: "border-box" }}>
             {loading ? (
               <div
                 className="flex items-center justify-center w-full"
@@ -1437,7 +1420,6 @@ const Network = () => {
               >
                 <div style={networkDashboardGridStyle}>
                   <div style={networkDashboardColumnStyle}>
-                    <SectionHeading title="Interfaces & VLAN" isFirst />
                     <div style={networkDashboardFieldsStackStyle}>
                   {/* Dynamically render LAN sections */}
                   {!vlanEnabled &&
@@ -1446,7 +1428,10 @@ const Network = () => {
                         key={lan.name || idx}
                         className="flex flex-col gap-0"
                       >
-                        <SectionHeading title={lan.name || `LAN ${idx + 1}`} />
+                        <SectionHeading
+                          title={lan.name || `LAN ${idx + 1}`}
+                          isFirst={idx === 0}
+                        />
 
                         <div
                           className="flex flex-col gap-3 w-full"
@@ -1833,109 +1818,111 @@ const Network = () => {
                     ))}
 
                   {/* VLAN Enable */}
-                  <div className="flex flex-col gap-0">
-                    <SectionHeading title="VLAN Configuration" />
-                    <div
-                      className="flex flex-col gap-4 w-full"
-                      style={networkFieldGroupStyle}
-                    >
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
+                  <div
+                    className="flex flex-col gap-3 w-full"
+                    style={networkFieldGroupStyle}
+                  >
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
                       <Tooltip
-  title={tooltips.vlanEnable}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: "100%",
-      maxWidth: 220,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    VLAN Enable:
-  </label>
-</Tooltip>
-                        <div className="flex-1 w-full max-w-[280px]">
-                          <div className="flex items-center gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="vlanEnable"
-                                checked={vlanEnabled}
-                                onChange={() => {
-                                  try {
-                                    const lan1 =
-                                      (lanInterfaces || []).find(
-                                        (l) =>
-                                          l.name === "LAN 1" ||
-                                          l.interface === "eth0",
-                                      ) || {};
-                                    setVlanForm((prev) => ({
-                                      ...prev,
-                                      lan1Ip:
-                                        lan1.ipAddress || prev.lan1Ip || "",
-                                      lan1Mask:
-                                        lan1.subnetMask || prev.lan1Mask || "",
-                                      lan1Gw:
-                                        lan1.defaultGateway ||
-                                        prev.lan1Gw ||
-                                        "",
-                                    }));
-                                  } catch (_) {}
-                                  setVlanEnabled(true);
-                                  setHasChanges(true);
-                                }}
-                                style={{ accentColor: OUTLINED_FOCUS }}
-                              />
-                              <span
-                                style={{ fontSize: 13, color: C.labelText }}
-                              >
-                                Yes
-                              </span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name="vlanEnable"
-                                checked={!vlanEnabled}
-                                onChange={() => {
-                                  setVlanEnabled(false);
-                                  setHasChanges(true);
-                                }}
-                                style={{ accentColor: OUTLINED_FOCUS }}
-                              />
-                              <span
-                                style={{ fontSize: 13, color: C.labelText }}
-                              >
-                                No
-                              </span>
-                            </label>
-                          </div>
+                        title={tooltips.vlanEnable}
+                        arrow
+                        placement="top"
+                        slotProps={{
+                          tooltip: {
+                            sx: {
+                              bgcolor: "#fff",
+                              color: "#334155",
+                              border: "1px solid #d1d5db",
+                              fontSize: 12,
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            },
+                          },
+                          arrow: {
+                            sx: {
+                              color: "#fff",
+                            },
+                          },
+                        }}
+                      >
+                        <label
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 600,
+                            color: C.labelText,
+                            width: "100%",
+                            maxWidth: 220,
+                            flexShrink: 0,
+                            cursor: "help",
+                          }}
+                        >
+                          VLAN Enable:
+                        </label>
+                      </Tooltip>
+                      <div className="flex-1 w-full max-w-[280px]">
+                        <div className="flex items-center gap-6">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="vlanEnable"
+                              checked={vlanEnabled}
+                              onChange={() => {
+                                try {
+                                  const lan1 =
+                                    (lanInterfaces || []).find(
+                                      (l) =>
+                                        l.name === "LAN 1" ||
+                                        l.interface === "eth0",
+                                    ) || {};
+                                  setVlanForm((prev) => ({
+                                    ...prev,
+                                    lan1Ip:
+                                      lan1.ipAddress || prev.lan1Ip || "",
+                                    lan1Mask:
+                                      lan1.subnetMask || prev.lan1Mask || "",
+                                    lan1Gw:
+                                      lan1.defaultGateway ||
+                                      prev.lan1Gw ||
+                                      "",
+                                  }));
+                                } catch (_) {}
+                                setVlanEnabled(true);
+                                setHasChanges(true);
+                              }}
+                              style={{ accentColor: OUTLINED_FOCUS }}
+                            />
+                            <span
+                              style={{ fontSize: 13, color: C.labelText }}
+                            >
+                              Yes
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="vlanEnable"
+                              checked={!vlanEnabled}
+                              onChange={() => {
+                                setVlanEnabled(false);
+                                setHasChanges(true);
+                              }}
+                              style={{ accentColor: OUTLINED_FOCUS }}
+                            />
+                            <span
+                              style={{ fontSize: 13, color: C.labelText }}
+                            >
+                              No
+                            </span>
+                          </label>
                         </div>
                       </div>
+                    </div>
+                  </div>
 
-                      {vlanEnabled && (
-                        <>
+                  {vlanEnabled && (
+                    <div
+                      className="flex flex-col gap-3 w-full"
+                      style={networkFieldGroupStyle}
+                    >
                           {/* LAN 1 base */}
                           {[
                             { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
@@ -2097,21 +2084,18 @@ const Network = () => {
                               </div>
                             </div>
                           ))}
-                        </>
-                      )}
                     </div>
-                  </div>
+                  )}
                     </div>
                   </div>
 
                   <div style={networkDashboardDividerStyle} aria-hidden="true" />
 
                   <div style={networkDashboardColumnStyle}>
-                    <SectionHeading title="DNS & Routing" isFirst />
                     <div style={networkDashboardFieldsStackStyle}>
                   {/* DNS Server Set */}
                   <div className="flex flex-col gap-0">
-                    <SectionHeading title="DNS Server Set" />
+                    <SectionHeading title="DNS Server Set" isFirst />
                     <div
                       className="flex flex-col gap-3 w-full"
                       style={networkFieldGroupStyle}
@@ -2356,7 +2340,6 @@ const Network = () => {
             </div>
           )}
         </div>
-      </div>
     </NetworkPageShell>
   );
 };
