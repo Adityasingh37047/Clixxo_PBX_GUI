@@ -1,9 +1,43 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Tooltip } from "@mui/material";
+import { Tooltip, useMediaQuery } from "@mui/material";
 import {
   SIP_TRUNK_FIELDS,
   SIP_TRUNK_INITIAL_FORM,
+  SIP_TRUNK_TABLE_COLUMNS,
   TRUNK_CODEC_OPTIONS,
+  GLOBAL_SIP_PAGE_BREADCRUMB_ROOT,
+  GLOBAL_SIP_PAGE_BREADCRUMB_SECTION,
+  GLOBAL_SIP_PAGE_TITLE,
+  GLOBAL_SIP_BTN_DELETE,
+  GLOBAL_SIP_BTN_CLEAR_ALL,
+  GLOBAL_SIP_BTN_ADD_NEW,
+  GLOBAL_SIP_BTN_PREV,
+  GLOBAL_SIP_BTN_NEXT,
+  GLOBAL_SIP_BTN_SAVE,
+  GLOBAL_SIP_BTN_SAVING,
+  GLOBAL_SIP_BTN_CLOSE,
+  GLOBAL_SIP_BTN_WORKING,
+  GLOBAL_SIP_MODAL_ADD_TITLE,
+  GLOBAL_SIP_MODAL_EDIT_TITLE,
+  GLOBAL_SIP_COL_MODIFY,
+  GLOBAL_SIP_EMPTY_MESSAGE,
+  GLOBAL_SIP_RECORD_LABEL,
+  GLOBAL_SIP_SELECTED_SUFFIX,
+  GLOBAL_SIP_EDIT_TITLE_ACCESS,
+  GLOBAL_SIP_TOOLTIP_DELETE,
+  GLOBAL_SIP_FIELD_TOOLTIPS,
+  GLOBAL_SIP_FORM_LAYOUT,
+  GLOBAL_SIP_PLACEHOLDER_PASSWORD,
+  GLOBAL_SIP_PLACEHOLDER_ENTER,
+  GLOBAL_SIP_MSG_SELECT_TO_DELETE,
+  GLOBAL_SIP_MSG_NO_TRUNKS_TO_CLEAR,
+  GLOBAL_SIP_CONFIRM_DELETE,
+  GLOBAL_SIP_CONFIRM_CLEAR_ALL,
+  GLOBAL_SIP_MSG_DELETED,
+  GLOBAL_SIP_MSG_DELETED_ALL,
+  GLOBAL_SIP_MSG_SAVE_RESTART,
+  GLOBAL_SIP_PAGINATION_SHOWING,
+  GLOBAL_SIP_PAGINATION_PAGE_OF,
 } from "../../../constants/SipTrunkConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -32,7 +66,10 @@ import {
   fetchNetwork,
 } from "../../../api/apiService";
 
-// ── Local page UI (aligned with Extensions.jsx) ──
+// ── Local page UI (aligned with SipToSipAccountPage) ──
+const GLOBAL_SIP_COMPACT_MQ = "(max-width: 768px)";
+const GLOBAL_SIP_SCROLL_CLASS = "global-sip-scroll";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -313,7 +350,7 @@ const systemSettingsModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const SystemSettingsBreadcrumb = ({ current }) => (
+const SystemSettingsBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
@@ -326,11 +363,13 @@ const SystemSettingsBreadcrumb = ({ current }) => (
       flexWrap: "wrap",
     }}
   >
-    <span>System</span>
+    <span>{GLOBAL_SIP_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{GLOBAL_SIP_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {GLOBAL_SIP_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -463,6 +502,7 @@ const tooltipProps = {
         fontSize: 12,
         maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        padding: "10px 12px",
       },
     },
     arrow: {
@@ -473,12 +513,65 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  Description: "Enter a descriptive name for this SIP trunk.",
-  "Local IP": "Select the local IP address/interface for this trunk.",
-  "Local SIP Port": "Specify the SIP port used for communication.",
-  "Transport Mode": "Choose the transport protocol such as UDP, TCP, or TLS.",
+const GlobalSipFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = tooltipKey ? GLOBAL_SIP_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        whiteSpace: "nowrap",
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={tooltip} {...tooltipProps}>
+      {labelNode}
+    </Tooltip>
+  );
 };
+
+const GlobalSipScrollbarStyles = () => (
+  <style>{`
+    .${GLOBAL_SIP_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${GLOBAL_SIP_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${GLOBAL_SIP_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${GLOBAL_SIP_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${GLOBAL_SIP_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${GLOBAL_SIP_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${GLOBAL_SIP_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
 
 const muiSelectSx = {
   fontSize: 13,
@@ -586,6 +679,7 @@ const buildLanIpv6Option = (idx, ipv6) => ({
   title: ipv6,
 });
 const SipTrunkPage = () => {
+  const isCompact = useMediaQuery(GLOBAL_SIP_COMPACT_MQ);
   // State
   const [registers, setRegisters] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -609,27 +703,21 @@ const SipTrunkPage = () => {
 
   const tableScrollRef = useRef(null);
 
-  // Fields to hide from the table
-  const HIDDEN_TABLE_FIELDS = [
-    "working_period_text",
-    "sip_agent",
-    "username",
-    "password",
-    "allow_codecs",
-    "working_period",
-    "vos11_rtp_encryptkey",
-    "encrypt_key",
-    "external_bound_address",
-    "external_bound_port",
-  ];
-  const visibleTableFields = useMemo(
+  const fieldByName = useMemo(
     () =>
-      SIP_TRUNK_FIELDS.filter(
-        (field) => !HIDDEN_TABLE_FIELDS.includes(field.name),
-      ),
+      SIP_TRUNK_FIELDS.reduce((acc, field) => {
+        acc[field.name] = field;
+        return acc;
+      }, {}),
     [],
   );
-  const visibleFieldsCount = visibleTableFields.length;
+
+  const modalFormFields = useMemo(() => {
+    const names = GLOBAL_SIP_FORM_LAYOUT.flat();
+    return names
+      .map((name) => fieldByName[name])
+      .filter(Boolean);
+  }, [fieldByName]);
   const buildFormStateFromSettings = (settings = {}) => {
     const base = { ...SIP_TRUNK_INITIAL_FORM };
     if (settings.id !== undefined && settings.id !== null) {
@@ -656,14 +744,16 @@ const SipTrunkPage = () => {
     return base;
   };
 
-  const renderCellValue = (field, row) => {
-    const raw = row[field.name];
+  const renderCellValue = (colKey, row) => {
+    if (colKey === "index") return null;
+    const field = fieldByName[colKey];
+    const raw = row[colKey];
     if (raw === undefined || raw === null || raw === "") return "--";
-    if (field.name === "local_ip") {
+    if (colKey === "local_ip") {
       const match = localIpOptions.find((option) => option.value === raw);
       if (match) return getLocalIpDisplayLabel(match, raw);
     }
-    if (field.type === "select" && Array.isArray(field.options)) {
+    if (field?.type === "select" && Array.isArray(field.options)) {
       const match = field.options.find((option) => option.value === raw);
       return match ? match.label : raw;
     }
@@ -883,7 +973,7 @@ const SipTrunkPage = () => {
       if (response?.response) {
         showMessage(
           "success",
-          `${response?.message || (isEditing ? "Entry updated" : "Entry created")}. SIP service will restart briefly.`,
+          `${response?.message || (isEditing ? "Entry updated" : "Entry created")}. ${GLOBAL_SIP_MSG_SAVE_RESTART}`,
         );
         await fetchGlobalSipSettings();
         setShowModal(false);
@@ -914,10 +1004,10 @@ const SipTrunkPage = () => {
 
   const handleDelete = async () => {
     if (selected.length === 0) {
-      showMessage("error", "Please select trunks to delete");
+      showMessage("error", GLOBAL_SIP_MSG_SELECT_TO_DELETE);
       return;
     }
-    if (!window.confirm(`Delete ${selected.length} SIP trunk(s)?`)) return;
+    if (!window.confirm(GLOBAL_SIP_CONFIRM_DELETE(selected.length))) return;
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
@@ -925,10 +1015,7 @@ const SipTrunkPage = () => {
         const row = registers[realIdx];
         if (row?.id != null) await deleteGlobalSipSettings(row.id);
       }
-      showMessage(
-        "success",
-        `${selected.length} trunk(s) deleted. SIP service will restart briefly.`,
-      );
+      showMessage("success", GLOBAL_SIP_MSG_DELETED(selected.length));
       setSelected([]);
       await fetchGlobalSipSettings();
     } catch (error) {
@@ -940,15 +1027,10 @@ const SipTrunkPage = () => {
 
   const handleClearAll = async () => {
     if (registers.length === 0) {
-      showMessage("info", "No trunks to clear");
+      showMessage("info", GLOBAL_SIP_MSG_NO_TRUNKS_TO_CLEAR);
       return;
     }
-    if (
-      !window.confirm(
-        "Are you sure you want to delete ALL SIP trunks? This action cannot be undone.",
-      )
-    )
-      return;
+    if (!window.confirm(GLOBAL_SIP_CONFIRM_CLEAR_ALL)) return;
 
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
@@ -959,10 +1041,7 @@ const SipTrunkPage = () => {
       setSelected([]);
       setPage(1);
       await fetchGlobalSipSettings();
-      showMessage(
-        "success",
-        `All ${totalCount} trunk(s) deleted. SIP service will restart briefly.`,
-      );
+      showMessage("success", GLOBAL_SIP_MSG_DELETED_ALL(totalCount));
     } catch (error) {
       showMessage("error", error?.message || "Failed to clear all trunks");
     } finally {
@@ -977,7 +1056,16 @@ const SipTrunkPage = () => {
   const pagedStart = (page - 1) * itemsPerPage;
 
   return (
-    <div style={systemSettingsPageWrapStyle}>
+    <>
+      <GlobalSipScrollbarStyles />
+      <div
+        className={GLOBAL_SIP_SCROLL_CLASS}
+        style={{
+          ...systemSettingsPageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
+        }}
+        data-native-scroll
+      >
       {message.text && (
         <Alert
           severity={message.type}
@@ -989,14 +1077,21 @@ const SipTrunkPage = () => {
       )}
 
       <div style={systemSettingsInnerStyle}>
-        <SystemSettingsBreadcrumb current="Global SIP" />
+        <SystemSettingsBreadcrumb />
 
         <div style={systemSettingsCardStyle}>
-          <div style={systemSettingsToolbarStyle}>
+          <div
+            style={{
+              ...systemSettingsToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {selected.length > 0 && (
                 <span style={systemSettingsSelectedBadgeStyle}>
-                  {selected.length} selected
+                  {selected.length} {GLOBAL_SIP_SELECTED_SUFFIX}
                 </span>
               )}
             </div>
@@ -1014,10 +1109,10 @@ const SipTrunkPage = () => {
                 disabled={selected.length === 0 || loading.delete}
                 style={systemSettingsCancelBtnStyle}
               >
-                <Tooltip title="Delete the selected SIP trunks." {...tooltipProps}>
+                <Tooltip title={GLOBAL_SIP_TOOLTIP_DELETE} {...tooltipProps}>
                   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 </Tooltip>
-                {loading.delete ? "Working..." : "Delete"}
+                {loading.delete ? GLOBAL_SIP_BTN_WORKING : GLOBAL_SIP_BTN_DELETE}
               </SystemSettingsBtn>
               <SystemSettingsBtn
                 variant="cancel"
@@ -1025,7 +1120,7 @@ const SipTrunkPage = () => {
                 disabled={registers.length === 0 || loading.delete}
                 style={systemSettingsCancelBtnStyle}
               >
-                {loading.delete ? "Working..." : "Clear All"}
+                {loading.delete ? GLOBAL_SIP_BTN_WORKING : GLOBAL_SIP_BTN_CLEAR_ALL}
               </SystemSettingsBtn>
               <SystemSettingsBtn
                 variant="primary"
@@ -1033,14 +1128,14 @@ const SipTrunkPage = () => {
                 disabled={loading.save}
                 style={systemSettingsPrimaryBtnStyle}
               >
-                + Add New
+                {GLOBAL_SIP_BTN_ADD_NEW}
               </SystemSettingsBtn>
             </div>
           </div>
 
           <div
             ref={tableScrollRef}
-            className="overflow-x-auto w-full"
+            className={GLOBAL_SIP_SCROLL_CLASS}
             style={
               loading.fetch || registers.length === 0
                 ? {
@@ -1080,7 +1175,7 @@ const SipTrunkPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  No Global SIP settings configured!
+                  {GLOBAL_SIP_EMPTY_MESSAGE}
                 </div>
                 <SystemSettingsBtn
                   onClick={() => handleOpenModal()}
@@ -1088,7 +1183,7 @@ const SipTrunkPage = () => {
                   disabled={loading.save}
                   style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
                 >
-                  + Add New
+                  {GLOBAL_SIP_BTN_ADD_NEW}
                 </SystemSettingsBtn>
               </>
             ) : (
@@ -1127,12 +1222,12 @@ const SipTrunkPage = () => {
                         sx={systemSettingsCheckboxSx}
                       />
                     </SystemSettingsTH>
-                    {visibleTableFields.map((field) => (
+                    {SIP_TRUNK_TABLE_COLUMNS.map((col) => (
                       <SystemSettingsTH
-                        key={field.name}
+                        key={col.key}
                         style={{ position: "sticky", top: 0, zIndex: 10 }}
                       >
-                        {field.label}
+                        {col.label}
                       </SystemSettingsTH>
                     ))}
                     <SystemSettingsTH
@@ -1144,7 +1239,7 @@ const SipTrunkPage = () => {
                         zIndex: 10,
                       }}
                     >
-                      Modify
+                      {GLOBAL_SIP_COL_MODIFY}
                     </SystemSettingsTH>
                   </tr>
                 </thead>
@@ -1201,18 +1296,18 @@ const SipTrunkPage = () => {
                             sx={systemSettingsCheckboxSx}
                           />
                         </td>
-                        {visibleTableFields.map((field) => (
+                        {SIP_TRUNK_TABLE_COLUMNS.map((col) => (
                           <td
-                            key={field.name}
+                            key={col.key}
                             style={{
                               ...systemSettingsTdStyle,
                               background: rowBg,
                               ...lastRowCellStyle,
                             }}
                           >
-                            {field.name === "index"
+                            {col.key === "index"
                               ? pagedStart + idx + 1
-                              : renderCellValue(field, reg)}
+                              : renderCellValue(col.key, reg)}
                           </td>
                         ))}
                         <td
@@ -1236,7 +1331,7 @@ const SipTrunkPage = () => {
                             }}
                           >
                             <EditDocumentIcon
-                              titleAccess="Edit"
+                              titleAccess={GLOBAL_SIP_EDIT_TITLE_ACCESS}
                               onClick={() =>
                                 !loading.delete && handleOpenModal(reg, realIdx)
                               }
@@ -1273,8 +1368,11 @@ const SipTrunkPage = () => {
               <span
                 style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}
               >
-                Showing {registers.length} record
-                {registers.length !== 1 ? "s" : ""}
+                {GLOBAL_SIP_PAGINATION_SHOWING(
+                  registers.length,
+                  GLOBAL_SIP_RECORD_LABEL,
+                  page,
+                )}
               </span>
               {totalPages > 1 && (
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -1283,17 +1381,17 @@ const SipTrunkPage = () => {
                     disabled={page <= 1}
                     variant="outline"
                   >
-                    ← Prev
+                    {GLOBAL_SIP_BTN_PREV}
                   </SystemSettingsBtn>
                   <span style={systemSettingsPageBadgeStyle}>
-                    Page {page} of {totalPages}
+                    {GLOBAL_SIP_PAGINATION_PAGE_OF(page, totalPages)}
                   </span>
                   <SystemSettingsBtn
                     onClick={() => handlePageChange(page + 1)}
                     disabled={page >= totalPages}
                     variant="outline"
                   >
-                    Next →
+                    {GLOBAL_SIP_BTN_NEXT}
                   </SystemSettingsBtn>
                 </div>
               )}
@@ -1335,7 +1433,9 @@ const SipTrunkPage = () => {
             borderTopRightRadius: 8,
           }}
         >
-          {editIndex !== null ? "Edit Global SIP" : "Add Global SIP"}
+          {editIndex !== null
+            ? GLOBAL_SIP_MODAL_EDIT_TITLE
+            : GLOBAL_SIP_MODAL_ADD_TITLE}
         </DialogTitle>
         <DialogContent
           style={{
@@ -1356,17 +1456,7 @@ const SipTrunkPage = () => {
               marginTop: 0,
             }}
           >
-            {SIP_TRUNK_FIELDS.map((field) => {
-              // id is auto-assigned by API; no need to expose it in the form
-              if (field.name === "index") return null;
-              // Skip rendering "Working Period Text" as a separate field - it's handled within "Working Period"
-              if (field.name === "working_period_text") return null;
-
-              // Handle conditional fields
-              if (field.conditionalField) {
-                const { dependsOn, value } = field.conditionalField;
-                if (form[dependsOn] !== value) return null;
-              }
+            {modalFormFields.map((field) => {
               const selectOptions =
                 field.name === "local_ip"
                   ? localIpOptions
@@ -1383,31 +1473,17 @@ const SipTrunkPage = () => {
                         : "center",
                   }}
                 >
-                 <div
-  style={{
-    width: 170,
-    flexShrink: 0,
-    textAlign: "left",
-  }}
->
-  <Tooltip
-    title={tooltips[field.label] || ""}
-    {...tooltipProps}
-  >
-    <span>
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {field.label}:
-      </label>
-    </span>
-  </Tooltip>
-</div>
+                  <div
+                    style={{
+                      width: 170,
+                      flexShrink: 0,
+                      textAlign: "left",
+                    }}
+                  >
+                    <GlobalSipFieldLabel tooltipKey={field.name}>
+                      {field.label}:
+                    </GlobalSipFieldLabel>
+                  </div>
                   <div style={modalFieldControlStyle}>
                     {field.type === "select" ? (
                       <div className="w-full">
@@ -1580,7 +1656,7 @@ const SipTrunkPage = () => {
                           fullWidth
                           variant="outlined"
                           error={!!validationErrors[field.name]}
-                          placeholder="Enter password"
+                          placeholder={GLOBAL_SIP_PLACEHOLDER_PASSWORD}
                           inputProps={{
                             style: {
                               ...systemModalFieldInputStyle,
@@ -1626,7 +1702,7 @@ const SipTrunkPage = () => {
                             handleChange(field.name, e.target.value)
                           }
                           disabled={field.name === "index"}
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
+                          placeholder={GLOBAL_SIP_PLACEHOLDER_ENTER(field.label)}
                           style={{
                             ...systemModalFieldInputStyle,
                             width: "100%",
@@ -1667,7 +1743,7 @@ const SipTrunkPage = () => {
             disabled={loading.save}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : "Save"}
+            {loading.save ? GLOBAL_SIP_BTN_SAVING : GLOBAL_SIP_BTN_SAVE}
           </SystemSettingsBtn>
           <SystemSettingsBtn
             variant="cancel"
@@ -1675,11 +1751,12 @@ const SipTrunkPage = () => {
             disabled={loading.save}
             style={systemSettingsModalCancelBtnStyle}
           >
-            Close
+            {GLOBAL_SIP_BTN_CLOSE}
           </SystemSettingsBtn>
         </DialogActions>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 };
 

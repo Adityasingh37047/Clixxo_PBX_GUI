@@ -1,10 +1,36 @@
-import React, { useState, useEffect } from "react";
-import { Tooltip } from "@mui/material";  
+import React, { useState, useEffect, useMemo } from "react";
+import { Tooltip, useMediaQuery } from "@mui/material";
 import {
   SIP_ACCESS_CONTROL_COLUMNS,
   SIP_ACCESS_CONTROL_MODAL_FIELDS,
   SIP_ACCESS_CONTROL_INITIAL_ROW,
   SIP_ACCESS_CONTROL_DEFAULT_OPTIONS,
+  SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT,
+  SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION,
+  SIP_ACCESS_CONTROL_PAGE_TITLE,
+  SIP_ACCESS_CONTROL_BTN_DELETE,
+  SIP_ACCESS_CONTROL_BTN_CLEAR_ALL,
+  SIP_ACCESS_CONTROL_BTN_ADD_NEW,
+  SIP_ACCESS_CONTROL_BTN_SAVE,
+  SIP_ACCESS_CONTROL_BTN_SAVING,
+  SIP_ACCESS_CONTROL_BTN_CLOSE,
+  SIP_ACCESS_CONTROL_MODAL_ADD_TITLE,
+  SIP_ACCESS_CONTROL_MODAL_EDIT_TITLE,
+  SIP_ACCESS_CONTROL_EMPTY_MESSAGE,
+  SIP_ACCESS_CONTROL_RECORD_LABEL,
+  SIP_ACCESS_CONTROL_SELECTED_SUFFIX,
+  SIP_ACCESS_CONTROL_EDIT_TITLE_ACCESS,
+  SIP_ACCESS_CONTROL_PAGINATION_SHOWING,
+  SIP_ACCESS_CONTROL_FIELD_TOOLTIPS,
+  SIP_ACCESS_CONTROL_FORM_LAYOUT,
+  SIP_ACCESS_CONTROL_ERR_NAME_REQUIRED,
+  SIP_ACCESS_CONTROL_ERR_DUPLICATE_NAME,
+  SIP_ACCESS_CONTROL_MSG_UPDATED,
+  SIP_ACCESS_CONTROL_MSG_ADDED,
+  SIP_ACCESS_CONTROL_CONFIRM_DELETE,
+  SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL,
+  SIP_ACCESS_CONTROL_MSG_DELETED,
+  SIP_ACCESS_CONTROL_MSG_CLEARED,
 } from "../../../constants/SipAccessControlConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -20,6 +46,9 @@ import {
 } from "@mui/material";
 
 const LOCAL_STORAGE_KEY = "sipAccessControlRows";
+
+const SIP_ACCESS_CONTROL_COMPACT_MQ = "(max-width: 768px)";
+const SIP_ACCESS_CONTROL_SCROLL_CLASS = "sip-access-control-scroll";
 
 const C = {
   pageBg: "#f8fafc",
@@ -89,7 +118,7 @@ const systemModalFieldInputStyle = {
   padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  borderRadius: 6,
   outline: "none",
   backgroundColor: "#fff",
   color: C.valueText,
@@ -260,11 +289,71 @@ const tooltipProps = {
   },
 };
 
-  const tooltips = {
-    Name: "Enter a descriptive name for this SIP access control entry.",
-    "Default": "Select the default action for this SIP access control entry.",
-    "Description": "Enter a description for this SIP access control entry.",
-  };
+const SipAccessFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = tooltipKey
+    ? SIP_ACCESS_CONTROL_FIELD_TOOLTIPS[tooltipKey] || ""
+    : "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 130,
+        flexShrink: 0,
+        textAlign: "left",
+        whiteSpace: "nowrap",
+        cursor: tooltip ? "help" : undefined,
+        display: "block",
+        ...style,
+      }}
+    >
+      {children}
+    </label>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={tooltip} {...tooltipProps}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
+const SipAccessScrollbarStyles = () => (
+  <style>{`
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${SIP_ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -330,15 +419,22 @@ const SipAccessBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>System</span>
+    <span>{SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>SIP Access Control</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {SIP_ACCESS_CONTROL_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const SipAccessTableEmptyState = ({ message, onAddNew, disabled }) => (
+const SipAccessTableEmptyState = ({
+  message,
+  onAddNew,
+  disabled,
+  buttonLabel = SIP_ACCESS_CONTROL_BTN_ADD_NEW,
+}) => (
   <div
     style={{
       display: "flex",
@@ -366,14 +462,14 @@ const SipAccessTableEmptyState = ({ message, onAddNew, disabled }) => (
       disabled={disabled}
       style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
     >
-      + Add New
+      {buttonLabel}
     </Btn>
   </div>
 );
 
 const SipAccessEditIcon = ({ onClick }) => (
   <EditDocumentIcon
-    titleAccess="Edit"
+    titleAccess={SIP_ACCESS_CONTROL_EDIT_TITLE_ACCESS}
     onClick={onClick}
     style={{
       cursor: "pointer",
@@ -512,12 +608,29 @@ const normalizeRows = (list) =>
   }));
 
 const SipAccessControl = () => {
+  const isCompact = useMediaQuery(SIP_ACCESS_CONTROL_COMPACT_MQ);
   const [rows, setRows] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
   const [form, setForm] = useState({ ...SIP_ACCESS_CONTROL_INITIAL_ROW });
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const modalFieldByKey = useMemo(
+    () =>
+      SIP_ACCESS_CONTROL_MODAL_FIELDS.reduce((acc, field) => {
+        acc[field.key] = field;
+        return acc;
+      }, {}),
+    [],
+  );
+
+  const modalFormFields = useMemo(() => {
+    const names = SIP_ACCESS_CONTROL_FORM_LAYOUT.flat();
+    return names.map((key) => modalFieldByKey[key]).filter(Boolean);
+  }, [modalFieldByKey]);
+
+  const selectedCount = rows.filter((r) => r.checked).length;
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -574,7 +687,7 @@ const SipAccessControl = () => {
     e?.preventDefault?.();
     const name = String(form.name || "").trim();
     if (!name) {
-      showToast("Please enter a Name", "error");
+      showToast(SIP_ACCESS_CONTROL_ERR_NAME_REQUIRED, "error");
       return;
     }
 
@@ -586,7 +699,7 @@ const SipAccessControl = () => {
           .toLowerCase() === name.toLowerCase(),
     );
     if (duplicate) {
-      showToast("An entry with this Name already exists", "error");
+      showToast(SIP_ACCESS_CONTROL_ERR_DUPLICATE_NAME, "error");
       return;
     }
 
@@ -610,8 +723,8 @@ const SipAccessControl = () => {
 
     showToast(
       editIndex !== null
-        ? "SIP access control updated."
-        : "SIP access control added.",
+        ? SIP_ACCESS_CONTROL_MSG_UPDATED
+        : SIP_ACCESS_CONTROL_MSG_ADDED,
       "success",
     );
     setSaving(false);
@@ -635,31 +748,34 @@ const SipAccessControl = () => {
     const count = rows.filter((r) => r.checked).length;
     if (count === 0 || saving) return;
     if (
-      !window.confirm(
-        `Are you sure you want to delete ${count} selected entr${count === 1 ? "y" : "ies"}?`,
-      )
+      !window.confirm(SIP_ACCESS_CONTROL_CONFIRM_DELETE(count))
     ) {
       return;
     }
     setRows((prev) => normalizeRows(prev.filter((r) => !r.checked)));
-    showToast(`${count} entr${count === 1 ? "y" : "ies"} deleted.`, "success");
+    showToast(SIP_ACCESS_CONTROL_MSG_DELETED(count), "success");
   };
 
   const handleClearAll = () => {
     if (rows.length === 0 || saving) return;
-    if (
-      !window.confirm(
-        "Are you sure you want to delete all entries? This action cannot be undone.",
-      )
-    ) {
+    if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL)) {
       return;
     }
     setRows([]);
-    showToast("All entries cleared.", "success");
+    showToast(SIP_ACCESS_CONTROL_MSG_CLEARED, "success");
   };
 
   return (
-    <div style={sipAccessPageWrapStyle}>
+    <>
+      <SipAccessScrollbarStyles />
+      <div
+        className={SIP_ACCESS_CONTROL_SCROLL_CLASS}
+        style={{
+          ...sipAccessPageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
+        }}
+        data-native-scroll
+      >
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -674,11 +790,18 @@ const SipAccessControl = () => {
         <SipAccessBreadcrumb />
 
         <div style={sipAccessCardStyle}>
-          <div style={sipAccessToolbarStyle}>
+          <div
+            style={{
+              ...sipAccessToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
-              {rows.some((r) => r.checked) && (
+              {selectedCount > 0 && (
                 <span style={sipAccessSelectedBadgeStyle}>
-                  {rows.filter((r) => r.checked).length} selected
+                  {selectedCount} {SIP_ACCESS_CONTROL_SELECTED_SUFFIX}
                 </span>
               )}
             </div>
@@ -697,7 +820,7 @@ const SipAccessControl = () => {
                 style={sipAccessCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {SIP_ACCESS_CONTROL_BTN_DELETE}
               </Btn>
               <Btn
                 variant="cancel"
@@ -705,7 +828,7 @@ const SipAccessControl = () => {
                 disabled={rows.length === 0 || saving}
                 style={sipAccessCancelBtnStyle}
               >
-                Clear All
+                {SIP_ACCESS_CONTROL_BTN_CLEAR_ALL}
               </Btn>
               <Btn
                 variant="primary"
@@ -713,20 +836,21 @@ const SipAccessControl = () => {
                 disabled={saving}
                 style={sipAccessPrimaryBtnStyle}
               >
-                + Add New
+                {SIP_ACCESS_CONTROL_BTN_ADD_NEW}
               </Btn>
             </div>
           </div>
 
           {rows.length === 0 ? (
             <SipAccessTableEmptyState
-              message="No SIP access control lists configured!"
+              message={SIP_ACCESS_CONTROL_EMPTY_MESSAGE}
               onAddNew={() => openModal(null)}
               disabled={saving}
             />
           ) : (
             <>
               <div
+                className={SIP_ACCESS_CONTROL_SCROLL_CLASS}
                 style={{
                   overflowX: "auto",
                   overflowY: "auto",
@@ -863,8 +987,10 @@ const SipAccessControl = () => {
 
               <div style={sipAccessPaginationStyle}>
                 <span style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}>
-                  Showing {rows.length} record
-                  {rows.length !== 1 ? "s" : ""}
+                  {SIP_ACCESS_CONTROL_PAGINATION_SHOWING(
+                    rows.length,
+                    SIP_ACCESS_CONTROL_RECORD_LABEL,
+                  )}
                 </span>
               </div>
             </>
@@ -904,7 +1030,9 @@ const SipAccessControl = () => {
             borderTopRightRadius: 8,
           }}
         >
-          SIP Access Control
+          {editIndex !== null
+            ? SIP_ACCESS_CONTROL_MODAL_EDIT_TITLE
+            : SIP_ACCESS_CONTROL_MODAL_ADD_TITLE}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
@@ -919,7 +1047,7 @@ const SipAccessControl = () => {
               padding: 20,
             }}
           >
-            {SIP_ACCESS_CONTROL_MODAL_FIELDS.map((field) => (
+            {modalFormFields.map((field) => (
               <div
                 key={field.key}
                 style={{
@@ -929,26 +1057,14 @@ const SipAccessControl = () => {
                   width: "100%",
                 }}
               >
-                <Tooltip
-                  title={tooltips[field.label] || ""}
-                  {...tooltipProps}
+                <SipAccessFieldLabel
+                  tooltipKey={field.key}
+                  style={{
+                    paddingTop: field.type === "textarea" ? 8 : 0,
+                  }}
                 >
-                  <label
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.labelText,
-                      width: 130,
-                      flexShrink: 0,
-                      textAlign: "left",
-                      whiteSpace: "nowrap",
-                      paddingTop: field.type === "textarea" ? 8 : 0,
-                      cursor: tooltips[field.label] ? "help" : undefined,
-                    }}
-                  >
-                    {field.label}:
-                  </label>
-                </Tooltip>
+                  {field.label}:
+                </SipAccessFieldLabel>
                 <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                   {field.type === "text" ? (
                     <input
@@ -1017,18 +1133,19 @@ const SipAccessControl = () => {
             disabled={saving}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {saving ? "Saving..." : "Save"}
+            {saving ? SIP_ACCESS_CONTROL_BTN_SAVING : SIP_ACCESS_CONTROL_BTN_SAVE}
           </Btn>
           <Btn
             variant="cancel"
             onClick={closeModal}
             style={sipAccessModalCancelBtnStyle}
           >
-            Close
+            {SIP_ACCESS_CONTROL_BTN_CLOSE}
           </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 };
 

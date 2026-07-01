@@ -1,17 +1,38 @@
 import React, { useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import {
   TextField,
   Select,
   MenuItem,
-  Tabs,
-  Tab,
   RadioGroup,
   FormControlLabel,
   Radio,
 } from "@mui/material";
+import {
+  STORAGE_PAGE_BREADCRUMB_ROOT,
+  STORAGE_PAGE_BREADCRUMB_SECTION,
+  STORAGE_PAGE_TITLE,
+  STORAGE_TAB_AUTO_CLEANUP_ID,
+  STORAGE_TAB_BACKUPS_ID,
+  STORAGE_TABS,
+  STORAGE_SECTION_RECORD_BACKUP,
+  STORAGE_BTN_SAVE,
+  STORAGE_BTN_REFRESH,
+  STORAGE_BTN_FTP_TEST,
+  STORAGE_SECTION_HEADING_LEFT,
+  STORAGE_AUTO_CLEANUP_SECTIONS,
+  STORAGE_BACKUP_FIELDS,
+  STORAGE_LABEL_START_TIME,
+} from "../../../constants/StorageConstants";
 
-const STORAGE_MAIN_SECTION_HEADING_LEFT = -20;
+const STORAGE_COMPACT_MQ = "(max-width: 768px)";
+const STORAGE_LABEL_COL_WIDTH = 200;
+const STORAGE_CONTROL_COL_WIDTH = 220;
+const STORAGE_FIELD_COL_GAP = 8;
+const STORAGE_BACKUP_LABEL_COL_WIDTH = 240;
+const STORAGE_BACKUP_CONTROL_COL_WIDTH = 320;
+const STORAGE_BACKUP_FIELD_COL_GAP = 12;
 
 const C = {
   pageBg: "#f8fafc",
@@ -185,6 +206,19 @@ const Btn = ({
       color: C.labelText,
       border: `1px solid ${C.cardBorder}`,
     },
+    tabActive: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    tabInactive: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+      fontWeight: 600,
+    },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
@@ -194,6 +228,8 @@ const Btn = ({
       danger: "#fca5a5",
       outline: "#e2e8f0",
       default: "#e2e8f0",
+      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      tabInactive: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const activeBg =
     {
@@ -202,6 +238,8 @@ const Btn = ({
       danger: "#f87171",
       outline: "#d1d9e6",
       default: "#d1d5db",
+      tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      tabInactive: "#d1d9e6",
     }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
@@ -286,10 +324,34 @@ const storageFormBtnStyle = {
   boxSizing: "border-box",
 };
 
+const advancedFormInlineFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const SETTINGS_SECTION_HEADING_FIRST_MARGIN = "12px 0 24px 0";
+const SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
+const SETTINGS_FIELDS_STACK_GAP = 12;
+const SETTINGS_COLUMN_GAP = 12;
+const SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
+const STORAGE_FORM_PAD_X = 28;
+
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 28px 0" : "32px 0 28px 0",
+      margin: isFirst
+        ? SETTINGS_SECTION_HEADING_FIRST_MARGIN
+        : SETTINGS_SECTION_HEADING_NEXT_MARGIN,
       position: "relative",
       width: "100%",
     }}
@@ -300,7 +362,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: STORAGE_MAIN_SECTION_HEADING_LEFT,
+        left: STORAGE_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -313,11 +375,6 @@ const SectionHeading = ({ title, isFirst = false }) => (
   </div>
 );
 
-const STORAGE_FIELD_LABEL_WIDTH = 220;
-const STORAGE_FIELD_INPUT_WIDTH = 280;
-const STORAGE_FIELD_ROW_GAP = 16;
-const STORAGE_FIELD_ROW_MAX_WIDTH =
-  STORAGE_FIELD_LABEL_WIDTH + STORAGE_FIELD_ROW_GAP + STORAGE_FIELD_INPUT_WIDTH;
 
 const storagePageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -329,9 +386,7 @@ const storagePageWrapStyle = {
 const storagePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
+  margin: "0 auto",
 };
 
 const storageCardShellStyle = {
@@ -356,63 +411,89 @@ const storageTableContainerStyle = {
   boxSizing: "border-box",
 };
 
-const storageToolbarStyle = {
+const storageHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
-  flexWrap: "wrap",
   gap: 12,
-};
-
-const storageTabBarStyle = {
+  flexWrap: "wrap",
+  padding: `10px ${STORAGE_FORM_PAD_X}px 10px 14px`,
   borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
-};
-
-const storageTabsSx = {
-  minHeight: 45,
-  "& .MuiTab-root": {
-    color: "#374151",
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 45,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: C.accent,
-    fontWeight: 700,
-  },
-};
-
-const storageDashboardGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
-  width: "100%",
-  minWidth: 0,
-  alignItems: "stretch",
-  minHeight: "100%",
-};
-
-const storageDashboardColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 16,
-  minWidth: 0,
-  overflow: "hidden",
-  padding: "24px clamp(12px, 2.5vw, 36px) 28px",
-  background: C.cardBg,
   boxSizing: "border-box",
 };
 
-const storageDashboardDividerStyle = {
-  background: C.divider,
-  width: 1,
-  flexShrink: 0,
+const storageTabButtonsStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  flexWrap: "wrap",
+  minWidth: 0,
+};
+
+const storageHeaderBtnStyle = {
+  height: 30,
+  minWidth: 0,
+  width: "auto",
+  fontSize: 12,
+  padding: "0 12px",
+  lineHeight: "30px",
+  boxSizing: "border-box",
+};
+
+const storageHeaderTabBtnStyle = {
+  ...storageHeaderBtnStyle,
+  width: 110,
+  minWidth: 110,
+};
+
+const storageBackupActionBtnStyle = {
+  ...storageHeaderBtnStyle,
+  minWidth: 88,
+};
+
+const storageDashboardGridStyle = (isCompact) => ({
+  display: "grid",
+  gridTemplateColumns: isCompact
+    ? "1fr"
+    : "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  minWidth: 0,
+  alignItems: "stretch",
+  alignContent: "start",
+  minHeight: "100%",
+});
+
+const storageDashboardColumnStyle = (isCompact) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: SETTINGS_COLUMN_GAP,
+  minWidth: 0,
+  overflow: "hidden",
+  padding: isCompact
+    ? `16px ${STORAGE_FORM_PAD_X}px 20px`
+    : SETTINGS_COLUMN_PADDING_DESKTOP,
+  background: C.cardBg,
+  boxSizing: "border-box",
+});
+
+const storageDashboardDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
   alignSelf: "stretch",
+  padding: "14px 0",
+  boxSizing: "border-box",
+};
+
+const storageDashboardDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
 };
 
 const storageDashboardFieldsStackStyle = {
@@ -420,30 +501,43 @@ const storageDashboardFieldsStackStyle = {
   flexDirection: "column",
   width: "100%",
   minWidth: 0,
-  gap: 20,
+  gap: 0,
 };
 
 const storageFieldGroupStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 12,
+  gap: SETTINGS_FIELDS_STACK_GAP,
   width: "100%",
   minWidth: 0,
 };
 
-const storageSingleColumnStyle = {
+const STORAGE_BACKUP_CONTENT_MAX_WIDTH =
+  STORAGE_BACKUP_LABEL_COL_WIDTH +
+  STORAGE_BACKUP_FIELD_COL_GAP +
+  STORAGE_BACKUP_CONTROL_COL_WIDTH;
+
+const storageSingleColumnStyle = (isCompact) => ({
   display: "flex",
   flexDirection: "column",
-  gap: 16,
+  gap: SETTINGS_COLUMN_GAP,
   minWidth: 0,
   overflow: "hidden",
-  padding: "24px clamp(12px, 2.5vw, 36px) 28px",
+  padding: isCompact
+    ? `16px ${STORAGE_FORM_PAD_X}px 20px`
+    : SETTINGS_COLUMN_PADDING_DESKTOP,
   background: C.cardBg,
   boxSizing: "border-box",
+});
+
+const storageBackupContentStyle = {
+  width: "100%",
+  maxWidth: STORAGE_BACKUP_CONTENT_MAX_WIDTH,
+  margin: "0 auto",
 };
 
 const storageDashboardResponsiveCss = `
-  @media (max-width: 1100px) {
+  @media (max-width: 768px) {
     .storage-dashboard-grid {
       grid-template-columns: minmax(0, 1fr) !important;
     }
@@ -473,11 +567,11 @@ const StorageBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{STORAGE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{STORAGE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Storage</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{STORAGE_PAGE_TITLE}</span>
   </div>
 );
 
@@ -505,199 +599,88 @@ const tooltipProps = {
 
 
 
-const FormFieldRow = ({ label, tooltip, required = false, children }) => (
-  <div
-    className="w-full min-w-0"
-    style={{
-      display: "grid",
-      gridTemplateColumns: label
-        ? `minmax(0, ${STORAGE_FIELD_LABEL_WIDTH}px) minmax(0, ${STORAGE_FIELD_INPUT_WIDTH}px)`
-        : `minmax(0, ${STORAGE_FIELD_INPUT_WIDTH}px)`,
-      gap: STORAGE_FIELD_ROW_GAP,
-      width: "100%",
-      maxWidth: STORAGE_FIELD_ROW_MAX_WIDTH,
-      marginLeft: "auto",
-      marginRight: "auto",
-      minWidth: 0,
-      alignItems: "center",
-      boxSizing: "border-box",
-    }}
-  >
-    {label ? (
-      <Tooltip
-        title={tooltip || ""}
-        disableHoverListener={!tooltip}
-        {...tooltipProps}
-      >
-        <label
-          style={{
-            fontSize: 12,
-            color: C.labelText,
-            fontWeight: 600,
-            width: "100%",
-            minWidth: 0,
-            lineHeight: 1.35,
-            cursor: tooltip ? "help" : "default",
-            wordBreak: "break-word",
-          }}
-        >
-          {label}
-          {required && <span style={{ color: C.errorRed }}> *</span>}
-        </label>
-      </Tooltip>
-    ) : null}
+const StorageFieldRow = ({
+  label,
+  tooltip,
+  required = false,
+  labelColWidth = STORAGE_LABEL_COL_WIDTH,
+  controlColWidth = STORAGE_CONTROL_COL_WIDTH,
+  fieldColGap = STORAGE_FIELD_COL_GAP,
+  children,
+}) => {
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 12,
+        color: C.labelText,
+        fontWeight: 600,
+        width: "100%",
+        minWidth: 0,
+        lineHeight: 1.35,
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
+      {label}
+      {required && <span style={{ color: C.errorRed }}> *</span>}
+    </label>
+  );
 
-    <div className="min-w-0" style={{ width: "100%", minWidth: 0 }}>
-      {children}
+  const labelWrapStyle = {
+    flex: `0 0 ${labelColWidth}px`,
+    width: labelColWidth,
+    maxWidth: labelColWidth,
+    minWidth: labelColWidth,
+  };
+
+  const valueColStyle = {
+    flex: "1 1 auto",
+    minWidth: controlColWidth,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "flex-start",
+    paddingTop: 2,
+  };
+
+  const controlSlotStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    width: controlColWidth,
+    minWidth: controlColWidth,
+    maxWidth: controlColWidth,
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        width: "100%",
+        minHeight: 36,
+        gap: fieldColGap,
+      }}
+    >
+      {label ? (
+        <div style={labelWrapStyle}>
+          {tooltip ? (
+            <Tooltip title={tooltip} {...tooltipProps}>
+              {labelNode}
+            </Tooltip>
+          ) : (
+            labelNode
+          )}
+        </div>
+      ) : null}
+
+      <div style={valueColStyle}>
+        <div style={controlSlotStyle}>{children}</div>
+      </div>
     </div>
-  </div>
-);
-const AUTO_CLEANUP_SECTIONS = [
-  {
-    title: "CDR Auto Cleanup",
-    fields: [
-      {
-        name: "maxCdr",
-        label: "Max Number of CDR",
-        tooltip: "Set the maximum number of CDR that should be retained. The default is '100000'. The oldest CDR will be deleted when the threshold is reached.",
-        type: "text",
-        defaultValue: "200000",
-      },
-      {
-        name: "cdrPreservationDuration",
-        label: "CDR Preservation Duration",
-        tooltip: `Set the maximum numbers of days that CDr should be retained. The default is "0".`,
-        type: "text",
-        defaultValue: "0",
-      },
-      {
-        name: "maxConferenceSessions",
-        label: "Max Number of Conference Sessions",
-        tooltip:`Set the maximum number of conference sessions that should be retained. The default is '5000'. The oldest conference session will be deleted when the threshold is reached.`,
-        type: "text",
-        defaultValue: "5000",
-      },
-    ],
-  },
-  {
-    title: "VoiceMail and One Touch Recording Auto Cleanup",
-    fields: [
-      {
-        name: "maxVoicemailFiles",
-        label: "Max Number of Files",
-        tooltip:`Set the maximum number of voice mail files that should be retained. The default is '300'. The oldest voice mail file will be deleted when the threshold is reached.`,
-        type: "text",
-        defaultValue: "300",
-      },
-      {
-        name: "voicemailPreservationDuration",
-        label: "Preservation Duration",
-        tooltip: `Set the maximum numbers of days that voice mail files should be retained. "0" for no limitation.`,
-        type: "text",
-        defaultValue: "0",
-      },
-      {
-        name: "voicemailFilesPreservationDuration",
-        label: "Files Preservation Duration",
-        tooltip: `Set the maximum numbers of minutes that voicemail and touch recording files should be retained respectively for each extension. "0" for no limitation.`,
-        type: "text",
-        defaultValue: "0",
-      },
-    ],
-  },
-  {
-    title: "Recordings Auto Cleanup",
-    fields: [
-      {
-        name: "maxDeviceUsage",
-        label: "Max Usage of Device(%)",
-        tooltip: `Set the maximum storage percentage the device is allowed to store. The default is "80" (30~90). The oldest recordings will be deleted when the threshold is reached.`,
-        type: "text",
-        defaultValue: "80",
-      },
-      {
-        name: "recPreservationDuration",
-        label: "Rec Preservation Duration",
-        tooltip: `Set the maximum numbers of days that recordings should be retained. The default is "0".`,
-        type: "text",
-        defaultValue: "0",
-      },
-    ],
-  },
-  {
-    title: "Logs Auto Cleanup",
-    fields: [
-      {
-        name: "maxLogSize",
-        label: "Max Size of Total Logs",
-        tooltip: `Limit the max size of each log. The default size is 50 MB, 0 for no limitation. The older logs will be deleted when the threshold is reached.`,
-        type: "text",
-        defaultValue: "50",
-      },
-      {
-        name: "logsPreservationDuration",
-        label: "Logs Preservation Duration",
-        tooltip: `Set the maximum numbers of days that logs should be retained. The default is "7". "0" for no limitation.`,
-        type: "text",
-        defaultValue: "7",
-      },
-      { name: "maxLogs", label: "Max Number of Logs", 
-        tooltip: `The maximum number of log files saved per day. The default value is 3 and the minimum value is 1.`,
-        type: "text", defaultValue: "3" },
-        
-    ],
-  },
-];
-
-const BACKUP_FIELDS = [
-  {
-    name: "autoUploadFtp",
-    label: "Auto Upload FTP",
-    tooltip: `After configuring the FTP server, the recording file will be uploaded automatically. The default value is "No".`,
-    type: "select",
-    options: ["Yes", "No"],
-    defaultValue: "Yes",
-  },
-  {
-    name: "ftpAddress",
-    label: "FTP Address",
-    tooltip: `FTP server address, format is: (ftp://name:password@IP:port/) of (ftp://IP), if the port number is not filled int, it is the default port 21 and this value must be set, otherwise can not be save.`,
-    type: "text",
-    defaultValue: "192.168.0.57",
-  },
-  {
-    name: "username",
-    label: "Username",
-    tooltip: `User name used on the FTP server.`,
-    type: "text",
-    defaultValue: "ftp-clixxo",
-  },
-  {
-    name: "password",
-    label: "Password",
-    tooltip: `Password used on the FTP server.`,
-    type: "password",
-    defaultValue: "password",
-  },
-  {
-    name: "uploadTime",
-    label: "Upload Time",
-    tooltip: `Real-time: upload at a fixed time point every day. If this value is enabled, you should set startup time. Uplaod the file at 00:00 by default.`,
-    type: "radio",
-    options: ["Real Time", "Timing"],
-    defaultValue: "Real Time",
-  },
-  
-  {
-    name: "deleteSourceFile",
-    label: "Delete Source File",
-    tooltip: `After uploading, the original recording file will be deleted. The default value is "No".`,
-    type: "select",
-    options: ["Yes", "No"],
-    defaultValue: "No",
-  },
-];
-
+  );
+};
 const buildInitialForm = (sections) => {
   const form = {};
   sections.forEach((section) => {
@@ -708,12 +691,25 @@ const buildInitialForm = (sections) => {
   return form;
 };
 
-const allAutoCleanupFields = AUTO_CLEANUP_SECTIONS.flatMap((s) => s.fields);
+const allAutoCleanupFields = STORAGE_AUTO_CLEANUP_SECTIONS.flatMap((s) => s.fields);
 const autoCleanupInitial = buildInitialForm([{ fields: allAutoCleanupFields }]);
-const backupsInitial = buildInitialForm([{ fields: BACKUP_FIELDS }]);
+const backupsInitial = buildInitialForm([{ fields: STORAGE_BACKUP_FIELDS }]);
 
 const Storage = () => {
-  const [tab, setTab] = useState(0);
+  const isCompact = useMediaQuery(STORAGE_COMPACT_MQ);
+  const labelColWidth = isCompact ? 160 : STORAGE_LABEL_COL_WIDTH;
+  const backupLabelColWidth = isCompact
+    ? 180
+    : STORAGE_BACKUP_LABEL_COL_WIDTH;
+  const backupControlColWidth = isCompact
+    ? 240
+    : STORAGE_BACKUP_CONTROL_COL_WIDTH;
+  const backupFieldRowOptions = {
+    labelColWidth: backupLabelColWidth,
+    controlColWidth: backupControlColWidth,
+    fieldColGap: STORAGE_BACKUP_FIELD_COL_GAP,
+  };
+  const [activeTab, setActiveTab] = useState(STORAGE_TAB_AUTO_CLEANUP_ID);
   const [autoCleanupForm, setAutoCleanupForm] = useState(autoCleanupInitial);
   const [backupsForm, setBackupsForm] = useState(backupsInitial);
 
@@ -787,40 +783,47 @@ const Storage = () => {
     </RadioGroup>
   );
 
-  const renderField = (field, form, onChange) => {
+  const renderField = (field, form, onChange, rowOptions = {}) => {
     const value = form[field.name] ?? "";
-  
+    const fieldRowProps = {
+      labelColWidth: rowOptions.labelColWidth ?? labelColWidth,
+      controlColWidth: rowOptions.controlColWidth ?? STORAGE_CONTROL_COL_WIDTH,
+      fieldColGap: rowOptions.fieldColGap ?? STORAGE_FIELD_COL_GAP,
+    };
+
     if (field.name === "startHour" || field.name === "startMinute") {
       return (
-        <FormFieldRow
+        <StorageFieldRow
           key={field.name}
           label={field.name === "startMinute" ? "" : field.label}
           required
+          {...fieldRowProps}
         >
-          <div style={{ width: 60 }}>
+          <div style={{ width: "100%" }}>
             {renderSelect(
               value,
               (v) => onChange(field.name, v),
-              field.options
+              field.options,
             )}
           </div>
-        </FormFieldRow>
+        </StorageFieldRow>
       );
     }
-  
+
     return (
-      <FormFieldRow
+      <StorageFieldRow
         key={field.name}
         label={field.label}
         tooltip={field.tooltip}
         required
+        {...fieldRowProps}
       >
         {field.type === "select"
           ? renderSelect(value, (v) => onChange(field.name, v), field.options)
           : field.type === "radio"
             ? renderRadio(value, (v) => onChange(field.name, v), field.options)
             : renderTextField(value, (v) => onChange(field.name, v), field.type)}
-      </FormFieldRow>
+      </StorageFieldRow>
     );
   };
 
@@ -829,193 +832,217 @@ const Storage = () => {
       <style>{storageDashboardResponsiveCss}</style>
       <StorageBreadcrumb />
 
-      <div>
-        <div style={storageTableContainerStyle}>
-          <div style={storageToolbarStyle}>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
-              }}
-            >
-            Storage
-
-            </span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Btn variant="cancel" style={storageFormBtnStyle}>
-                Refresh
-              </Btn>
-              <Btn variant="primary" style={storageFormBtnStyle}>
-                Save
-              </Btn>
-            </div>
-          </div>
-
-          <div style={storageTabBarStyle}>
-            <Tabs
-              value={tab}
-              onChange={(_, v) => setTab(v)}
-              variant="fullWidth"
-              TabIndicatorProps={{
-                style: { backgroundColor: C.accent, height: 2 },
-              }}
-              sx={storageTabsSx}
-            >
-              <Tab label="Auto Cleanup" />
-              <Tab label="Backups" />
-            </Tabs>
-          </div>
-
-          {tab === 0 && (
-            <div
-              className="storage-dashboard-grid"
-              style={storageDashboardGridStyle}
-            >
-              <div style={storageDashboardColumnStyle}>
-                <div style={storageDashboardFieldsStackStyle}>
-                  {AUTO_CLEANUP_SECTIONS.slice(0, 3).map((section, idx) => (
-                    <div key={section.title} className="flex flex-col gap-0 min-w-0">
-                      <SectionHeading title={section.title} isFirst={idx === 0} />
-                      <div
-                        className="flex flex-col w-full min-w-0"
-                        style={storageFieldGroupStyle}
-                      >
-                        {section.fields.map((field) =>
-                          renderField(
-                            field,
-                            autoCleanupForm,
-                            handleAutoCleanupChange,
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div
-                className="storage-dashboard-divider"
-                style={storageDashboardDividerStyle}
-                aria-hidden="true"
-              />
-
-              <div style={storageDashboardColumnStyle}>
-                <div style={storageDashboardFieldsStackStyle}>
-                  {AUTO_CLEANUP_SECTIONS.slice(3).map((section, idx) => (
-                    <div key={section.title} className="flex flex-col gap-0 min-w-0">
-                      <SectionHeading title={section.title} isFirst={idx === 0} />
-                      <div
-                        className="flex flex-col w-full min-w-0"
-                        style={storageFieldGroupStyle}
-                      >
-                        {section.fields.map((field) =>
-                          renderField(
-                            field,
-                            autoCleanupForm,
-                            handleAutoCleanupChange,
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {tab === 1 && (
-            <div style={storageSingleColumnStyle}>
-              <SectionHeading title="Record Backup" isFirst />
-              <div
-                className="flex flex-col w-full min-w-0"
-                style={storageFieldGroupStyle}
-              >
-                {BACKUP_FIELDS.map((field) => (
-                  <React.Fragment key={field.name}>
-                    {renderField(field, backupsForm, handleBackupsChange)}
-
-                    {field.name === "uploadTime" &&
-                      backupsForm.uploadTime === "Timing" && (
-                        <FormFieldRow label="Start Time" required>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                            }}
-                          >
-                            <Select
-                              size="small"
-                              value={backupsForm.startHour || "00"}
-                              onChange={(e) =>
-                                handleBackupsChange("startHour", e.target.value)
-                              }
-                              sx={{ ...storageCompactSelectSx, width: 56 }}
-                            >
-                              {Array.from({ length: 24 }, (_, i) => (
-                                <MenuItem
-                                  key={i}
-                                  value={String(i).padStart(2, "0")}
-                                  sx={{ fontSize: 13 }}
-                                >
-                                  {String(i).padStart(2, "0")}
-                                </MenuItem>
-                              ))}
-                            </Select>
-
-                            <span
-                              style={{
-                                fontWeight: 600,
-                                color: C.labelText,
-                              }}
-                            >
-                              :
-                            </span>
-
-                            <Select
-                              size="small"
-                              value={backupsForm.startMinute || "00"}
-                              onChange={(e) =>
-                                handleBackupsChange(
-                                  "startMinute",
-                                  e.target.value,
-                                )
-                              }
-                              sx={{ ...storageCompactSelectSx, width: 56 }}
-                            >
-                              {Array.from({ length: 60 }, (_, i) => (
-                                <MenuItem
-                                  key={i}
-                                  value={String(i).padStart(2, "0")}
-                                  sx={{ fontSize: 13 }}
-                                >
-                                  {String(i).padStart(2, "0")}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </div>
-                        </FormFieldRow>
-                      )}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  paddingTop: 4,
-                }}
-              >
-                <Btn variant="primary" style={storageFormBtnStyle}>
-                  FTP Test
+      <div style={storageTableContainerStyle}>
+          <div style={storageHeaderStyle}>
+            <div style={storageTabButtonsStyle}>
+              {STORAGE_TABS.map((tabItem) => (
+                <Btn
+                  key={tabItem.id}
+                  type="button"
+                  variant={
+                    activeTab === tabItem.id ? "tabActive" : "tabInactive"
+                  }
+                  onClick={() => setActiveTab(tabItem.id)}
+                  style={storageHeaderTabBtnStyle}
+                >
+                  {tabItem.label}
                 </Btn>
-              </div>
+              ))}
             </div>
-          )}
+            <Btn variant="cancel" type="button" style={storageHeaderBtnStyle}>
+              {STORAGE_BTN_REFRESH}
+            </Btn>
+          </div>
+
+          <div style={{ padding: 0, boxSizing: "border-box" }}>
+          <form
+            id="storage-settings-form"
+            onSubmit={(e) => e.preventDefault()}
+            className="flex flex-col"
+            style={{ width: "100%" }}
+          >
+            {activeTab === STORAGE_TAB_AUTO_CLEANUP_ID && (
+              <div
+                className="storage-dashboard-grid"
+                style={storageDashboardGridStyle(isCompact)}
+              >
+                <div style={storageDashboardColumnStyle(isCompact)}>
+                  <div style={storageDashboardFieldsStackStyle}>
+                    {STORAGE_AUTO_CLEANUP_SECTIONS.slice(0, 3).map(
+                      (section, idx) => (
+                        <React.Fragment key={section.title}>
+                          <SectionHeading
+                            title={section.title}
+                            isFirst={idx === 0}
+                          />
+                          <div style={storageFieldGroupStyle}>
+                            {section.fields.map((field) =>
+                              renderField(
+                                field,
+                                autoCleanupForm,
+                                handleAutoCleanupChange,
+                              ),
+                            )}
+                          </div>
+                        </React.Fragment>
+                      ),
+                    )}
+                  </div>
+                </div>
+
+                {!isCompact && (
+                  <div
+                    className="storage-dashboard-divider"
+                    style={storageDashboardDividerCellStyle}
+                    aria-hidden="true"
+                  >
+                    <div style={storageDashboardDividerLineStyle} />
+                  </div>
+                )}
+
+                <div style={storageDashboardColumnStyle(isCompact)}>
+                  <div style={storageDashboardFieldsStackStyle}>
+                    {STORAGE_AUTO_CLEANUP_SECTIONS.slice(3).map(
+                      (section, idx) => (
+                        <React.Fragment key={section.title}>
+                          <SectionHeading
+                            title={section.title}
+                            isFirst={idx === 0}
+                          />
+                          <div style={storageFieldGroupStyle}>
+                            {section.fields.map((field) =>
+                              renderField(
+                                field,
+                                autoCleanupForm,
+                                handleAutoCleanupChange,
+                              ),
+                            )}
+                          </div>
+                        </React.Fragment>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === STORAGE_TAB_BACKUPS_ID && (
+              <div style={storageSingleColumnStyle(isCompact)}>
+                <div style={storageBackupContentStyle}>
+                  <SectionHeading
+                    title={STORAGE_SECTION_RECORD_BACKUP}
+                    isFirst
+                  />
+                  <div style={storageFieldGroupStyle}>
+                    {STORAGE_BACKUP_FIELDS.map((field) => (
+                      <React.Fragment key={field.name}>
+                        {renderField(
+                          field,
+                          backupsForm,
+                          handleBackupsChange,
+                          backupFieldRowOptions,
+                        )}
+
+                        {field.name === "uploadTime" &&
+                          backupsForm.uploadTime === "Timing" && (
+                            <StorageFieldRow
+                              label={STORAGE_LABEL_START_TIME}
+                              required
+                              {...backupFieldRowOptions}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Select
+                                  size="small"
+                                  value={backupsForm.startHour || "00"}
+                                  onChange={(e) =>
+                                    handleBackupsChange(
+                                      "startHour",
+                                      e.target.value,
+                                    )
+                                  }
+                                  sx={{ ...storageCompactSelectSx, width: 56 }}
+                                >
+                                  {Array.from({ length: 24 }, (_, i) => (
+                                    <MenuItem
+                                      key={i}
+                                      value={String(i).padStart(2, "0")}
+                                      sx={{ fontSize: 13 }}
+                                    >
+                                      {String(i).padStart(2, "0")}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+
+                                <span
+                                  style={{
+                                    fontWeight: 600,
+                                    color: C.labelText,
+                                  }}
+                                >
+                                  :
+                                </span>
+
+                                <Select
+                                  size="small"
+                                  value={backupsForm.startMinute || "00"}
+                                  onChange={(e) =>
+                                    handleBackupsChange(
+                                      "startMinute",
+                                      e.target.value,
+                                    )
+                                  }
+                                  sx={{ ...storageCompactSelectSx, width: 56 }}
+                                >
+                                  {Array.from({ length: 60 }, (_, i) => (
+                                    <MenuItem
+                                      key={i}
+                                      value={String(i).padStart(2, "0")}
+                                      sx={{ fontSize: 13 }}
+                                    >
+                                      {String(i).padStart(2, "0")}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </div>
+                            </StorageFieldRow>
+                          )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: 14,
+                    }}
+                  >
+                    <Btn variant="primary" style={storageBackupActionBtnStyle}>
+                      {STORAGE_BTN_FTP_TEST}
+                    </Btn>
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
+          </div>
+
+          <div style={advancedFormInlineFooterStyle}>
+            <Btn
+              variant="primary"
+              type="submit"
+              form="storage-settings-form"
+              style={storageFormBtnStyle}
+            >
+              {STORAGE_BTN_SAVE}
+            </Btn>
+          </div>
         </div>
-      </div>
     </StoragePageShell>
   );
 };

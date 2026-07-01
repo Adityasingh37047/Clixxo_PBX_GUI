@@ -1,11 +1,70 @@
 import React, { useState, useEffect, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
-  NETWORK_SETTINGS_FIELDS,
-  NETWORK_SETTINGS_INITIAL_FORM,
+  NETWORK_PAGE_BREADCRUMB_ROOT,
+  NETWORK_PAGE_BREADCRUMB_SECTION,
+  NETWORK_PAGE_TITLE,
+  NETWORK_CARD_TITLE,
+  NETWORK_SECTION_HEADING_LEFT,
+  NETWORK_SECTION_DNS,
+  NETWORK_SECTION_ARP,
+  NETWORK_BTN_SAVE,
+  NETWORK_BTN_SAVING,
+  NETWORK_BTN_RESET,
+  NETWORK_BTN_RESETTING,
+  NETWORK_LOADING_TEXT,
+  NETWORK_PROGRESS_RESTART_DEFAULT,
+  NETWORK_PROGRESS_CHECKING,
+  NETWORK_PROGRESS_BACK_ONLINE,
+  NETWORK_PROGRESS_SAVED_REBOOTING,
+  NETWORK_PROGRESS_WAITING_REBOOT,
+  NETWORK_LABEL_IPV4_TYPE,
+  NETWORK_LABEL_IP_ADDRESS,
+  NETWORK_LABEL_SUBNET_MASK,
+  NETWORK_LABEL_DEFAULT_GATEWAY,
+  NETWORK_LABEL_IPV6_ADDRESS,
+  NETWORK_LABEL_IPV6_PREFIX,
+  NETWORK_LABEL_VLAN_ENABLE,
+  NETWORK_LABEL_PREFERRED_DNS,
+  NETWORK_LABEL_STANDBY_DNS,
+  NETWORK_LABEL_DEFAULT_MODE,
+  NETWORK_RADIO_YES,
+  NETWORK_RADIO_NO,
+  NETWORK_OPTION_STATIC,
+  NETWORK_OPTION_DHCP,
+  NETWORK_VLAN_LAN1_FIELDS,
+  NETWORK_VLAN1_FIELDS,
+  NETWORK_VLAN2_FIELDS,
+  NETWORK_VLAN3_FIELDS,
+  NETWORK_FIELD_TOOLTIPS,
+  NETWORK_CONFIRM_SAVE,
+  NETWORK_ERR_INVALID_DATA,
+  NETWORK_ERR_LOAD_TIMEOUT,
+  NETWORK_ERR_LOAD_NOT_FOUND,
+  NETWORK_ERR_LOAD_SERVER,
+  NETWORK_ERR_LOAD_NETWORK,
+  NETWORK_ERR_LOAD_FAILED,
+  NETWORK_ERR_RESET_SUCCESS,
+  NETWORK_ERR_RESET_FAILED,
+  NETWORK_ERR_RESET_TIMEOUT,
+  NETWORK_ERR_RESET_SERVER,
+  NETWORK_ERR_RESET_NETWORK,
+  NETWORK_ERR_RESET_FAILED_GENERIC,
+  NETWORK_ERR_RESTART_TIMEOUT,
+  NETWORK_ERR_REBOOT_FAILED,
+  NETWORK_ERR_SAVE_FAILED,
+  NETWORK_ERR_SAVE_FAILED_GENERIC,
+  NETWORK_ERR_SAVE_TIMEOUT,
+  NETWORK_ERR_SAVE_INVALID,
+  NETWORK_ERR_SAVE_SERVER,
+  NETWORK_ERR_SAVE_NETWORK,
+  NETWORK_ERR_DHCP_ONLY_ONE,
+  NETWORK_ERR_INVALID_IP,
+  NETWORK_ERR_INVALID_SUBNET,
+  NETWORK_ERR_INVALID_GATEWAY,
+  NETWORK_ERR_INVALID_ARP,
 } from "../../../constants/NetworkConstants";
-import { Alert, CircularProgress } from "@mui/material";
+import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
 import {
   fetchNetwork,
   resetNetworkSettings,
@@ -14,7 +73,31 @@ import {
   servicePing,
 } from "../../../api/apiService";
 
-const NETWORK_MAIN_SECTION_HEADING_LEFT = -20;
+const NETWORK_COMPACT_MQ = "(max-width: 768px)";
+const NETWORK_SCROLL_CLASS = "network-scroll";
+const NETWORK_LABEL_COL_WIDTH = 200;
+const NETWORK_CONTROL_COL_WIDTH = 220;
+const NETWORK_FIELD_COL_GAP = 8;
+const NETWORK_FORM_PAD_X = 28;
+
+const NETWORK_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 13,
+        maxWidth: 500,
+        padding: "12px 16px",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
 
 const C = {
   pageBg: "#f8fafc",
@@ -63,7 +146,9 @@ const setFieldFocus = (el) => {
 
 const nativeFieldInputStyle = {
   height: 32,
-  width: 200,
+  width: NETWORK_CONTROL_COL_WIDTH,
+  minWidth: NETWORK_CONTROL_COL_WIDTH,
+  maxWidth: NETWORK_CONTROL_COL_WIDTH,
   padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
@@ -101,21 +186,8 @@ const inputInteraction = {
   },
 };
 
-const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
-
 const systemFieldInputStyle = {
-  ...nativeFieldBase,
-  width: "100%",
-  padding: "6px 10px",
-  borderRadius: FIELD_RADIUS,
-  background: "#fff",
-  lineHeight: 1.4,
-  minHeight: 34,
-};
-
-const systemFieldInputStyleNarrow = {
-  ...systemFieldInputStyle,
-  maxWidth: "280px",
+  ...nativeFieldInputStyle,
 };
 
 const systemFieldSelectStyle = {
@@ -129,8 +201,95 @@ const systemFieldSelectStyle = {
   cursor: "pointer",
 };
 
-const inputStyle = systemFieldInputStyleNarrow;
+const inputStyle = systemFieldInputStyle;
 const selectStyle = systemFieldSelectStyle;
+
+const networkValueColStyle = {
+  flex: "1 1 auto",
+  minWidth: NETWORK_CONTROL_COL_WIDTH,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-end",
+  justifyContent: "flex-start",
+  paddingTop: 2,
+};
+
+const networkControlSlotStyle = {
+  width: NETWORK_CONTROL_COL_WIDTH,
+  minWidth: NETWORK_CONTROL_COL_WIDTH,
+  maxWidth: NETWORK_CONTROL_COL_WIDTH,
+  flexShrink: 0,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  justifyContent: "flex-start",
+};
+
+const networkFieldErrorStyle = {
+  fontSize: 11,
+  color: C.errorRed,
+  marginTop: 4,
+  width: "100%",
+};
+
+const NetworkFieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  labelColWidth = NETWORK_LABEL_COL_WIDTH,
+}) => {
+  const tooltip = tooltipKey ? NETWORK_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        lineHeight: 1.4,
+        whiteSpace: "normal",
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : undefined,
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  const labelWrapStyle = {
+    flex: `0 0 ${labelColWidth}px`,
+    width: labelColWidth,
+    maxWidth: labelColWidth,
+    minWidth: labelColWidth,
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        width: "100%",
+        minHeight: 36,
+        gap: NETWORK_FIELD_COL_GAP,
+      }}
+    >
+      <div style={labelWrapStyle}>
+        {tooltip ? (
+          <Tooltip title={tooltip} {...NETWORK_TOOLTIP_PROPS}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
+      <div style={networkValueColStyle}>
+        <div style={networkControlSlotStyle}>{children}</div>
+      </div>
+    </div>
+  );
+};
 
 const advancedFormInlineFooterStyle = {
   display: "flex",
@@ -315,7 +474,9 @@ const disabledInputStyle = {
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? SETTINGS_SECTION_HEADING_FIRST_MARGIN
+        : SETTINGS_SECTION_HEADING_NEXT_MARGIN,
       position: "relative",
       width: "100%",
     }}
@@ -325,7 +486,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: NETWORK_MAIN_SECTION_HEADING_LEFT,
+        left: NETWORK_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -373,7 +534,7 @@ const networkHeaderStyle = {
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: "7px 14px",
+  padding: `10px ${NETWORK_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
@@ -381,40 +542,60 @@ const networkHeaderStyle = {
   boxSizing: "border-box",
 };
 
-const networkDashboardGridStyle = {
+const networkDashboardGridStyle = (isCompact) => ({
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  gridTemplateColumns: isCompact
+    ? "1fr"
+    : "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
   alignItems: "stretch",
+  alignContent: "start",
   minHeight: "100%",
-};
+});
 
-const networkDashboardColumnStyle = {
+const networkDashboardColumnStyle = (isCompact) => ({
   display: "flex",
   flexDirection: "column",
-  gap: 8,
+  gap: SETTINGS_COLUMN_GAP,
   minWidth: 0,
-  padding: "24px 36px 20px",
+  padding: isCompact
+    ? `16px ${NETWORK_FORM_PAD_X}px 20px`
+    : SETTINGS_COLUMN_PADDING_DESKTOP,
   background: C.cardBg,
+});
+
+const networkDashboardDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "stretch",
+  padding: "14px 0",
+  boxSizing: "border-box",
 };
 
-const networkDashboardDividerStyle = {
-  background: C.divider,
+const networkDashboardDividerLineStyle = {
+  flex: 1,
   width: 1,
-  flexShrink: 0,
-  alignSelf: "stretch",
+  background: C.divider,
+  margin: "0 auto",
 };
+
+const SETTINGS_SECTION_HEADING_FIRST_MARGIN = "12px 0 24px 0";
+const SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
+const SETTINGS_FIELDS_STACK_GAP = 12;
+const SETTINGS_COLUMN_GAP = 12;
+const SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
+
 const networkDashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  gap: 8,
+  gap: 0,
 };
 
 const networkFieldGroupStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 3,
+  gap: SETTINGS_FIELDS_STACK_GAP,
   width: "100%",
 };
 
@@ -430,8 +611,51 @@ const networkFixedAlertSx = {
   fontWeight: 500,
 };
 
-const NetworkPageShell = ({ children }) => (
-  <div style={networkPageWrapStyle} data-native-scroll>
+const NetworkScrollbarStyles = () => (
+  <style>{`
+    .${NETWORK_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${NETWORK_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${NETWORK_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${NETWORK_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${NETWORK_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${NETWORK_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${NETWORK_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
+const NetworkPageShell = ({ children, isCompact }) => (
+  <div
+    className={NETWORK_SCROLL_CLASS}
+    style={{
+      ...networkPageWrapStyle,
+      ...(isCompact ? { padding: 8 } : {}),
+    }}
+    data-native-scroll
+  >
     <div style={networkPageInnerStyle}>{children}</div>
   </div>
 );
@@ -450,56 +674,19 @@ const NetworkBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{NETWORK_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{NETWORK_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Network</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {NETWORK_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const tooltipProps = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
-        maxWidth: 500,
-        padding: "12px 16px",
-      },
-    },
-    arrow: { sx: { color: "#fff" } },
-  },
-};
-
-const tooltips = {
-  ipv4NetworkType:
-    "Select the IPv4 network configuration type. Static allows manual IP configuration, while DHCP obtains settings automatically.",
-  ipAddress: "Specify the IPv4 address assigned to this interface.",
-  subnetMask:
-    "Specify the subnet mask used for the IPv4 network. It defines the network and host portions of the IP address.",
-  defaultGateway:
-    "Specify the default gateway IP address used to route traffic outside the local network.",
-  ipv6Address:
-    "Specify the IPv6 address assigned to this interface for IPv6 network communication.",
-  ipv6Prefix:
-    "Specify the prefix length for the IPv6 address assigned to this interface. The prefix length is the number of bits in the prefix.",
-  vlanEnable:
-    "Enable VLAN tagging for this interface. When enabled, network traffic will be associated with the configured VLAN ID.",
-  preferredDnsServer:
-    "Specify the preferred DNS server used for domain name resolution. This server will be queried first when resolving hostnames.",
-  standbyDnsServer:
-    "Specify the standby (secondary) DNS server. It will be used if the preferred DNS server is unavailable.",
-  defaultMode:
-    "Select the default network mode for this interface. The selected mode determines how the device obtains and manages network connectivity.",
-};
-
 const Network = () => {
+  const isCompact = useMediaQuery(NETWORK_COMPACT_MQ);
+  const labelColWidth = isCompact ? 160 : NETWORK_LABEL_COL_WIDTH;
   const [lanInterfaces, setLanInterfaces] = useState([]);
   const [dnsServers, setDnsServers] = useState(["", ""]);
   const [arpMode, setArpMode] = useState("1");
@@ -699,32 +886,24 @@ const Network = () => {
         setOriginalDnsSnapshot([...(dnsSnap || ["", ""])]);
         setOriginalArp(arpSnap);
       } else {
-        throw new Error("Invalid data format received from server");
+        throw new Error(NETWORK_ERR_INVALID_DATA);
       }
     } catch (err) {
       console.error("Network data fetch error:", err);
 
       if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
-        setError(
-          "Request timeout. Please check your connection and try again.",
-        );
+        setError(NETWORK_ERR_LOAD_TIMEOUT);
       } else if (err.response?.status === 404) {
-        setError(
-          "Network configuration not found. Please contact administrator.",
-        );
+        setError(NETWORK_ERR_LOAD_NOT_FOUND);
       } else if (err.response?.status >= 500) {
-        setError("Server error. Please try again later or contact support.");
+        setError(NETWORK_ERR_LOAD_SERVER);
       } else if (
         err.message?.includes("Network Error") ||
         err.message?.includes("Failed to fetch")
       ) {
-        setError(
-          "Network connection failed. Please check your internet connection.",
-        );
+        setError(NETWORK_ERR_LOAD_NETWORK);
       } else {
-        setError(
-          "Failed to load network settings. Please refresh the page and try again.",
-        );
+        setError(NETWORK_ERR_LOAD_FAILED);
       }
     } finally {
       setLoading(false);
@@ -890,28 +1069,25 @@ const Network = () => {
 
       if (resp.response) {
         await loadNetworkData();
-        showToast("Network settings reset successfully.", "success");
+        showToast(NETWORK_ERR_RESET_SUCCESS, "success");
       } else {
-        throw new Error(resp.message || "Reset operation failed");
+        throw new Error(resp.message || NETWORK_ERR_RESET_FAILED);
       }
     } catch (error) {
       console.error("Network reset error:", error);
 
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        setError("Reset timeout. Please check your connection and try again.");
+        setError(NETWORK_ERR_RESET_TIMEOUT);
       } else if (error.response?.status >= 500) {
-        setError("Server error during reset. Please try again later.");
+        setError(NETWORK_ERR_RESET_SERVER);
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        setError(
-          "Network connection failed during reset. Please check your connection.",
-        );
+        setError(NETWORK_ERR_RESET_NETWORK);
       } else {
         setError(
-          error.message ||
-            "Failed to reset network settings. Please try again.",
+          error.message || NETWORK_ERR_RESET_FAILED_GENERIC,
         );
       }
     } finally {
@@ -959,7 +1135,7 @@ const Network = () => {
   };
 
   const beginNetworkPolling = (
-    initialMessage = "Checking device availability...",
+    initialMessage = NETWORK_PROGRESS_CHECKING,
     targetIpList = [],
   ) => {
     clearRestartPolling();
@@ -984,7 +1160,7 @@ const Network = () => {
         const online = await checkDeviceOnline(targetIp);
         if (online) {
           clearRestartPolling();
-          setProgressMessage("Device is back online. Redirecting to login...");
+          setProgressMessage(NETWORK_PROGRESS_BACK_ONLINE);
           setTimeout(() => {
             const protocol = window.location.protocol;
             const port = window.location.port ? `:${window.location.port}` : "";
@@ -999,7 +1175,7 @@ const Network = () => {
         setNetworkRestarting(false);
         setProgressMessage("");
         setError(
-          "Network service restart timed out. Please verify device connectivity.",
+          NETWORK_ERR_RESTART_TIMEOUT,
         );
       }
     }, 5000);
@@ -1007,7 +1183,7 @@ const Network = () => {
 
   const triggerNetworkRestart = async (targetsOverride = null) => {
     setNetworkRestarting(true);
-    setProgressMessage("Network settings saved. Rebooting device...");
+    setProgressMessage(NETWORK_PROGRESS_SAVED_REBOOTING);
     try {
       const rebootCmd =
         'nohup sh -c "sleep 5; reboot" >/dev/null 2>&1 & echo REBOOT_TRIGGERED';
@@ -1017,7 +1193,7 @@ const Network = () => {
       setNetworkRestarting(false);
       setProgressMessage("");
       setError(
-        err?.message || "Failed to reboot device. Please reboot manually.",
+        err?.message || NETWORK_ERR_REBOOT_FAILED,
       );
       return;
     }
@@ -1030,7 +1206,7 @@ const Network = () => {
 
     restartTimeoutRef.current = setTimeout(() => {
       beginNetworkPolling(
-        "Device is rebooting. Waiting for it to come back online...",
+        NETWORK_PROGRESS_WAITING_REBOOT,
         targets,
       );
     }, 8000);
@@ -1059,7 +1235,7 @@ const Network = () => {
     if (dhcpCount > 1) {
       setLoading(false);
       showToast(
-        "Only one interface can be set to DHCP at a time. Please change the others back to Static and try again.",
+        NETWORK_ERR_DHCP_ONLY_ONE,
         "warning",
       );
       return;
@@ -1089,19 +1265,19 @@ const Network = () => {
       }
 
       if (!isValidIPv4(lan.ipAddress)) {
-        ipErrs[idx] = "Please enter a valid IP address.";
+        ipErrs[idx] = NETWORK_ERR_INVALID_IP;
         valid = false;
       } else {
         ipErrs[idx] = "";
       }
       if (!isValidSubnetMask(lan.subnetMask)) {
-        subnetErrs[idx] = "Please enter a valid subnet mask.";
+        subnetErrs[idx] = NETWORK_ERR_INVALID_SUBNET;
         valid = false;
       } else {
         subnetErrs[idx] = "";
       }
       if (!isValidIPv4(lan.defaultGateway)) {
-        gatewayErrs[idx] = "Please enter a valid gateway address.";
+        gatewayErrs[idx] = NETWORK_ERR_INVALID_GATEWAY;
         valid = false;
       } else {
         gatewayErrs[idx] = "";
@@ -1134,15 +1310,15 @@ const Network = () => {
     });
 
     if (dnsServers[0] && !isValidIPv4(dnsServers[0])) {
-      dnsErrs[0] = "Please enter a valid IP address.";
+      dnsErrs[0] = NETWORK_ERR_INVALID_IP;
       valid = false;
     }
     if (dnsServers[1] && !isValidIPv4(dnsServers[1])) {
-      dnsErrs[1] = "Please enter a valid IP address.";
+      dnsErrs[1] = NETWORK_ERR_INVALID_IP;
       valid = false;
     }
     if (!isValidArpMode(arpMode)) {
-      arpErr = "Please select a valid ARP mode.";
+      arpErr = NETWORK_ERR_INVALID_ARP;
       valid = false;
     }
     setIpErrors(ipErrs);
@@ -1282,28 +1458,24 @@ const Network = () => {
         await triggerNetworkRestart(pendingList);
         return;
       } else {
-        throw new Error(response.message || "Save operation failed");
+        throw new Error(response.message || NETWORK_ERR_SAVE_FAILED);
       }
     } catch (error) {
       console.error("Network save error:", error);
 
-      let errorMessage = "Failed to save network settings.";
+      let errorMessage = NETWORK_ERR_SAVE_FAILED_GENERIC;
 
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        errorMessage =
-          "Save operation timed out. Please check your connection and try again.";
+        errorMessage = NETWORK_ERR_SAVE_TIMEOUT;
       } else if (error.response?.status === 400) {
-        errorMessage =
-          "Invalid network configuration. Please check your settings and try again.";
+        errorMessage = NETWORK_ERR_SAVE_INVALID;
       } else if (error.response?.status >= 500) {
-        errorMessage =
-          "Server error during save. Please try again later or contact support.";
+        errorMessage = NETWORK_ERR_SAVE_SERVER;
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        errorMessage =
-          "Network connection failed during save. Please check your connection.";
+        errorMessage = NETWORK_ERR_SAVE_NETWORK;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -1320,9 +1492,7 @@ const Network = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (hasChanges) {
-      const confirmed = window.confirm(
-        "Are you sure you want to save changes?",
-      );
+      const confirmed = window.confirm(NETWORK_CONFIRM_SAVE);
       if (!confirmed) {
         return; // User cancelled, do nothing
       }
@@ -1332,8 +1502,148 @@ const Network = () => {
     // If no changes, do nothing or show a message
   };
 
+  const renderVlanInputField = (f) => (
+    <NetworkFieldRow
+      key={f.key}
+      label={f.label}
+      labelColWidth={labelColWidth}
+    >
+      <input
+        type="text"
+        value={vlanForm[f.key] || ""}
+        onChange={(e) => handleVlanChange(f.key, e.target.value)}
+        style={inputStyle}
+        {...inputInteraction}
+      />
+    </NetworkFieldRow>
+  );
+
+  const renderLanFields = (lan, idx) => (
+    <>
+      <NetworkFieldRow
+        label={NETWORK_LABEL_IPV4_TYPE}
+        tooltipKey="ipv4NetworkType"
+        labelColWidth={labelColWidth}
+      >
+        <select
+          value={lan.ipv4Type || NETWORK_OPTION_STATIC}
+          onChange={(e) => handleLanChange(idx, "ipv4Type", e.target.value)}
+          style={selectStyle}
+          {...inputInteraction}
+        >
+          <option value={NETWORK_OPTION_STATIC}>{NETWORK_OPTION_STATIC}</option>
+          <option value={NETWORK_OPTION_DHCP}>{NETWORK_OPTION_DHCP}</option>
+        </select>
+      </NetworkFieldRow>
+
+      {(lan.ipv4Type || NETWORK_OPTION_STATIC) === NETWORK_OPTION_STATIC && (
+        <>
+          <NetworkFieldRow
+            label={NETWORK_LABEL_IP_ADDRESS}
+            tooltipKey="ipAddress"
+            labelColWidth={labelColWidth}
+          >
+            <input
+              type="text"
+              value={lan.ipAddress || ""}
+              onChange={(e) =>
+                handleLanChange(idx, "ipAddress", e.target.value)
+              }
+              style={{
+                ...inputStyle,
+                borderColor: ipErrors[idx] ? C.errorRed : OUTLINED_BORDER,
+              }}
+              {...inputInteraction}
+            />
+            {ipErrors[idx] && (
+              <div style={networkFieldErrorStyle}>{ipErrors[idx]}</div>
+            )}
+          </NetworkFieldRow>
+
+          <NetworkFieldRow
+            label={NETWORK_LABEL_SUBNET_MASK}
+            tooltipKey="subnetMask"
+            labelColWidth={labelColWidth}
+          >
+            <input
+              type="text"
+              value={lan.subnetMask || ""}
+              onChange={(e) =>
+                handleLanChange(idx, "subnetMask", e.target.value)
+              }
+              style={{
+                ...inputStyle,
+                borderColor: subnetErrors[idx] ? C.errorRed : OUTLINED_BORDER,
+              }}
+              {...inputInteraction}
+            />
+            {subnetErrors[idx] && (
+              <div style={networkFieldErrorStyle}>{subnetErrors[idx]}</div>
+            )}
+          </NetworkFieldRow>
+
+          <NetworkFieldRow
+            label={NETWORK_LABEL_DEFAULT_GATEWAY}
+            tooltipKey="defaultGateway"
+            labelColWidth={labelColWidth}
+          >
+            <input
+              type="text"
+              value={lan.defaultGateway || ""}
+              onChange={(e) =>
+                handleLanChange(idx, "defaultGateway", e.target.value)
+              }
+              style={{
+                ...inputStyle,
+                borderColor: gatewayErrors[idx] ? C.errorRed : OUTLINED_BORDER,
+              }}
+              {...inputInteraction}
+            />
+            {gatewayErrors[idx] && (
+              <div style={networkFieldErrorStyle}>{gatewayErrors[idx]}</div>
+            )}
+          </NetworkFieldRow>
+
+          <NetworkFieldRow
+            label={NETWORK_LABEL_IPV6_ADDRESS}
+            tooltipKey="ipv6Address"
+            labelColWidth={labelColWidth}
+          >
+            <input
+              type="text"
+              value={lan.ipv6Address || ""}
+              onChange={(e) =>
+                handleLanChange(idx, "ipv6Address", e.target.value)
+              }
+              style={inputStyle}
+              {...inputInteraction}
+            />
+          </NetworkFieldRow>
+
+          <NetworkFieldRow
+            label={NETWORK_LABEL_IPV6_PREFIX}
+            tooltipKey="ipv6Prefix"
+            labelColWidth={labelColWidth}
+          >
+            <input
+              type="text"
+              value={lan.ipv6Prefix || ""}
+              onChange={(e) =>
+                handleLanChange(idx, "ipv6Prefix", e.target.value)
+              }
+              style={inputStyle}
+              {...inputInteraction}
+            />
+          </NetworkFieldRow>
+        </>
+      )}
+    </>
+  );
+
   return (
-    <NetworkPageShell>
+    <>
+      <NetworkScrollbarStyles />
+      <NetworkPageShell isCompact={isCompact}>
       {error && (
         <Alert
           severity="error"
@@ -1380,7 +1690,7 @@ const Network = () => {
                 textAlign: "center",
               }}
             >
-              {progressMessage || "Restarting network service..."}
+              {progressMessage || NETWORK_PROGRESS_RESTART_DEFAULT}
             </div>
           </div>
         </div>
@@ -1390,7 +1700,7 @@ const Network = () => {
 
       <div style={networkTableContainerStyle}>
           <div style={networkHeaderStyle}>
-            <span>Network</span>
+            <span>{NETWORK_CARD_TITLE}</span>
           </div>
 
           <div style={{ padding: 0, boxSizing: "border-box" }}>
@@ -1409,7 +1719,7 @@ const Network = () => {
                       fontWeight: 500,
                     }}
                   >
-                    Loading network settings...
+                    {NETWORK_LOADING_TEXT}
                   </div>
                 </div>
               </div>
@@ -1419,898 +1729,225 @@ const Network = () => {
                 onSubmit={handleSave}
                 className="flex flex-col gap-2"
               >
-                <div style={networkDashboardGridStyle}>
-                  <div style={networkDashboardColumnStyle}>
-                    <div style={networkDashboardFieldsStackStyle}>
-                  {/* Dynamically render LAN sections */}
-                  {!vlanEnabled &&
-                    lanInterfaces.map((lan, idx) => (
-                      <div
-                        key={lan.name || idx}
-                        className="flex flex-col gap-0"
-                      >
-                        <SectionHeading
-                          title={lan.name || `LAN ${idx + 1}`}
-                          isFirst={idx === 0}
-                        />
+                <div
+                  className={NETWORK_SCROLL_CLASS}
+                  style={{ boxSizing: "border-box" }}
+                >
+                  <div style={networkDashboardGridStyle(isCompact)}>
+                    <div style={networkDashboardColumnStyle(isCompact)}>
+                      <div style={networkDashboardFieldsStackStyle}>
+                        {!vlanEnabled &&
+                          lanInterfaces.map((lan, idx) => (
+                            <div key={lan.name || idx}>
+                              <SectionHeading
+                                title={lan.name || `LAN ${idx + 1}`}
+                                isFirst={idx === 0}
+                              />
+                              <div style={networkFieldGroupStyle}>
+                                {renderLanFields(lan, idx)}
+                              </div>
+                            </div>
+                          ))}
 
                         <div
-                          className="flex flex-col gap-3 w-full"
-                          style={networkFieldGroupStyle}
-                        >
-                        {/* IPV4 Network Type */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                          <Tooltip
-                            title={tooltips.ipv4NetworkType}
-                            {...tooltipProps}
-                          >
-                            <label
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: C.labelText,
-                                width: "100%",
-                                maxWidth: 220,
-                                flexShrink: 0,
-                              }}
-                            >
-                              IPV4 Network Type (M):
-                            </label>
-                          </Tooltip>
-                          <div className="flex-1 w-full max-w-[280px]">
-                            <select
-                              value={lan.ipv4Type || "Static"}
-                              onChange={(e) =>
-                                handleLanChange(
-                                  idx,
-                                  "ipv4Type",
-                                  e.target.value,
-                                )
-                              }
-                              style={selectStyle}
-                              onFocus={inputInteraction.onFocus}
-                              onBlur={inputInteraction.onBlur}
-                              onMouseEnter={inputInteraction.onMouseEnter}
-                              onMouseLeave={inputInteraction.onMouseLeave}
-                            >
-                              <option value="Static">Static</option>
-                              <option value="DHCP">DHCP</option>
-                            </select>
-                          </div>
-                        </div>
-
-                          {(lan.ipv4Type || "Static") === "Static" && (
-                            <>
-                                  {/* IP Address */}
-                                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                                  <Tooltip
-    title={tooltips.ipAddress}
-    arrow
-    placement="top"
-    slotProps={{
-      tooltip: {
-        sx: {
-          bgcolor: "#fff",
-          color: "#334155",
-          border: "1px solid #d1d5db",
-          fontSize: 12,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        },
-      },
-      arrow: {
-        sx: {
-          color: "#fff",
-        },
-      },
-    }}
-  >
-    <label
-      style={{
-        fontSize: 12,
-        fontWeight: 600,
-        color: C.labelText,
-        width: "100%",
-        maxWidth: 220,
-        flexShrink: 0,
-        cursor: "help",
-      }}
-    >
-      IP Address (I):
-    </label>
-  </Tooltip>
-                                    <div className="flex-1 w-full max-w-[280px]">
-                                  <input
-                                    type="text"
-                                    value={lan.ipAddress || ""}
-                                    onChange={(e) =>
-                                      handleLanChange(
-                                        idx,
-                                        "ipAddress",
-                                        e.target.value,
-                                      )
-                                    }
-                                    style={{
-                                      ...inputStyle,
-                                      borderColor: ipErrors[idx]
-                                        ? C.errorRed
-                                        : C.cardBorder,
-                                    }}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  />
-                                  {ipErrors[idx] && (
-                                    <div
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                        marginTop: 4,
-                                      }}
-                                    >
-                                      {ipErrors[idx]}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Subnet Mask */}
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <Tooltip
-    title={tooltips.subnetMask}
-    arrow
-    placement="top"
-    slotProps={{
-      tooltip: {
-        sx: {
-          bgcolor: "#fff",
-          color: "#334155",
-          border: "1px solid #d1d5db",
-          fontSize: 12,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        },
-      },
-      arrow: {
-        sx: {
-          color: "#fff",
-        },
-      },
-    }}
-  >
-    <label
-      style={{
-        fontSize: 12,
-        fontWeight: 600,
-        color: C.labelText,
-        width: "100%",
-        maxWidth: 220,
-        flexShrink: 0,
-        cursor: "help",
-      }}
-    >
-      Subnet Mask (U):
-    </label>
-  </Tooltip>
-                                <div className="flex-1 w-full max-w-[280px]">
-                                  <input
-                                    type="text"
-                                    value={lan.subnetMask || ""}
-                                    onChange={(e) =>
-                                      handleLanChange(
-                                        idx,
-                                        "subnetMask",
-                                        e.target.value,
-                                      )
-                                    }
-                                    style={{
-                                      ...inputStyle,
-                                      borderColor: subnetErrors[idx]
-                                        ? C.errorRed
-                                        : C.cardBorder,
-                                    }}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  />
-                                  {subnetErrors[idx] && (
-                                    <div
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                        marginTop: 4,
-                                      }}
-                                    >
-                                      {subnetErrors[idx]}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Default Gateway */}
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <Tooltip
-  title={tooltips.defaultGateway}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: "100%",
-      maxWidth: 220,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Default Gateway (D):
-  </label>
-</Tooltip>
-                                <div className="flex-1 w-full max-w-[280px]">
-                                  <input
-                                    type="text"
-                                    value={lan.defaultGateway || ""}
-                                    onChange={(e) =>
-                                      handleLanChange(
-                                        idx,
-                                        "defaultGateway",
-                                        e.target.value,
-                                      )
-                                    }
-                                    style={{
-                                      ...inputStyle,
-                                      borderColor: gatewayErrors[idx]
-                                        ? C.errorRed
-                                        : C.cardBorder,
-                                    }}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  />
-                                  {gatewayErrors[idx] && (
-                                    <div
-                                      style={{
-                                        fontSize: 11,
-                                        color: C.errorRed,
-                                        marginTop: 4,
-                                      }}
-                                    >
-                                      {gatewayErrors[idx]}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* IPV6 Address */}
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <Tooltip
-  title={tooltips.ipv6Address}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: "100%",
-      maxWidth: 220,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    IPV6 Address (I):
-  </label>
-</Tooltip>
-                                <div className="flex-1 w-full max-w-[280px]">
-                                  <input
-                                    type="text"
-                                    value={lan.ipv6Address || ""}
-                                    onChange={(e) =>
-                                      handleLanChange(
-                                        idx,
-                                        "ipv6Address",
-                                        e.target.value,
-                                      )
-                                    }
-                                    style={inputStyle}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  />
-                                </div>
-                              </div>
-
-                              {/* IPV6 Address Prefix */}
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                              <Tooltip
-  title={tooltips.ipv6Prefix}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-                                  style={{
-                                    fontSize: 12,
-                                    fontWeight: 600,
-                                    color: C.labelText,
-                                    width: "100%",
-                                    maxWidth: 220,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  IPV6 Address Prefix (U):
-                                </label>
-</Tooltip>
-                                <div className="flex-1 w-full max-w-[280px]">
-                                  <input
-                                    type="text"
-                                    value={lan.ipv6Prefix || ""}
-                                    onChange={(e) =>
-                                      handleLanChange(
-                                        idx,
-                                        "ipv6Prefix",
-                                        e.target.value,
-                                      )
-                                    }
-                                    style={inputStyle}
-                                    onFocus={inputInteraction.onFocus}
-                                    onBlur={inputInteraction.onBlur}
-                                    onMouseEnter={inputInteraction.onMouseEnter}
-                                    onMouseLeave={inputInteraction.onMouseLeave}
-                                  />
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-
-                  {/* VLAN Enable */}
-                  <div
-                    className="flex flex-col gap-3 w-full"
-                    style={networkFieldGroupStyle}
-                  >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <Tooltip
-                        title={tooltips.vlanEnable}
-                        arrow
-                        placement="top"
-                        slotProps={{
-                          tooltip: {
-                            sx: {
-                              bgcolor: "#fff",
-                              color: "#334155",
-                              border: "1px solid #d1d5db",
-                              fontSize: 12,
-                              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                            },
-                          },
-                          arrow: {
-                            sx: {
-                              color: "#fff",
-                            },
-                          },
-                        }}
-                      >
-                        <label
                           style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: "100%",
-                            maxWidth: 220,
-                            flexShrink: 0,
-                            cursor: "help",
+                            ...networkFieldGroupStyle,
+                            marginTop:
+                              !vlanEnabled && lanInterfaces.length > 0
+                                ? 28
+                                : 12,
                           }}
                         >
-                          VLAN Enable:
-                        </label>
-                      </Tooltip>
-                      <div className="flex-1 w-full max-w-[280px]">
-                        <div className="flex items-center gap-6">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="vlanEnable"
-                              checked={vlanEnabled}
-                              onChange={() => {
-                                try {
-                                  const lan1 =
-                                    (lanInterfaces || []).find(
-                                      (l) =>
-                                        l.name === "LAN 1" ||
-                                        l.interface === "eth0",
-                                    ) || {};
-                                  setVlanForm((prev) => ({
-                                    ...prev,
-                                    lan1Ip:
-                                      lan1.ipAddress || prev.lan1Ip || "",
-                                    lan1Mask:
-                                      lan1.subnetMask || prev.lan1Mask || "",
-                                    lan1Gw:
-                                      lan1.defaultGateway ||
-                                      prev.lan1Gw ||
-                                      "",
-                                  }));
-                                } catch (_) {}
-                                setVlanEnabled(true);
-                                setHasChanges(true);
-                              }}
-                              style={{ accentColor: OUTLINED_FOCUS }}
-                            />
-                            <span
-                              style={{ fontSize: 13, color: C.labelText }}
-                            >
-                              Yes
-                            </span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="vlanEnable"
-                              checked={!vlanEnabled}
-                              onChange={() => {
-                                setVlanEnabled(false);
-                                setHasChanges(true);
-                              }}
-                              style={{ accentColor: OUTLINED_FOCUS }}
-                            />
-                            <span
-                              style={{ fontSize: 13, color: C.labelText }}
-                            >
-                              No
-                            </span>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {vlanEnabled && (
-                    <div
-                      className="flex flex-col gap-3 w-full"
-                      style={networkFieldGroupStyle}
-                    >
-                          {/* LAN 1 base */}
-                          {[
-                            { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
-                            {
-                              label: "LAN 1 Subnet Mask (U):",
-                              key: "lan1Mask",
-                            },
-                            {
-                              label: "LAN 1 Default Gateway (D):",
-                              key: "lan1Gw",
-                            },
-                          ].map((f) => (
-                            <div
-                              key={f.key}
-                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                            >
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {f.label}
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={vlanForm[f.key] || ""}
-                                  onChange={(e) =>
-                                    handleVlanChange(f.key, e.target.value)
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                          {/* VLAN 1 */}
-                          {[
-                            { l: "Vlan 1 Vlan ID (D):", k: "vlan1Id" },
-                            { l: "Vlan 1 IP Address (I):", k: "vlan1Ip" },
-                            { l: "Vlan 1 Subnet Mask (U):", k: "vlan1Mask" },
-                            { l: "Vlan 1 Default Gateway (D):", k: "vlan1Gw" },
-                          ].map((f) => (
-                            <div
-                              key={f.k}
-                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                            >
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {f.l}
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={vlanForm[f.k] || ""}
-                                  onChange={(e) =>
-                                    handleVlanChange(f.k, e.target.value)
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                          {/* VLAN 2 */}
-                          {[
-                            { l: "Vlan 2 Vlan ID (D):", k: "vlan2Id" },
-                            { l: "Vlan 2 IP Address (I):", k: "vlan2Ip" },
-                            { l: "Vlan 2 Subnet Mask (U):", k: "vlan2Mask" },
-                            { l: "Vlan 2 Default Gateway (D):", k: "vlan2Gw" },
-                          ].map((f) => (
-                            <div
-                              key={f.k}
-                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                            >
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {f.l}
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={vlanForm[f.k] || ""}
-                                  onChange={(e) =>
-                                    handleVlanChange(f.k, e.target.value)
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                          {/* VLAN 3 */}
-                          {[
-                            { l: "Vlan 3 Vlan ID (D):", k: "vlan3Id" },
-                            { l: "Vlan 3 IP Address (I):", k: "vlan3Ip" },
-                            { l: "Vlan 3 Subnet Mask (U):", k: "vlan3Mask" },
-                            { l: "Vlan 3 Default Gateway (D):", k: "vlan3Gw" },
-                          ].map((f) => (
-                            <div
-                              key={f.k}
-                              className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4"
-                            >
-                              <label
-                                style={{
-                                  fontSize: 12,
-                                  fontWeight: 600,
-                                  color: C.labelText,
-                                  width: "100%",
-                                  maxWidth: 220,
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {f.l}
-                              </label>
-                              <div className="flex-1 w-full max-w-[280px]">
-                                <input
-                                  type="text"
-                                  value={vlanForm[f.k] || ""}
-                                  onChange={(e) =>
-                                    handleVlanChange(f.k, e.target.value)
-                                  }
-                                  style={inputStyle}
-                                  onFocus={inputInteraction.onFocus}
-                                  onBlur={inputInteraction.onBlur}
-                                  onMouseEnter={inputInteraction.onMouseEnter}
-                                  onMouseLeave={inputInteraction.onMouseLeave}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                    </div>
-                  )}
-                    </div>
-                  </div>
-
-                  <div style={networkDashboardDividerStyle} aria-hidden="true" />
-
-                  <div style={networkDashboardColumnStyle}>
-                    <div style={networkDashboardFieldsStackStyle}>
-                  {/* DNS Server Set */}
-                  <div className="flex flex-col gap-0">
-                    <SectionHeading title="DNS Server Set" isFirst />
-                    <div
-                      className="flex flex-col gap-3 w-full"
-                      style={networkFieldGroupStyle}
-                    >
-                      {/* Preferred DNS Server */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <Tooltip
-  title={tooltips.preferredDnsServer}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: "100%",
-      maxWidth: 220,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Preferred DNS Server (P):
-  </label>
-</Tooltip>
-                        <div className="flex-1 w-full max-w-[280px]">
-                          <input
-                            type="text"
-                            value={dnsServers[0] || ""}
-                            onChange={(e) => handleDnsChange(0, e.target.value)}
-                            style={{
-                              ...inputStyle,
-                              borderColor: dnsErrors[0]
-                                ? C.errorRed
-                                : C.cardBorder,
-                            }}
-                            onFocus={inputInteraction.onFocus}
-                            onBlur={inputInteraction.onBlur}
-                            onMouseEnter={inputInteraction.onMouseEnter}
-                            onMouseLeave={inputInteraction.onMouseLeave}
-                          />
-                          {dnsErrors[0] && (
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: C.errorRed,
-                                marginTop: 4,
-                              }}
-                            >
-                              {dnsErrors[0]}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Standby DNS Server */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <Tooltip
-  title={tooltips.standbyDnsServer}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: "100%",
-      maxWidth: 220,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Standby DNS Server (P):
-  </label>
-</Tooltip>
-                        <div className="flex-1 w-full max-w-[280px]">
-                          <input
-                            type="text"
-                            value={dnsServers[1] || ""}
-                            onChange={(e) => handleDnsChange(1, e.target.value)}
-                            style={{
-                              ...inputStyle,
-                              borderColor: dnsErrors[1]
-                                ? C.errorRed
-                                : C.cardBorder,
-                            }}
-                            onFocus={inputInteraction.onFocus}
-                            onBlur={inputInteraction.onBlur}
-                            onMouseEnter={inputInteraction.onMouseEnter}
-                            onMouseLeave={inputInteraction.onMouseLeave}
-                          />
-                          {dnsErrors[1] && (
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: C.errorRed,
-                                marginTop: 4,
-                              }}
-                            >
-                              {dnsErrors[1]}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ARP Mode */}
-                  <div className="flex flex-col gap-0">
-                    <SectionHeading title="ARP Mode" />
-                    <div
-                      className="flex flex-col gap-3 w-full"
-                      style={networkFieldGroupStyle}
-                    >
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-                      <Tooltip
-  title={tooltips.defaultMode}
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-        sx: {
-        bgcolor: "#fff",
-        color: "#334155",
-        border: "1px solid #d1d5db",
-        fontSize: 12,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-      },
-    },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
-  }}
->
-  <label
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      width: "100%",
-      maxWidth: 220,
-      flexShrink: 0,
-      cursor: "help",
-    }}
-  >
-    Default Mode:
-  </label>
-</Tooltip>
-                        <div className="flex-1 w-full max-w-[280px]">
-                          <select
-                            value={arpMode}
-                            onChange={handleArpChange}
-                            style={{
-                              ...selectStyle,
-                              borderColor: arpError ? C.errorRed : undefined,
-                            }}
-                            onFocus={inputInteraction.onFocus}
-                            onBlur={inputInteraction.onBlur}
-                            onMouseEnter={inputInteraction.onMouseEnter}
-                            onMouseLeave={inputInteraction.onMouseLeave}
+                          <NetworkFieldRow
+                            label={NETWORK_LABEL_VLAN_ENABLE}
+                            tooltipKey="vlanEnable"
+                            labelColWidth={labelColWidth}
                           >
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                          </select>
-                          {arpError && (
                             <div
                               style={{
-                                fontSize: 11,
-                                color: C.errorRed,
-                                marginTop: 4,
+                                display: "flex",
+                                alignItems: "center",
+                                minHeight: 32,
+                                gap: 16,
+                                width: "100%",
                               }}
                             >
-                              {arpError}
+                              <label
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <input
+                                  type="radio"
+                                  name="vlanEnable"
+                                  checked={vlanEnabled}
+                                  onChange={() => {
+                                    try {
+                                      const lan1 =
+                                        (lanInterfaces || []).find(
+                                          (l) =>
+                                            l.name === "LAN 1" ||
+                                            l.interface === "eth0",
+                                        ) || {};
+                                      setVlanForm((prev) => ({
+                                        ...prev,
+                                        lan1Ip:
+                                          lan1.ipAddress || prev.lan1Ip || "",
+                                        lan1Mask:
+                                          lan1.subnetMask || prev.lan1Mask || "",
+                                        lan1Gw:
+                                          lan1.defaultGateway ||
+                                          prev.lan1Gw ||
+                                          "",
+                                      }));
+                                    } catch (_) {}
+                                    setVlanEnabled(true);
+                                    setHasChanges(true);
+                                  }}
+                                  style={{ accentColor: OUTLINED_FOCUS }}
+                                />
+                                <span style={{ fontSize: 13, color: C.labelText }}>
+                                  {NETWORK_RADIO_YES}
+                                </span>
+                              </label>
+                              <label
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <input
+                                  type="radio"
+                                  name="vlanEnable"
+                                  checked={!vlanEnabled}
+                                  onChange={() => {
+                                    setVlanEnabled(false);
+                                    setHasChanges(true);
+                                  }}
+                                  style={{ accentColor: OUTLINED_FOCUS }}
+                                />
+                                <span style={{ fontSize: 13, color: C.labelText }}>
+                                  {NETWORK_RADIO_NO}
+                                </span>
+                              </label>
                             </div>
-                          )}
+                          </NetworkFieldRow>
+
+                          {vlanEnabled &&
+                            NETWORK_VLAN_LAN1_FIELDS.map(renderVlanInputField)}
+                          {vlanEnabled &&
+                            NETWORK_VLAN1_FIELDS.map(renderVlanInputField)}
+                          {vlanEnabled &&
+                            NETWORK_VLAN2_FIELDS.map(renderVlanInputField)}
+                          {vlanEnabled &&
+                            NETWORK_VLAN3_FIELDS.map(renderVlanInputField)}
                         </div>
                       </div>
                     </div>
-                  </div>
+
+                    {!isCompact && (
+                      <div
+                        style={networkDashboardDividerCellStyle}
+                        aria-hidden="true"
+                      >
+                        <div style={networkDashboardDividerLineStyle} />
+                      </div>
+                    )}
+
+                    <div style={networkDashboardColumnStyle(isCompact)}>
+                      <div style={networkDashboardFieldsStackStyle}>
+                        <SectionHeading
+                          title={NETWORK_SECTION_DNS}
+                          isFirst
+                        />
+                        <div style={networkFieldGroupStyle}>
+                          <NetworkFieldRow
+                            label={NETWORK_LABEL_PREFERRED_DNS}
+                            tooltipKey="preferredDnsServer"
+                            labelColWidth={labelColWidth}
+                          >
+                              <input
+                                type="text"
+                                value={dnsServers[0] || ""}
+                                onChange={(e) =>
+                                  handleDnsChange(0, e.target.value)
+                                }
+                                style={{
+                                  ...inputStyle,
+                                  borderColor: dnsErrors[0]
+                                    ? C.errorRed
+                                    : OUTLINED_BORDER,
+                                }}
+                                {...inputInteraction}
+                              />
+                              {dnsErrors[0] && (
+                                <div style={networkFieldErrorStyle}>
+                                  {dnsErrors[0]}
+                                </div>
+                              )}
+                            </NetworkFieldRow>
+
+                            <NetworkFieldRow
+                              label={NETWORK_LABEL_STANDBY_DNS}
+                              tooltipKey="standbyDnsServer"
+                              labelColWidth={labelColWidth}
+                            >
+                              <input
+                                type="text"
+                                value={dnsServers[1] || ""}
+                                onChange={(e) =>
+                                  handleDnsChange(1, e.target.value)
+                                }
+                                style={{
+                                  ...inputStyle,
+                                  borderColor: dnsErrors[1]
+                                    ? C.errorRed
+                                    : OUTLINED_BORDER,
+                                }}
+                                {...inputInteraction}
+                              />
+                              {dnsErrors[1] && (
+                                <div style={networkFieldErrorStyle}>
+                                  {dnsErrors[1]}
+                                </div>
+                              )}
+                            </NetworkFieldRow>
+                        </div>
+
+                        <SectionHeading title={NETWORK_SECTION_ARP} />
+                        <div style={networkFieldGroupStyle}>
+                          <NetworkFieldRow
+                            label={NETWORK_LABEL_DEFAULT_MODE}
+                            tooltipKey="defaultMode"
+                            labelColWidth={labelColWidth}
+                          >
+                              <select
+                                value={arpMode}
+                                onChange={handleArpChange}
+                                style={{
+                                  ...selectStyle,
+                                  borderColor: arpError
+                                    ? C.errorRed
+                                    : OUTLINED_BORDER,
+                                }}
+                                {...inputInteraction}
+                              >
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                              </select>
+                              {arpError && (
+                                <div style={networkFieldErrorStyle}>
+                                  {arpError}
+                                </div>
+                              )}
+                            </NetworkFieldRow>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2327,7 +1964,7 @@ const Network = () => {
                 disabled={loading || resetting || networkRestarting}
                 style={advancedFormBtnStyle}
               >
-                {loading && !resetting ? "Saving..." : "Save"}
+                {loading && !resetting ? NETWORK_BTN_SAVING : NETWORK_BTN_SAVE}
               </Btn>
               <Btn
                 variant="cancel"
@@ -2336,12 +1973,13 @@ const Network = () => {
                 disabled={resetting || networkRestarting}
                 style={advancedFormBtnStyle}
               >
-                {resetting ? "Resetting..." : "Reset"}
+                {resetting ? NETWORK_BTN_RESETTING : NETWORK_BTN_RESET}
               </Btn>
             </div>
           )}
         </div>
     </NetworkPageShell>
+    </>
   );
 };
 

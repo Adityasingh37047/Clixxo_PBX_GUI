@@ -2,17 +2,57 @@ import React, { useState, useEffect } from "react";
 import { Alert, CircularProgress } from "@mui/material";
 import { Tooltip } from "@mui/material";
 import axiosInstance from "../../../api/axiosInstance";
+import {
+  ROUTING_INTERFACE_PAGE_BREADCRUMB_ROOT,
+  ROUTING_INTERFACE_PAGE_BREADCRUMB_SECTION,
+  ROUTING_INTERFACE_PAGE_TITLE,
+  ROUTING_INTERFACE_CARD_TITLE,
+  ROUTING_INTERFACE_SECTION_CURRENT_ACTIVE,
+  ROUTING_INTERFACE_SECTION_ACTIVE_ROUTES,
+  ROUTING_INTERFACE_SECTION_TARGET_CONFIG,
+  ROUTING_INTERFACE_BTN_SWITCH,
+  ROUTING_INTERFACE_BTN_CANCEL,
+  ROUTING_INTERFACE_BTN_APPLY,
+  ROUTING_INTERFACE_BTN_APPLYING,
+  ROUTING_INTERFACE_LOADING_TEXT,
+  ROUTING_INTERFACE_TABLE_COL_INTERFACE,
+  ROUTING_INTERFACE_TABLE_COL_GATEWAY,
+  ROUTING_INTERFACE_TABLE_COL_METRIC,
+  ROUTING_INTERFACE_TABLE_COL_STATUS,
+  ROUTING_INTERFACE_STATUS_ACTIVE,
+  ROUTING_INTERFACE_STATUS_STANDBY,
+  ROUTING_INTERFACE_DEFAULT_METRIC,
+  ROUTING_INTERFACE_PLACEHOLDER_GATEWAY,
+  ROUTING_INTERFACE_PLACEHOLDER_METRIC,
+  ROUTING_INTERFACE_ERROR_LOAD_FAILED,
+  ROUTING_INTERFACE_ERROR_GET_ROUTING_INFO,
+  ROUTING_INTERFACE_ERROR_CHANGE_ROUTING,
+  ROUTING_INTERFACE_ERROR_APPLY_FAILED,
+  ROUTING_INTERFACE_ERROR_GATEWAY_INVALID,
+  ROUTING_INTERFACE_ERROR_METRIC_INVALID,
+  ROUTING_INTERFACE_CONFIRM_SWITCH,
+  ROUTING_INTERFACE_SUCCESS_SWITCHED,
+  ROUTING_INTERFACE_LABEL_SELECT_INTERFACE,
+  ROUTING_INTERFACE_LABEL_IP_ADDRESS,
+  ROUTING_INTERFACE_LABEL_SUBNET_MASK,
+  ROUTING_INTERFACE_LABEL_GATEWAY_REQUIRED,
+  ROUTING_INTERFACE_LABEL_METRIC,
+  ROUTING_INTERFACE_FIELD_TOOLTIPS,
+  ROUTING_INTERFACE_CURRENT_FIELDS,
+  ROUTING_INTERFACE_EMPTY_CURRENT,
+} from "../../../constants/RoutingInterfaceConstants";
+
 const fetchRoutingInfo = async () => {
   const res = await axiosInstance.get("/get-routing-info");
   if (!res.data?.response)
-    throw new Error(res.data?.message || "Failed to get routing info");
+    throw new Error(res.data?.message || ROUTING_INTERFACE_ERROR_GET_ROUTING_INFO);
   return res.data.data;
 };
 
 const changeRouting = async (payload) => {
   const res = await axiosInstance.post("/change-routing", payload);
   if (!res.data?.response)
-    throw new Error(res.data?.message || "Failed to change routing");
+    throw new Error(res.data?.message || ROUTING_INTERFACE_ERROR_CHANGE_ROUTING);
   return res.data;
 };
 
@@ -155,6 +195,15 @@ const advancedFormBtnStyle = {
   margin: 0,
   padding: "0 28px",
   lineHeight: "34px",
+  boxSizing: "border-box",
+};
+
+const routingHeaderBtnStyle = {
+  height: 30,
+  minWidth: 110,
+  fontSize: 12,
+  padding: "0 16px",
+  lineHeight: "30px",
   boxSizing: "border-box",
 };
 
@@ -378,11 +427,13 @@ const RoutingBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{ROUTING_INTERFACE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{ROUTING_INTERFACE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Routing Interface</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {ROUTING_INTERFACE_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -490,13 +541,7 @@ const TD = ({ children, highlight, isLastCol = false, isLastRow = false }) => (
   </td>
 );
 
-const EMPTY_CURRENT = {
-  interface: "—",
-  gateway: "—",
-  ipAddress: "—",
-  subnetMask: "—",
-  metric: "—",
-};
+const EMPTY_CURRENT = ROUTING_INTERFACE_EMPTY_CURRENT;
 
 const RoutingInterface = () => {
   const [loading, setLoading] = useState(true);
@@ -512,7 +557,7 @@ const RoutingInterface = () => {
   const [form, setForm] = useState({
     interface: "",
     gateway: "",
-    metric: "100",
+    metric: ROUTING_INTERFACE_DEFAULT_METRIC,
   });
   const [formIp, setFormIp] = useState("");
   const [formSubnet, setFormSubnet] = useState("");
@@ -531,7 +576,7 @@ const RoutingInterface = () => {
       setActiveRoutes(data.activeRoutes || []);
       setInterfaces(data.interfaces || []);
     } catch (e) {
-      setErrorMsg(e?.message || "Failed to load routing information.");
+      setErrorMsg(e?.message || ROUTING_INTERFACE_ERROR_LOAD_FAILED);
     } finally {
       setLoading(false);
     }
@@ -543,7 +588,9 @@ const RoutingInterface = () => {
     setForm({
       interface: first.interface,
       gateway: first.configuredGateway || "",
-      metric: String(first.metric ?? 100),
+      metric: String(
+        first.metric ?? parseInt(ROUTING_INTERFACE_DEFAULT_METRIC, 10),
+      ),
     });
     setFormIp(first.ipAddress || "");
     setFormSubnet(first.subnetMask || "");
@@ -557,7 +604,9 @@ const RoutingInterface = () => {
     setForm({
       interface: ifaceName,
       gateway: found.configuredGateway || "",
-      metric: String(found.metric ?? 100),
+      metric: String(
+        found.metric ?? parseInt(ROUTING_INTERFACE_DEFAULT_METRIC, 10),
+      ),
     });
     setFormIp(found.ipAddress || "");
     setFormSubnet(found.subnetMask || "");
@@ -573,12 +622,12 @@ const RoutingInterface = () => {
     const e = { gateway: "", metric: "" };
     let ok = true;
     if (!isValidIPv4(form.gateway)) {
-      e.gateway = "Enter a valid gateway IP address.";
+      e.gateway = ROUTING_INTERFACE_ERROR_GATEWAY_INVALID;
       ok = false;
     }
     const m = parseInt(form.metric, 10);
     if (isNaN(m) || m < 0 || m > 9999) {
-      e.metric = "Metric must be a number between 0 and 9999.";
+      e.metric = ROUTING_INTERFACE_ERROR_METRIC_INVALID;
       ok = false;
     }
     setErrors(e);
@@ -590,7 +639,11 @@ const RoutingInterface = () => {
     if (!validate()) return;
 
     const confirmed = window.confirm(
-      `Switch default routing to ${form.interface}?\n\nGateway: ${form.gateway}\nMetric: ${form.metric}\n\nThis will update the active routing interface.`,
+      ROUTING_INTERFACE_CONFIRM_SWITCH(
+        form.interface,
+        form.gateway,
+        form.metric,
+      ),
     );
     if (!confirmed) return;
 
@@ -605,12 +658,12 @@ const RoutingInterface = () => {
       });
       setSuccessMsg(
         result.message ||
-          `Routing interface switched to ${form.interface} successfully.`,
+          ROUTING_INTERFACE_SUCCESS_SWITCHED(form.interface),
       );
       setShowForm(false);
       await loadData();
     } catch (e) {
-      setErrorMsg(e?.message || "Failed to apply routing changes.");
+      setErrorMsg(e?.message || ROUTING_INTERFACE_ERROR_APPLY_FAILED);
     } finally {
       setSaving(false);
     }
@@ -657,15 +710,15 @@ const RoutingInterface = () => {
                 letterSpacing: "0.02em",
               }}
             >
-              Routing Interface
+              {ROUTING_INTERFACE_CARD_TITLE}
             </span>
             {!loading && !showForm && (
               <Btn
                 variant="primary"
                 onClick={handleOpenForm}
-                style={advancedFormBtnStyle}
+                style={routingHeaderBtnStyle}
               >
-                Switch Routing Interface
+                {ROUTING_INTERFACE_BTN_SWITCH}
               </Btn>
             )}
           </div>
@@ -691,7 +744,7 @@ const RoutingInterface = () => {
                       fontWeight: 500,
                     }}
                   >
-                    Loading routing information...
+                    {ROUTING_INTERFACE_LOADING_TEXT}
                   </div>
                 </div>
               </div>
@@ -699,65 +752,41 @@ const RoutingInterface = () => {
               <div className="flex flex-col gap-2">
                 {/* ── Current Active Routing (read-only) ── */}
                 <div className="flex flex-col gap-0">
-                  <SectionHeading title="Current Active Routing" isFirst />
+                  <SectionHeading
+                    title={ROUTING_INTERFACE_SECTION_CURRENT_ACTIVE}
+                    isFirst
+                  />
                   <div
                     className="flex flex-col gap-3 w-full"
                     style={{ ...routingFieldGroupStyle, maxWidth: 640, margin: "0 auto" }}
                   >
-                    <FieldRow label="Active Interface:"
-                    tooltip="The interface that is currently active and being used for routing."
-                    >
-                      <input
-                        type="text"
-                        readOnly
-                        value={current.interface}
-                        style={disabledInputStyle}
-                      />
-                    </FieldRow>
-                    <FieldRow label="IP Address:"
-                    tooltip="The IP address of the current active interface.">
-                      <input
-                        type="text"
-                        readOnly
-                        value={current.ipAddress}
-                        style={disabledInputStyle}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Subnet Mask:"
-                    tooltip="The subnet mask of the current active interface.">
-                      <input
-                        type="text"
-                        readOnly
-                        value={current.subnetMask}
-                        style={disabledInputStyle}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Gateway IP:"
-                    tooltip="The gateway IP address of the current active interface.">
-                      <input
-                        type="text"
-                        readOnly
-                        value={current.gateway}
-                        style={disabledInputStyle}
-                      />
-                    </FieldRow>
-                    <FieldRow label="Metric:"
-                    tooltip="The metric of the current active interface."
-                    >
-                      <input
-                        type="text"
-                        readOnly
-                        value={String(current.metric)}
-                        style={disabledInputStyle}
-                      />
-                    </FieldRow>
+                    {ROUTING_INTERFACE_CURRENT_FIELDS.map((field) => (
+                      <FieldRow
+                        key={field.key}
+                        label={field.label}
+                        tooltip={
+                          ROUTING_INTERFACE_FIELD_TOOLTIPS[field.tooltipKey]
+                        }
+                      >
+                        <input
+                          type="text"
+                          readOnly
+                          value={
+                            field.key === "metric"
+                              ? String(current[field.key])
+                              : current[field.key]
+                          }
+                          style={disabledInputStyle}
+                        />
+                      </FieldRow>
+                    ))}
                   </div>
                 </div>
 
                 {/* ── Active Routes Table ── */}
                 {activeRoutes.length > 0 && (
                   <div className="flex flex-col gap-0">
-                    <SectionHeading title="Active Routes" />
+                    <SectionHeading title={ROUTING_INTERFACE_SECTION_ACTIVE_ROUTES} />
                     <div style={{ overflowX: "auto" }}>
                       <div style={routesTableShellStyle}>
                       <table
@@ -769,10 +798,10 @@ const RoutingInterface = () => {
                       >
                         <thead>
                           <tr>
-                            <TH>Interface</TH>
-                            <TH>Gateway</TH>
-                            <TH>Metric</TH>
-                            <TH isLast>Status</TH>
+                            <TH>{ROUTING_INTERFACE_TABLE_COL_INTERFACE}</TH>
+                            <TH>{ROUTING_INTERFACE_TABLE_COL_GATEWAY}</TH>
+                            <TH>{ROUTING_INTERFACE_TABLE_COL_METRIC}</TH>
+                            <TH isLast>{ROUTING_INTERFACE_TABLE_COL_STATUS}</TH>
                           </tr>
                         </thead>
                         <tbody>
@@ -805,7 +834,7 @@ const RoutingInterface = () => {
                                         fontWeight: 700,
                                       }}
                                     >
-                                      Active
+                                      {ROUTING_INTERFACE_STATUS_ACTIVE}
                                     </span>
                                   ) : (
                                     <span
@@ -819,7 +848,7 @@ const RoutingInterface = () => {
                                         fontWeight: 600,
                                       }}
                                     >
-                                      Standby
+                                      {ROUTING_INTERFACE_STATUS_STANDBY}
                                     </span>
                                   )}
                                 </TD>
@@ -840,14 +869,16 @@ const RoutingInterface = () => {
                     onSubmit={handleSave}
                     className="flex flex-col gap-2"
                   >
-                    <SectionHeading title="Target Interface Configuration" />
+                    <SectionHeading title={ROUTING_INTERFACE_SECTION_TARGET_CONFIG} />
                     <div
                       className="flex flex-col gap-3 w-full"
                       style={{ ...routingFieldGroupStyle, maxWidth: 640, margin: "0 auto 12px" }}
                     >
                       {/* Interface dropdown */}
-                      <FieldRow label="Select Interface (M):"
-                      tooltip="Select the interface to switch to.">
+                      <FieldRow
+                        label={ROUTING_INTERFACE_LABEL_SELECT_INTERFACE}
+                        tooltip={ROUTING_INTERFACE_FIELD_TOOLTIPS.selectInterface}
+                      >
                         <select
                           value={form.interface}
                           onChange={(e) => handleIfaceChange(e.target.value)}
@@ -866,8 +897,10 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* IP Address — read-only, auto-filled */}
-                      <FieldRow label="IP Address:"
-                      tooltip="The IP address of the selected interface.">
+                      <FieldRow
+                        label={ROUTING_INTERFACE_LABEL_IP_ADDRESS}
+                        tooltip={ROUTING_INTERFACE_FIELD_TOOLTIPS.formIpAddress}
+                      >
                         <input
                           type="text"
                           readOnly
@@ -877,8 +910,10 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* Subnet Mask — read-only, auto-filled */}
-                      <FieldRow label="Subnet Mask:"
-                      tooltip="The subnet mask of the selected interface.">
+                      <FieldRow
+                        label={ROUTING_INTERFACE_LABEL_SUBNET_MASK}
+                        tooltip={ROUTING_INTERFACE_FIELD_TOOLTIPS.formSubnetMask}
+                      >
                         <input
                           type="text"
                           readOnly
@@ -888,15 +923,17 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* Gateway — editable */}
-                      <FieldRow label="Gateway IP (M):"
-                      tooltip="The gateway IP address of the selected interface.">
+                      <FieldRow
+                        label={ROUTING_INTERFACE_LABEL_GATEWAY_REQUIRED}
+                        tooltip={ROUTING_INTERFACE_FIELD_TOOLTIPS.formGateway}
+                      >
                         <input
                           type="text"
                           value={form.gateway}
                           onChange={(e) =>
                             handleFormChange("gateway", e.target.value)
                           }
-                          placeholder="e.g. 192.168.1.1"
+                          placeholder={ROUTING_INTERFACE_PLACEHOLDER_GATEWAY}
                           style={{
                             ...inputStyle,
                             borderColor: errors.gateway
@@ -922,15 +959,17 @@ const RoutingInterface = () => {
                       </FieldRow>
 
                       {/* Metric — editable */}
-                      <FieldRow label="Metric:"
-                      tooltip="The metric of the selected interface.">
+                      <FieldRow
+                        label={ROUTING_INTERFACE_LABEL_METRIC}
+                        tooltip={ROUTING_INTERFACE_FIELD_TOOLTIPS.formMetric}
+                      >
                         <input
                           type="text"
                           value={form.metric}
                           onChange={(e) =>
                             handleFormChange("metric", e.target.value)
                           }
-                          placeholder="Default: 100"
+                          placeholder={ROUTING_INTERFACE_PLACEHOLDER_METRIC}
                           style={{
                             ...inputStyle,
                             borderColor: errors.metric
@@ -970,7 +1009,7 @@ const RoutingInterface = () => {
                 disabled={saving}
                 style={advancedFormBtnStyle}
               >
-                Cancel
+                {ROUTING_INTERFACE_BTN_CANCEL}
               </Btn>
               <Btn
                 variant="primary"
@@ -979,7 +1018,7 @@ const RoutingInterface = () => {
                 disabled={saving}
                 style={advancedFormBtnStyle}
               >
-                {saving ? "Applying..." : "Apply & Switch"}
+                {saving ? ROUTING_INTERFACE_BTN_APPLYING : ROUTING_INTERFACE_BTN_APPLY}
               </Btn>
             </div>
           )}

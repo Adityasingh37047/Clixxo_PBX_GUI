@@ -1,8 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Tooltip } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import {
   MANAGEMENT_SECTIONS,
   MANAGEMENT_INITIAL_FORM,
+  MANAGEMENT_PAGE_BREADCRUMB_ROOT,
+  MANAGEMENT_PAGE_BREADCRUMB_SECTION,
+  MANAGEMENT_PAGE_TITLE,
+  MANAGEMENT_CARD_TITLE,
+  MANAGEMENT_BTN_SAVE,
+  MANAGEMENT_BTN_RESET,
+  MANAGEMENT_LOADING_TEXT,
+  MANAGEMENT_SECTION_HEADING_LEFT,
+  MANAGEMENT_SECTION_HEADING_COLOR,
+  MANAGEMENT_HINT_WHITELIST_DOT,
+  MANAGEMENT_HINT_WEB_IP_COMMA,
+  MANAGEMENT_LEFT_SECTION_NAMES,
+  MANAGEMENT_FIELD_TOOLTIPS,
 } from "../../../constants/ManagementConstants";
 import {
   fetchManagementParameters,
@@ -12,7 +26,6 @@ import {
   postLinuxCmd,
 } from "../../../api/apiService";
 import {
-  Button,
   Select,
   MenuItem,
   TextField,
@@ -20,6 +33,13 @@ import {
   CircularProgress,
   Checkbox,
 } from "@mui/material";
+
+const MANAGEMENT_COMPACT_MQ = "(max-width: 768px)";
+const MANAGEMENT_SCROLL_CLASS = "management-scroll";
+const MANAGEMENT_LABEL_COL_WIDTH = 200;
+const MANAGEMENT_CONTROL_COL_WIDTH = 220;
+const MANAGEMENT_FIELD_COL_GAP = 8;
+const MANAGEMENT_FORM_PAD_X = 28;
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -36,6 +56,7 @@ const C = {
   accentDark: "#3a4a5e",
   amber: "#dc2626",
   errorRed: "#dc2626",
+  sectionHeading: MANAGEMENT_SECTION_HEADING_COLOR,
 };
 
 const CARD_RADIUS = 10;
@@ -135,8 +156,17 @@ const systemFieldSelectStyle = {
   cursor: "pointer",
 };
 
-const inputStyle = systemFieldInputStyleNarrow;
-const selectStyle = systemFieldSelectStyle;
+const inputStyle = {
+  ...systemFieldInputStyleNarrow,
+  width: "100%",
+  maxWidth: "100%",
+};
+
+const selectStyle = {
+  ...systemFieldSelectStyle,
+  width: "100%",
+  maxWidth: "100%",
+};
 
 const advancedFormInlineFooterStyle = {
   display: "flex",
@@ -311,11 +341,20 @@ const disabledInputStyle = {
   borderColor: "#e2e8f0",
 };
 
+const SETTINGS_SECTION_HEADING_FIRST_MARGIN = "12px 0 24px 0";
+const SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
+const SETTINGS_FIELDS_STACK_GAP = 12;
+const SETTINGS_COLUMN_GAP = 12;
+const SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
+
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 16px 0" : "28px 0 16px 0",
+      margin: isFirst
+        ? SETTINGS_SECTION_HEADING_FIRST_MARGIN
+        : SETTINGS_SECTION_HEADING_NEXT_MARGIN,
       position: "relative",
+      width: "100%",
     }}
   >
     <div style={{ borderTop: `1px solid ${C.divider}` }} />
@@ -323,13 +362,12 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: MANAGEMENT_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 500,
-        color: C.labelText,
-        letterSpacing: "0.01em",
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
       }}
     >
       {title}
@@ -365,54 +403,71 @@ const managementTableContainerStyle = {
   boxSizing: "border-box",
 };
 
-const managementToolbarStyle = {
+const managementHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
+  padding: `10px ${MANAGEMENT_FORM_PAD_X}px`,
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
-  flexWrap: "wrap",
-  gap: 12,
+  boxSizing: "border-box",
 };
 
 const managementFieldGroupStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 10,
+  gap: SETTINGS_FIELDS_STACK_GAP,
   width: "100%",
   minWidth: 0,
 };
 
-const managementDashboardGridStyle = {
+const managementDashboardGridStyle = (isCompact) => ({
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  gridTemplateColumns: isCompact
+    ? "1fr"
+    : "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
   minWidth: 0,
   alignItems: "stretch",
+  alignContent: "start",
   minHeight: "100%",
-};
+});
 
-const managementDashboardColumnStyle = {
+const managementDashboardColumnStyle = (isCompact) => ({
   display: "flex",
   flexDirection: "column",
-  gap: 8,
+  gap: SETTINGS_COLUMN_GAP,
   minWidth: 0,
-  padding: "24px 36px 24px",
+  padding: isCompact
+    ? `16px ${MANAGEMENT_FORM_PAD_X}px 20px`
+    : SETTINGS_COLUMN_PADDING_DESKTOP,
   background: C.cardBg,
+  boxSizing: "border-box",
+});
+
+const managementDashboardDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "stretch",
+  padding: "14px 0",
   boxSizing: "border-box",
 };
 
-const managementDashboardDividerStyle = {
-  background: C.divider,
+const managementDashboardDividerLineStyle = {
+  flex: 1,
   width: 1,
-  flexShrink: 0,
-  alignSelf: "stretch",
+  background: C.divider,
+  margin: "0 auto",
 };
 
 const managementDashboardResponsiveCss = `
-  @media (max-width: 767px) {
+  @media (max-width: 768px) {
     .management-dashboard-grid {
       grid-template-columns: minmax(0, 1fr) !important;
     }
@@ -427,17 +482,10 @@ const managementDashboardFieldsStackStyle = {
   flexDirection: "column",
   width: "100%",
   minWidth: 0,
-  gap: 8,
+  gap: 0,
 };
 
-/** UI-only column split — mirrors Network.jsx two-panel layout */
-const MANAGEMENT_LEFT_SECTION_NAMES = new Set([
-  "WEB Management",
-  "SSH Management Config",
-  "Remote Data Capture Config",
-  "FTP Config",
-  "Telnet Config",
-]);
+const MANAGEMENT_LEFT_SECTION_SET = new Set(MANAGEMENT_LEFT_SECTION_NAMES);
 
 const managementFixedAlertSx = {
   position: "fixed",
@@ -451,8 +499,51 @@ const managementFixedAlertSx = {
   fontWeight: 500,
 };
 
-const ManagementPageShell = ({ children }) => (
-  <div style={managementPageWrapStyle} data-native-scroll>
+const ManagementScrollbarStyles = () => (
+  <style>{`
+    .${MANAGEMENT_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${MANAGEMENT_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${MANAGEMENT_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${MANAGEMENT_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${MANAGEMENT_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${MANAGEMENT_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${MANAGEMENT_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
+const ManagementPageShell = ({ children, isCompact }) => (
+  <div
+    className={MANAGEMENT_SCROLL_CLASS}
+    style={{
+      ...managementPageWrapStyle,
+      ...(isCompact ? { padding: 8 } : {}),
+    }}
+    data-native-scroll
+  >
     <div style={managementPageInnerStyle}>{children}</div>
   </div>
 );
@@ -471,11 +562,13 @@ const ManagementBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{MANAGEMENT_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{MANAGEMENT_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Management</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {MANAGEMENT_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -498,103 +591,93 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  webPort: "TCP port used to access the web management interface.",
-  webAccess:
-    "Controls which client IP addresses are allowed to access the web interface.",
-  webIpAddress:
-    "IP addresses for the access list. Used when whitelist or blacklist mode is selected.",
-  webTimeout:
-    "Inactivity period in seconds before the web session is automatically logged out.",
-  webWhitelist:
-    "IP addresses permitted to access the web interface under whitelist restrictions.",
-  sshEnable: "Enable or disable SSH remote shell access to the system.",
-  sshPort: "TCP port used for SSH connections.",
-  sshWhitelist: "IP addresses allowed to connect via SSH.",
-  remoteDataCapture:
-    "Enable or disable remote packet and call data capture on the system.",
-  captureRtp: "Include RTP media streams in remote data capture.",
-  captureRtpInterface:
-    "Network interface used when capturing RTP traffic.",
-  ftpEnable: "Enable or disable FTP file transfer access.",
-  ftpWhitelist: "IP addresses allowed to connect via FTP.",
-  telnetEnable: "Enable or disable Telnet remote access.",
-  telnetWhitelist: "IP addresses allowed to connect via Telnet.",
-  syslogEnable:
-    "Enable or disable forwarding of system log messages to a remote server.",
-  syslogServerAddress:
-    "IP address or hostname of the remote syslog server.",
-  syslogLevel:
-    "Minimum severity of log messages sent to the syslog server.",
-  cdrEnable:
-    "Enable or disable sending call detail records to a remote server.",
-  cdrServerAddress: "IP address or hostname of the CDR server.",
-  cdrServerPort: "Port used to send CDR data to the remote server.",
-  cdrSendFailed:
-    "Include call records for failed or unanswered calls in CDR output.",
-  cdrContent: "Level of detail included in each call detail record.",
-  cdrHangup:
-    "Include which party initiated the call hangup in the CDR.",
-  cdrAddLanIp:
-    "Append LAN1 and LAN2 IPv4 addresses to each call detail record.",
-  cdrSendNumberClass:
-    "Enable sending number classification data to a separate server.",
-  cdrServerIp: "IP address of the number classification server.",
-  cdrServerPortClass:
-    "Port used by the number classification server.",
-  cdrKeepRouting:
-    "Continue normal call routing if the CDR server is unreachable.",
-  cdrAllowDeny:
-    "Allow or deny CDR transmission based on configured access rules.",
-  ntpEnable:
-    "Enable or disable automatic time synchronization using NTP.",
-  ntpServerAddress: "IP address or hostname of the NTP time server.",
-  synchronizingCycle:
-    "Interval in seconds between NTP synchronization attempts.",
-  dailyRestart: "Enable or disable a scheduled daily system restart.",
-  restartHour: "Hour of the day when the scheduled daily restart occurs.",
-  restartMinute:
-    "Minute within the selected hour when the daily restart occurs.",
-  systemTime:
-    "Current system date and time. Enable Modify to edit manually.",
-  modifyTime: "Allow manual changes to the system date and time.",
-  timeZone: "Time zone offset applied to system time and scheduling.",
-};
+const ManagementFieldRow = ({
+  label,
+  tooltipKey,
+  labelColWidth = MANAGEMENT_LABEL_COL_WIDTH,
+  children,
+}) => {
+  const tooltip = tooltipKey ? MANAGEMENT_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const labelText = typeof label === "string" ? label : null;
+  const labelNode =
+    typeof label === "string" ? (
+      <label
+        style={{
+          fontSize: 12,
+          color: C.labelText,
+          fontWeight: 600,
+          width: "100%",
+          minWidth: 0,
+          lineHeight: 1.35,
+          wordBreak: "break-word",
+          cursor: tooltip ? "help" : "default",
+        }}
+      >
+        {labelText}
+      </label>
+    ) : (
+      label
+    );
 
-const FieldLabel = ({ name, children }) => {
-  const label = (
-    <label
-      style={{
-        fontSize: 12,
-        fontWeight: 600,
-        color: C.labelText,
-        width: "100%",
-        maxWidth: 220,
-        flexShrink: 0,
-        cursor: tooltips[name] ? "help" : "default",
-      }}
-    >
-      {children}
-    </label>
-  );
+  const labelWrapStyle = {
+    flex: `0 0 ${labelColWidth}px`,
+    width: labelColWidth,
+    maxWidth: labelColWidth,
+    minWidth: labelColWidth,
+  };
 
-  if (!tooltips[name]) return label;
+  const valueColStyle = {
+    flex: "1 1 auto",
+    minWidth: MANAGEMENT_CONTROL_COL_WIDTH,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "flex-start",
+    paddingTop: 2,
+  };
+
+  const controlSlotStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    width: MANAGEMENT_CONTROL_COL_WIDTH,
+    minWidth: MANAGEMENT_CONTROL_COL_WIDTH,
+    maxWidth: MANAGEMENT_CONTROL_COL_WIDTH,
+  };
 
   return (
-    <Tooltip title={tooltips[name]} {...tooltipProps}>
-      {label}
-    </Tooltip>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        width: "100%",
+        minHeight: 36,
+        gap: MANAGEMENT_FIELD_COL_GAP,
+      }}
+    >
+      {label != null && label !== "" ? (
+        <div style={labelWrapStyle}>
+          {tooltip && typeof label === "string" ? (
+            <Tooltip title={tooltip} {...tooltipProps}>
+              {labelNode}
+            </Tooltip>
+          ) : (
+            labelNode
+          )}
+        </div>
+      ) : null}
+
+      <div style={valueColStyle}>
+        <div style={controlSlotStyle}>{children}</div>
+      </div>
+    </div>
   );
 };
 
-const ManagementFieldRow = ({ label, children }) => (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full min-w-0 gap-2 sm:gap-4">
-    {label ?? null}
-    <div className="flex-1 w-full max-w-[280px] min-w-0">{children}</div>
-  </div>
-);
-
 const Management = () => {
+  const isCompact = useMediaQuery(MANAGEMENT_COMPACT_MQ);
+  const labelColWidth = isCompact ? 160 : MANAGEMENT_LABEL_COL_WIDTH;
   const [form, setForm] = useState(MANAGEMENT_INITIAL_FORM);
   const [formKey, setFormKey] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -1661,7 +1744,9 @@ const Management = () => {
   // Helper to render System Time row with Modify checkbox and date/time input inline
   const renderSystemTimeInline = (field, nextField) => (
     <ManagementFieldRow
-      label={<FieldLabel name={field.name}>{field.label}</FieldLabel>}
+      label={field.label}
+      tooltipKey={field.name}
+      labelColWidth={labelColWidth}
     >
       <div className="flex items-center gap-2 w-full min-w-0">
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -1672,7 +1757,10 @@ const Management = () => {
             onChange={handleCheckboxChange(nextField.name)}
             sx={checkboxSx}
           />
-          <Tooltip title={tooltips.modifyTime} {...tooltipProps}>
+          <Tooltip
+            title={MANAGEMENT_FIELD_TOOLTIPS.modifyTime}
+            {...tooltipProps}
+          >
             <span style={{ fontSize: 12, fontWeight: 600, color: C.labelText }}>
               {nextField.label}
             </span>
@@ -1716,10 +1804,10 @@ const Management = () => {
   );
 
   const renderManagementSection = (section, isFirst) => (
-    <div key={section.section} className="flex flex-col gap-0 min-w-0">
+    <React.Fragment key={section.section}>
       <SectionHeading title={section.section} isFirst={isFirst} />
 
-      <div className="flex flex-col w-full min-w-0" style={managementFieldGroupStyle}>
+      <div style={managementFieldGroupStyle}>
         {section.fields.map((field, fieldIdx) => {
           if (
             field.conditional &&
@@ -1763,7 +1851,9 @@ const Management = () => {
           return (
             <ManagementFieldRow
               key={section.section + field.name}
-              label={<FieldLabel name={field.name}>{field.label}</FieldLabel>}
+              label={field.label}
+              tooltipKey={field.name}
+              labelColWidth={labelColWidth}
             >
                 {field.type === "text" && (
                   <div className="flex flex-col gap-1 w-full min-w-0">
@@ -1813,12 +1903,12 @@ const Management = () => {
                       field.name === "ftpWhitelist" ||
                       field.name === "telnetWhitelist") && (
                       <span style={{ fontSize: 11, color: C.mutedText }}>
-                        IP addresses are separated by '.'
+                        {MANAGEMENT_HINT_WHITELIST_DOT}
                       </span>
                     )}
                     {field.name === "webIpAddress" && (
                       <span style={{ fontSize: 11, color: C.mutedText }}>
-                        IP addresses are separated by ','
+                        {MANAGEMENT_HINT_WEB_IP_COMMA}
                       </span>
                     )}
                     {field.unit && (
@@ -1949,18 +2039,19 @@ const Management = () => {
           );
         })}
       </div>
-    </div>
+    </React.Fragment>
   );
 
   const leftSections = MANAGEMENT_SECTIONS.filter((s) =>
-    MANAGEMENT_LEFT_SECTION_NAMES.has(s.section),
+    MANAGEMENT_LEFT_SECTION_SET.has(s.section),
   );
   const rightSections = MANAGEMENT_SECTIONS.filter(
-    (s) => !MANAGEMENT_LEFT_SECTION_NAMES.has(s.section),
+    (s) => !MANAGEMENT_LEFT_SECTION_SET.has(s.section),
   );
 
   return (
-    <ManagementPageShell>
+    <ManagementPageShell isCompact={isCompact}>
+      <ManagementScrollbarStyles />
       {error && (
         <Alert
           severity="error"
@@ -1990,19 +2081,11 @@ const Management = () => {
       <style>{managementDashboardResponsiveCss}</style>
 
       <div style={managementTableContainerStyle}>
-          <div style={managementToolbarStyle}>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
-              }}
-            >
-              Management Parameters
-            </span>
+          <div style={managementHeaderStyle}>
+            <span>{MANAGEMENT_CARD_TITLE}</span>
           </div>
 
+          <div style={{ padding: 0, boxSizing: "border-box" }}>
           {loading ? (
             <div
               className="flex items-center justify-center w-full"
@@ -2018,7 +2101,7 @@ const Management = () => {
                     fontWeight: 500,
                   }}
                 >
-                  Loading management parameters...
+                  {MANAGEMENT_LOADING_TEXT}
                 </div>
               </div>
             </div>
@@ -2032,9 +2115,9 @@ const Management = () => {
               >
                 <div
                   className="management-dashboard-grid"
-                  style={managementDashboardGridStyle}
+                  style={managementDashboardGridStyle(isCompact)}
                 >
-                  <div style={managementDashboardColumnStyle}>
+                  <div style={managementDashboardColumnStyle(isCompact)}>
                     <div style={managementDashboardFieldsStackStyle}>
                       {leftSections.map((section, idx) =>
                         renderManagementSection(section, idx === 0),
@@ -2042,13 +2125,17 @@ const Management = () => {
                     </div>
                   </div>
 
-                  <div
-                    className="management-dashboard-divider"
-                    style={managementDashboardDividerStyle}
-                    aria-hidden="true"
-                  />
+                  {!isCompact && (
+                    <div
+                      className="management-dashboard-divider"
+                      style={managementDashboardDividerCellStyle}
+                      aria-hidden="true"
+                    >
+                      <div style={managementDashboardDividerLineStyle} />
+                    </div>
+                  )}
 
-                  <div style={managementDashboardColumnStyle}>
+                  <div style={managementDashboardColumnStyle(isCompact)}>
                     <div style={managementDashboardFieldsStackStyle}>
                       {rightSections.map((section, idx) =>
                         renderManagementSection(section, idx === 0),
@@ -2066,7 +2153,7 @@ const Management = () => {
                   disabled={loading}
                   style={advancedFormBtnStyle}
                 >
-                  Save
+                  {MANAGEMENT_BTN_SAVE}
                 </Btn>
                 <Btn
                   variant="cancel"
@@ -2075,11 +2162,12 @@ const Management = () => {
                   disabled={loading}
                   style={advancedFormBtnStyle}
                 >
-                  Reset
+                  {MANAGEMENT_BTN_RESET}
                 </Btn>
               </div>
             </>
           )}
+          </div>
         </div>
     </ManagementPageShell>
   );

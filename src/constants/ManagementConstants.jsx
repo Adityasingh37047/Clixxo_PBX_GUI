@@ -1,3 +1,83 @@
+export const MANAGEMENT_PAGE_BREADCRUMB_ROOT = "System";
+export const MANAGEMENT_PAGE_BREADCRUMB_SECTION = "System Settings";
+export const MANAGEMENT_PAGE_TITLE = "Management";
+export const MANAGEMENT_CARD_TITLE = "Management Parameters";
+
+export const MANAGEMENT_BTN_SAVE = "Save";
+export const MANAGEMENT_BTN_RESET = "Reset";
+
+export const MANAGEMENT_LOADING_TEXT = "Loading management parameters...";
+
+export const MANAGEMENT_SECTION_HEADING_LEFT = -20;
+export const MANAGEMENT_SECTION_HEADING_COLOR = "#30415A";
+
+export const MANAGEMENT_HINT_WHITELIST_DOT =
+  "IP addresses are separated by '.'";
+export const MANAGEMENT_HINT_WEB_IP_COMMA =
+  "IP addresses are separated by ','";
+
+export const MANAGEMENT_LEFT_SECTION_NAMES = [
+  "WEB Management",
+  "SSH Management Config",
+  "Remote Data Capture Config",
+  "FTP Config",
+  "Telnet Config",
+];
+
+export const MANAGEMENT_FIELD_TOOLTIPS = {
+  webPort: "TCP port used to access the web management interface.",
+  webAccess:
+    "Controls which client IP addresses are allowed to access the web interface.",
+  webIpAddress:
+    "IP addresses for the access list. Used when whitelist or blacklist mode is selected.",
+  webTimeout:
+    "Inactivity period in seconds before the web session is automatically logged out.",
+  webWhitelist:
+    "IP addresses permitted to access the web interface under whitelist restrictions.",
+  sshEnable: "Enable or disable SSH remote shell access to the system.",
+  sshPort: "TCP port used for SSH connections.",
+  sshWhitelist: "IP addresses allowed to connect via SSH.",
+  remoteDataCapture:
+    "Enable or disable remote packet and call data capture on the system.",
+  captureRtp: "Include RTP media streams in remote data capture.",
+  captureRtpInterface: "Network interface used when capturing RTP traffic.",
+  ftpEnable: "Enable or disable FTP file transfer access.",
+  ftpWhitelist: "IP addresses allowed to connect via FTP.",
+  telnetEnable: "Enable or disable Telnet remote access.",
+  telnetWhitelist: "IP addresses allowed to connect via Telnet.",
+  syslogEnable:
+    "Enable or disable forwarding of system log messages to a remote server.",
+  syslogServerAddress: "IP address or hostname of the remote syslog server.",
+  syslogLevel: "Minimum severity of log messages sent to the syslog server.",
+  cdrEnable:
+    "Enable or disable sending call detail records to a remote server.",
+  cdrServerAddress: "IP address or hostname of the CDR server.",
+  cdrServerPort: "Port used to send CDR data to the remote server.",
+  cdrSendFailed:
+    "Include call records for failed or unanswered calls in CDR output.",
+  cdrContent: "Level of detail included in each call detail record.",
+  cdrHangup: "Include which party initiated the call hangup in the CDR.",
+  cdrAddLanIp:
+    "Append LAN1 and LAN2 IPv4 addresses to each call detail record.",
+  cdrSendNumberClass:
+    "Enable sending number classification data to a separate server.",
+  cdrServerIp: "IP address of the number classification server.",
+  cdrServerPortClass: "Port used by the number classification server.",
+  cdrKeepRouting:
+    "Continue normal call routing if the CDR server is unreachable.",
+  cdrAllowDeny:
+    "Allow or deny CDR transmission based on configured access rules.",
+  ntpEnable: "Enable or disable automatic time synchronization using NTP.",
+  ntpServerAddress: "IP address or hostname of the NTP time server.",
+  synchronizingCycle: "Interval in seconds between NTP synchronization attempts.",
+  dailyRestart: "Enable or disable a scheduled daily system restart.",
+  restartHour: "Hour of the day when the scheduled daily restart occurs.",
+  restartMinute: "Minute within the selected hour when the daily restart occurs.",
+  systemTime: "Current system date and time. Enable Modify to edit manually.",
+  modifyTime: "Allow manual changes to the system date and time.",
+  timeZone: "Time zone offset applied to system time and scheduling.",
+};
+
 export const MANAGEMENT_SECTIONS = [
   {
     section: 'WEB Management',

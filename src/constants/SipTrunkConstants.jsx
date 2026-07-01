@@ -1,3 +1,65 @@
+export const GLOBAL_SIP_PAGE_BREADCRUMB_ROOT = "System";
+export const GLOBAL_SIP_PAGE_BREADCRUMB_SECTION = "System Settings";
+export const GLOBAL_SIP_PAGE_TITLE = "Global SIP";
+
+export const GLOBAL_SIP_BTN_DELETE = "Delete";
+export const GLOBAL_SIP_BTN_CLEAR_ALL = "Clear All";
+export const GLOBAL_SIP_BTN_ADD_NEW = "+ Add New";
+export const GLOBAL_SIP_BTN_PREV = "← Prev";
+export const GLOBAL_SIP_BTN_NEXT = "Next →";
+export const GLOBAL_SIP_BTN_SAVE = "Save";
+export const GLOBAL_SIP_BTN_SAVING = "Saving...";
+export const GLOBAL_SIP_BTN_CLOSE = "Close";
+export const GLOBAL_SIP_BTN_WORKING = "Working...";
+
+export const GLOBAL_SIP_MODAL_ADD_TITLE = "Add Global SIP";
+export const GLOBAL_SIP_MODAL_EDIT_TITLE = "Edit Global SIP";
+export const GLOBAL_SIP_COL_MODIFY = "Modify";
+export const GLOBAL_SIP_EMPTY_MESSAGE = "No Global SIP settings configured!";
+export const GLOBAL_SIP_RECORD_LABEL = "record";
+export const GLOBAL_SIP_SELECTED_SUFFIX = "selected";
+export const GLOBAL_SIP_EDIT_TITLE_ACCESS = "Edit";
+export const GLOBAL_SIP_SECTION_GENERAL = "General";
+
+export const GLOBAL_SIP_TOOLTIP_DELETE =
+  "Delete the selected Global SIP settings.";
+
+export const GLOBAL_SIP_FIELD_TOOLTIPS = {
+  description: "Enter a descriptive name for this Global SIP profile.",
+  local_ip: "Select the local IP address or interface for SIP signaling.",
+  local_port: "TCP/UDP port used for local SIP signaling.",
+  transport_mode: "Transport protocol used for SIP messages (UDP or TCP).",
+};
+
+export const GLOBAL_SIP_FORM_LAYOUT = [
+  ["description"],
+  ["local_ip"],
+  ["local_port"],
+  ["transport_mode"],
+];
+
+export const GLOBAL_SIP_PLACEHOLDER_PASSWORD = "Enter password";
+export const GLOBAL_SIP_PLACEHOLDER_ENTER = (label) =>
+  `Enter ${String(label).toLowerCase()}`;
+
+export const GLOBAL_SIP_MSG_SELECT_TO_DELETE =
+  "Please select entries to delete";
+export const GLOBAL_SIP_MSG_NO_TRUNKS_TO_CLEAR = "No entries to clear";
+export const GLOBAL_SIP_CONFIRM_DELETE = (count) =>
+  `Delete ${count} Global SIP setting(s)?`;
+export const GLOBAL_SIP_CONFIRM_CLEAR_ALL =
+  "Are you sure you want to delete ALL Global SIP settings? This action cannot be undone.";
+export const GLOBAL_SIP_MSG_DELETED = (count) =>
+  `${count} setting(s) deleted. SIP service will restart briefly.`;
+export const GLOBAL_SIP_MSG_DELETED_ALL = (count) =>
+  `All ${count} setting(s) deleted. SIP service will restart briefly.`;
+export const GLOBAL_SIP_MSG_SAVE_RESTART =
+  "SIP service will restart briefly.";
+export const GLOBAL_SIP_PAGINATION_SHOWING = (count, recordLabel, page) =>
+  `Showing ${count} ${recordLabel}${count !== 1 ? "s" : ""} on page ${page}`;
+export const GLOBAL_SIP_PAGINATION_PAGE_OF = (page, totalPages) =>
+  `Page ${page} of ${totalPages}`;
+
 export const SIP_TRUNK_FIELDS = [
   {
     name: "index",

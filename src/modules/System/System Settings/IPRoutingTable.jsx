@@ -1,8 +1,42 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   IP_ROUTING_TABLE_COLUMNS,
   IP_ROUTING_TABLE_MODAL_FIELDS,
   IP_ROUTING_TABLE_INITIAL_ROW,
+  IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT,
+  IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION,
+  IP_ROUTING_TABLE_PAGE_TITLE,
+  IP_ROUTING_TABLE_BTN_DELETE,
+  IP_ROUTING_TABLE_BTN_CLEAR_ALL,
+  IP_ROUTING_TABLE_BTN_ADD_NEW,
+  IP_ROUTING_TABLE_BTN_SAVE,
+  IP_ROUTING_TABLE_BTN_APPLYING,
+  IP_ROUTING_TABLE_BTN_CLOSE,
+  IP_ROUTING_TABLE_BTN_WORKING,
+  IP_ROUTING_TABLE_MODAL_ADD_TITLE,
+  IP_ROUTING_TABLE_MODAL_EDIT_TITLE,
+  IP_ROUTING_TABLE_EMPTY_MESSAGE,
+  IP_ROUTING_TABLE_RECORD_LABEL,
+  IP_ROUTING_TABLE_SELECTED_SUFFIX,
+  IP_ROUTING_TABLE_EDIT_TITLE_ACCESS,
+  IP_ROUTING_TABLE_LOADING_TITLE,
+  IP_ROUTING_TABLE_LOADING_SUBTITLE,
+  IP_ROUTING_TABLE_NETWORK_LOADING,
+  IP_ROUTING_TABLE_PAGINATION_SHOWING,
+  IP_ROUTING_TABLE_FIELD_TOOLTIPS,
+  IP_ROUTING_TABLE_FORM_LAYOUT,
+  IP_ROUTING_TABLE_ERR_REQUIRED_FIELDS,
+  IP_ROUTING_TABLE_ERR_INVALID_MASK,
+  IP_ROUTING_TABLE_ERR_NETWORK_LOADING,
+  IP_ROUTING_TABLE_ERR_SEGMENT_CONFLICT,
+  IP_ROUTING_TABLE_ERR_INVALID_DESTINATION,
+  IP_ROUTING_TABLE_ERR_INVALID_GATEWAY,
+  IP_ROUTING_TABLE_MSG_SAVED,
+  IP_ROUTING_TABLE_MSG_APPLY_FAILED,
+  IP_ROUTING_TABLE_CONFIRM_DELETE,
+  IP_ROUTING_TABLE_CONFIRM_CLEAR_ALL,
+  IP_ROUTING_TABLE_MSG_DELETED,
+  IP_ROUTING_TABLE_MSG_CLEARED,
 } from "../../../constants/IPRoutingTableConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
@@ -16,9 +50,13 @@ import {
   Checkbox,
   Tooltip,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
+
+const IP_ROUTE_TABLE_COMPACT_MQ = "(max-width: 768px)";
+const IP_ROUTE_TABLE_SCROLL_CLASS = "ip-route-table-scroll";
 
 const C = {
   pageBg: "#f8fafc",
@@ -199,13 +237,67 @@ const IP_ROUTE_FIELD_TOOLTIP_PROPS = {
   },
 };
 
-const tooltips = {
-  Destination: "Enter the destination IP address or subnet.",
-  "Subnet Mask": "Enter the subnet mask in CIDR notation (e.g., 24).",
-  "Network Port": "Select the network port to route traffic through.",
-  "Gateway (Optional)":
-    "Enter the gateway IP address for this route (required for VPN).",
+const IpRouteFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = tooltipKey
+    ? IP_ROUTING_TABLE_FIELD_TOOLTIPS[tooltipKey] || ""
+    : "";
+  const labelNode = (
+    <span
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        cursor: tooltip ? "help" : undefined,
+        whiteSpace: "nowrap",
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={tooltip} {...IP_ROUTE_FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
 };
+
+const IpRouteTableScrollbarStyles = () => (
+  <style>{`
+    .${IP_ROUTE_TABLE_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${IP_ROUTE_TABLE_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${IP_ROUTE_TABLE_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${IP_ROUTE_TABLE_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${IP_ROUTE_TABLE_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${IP_ROUTE_TABLE_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${IP_ROUTE_TABLE_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
 
 const Btn = ({
   children,
@@ -415,7 +507,7 @@ const getIpRouteRowBg = (isSelected, idx) =>
 
 const IpRouteTableEditIcon = ({ disabled, onClick }) => (
   <EditDocumentIcon
-    titleAccess="Edit"
+    titleAccess={IP_ROUTING_TABLE_EDIT_TITLE_ACCESS}
     onClick={() => {
       if (!disabled) onClick();
     }}
@@ -461,11 +553,13 @@ const IpRouteTableBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>System</span>
+    <span>{IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>IP Route Table</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {IP_ROUTING_TABLE_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -528,7 +622,12 @@ const ipRoutePrimaryBtnStyle = {
   borderRadius: 10,
 };
 
-const IpRouteTableEmptyState = ({ message, onAddNew, disabled }) => (
+const IpRouteTableEmptyState = ({
+  message,
+  onAddNew,
+  disabled,
+  buttonLabel = IP_ROUTING_TABLE_BTN_ADD_NEW,
+}) => (
   <div
     style={{
       display: "flex",
@@ -556,12 +655,13 @@ const IpRouteTableEmptyState = ({ message, onAddNew, disabled }) => (
       disabled={disabled}
       style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
     >
-      + Add New
+      {buttonLabel}
     </Btn>
   </div>
 );
 
 const IPRoutingTable = () => {
+  const isCompact = useMediaQuery(IP_ROUTE_TABLE_COMPACT_MQ);
   const LOCAL_STORAGE_KEY = "ipRoutingTableRows";
   const [rows, setRows] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -582,6 +682,22 @@ const IPRoutingTable = () => {
   });
   const [savingRoute, setSavingRoute] = useState(false);
   const [toast, setToast] = useState({ msg: "", type: "success" });
+
+  const modalFieldByKey = useMemo(
+    () =>
+      IP_ROUTING_TABLE_MODAL_FIELDS.reduce((acc, field) => {
+        acc[field.key] = field;
+        return acc;
+      }, {}),
+    [],
+  );
+
+  const modalFormFields = useMemo(() => {
+    const names = IP_ROUTING_TABLE_FORM_LAYOUT.flat();
+    return names.map((key) => modalFieldByKey[key]).filter(Boolean);
+  }, [modalFieldByKey]);
+
+  const selectedCount = rows.filter((r) => r.checked).length;
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -885,10 +1001,7 @@ WantedBy=multi-user.target
     const mask = String(form.subnetMask || "").trim();
     const portLabel = String(form.networkPort || "").trim();
     if (!dest || !mask || !portLabel) {
-      showToast(
-        "Please fill Destination, Subnet Mask and Network Port",
-        "error",
-      );
+      showToast(IP_ROUTING_TABLE_ERR_REQUIRED_FIELDS, "error");
       return;
     }
 
@@ -903,7 +1016,7 @@ WantedBy=multi-user.target
     };
     const prefix = maskToPrefix(mask);
     if (prefix == null) {
-      showToast("Invalid subnet mask", "error");
+      showToast(IP_ROUTING_TABLE_ERR_INVALID_MASK, "error");
       return;
     }
 
@@ -964,10 +1077,7 @@ WantedBy=multi-user.target
     // 1. The selected interface (can't route to directly connected network through same interface)
     // 2. Any unselected interface (can't route to directly connected network through different interface)
     if (!networkOptions || networkOptions.length === 0) {
-      showToast(
-        "Network interfaces are still loading. Please wait a moment and try again.",
-        "error",
-      );
+      showToast(IP_ROUTING_TABLE_ERR_NETWORK_LOADING, "error");
       return;
     }
 
@@ -996,10 +1106,7 @@ WantedBy=multi-user.target
     }
 
     if (conflict) {
-      showToast(
-        "Destination network segment and the unselected WAN cannot be in the same segment!",
-        "error",
-      );
+      showToast(IP_ROUTING_TABLE_ERR_SEGMENT_CONFLICT, "error");
       return;
     }
 
@@ -1007,7 +1114,7 @@ WantedBy=multi-user.target
     // If destination is a host IP, convert it to network address
     const destNum = ipToNumber(dest);
     if (destNum === null) {
-      showToast("Invalid destination IP address", "error");
+      showToast(IP_ROUTING_TABLE_ERR_INVALID_DESTINATION, "error");
       return;
     }
     const networkMask =
@@ -1074,10 +1181,7 @@ WantedBy=multi-user.target
     }
 
     if (gateway && !/^(?:\d{1,3}\.){3}\d{1,3}$/.test(gateway)) {
-      showToast(
-        "Invalid gateway IP address format. Please enter a valid IP address (e.g., 172.23.0.1)",
-        "error",
-      );
+      showToast(IP_ROUTING_TABLE_ERR_INVALID_GATEWAY, "error");
       return;
     }
 
@@ -1124,7 +1228,7 @@ WantedBy=multi-user.target
     setRows(updatedRows);
     saveRowsLocal(updatedRows);
     closeModal();
-    showToast("Route saved instantly. Applying in background...", "success");
+    showToast(IP_ROUTING_TABLE_MSG_SAVED, "success");
 
     // Perform backend operations silently in the background
     postLinuxCmd({ cmd: `${deleteCmd}; ${addCmd}` })
@@ -1136,7 +1240,7 @@ WantedBy=multi-user.target
       })
       .catch((err) => {
         showToast(
-          err?.message || "Warning: Failed to apply route to Linux kernel",
+          err?.message || IP_ROUTING_TABLE_MSG_APPLY_FAILED,
           "error",
         );
       });
@@ -1162,7 +1266,7 @@ WantedBy=multi-user.target
     if (itemsToDelete.length === 0 || savingRoute) return;
 
     const isConfirmed = window.confirm(
-      `Are you sure you want to delete ${itemsToDelete.length} selected route(s)?`,
+      IP_ROUTING_TABLE_CONFIRM_DELETE(itemsToDelete.length),
     );
     if (!isConfirmed) return;
 
@@ -1308,7 +1412,7 @@ WantedBy=multi-user.target
         // Update persistent config file with remaining routes
         await saveRoutesToFile(remainingRows, networkOptions);
         showToast(
-          `${itemsToDelete.length} route(s) deleted and configuration updated.`,
+          IP_ROUTING_TABLE_MSG_DELETED(itemsToDelete.length),
           "success",
         );
       })
@@ -1320,9 +1424,7 @@ WantedBy=multi-user.target
   const handleClearAll = () => {
     if (rows.length === 0 || savingRoute) return;
 
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete all routes? This action cannot be undone.",
-    );
+    const isConfirmed = window.confirm(IP_ROUTING_TABLE_CONFIRM_CLEAR_ALL);
     if (!isConfirmed) return;
 
     setSavingRoute(true);
@@ -1461,7 +1563,7 @@ WantedBy=multi-user.target
         setRows(cleared);
         // Update persistent config file (empty)
         await saveRoutesToFile(cleared, networkOptions);
-        showToast("All routes deleted and configuration cleared.", "success");
+        showToast(IP_ROUTING_TABLE_MSG_CLEARED, "success");
       })
       .finally(() => {
         setSavingRoute(false);
@@ -1547,7 +1649,16 @@ WantedBy=multi-user.target
   }, []);
 
   return (
-    <div style={ipRoutePageWrapStyle}>
+    <>
+      <IpRouteTableScrollbarStyles />
+      <div
+        className={IP_ROUTE_TABLE_SCROLL_CLASS}
+        style={{
+          ...ipRoutePageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
+        }}
+        data-native-scroll
+      >
       <div style={ipRoutePageInnerStyle}>
         {toast.msg && (
           <Alert
@@ -1590,10 +1701,10 @@ WantedBy=multi-user.target
               <div
                 style={{ fontSize: 13, fontWeight: 600, color: C.valueText }}
               >
-                Applying routing changes...
+                {IP_ROUTING_TABLE_LOADING_TITLE}
               </div>
               <div style={{ fontSize: 11, color: C.mutedText }}>
-                Updating kernel routes and persistent config
+                {IP_ROUTING_TABLE_LOADING_SUBTITLE}
               </div>
             </div>
           </div>
@@ -1602,7 +1713,14 @@ WantedBy=multi-user.target
         <IpRouteTableBreadcrumb />
 
         <div style={ipRouteCardStyle}>
-          <div style={ipRouteToolbarStyle}>
+          <div
+            style={{
+              ...ipRouteToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1612,9 +1730,9 @@ WantedBy=multi-user.target
                 minWidth: 0,
               }}
             >
-              {rows.some((r) => r.checked) && (
+              {selectedCount > 0 && (
                 <span style={ipRouteSelectedBadgeStyle}>
-                  {rows.filter((r) => r.checked).length} selected
+                  {selectedCount} {IP_ROUTING_TABLE_SELECTED_SUFFIX}
                 </span>
               )}
             </div>
@@ -1633,7 +1751,7 @@ WantedBy=multi-user.target
                 style={ipRouteCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                {savingRoute ? "Working..." : "Delete"}
+                {savingRoute ? IP_ROUTING_TABLE_BTN_WORKING : IP_ROUTING_TABLE_BTN_DELETE}
               </Btn>
               <Btn
                 variant="cancel"
@@ -1641,7 +1759,7 @@ WantedBy=multi-user.target
                 disabled={rows.length === 0 || savingRoute}
                 style={ipRouteCancelBtnStyle}
               >
-                {savingRoute ? "Working..." : "Clear All"}
+                {savingRoute ? IP_ROUTING_TABLE_BTN_WORKING : IP_ROUTING_TABLE_BTN_CLEAR_ALL}
               </Btn>
               <Btn
                 variant="primary"
@@ -1649,20 +1767,21 @@ WantedBy=multi-user.target
                 disabled={savingRoute}
                 style={ipRoutePrimaryBtnStyle}
               >
-                + Add New
+                {IP_ROUTING_TABLE_BTN_ADD_NEW}
               </Btn>
             </div>
           </div>
 
           {rows.length === 0 ? (
             <IpRouteTableEmptyState
-              message="No routes configured!"
+              message={IP_ROUTING_TABLE_EMPTY_MESSAGE}
               onAddNew={() => openModal(null)}
               disabled={savingRoute}
             />
           ) : (
             <>
               <div
+                className={IP_ROUTE_TABLE_SCROLL_CLASS}
                 style={{
                   overflowX: "auto",
                   overflowY: "auto",
@@ -1819,8 +1938,10 @@ WantedBy=multi-user.target
 
               <div style={ipRoutePaginationStyle}>
                 <span style={{ fontSize: 11, color: C.mutedText }}>
-                  Showing {rows.length} record
-                  {rows.length !== 1 ? "s" : ""}
+                  {IP_ROUTING_TABLE_PAGINATION_SHOWING(
+                    rows.length,
+                    IP_ROUTING_TABLE_RECORD_LABEL,
+                  )}
                 </span>
               </div>
             </>
@@ -1860,7 +1981,9 @@ WantedBy=multi-user.target
             borderTopRightRadius: 8,
           }}
         >
-          {editIndex !== null ? "Edit IP Route" : "Add IP Route"}
+          {editIndex !== null
+            ? IP_ROUTING_TABLE_MODAL_EDIT_TITLE
+            : IP_ROUTING_TABLE_MODAL_ADD_TITLE}
         </DialogTitle>
         <DialogContent
           style={{
@@ -1881,7 +2004,7 @@ WantedBy=multi-user.target
               marginTop: 0,
             }}
           >
-            {IP_ROUTING_TABLE_MODAL_FIELDS.map((field) => (
+            {modalFormFields.map((field) => (
               <div key={field.key} style={ipRouteModalFieldRowStyle}>
                 <div
                   style={{
@@ -1890,23 +2013,9 @@ WantedBy=multi-user.target
                     textAlign: "left",
                   }}
                 >
-                  <Tooltip
-                    title={tooltips[field.label] || ""}
-                    {...IP_ROUTE_FIELD_TOOLTIP_PROPS}
-                  >
-                    <span>
-                      <label
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {field.label}:
-                      </label>
-                    </span>
-                  </Tooltip>
+                  <IpRouteFieldLabel tooltipKey={field.key}>
+                    {field.label}:
+                  </IpRouteFieldLabel>
                 </div>
                 <div style={ipRouteModalFieldControlStyle}>
                   {field.type === "text" || field.type === "number" ? (
@@ -1947,7 +2056,7 @@ WantedBy=multi-user.target
                     >
                       {field.key === "networkPort" && networkLoading && (
                         <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                          Loading network interfaces...
+                          {IP_ROUTING_TABLE_NETWORK_LOADING}
                         </MenuItem>
                       )}
                       {(field.key === "networkPort"
@@ -1987,7 +2096,7 @@ WantedBy=multi-user.target
             disabled={savingRoute}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {savingRoute ? "Applying..." : "Save"}
+            {savingRoute ? IP_ROUTING_TABLE_BTN_APPLYING : IP_ROUTING_TABLE_BTN_SAVE}
           </Btn>
           <Btn
             variant="cancel"
@@ -1995,11 +2104,12 @@ WantedBy=multi-user.target
             disabled={savingRoute}
             style={ipRouteModalCancelBtnStyle}
           >
-            Close
+            {IP_ROUTING_TABLE_BTN_CLOSE}
           </Btn>
         </DialogActions>
       </Dialog>
-    </div>
+      </div>
+    </>
   );
 };
 
