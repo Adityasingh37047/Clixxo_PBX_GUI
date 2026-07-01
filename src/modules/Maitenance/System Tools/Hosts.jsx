@@ -848,7 +848,7 @@ const Hosts = () => {
 
         <div style={tableContainerStyle}>
           <div style={cardToolbarStyle}>
-            <span style={cardToolbarTitleStyle}>Hosts</span>
+            <span style={cardToolbarTitleStyle}></span>
             <div style={cardToolbarActionsStyle}>
               <Btn
                 onClick={handleInverse}
