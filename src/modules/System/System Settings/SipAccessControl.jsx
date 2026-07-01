@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Tooltip, useMediaQuery } from "@mui/material";
 import {
   SIP_ACCESS_CONTROL_COLUMNS,
@@ -8,11 +8,11 @@ import {
   SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT,
   SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION,
   SIP_ACCESS_CONTROL_PAGE_TITLE,
+  SIP_ACCESS_CONTROL_BTN_INVERSE,
   SIP_ACCESS_CONTROL_BTN_DELETE,
   SIP_ACCESS_CONTROL_BTN_CLEAR_ALL,
   SIP_ACCESS_CONTROL_BTN_ADD_NEW,
   SIP_ACCESS_CONTROL_BTN_SAVE,
-  SIP_ACCESS_CONTROL_BTN_SAVING,
   SIP_ACCESS_CONTROL_BTN_CLOSE,
   SIP_ACCESS_CONTROL_MODAL_ADD_TITLE,
   SIP_ACCESS_CONTROL_MODAL_EDIT_TITLE,
@@ -25,6 +25,9 @@ import {
   SIP_ACCESS_CONTROL_FORM_LAYOUT,
   SIP_ACCESS_CONTROL_ERR_NAME_REQUIRED,
   SIP_ACCESS_CONTROL_ERR_DUPLICATE_NAME,
+  SIP_ACCESS_CONTROL_ERR_CIDR_OR_DOMAIN,
+  SIP_ACCESS_CONTROL_ERR_SELECT_DELETE,
+  SIP_ACCESS_CONTROL_ERR_NOTHING_TO_CLEAR,
   SIP_ACCESS_CONTROL_MSG_UPDATED,
   SIP_ACCESS_CONTROL_MSG_ADDED,
   SIP_ACCESS_CONTROL_CONFIRM_DELETE,
@@ -44,8 +47,6 @@ import {
   Alert,
   Checkbox,
 } from "@mui/material";
-
-const LOCAL_STORAGE_KEY = "sipAccessControlRows";
 
 const SIP_ACCESS_CONTROL_COMPACT_MQ = "(max-width: 768px)";
 const SIP_ACCESS_CONTROL_SCROLL_CLASS = "sip-access-control-scroll";
@@ -601,19 +602,15 @@ const defaultLabel = (value) =>
   value ||
   "—";
 
-const normalizeRows = (list) =>
-  (list || []).map((row, idx) => ({
-    ...row,
-    no: idx + 1,
-  }));
+const initialFormState = () => ({ ...SIP_ACCESS_CONTROL_INITIAL_ROW });
 
 const SipAccessControl = () => {
   const isCompact = useMediaQuery(SIP_ACCESS_CONTROL_COMPACT_MQ);
   const [rows, setRows] = useState([]);
+  const [checkedRows, setCheckedRows] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
-  const [form, setForm] = useState({ ...SIP_ACCESS_CONTROL_INITIAL_ROW });
-  const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(initialFormState());
   const [toast, setToast] = useState({ msg: "", type: "success" });
 
   const modalFieldByKey = useMemo(
@@ -630,52 +627,44 @@ const SipAccessControl = () => {
     return names.map((key) => modalFieldByKey[key]).filter(Boolean);
   }, [modalFieldByKey]);
 
-  const selectedCount = rows.filter((r) => r.checked).length;
+  const selectedCount = Object.values(checkedRows).filter(Boolean).length;
+  const allChecked =
+    rows.length > 0 && rows.every((row) => checkedRows[row.id]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
-  const saveRowsLocal = (data) => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-    } catch {}
+  const alert = (msg) => {
+    const isErr =
+      /error|failed|required|please|invalid|must|choose|select|enter|exists/i.test(
+        msg,
+      ) && !/successfully/i.test(msg);
+    showToast(msg, isErr ? "error" : "success");
   };
 
-  const loadRowsLocal = () => {
-    try {
-      const s = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    const persisted = loadRowsLocal();
-    if (Array.isArray(persisted) && persisted.length) {
-      setRows(normalizeRows(persisted));
-    }
-  }, []);
-
-  useEffect(() => {
-    saveRowsLocal(rows);
-  }, [rows]);
-
-  const openModal = (rowIdx = null) => {
-    setEditIndex(rowIdx);
-    if (rowIdx !== null) {
-      setForm({ ...rows[rowIdx] });
+  const openModal = (row = null) => {
+    if (row) {
+      setForm({
+        name: row.name || "",
+        cidr: row.cidr || "",
+        domain: row.domain || "",
+        default: row.default || "blacklist",
+        description: row.description || "",
+      });
+      setEditingId(row.id);
     } else {
-      setForm({ ...SIP_ACCESS_CONTROL_INITIAL_ROW, no: rows.length + 1 });
+      setForm(initialFormState());
+      setEditingId(null);
     }
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
-    setEditIndex(null);
+    setEditingId(null);
+    setForm(initialFormState());
   };
 
   const handleFormChange = (e) => {
@@ -685,84 +674,111 @@ const SipAccessControl = () => {
 
   const handleSave = (e) => {
     e?.preventDefault?.();
+
     const name = String(form.name || "").trim();
     if (!name) {
-      showToast(SIP_ACCESS_CONTROL_ERR_NAME_REQUIRED, "error");
+      alert(SIP_ACCESS_CONTROL_ERR_NAME_REQUIRED);
       return;
     }
 
     const duplicate = rows.some(
-      (row, idx) =>
-        idx !== editIndex &&
+      (row) =>
+        row.id !== editingId &&
         String(row.name || "")
           .trim()
           .toLowerCase() === name.toLowerCase(),
     );
     if (duplicate) {
-      showToast(SIP_ACCESS_CONTROL_ERR_DUPLICATE_NAME, "error");
+      alert(SIP_ACCESS_CONTROL_ERR_DUPLICATE_NAME);
       return;
     }
 
-    setSaving(true);
+    const cidr = String(form.cidr || "").trim();
+    const domain = String(form.domain || "").trim();
+    if (!cidr && !domain) {
+      alert(SIP_ACCESS_CONTROL_ERR_CIDR_OR_DOMAIN);
+      return;
+    }
+
     const payload = {
-      checked: false,
       name,
+      cidr,
+      domain,
       default: form.default || "blacklist",
       description: String(form.description || "").trim(),
     };
 
-    setRows((prev) => {
-      if (editIndex !== null) {
-        const next = prev.map((row, idx) =>
-          idx === editIndex ? { ...row, ...payload } : row,
-        );
-        return normalizeRows(next);
-      }
-      return normalizeRows([...prev, payload]);
-    });
+    if (editingId !== null) {
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === editingId ? { ...row, ...payload } : row,
+        ),
+      );
+      alert(SIP_ACCESS_CONTROL_MSG_UPDATED);
+    } else {
+      setRows((prev) => [...prev, { id: Date.now(), ...payload }]);
+      alert(SIP_ACCESS_CONTROL_MSG_ADDED);
+    }
 
-    showToast(
-      editIndex !== null
-        ? SIP_ACCESS_CONTROL_MSG_UPDATED
-        : SIP_ACCESS_CONTROL_MSG_ADDED,
-      "success",
-    );
-    setSaving(false);
     closeModal();
   };
 
-  const handleCheck = (idx) => {
-    setRows((prev) =>
-      prev.map((row, i) =>
-        i === idx ? { ...row, checked: !row.checked } : row,
-      ),
-    );
+  const handleRowCheck = (id) => {
+    setCheckedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
-  const handleSelectAll = (e) => {
-    const checked = e.target.checked;
-    setRows((prev) => prev.map((row) => ({ ...row, checked })));
+  const handleTableCheckAll = () => {
+    if (allChecked) {
+      setCheckedRows({});
+    } else {
+      const next = {};
+      rows.forEach((row) => {
+        next[row.id] = true;
+      });
+      setCheckedRows(next);
+    }
+  };
+
+  const handleTableUncheckAll = () => {
+    setCheckedRows({});
+  };
+
+  const handleTableInverse = () => {
+    const next = {};
+    rows.forEach((row) => {
+      next[row.id] = !checkedRows[row.id];
+    });
+    setCheckedRows(next);
   };
 
   const handleDelete = () => {
-    const count = rows.filter((r) => r.checked).length;
-    if (count === 0 || saving) return;
-    if (
-      !window.confirm(SIP_ACCESS_CONTROL_CONFIRM_DELETE(count))
-    ) {
+    const selected = rows.filter((row) => checkedRows[row.id]);
+    if (selected.length === 0) {
+      alert(SIP_ACCESS_CONTROL_ERR_SELECT_DELETE);
       return;
     }
-    setRows((prev) => normalizeRows(prev.filter((r) => !r.checked)));
-    showToast(SIP_ACCESS_CONTROL_MSG_DELETED(count), "success");
+    if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_DELETE(selected.length))) {
+      return;
+    }
+    setRows((prev) => prev.filter((row) => !checkedRows[row.id]));
+    setCheckedRows({});
+    alert(SIP_ACCESS_CONTROL_MSG_DELETED);
   };
 
   const handleClearAll = () => {
-    if (rows.length === 0 || saving) return;
-    if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL)) {
+    if (rows.length === 0) {
+      alert(SIP_ACCESS_CONTROL_ERR_NOTHING_TO_CLEAR);
+      return;
+    }
+    if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL(rows.length))) {
       return;
     }
     setRows([]);
-    showToast(SIP_ACCESS_CONTROL_MSG_CLEARED, "success");
+    setCheckedRows({});
+    alert(SIP_ACCESS_CONTROL_MSG_CLEARED);
   };
 
   return (
@@ -815,8 +831,16 @@ const SipAccessControl = () => {
             >
               <Btn
                 variant="cancel"
+                onClick={handleTableInverse}
+                disabled={rows.length === 0}
+                style={sipAccessCancelBtnStyle}
+              >
+                {SIP_ACCESS_CONTROL_BTN_INVERSE}
+              </Btn>
+              <Btn
+                variant="cancel"
                 onClick={handleDelete}
-                disabled={!rows.some((r) => r.checked) || saving}
+                disabled={selectedCount === 0}
                 style={sipAccessCancelBtnStyle}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
@@ -825,7 +849,7 @@ const SipAccessControl = () => {
               <Btn
                 variant="cancel"
                 onClick={handleClearAll}
-                disabled={rows.length === 0 || saving}
+                disabled={rows.length === 0}
                 style={sipAccessCancelBtnStyle}
               >
                 {SIP_ACCESS_CONTROL_BTN_CLEAR_ALL}
@@ -833,7 +857,6 @@ const SipAccessControl = () => {
               <Btn
                 variant="primary"
                 onClick={() => openModal(null)}
-                disabled={saving}
                 style={sipAccessPrimaryBtnStyle}
               >
                 {SIP_ACCESS_CONTROL_BTN_ADD_NEW}
@@ -845,7 +868,6 @@ const SipAccessControl = () => {
             <SipAccessTableEmptyState
               message={SIP_ACCESS_CONTROL_EMPTY_MESSAGE}
               onAddNew={() => openModal(null)}
-              disabled={saving}
             />
           ) : (
             <>
@@ -863,13 +885,13 @@ const SipAccessControl = () => {
                     borderCollapse: "separate",
                     borderSpacing: 0,
                     tableLayout: "auto",
-                    minWidth: 760,
+                    minWidth: 980,
                   }}
                 >
                   <thead>
                     <tr>
                       {SIP_ACCESS_CONTROL_COLUMNS.map((col) => {
-                        if (col.key === "checked") {
+                        if (col.key === "check") {
                           return (
                             <TH
                               key={col.key}
@@ -881,14 +903,14 @@ const SipAccessControl = () => {
                             >
                               <Checkbox
                                 size="small"
-                                checked={
-                                  rows.length > 0 && rows.every((r) => r.checked)
-                                }
+                                checked={allChecked}
                                 indeterminate={
-                                  rows.some((r) => r.checked) &&
-                                  !rows.every((r) => r.checked)
+                                  selectedCount > 0 && !allChecked
                                 }
-                                onChange={handleSelectAll}
+                                onChange={(e) => {
+                                  if (e.target.checked) handleTableCheckAll();
+                                  else handleTableUncheckAll();
+                                }}
                                 sx={sipAccessTableCheckboxSx}
                               />
                             </TH>
@@ -911,7 +933,7 @@ const SipAccessControl = () => {
                   <tbody>
                     {rows.map((row, idx) => {
                       const isLastRow = idx === rows.length - 1;
-                      const isRowChecked = row.checked || false;
+                      const isRowChecked = !!checkedRows[row.id];
                       const rowBg = getSipAccessRowBg(isRowChecked, idx);
                       const lastRowCellStyle = isLastRow
                         ? { borderBottom: "none" }
@@ -919,7 +941,7 @@ const SipAccessControl = () => {
 
                       return (
                         <tr
-                          key={`row-${row.no ?? idx}-${row.name}`}
+                          key={row.id}
                           style={{
                             background: rowBg,
                             transition: "background 0.15s ease",
@@ -942,15 +964,33 @@ const SipAccessControl = () => {
                             <Checkbox
                               size="small"
                               checked={isRowChecked}
-                              onChange={() => handleCheck(idx)}
+                              onChange={() => handleRowCheck(row.id)}
                               sx={sipAccessTableCheckboxSx}
                             />
                           </td>
                           <td style={getSipAccessTdStyle(rowBg, lastRowCellStyle)}>
-                            {row.no}
+                            {idx + 1}
                           </td>
                           <td style={getSipAccessTdStyle(rowBg, lastRowCellStyle)}>
                             {row.name}
+                          </td>
+                          <td
+                            style={getSipAccessTdStyle(rowBg, lastRowCellStyle, {
+                              maxWidth: 180,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                            })}
+                          >
+                            {row.cidr || "—"}
+                          </td>
+                          <td
+                            style={getSipAccessTdStyle(rowBg, lastRowCellStyle, {
+                              maxWidth: 200,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                            })}
+                          >
+                            {row.domain || "—"}
                           </td>
                           <td style={getSipAccessTdStyle(rowBg, lastRowCellStyle)}>
                             {defaultLabel(row.default)}
@@ -975,7 +1015,7 @@ const SipAccessControl = () => {
                                 justifyContent: "center",
                               }}
                             >
-                              <SipAccessEditIcon onClick={() => openModal(idx)} />
+                              <SipAccessEditIcon onClick={() => openModal(row)} />
                             </div>
                           </td>
                         </tr>
@@ -1000,9 +1040,7 @@ const SipAccessControl = () => {
 
       <Dialog
         open={modalOpen}
-        onClose={() => {
-          if (!saving) closeModal();
-        }}
+        onClose={closeModal}
         maxWidth={false}
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
@@ -1030,7 +1068,7 @@ const SipAccessControl = () => {
             borderTopRightRadius: 8,
           }}
         >
-          {editIndex !== null
+          {editingId !== null
             ? SIP_ACCESS_CONTROL_MODAL_EDIT_TITLE
             : SIP_ACCESS_CONTROL_MODAL_ADD_TITLE}
         </DialogTitle>
@@ -1072,6 +1110,7 @@ const SipAccessControl = () => {
                       type="text"
                       value={form[field.key] || ""}
                       onChange={handleFormChange}
+                      placeholder={field.placeholder || ""}
                       style={{ ...systemModalFieldInputStyle, width: "100%" }}
                       {...inputInteraction}
                     />
@@ -1130,10 +1169,9 @@ const SipAccessControl = () => {
           <Btn
             variant="primary"
             onClick={handleSave}
-            disabled={saving}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {saving ? SIP_ACCESS_CONTROL_BTN_SAVING : SIP_ACCESS_CONTROL_BTN_SAVE}
+            {SIP_ACCESS_CONTROL_BTN_SAVE}
           </Btn>
           <Btn
             variant="cancel"

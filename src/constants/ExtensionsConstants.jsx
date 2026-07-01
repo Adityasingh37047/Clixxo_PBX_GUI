@@ -465,6 +465,12 @@ export const EXTENSION_FORM_FIELDS = [
     defaultValue: "all",
   },
   {
+    name: "dnd_dest",
+    label: "DND Destination",
+    type: "text",
+    defaultValue: "",
+  },
+  {
     name: "dnd_special_numbers",
     label: "Special Number for DND",
     type: "text",

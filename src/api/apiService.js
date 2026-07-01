@@ -1251,6 +1251,7 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   dnd_time_condition: accountData.dnd_time_condition,
   dnd_custom_start: accountData.dnd_custom_start,
   dnd_custom_end: accountData.dnd_custom_end,
+  dnd_dest: accountData.dnd_dest,
   dnd_special_numbers: accountData.dnd_special_numbers,
   dnd_special_number: accountData.dnd_special_number || accountData.dnd_special_numbers,
   dnd_allow_numbers: accountData.dnd_allow_numbers || accountData.dnd_special_numbers,

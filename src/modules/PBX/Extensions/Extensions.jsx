@@ -835,6 +835,60 @@ const extensionModalSelectSx = {
   },
 };
 
+const extensionSelectManualInputMenuItemSx = {
+  py: 1,
+  px: 2,
+  cursor: "default",
+  backgroundColor: "transparent !important",
+  "&:hover": { backgroundColor: "transparent !important" },
+  "&.Mui-focusVisible": { backgroundColor: "transparent !important" },
+  "&.Mui-selected": { backgroundColor: "transparent !important" },
+};
+
+const extensionSelectRenderValue = (emptyLabel) => (selected) => {
+  if (!selected) {
+    return <em>{emptyLabel}</em>;
+  }
+  return selected;
+};
+
+const ExtensionSelectManualInputMenuItem = ({ value = "", onChange }) => (
+  <MenuItem
+    disableRipple
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }}
+    onMouseDown={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }}
+    sx={extensionSelectManualInputMenuItemSx}
+  >
+    <TextField
+      value={value}
+      onChange={(e) => onChange?.(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+      placeholder="Enter Number"
+      size="small"
+      fullWidth
+      variant="outlined"
+      autoComplete="off"
+      sx={extensionModalTextFieldSx}
+      inputProps={{
+        style: {
+          fontSize: 13,
+          height: 32,
+          padding: "0 8px",
+          boxSizing: "border-box",
+        },
+      }}
+    />
+  </MenuItem>
+);
+
 const extensionGatedModalFieldSx = (
   enabled,
   baseSx = extensionModalSelectSx,
@@ -1510,12 +1564,19 @@ const ExtensionsPage = () => {
         ),
         dnd_enabled: yesNoToToggle(item.dnd_enabled),
         dnd_time: normalizeTC(item.dnd_time_condition),
-        dnd_special_numbers:
-          (Array.isArray(item.dnd_special_numbers) &&
-            item.dnd_special_numbers) ||
-          (Array.isArray(item.dnd_special_number) && item.dnd_special_number) ||
-          (Array.isArray(item.dnd_allow_numbers) && item.dnd_allow_numbers) ||
-          [],
+        dnd_dest: item.dnd_dest || "",
+        dnd_special_numbers: (() => {
+          const fromApi =
+            (Array.isArray(item.dnd_special_numbers) &&
+              item.dnd_special_numbers) ||
+            (Array.isArray(item.dnd_special_number) &&
+              item.dnd_special_number) ||
+            (Array.isArray(item.dnd_allow_numbers) &&
+              item.dnd_allow_numbers) ||
+            [];
+          if (fromApi.length) return fromApi;
+          return item.dnd_dest ? [String(item.dnd_dest)] : [];
+        })(),
         enable_mobility_extension: boolToYesNo(
           item.mobility_enabled ??
             item.enable_mobility_extension ??
@@ -1689,6 +1750,12 @@ const ExtensionsPage = () => {
       follow_me_time_condition: uiData.follow_me_time || "all",
       dnd_enabled: toggleToBool(uiData.dnd_enabled),
       dnd_time_condition: uiData.dnd_time || "all",
+      dnd_dest:
+        uiData.dnd_dest ||
+        (Array.isArray(uiData.dnd_special_numbers)
+          ? uiData.dnd_special_numbers.find(Boolean)
+          : "") ||
+        "",
       dnd_special_numbers: Array.isArray(uiData.dnd_special_numbers)
         ? uiData.dnd_special_numbers.filter(Boolean)
         : [],
@@ -1972,7 +2039,11 @@ const ExtensionsPage = () => {
         ? [...prev.dnd_special_numbers]
         : [];
       cur[index] = value;
-      return { ...prev, dnd_special_numbers: cur };
+      return {
+        ...prev,
+        dnd_special_numbers: cur,
+        ...(index === 0 ? { dnd_dest: value } : {}),
+      };
     });
   };
   const handleAddDndNumber = () => {
@@ -3443,12 +3514,20 @@ const ExtensionsPage = () => {
                         <FormControl
                           size="small"
                           disabled={!cfRuleEnabled}
-                          sx={{ minWidth: 150 }}
+                          sx={{
+                            minWidth: 150,
+                            width: 150,
+                            maxWidth: 150,
+                            flexShrink: 0,
+                          }}
                         >
                           <MuiSelect
                             value={form[`cf_${rule.key}_number`] || ""}
                             displayEmpty
                             disabled={!cfRuleEnabled}
+                            renderValue={extensionSelectRenderValue(
+                              "Destination Number",
+                            )}
                             onChange={(e) =>
                               handleChange(
                                 `cf_${rule.key}_number`,
@@ -3460,6 +3539,12 @@ const ExtensionsPage = () => {
                             <MenuItem value="">
                               <em>Destination Number</em>
                             </MenuItem>
+                            <ExtensionSelectManualInputMenuItem
+                              value={form[`cf_${rule.key}_number`] || ""}
+                              onChange={(val) =>
+                                handleChange(`cf_${rule.key}_number`, val)
+                              }
+                            />
                             {extensionOptions.map((ext) => (
                               <MenuItem key={ext} value={ext}>
                                 {ext}
@@ -3639,6 +3724,9 @@ const ExtensionsPage = () => {
                             <MuiSelect
                               value={entry?.destinationType || ""}
                               displayEmpty
+                              renderValue={extensionSelectRenderValue(
+                                "Select extension",
+                              )}
                               onChange={(e) =>
                                 handleFollowMeEntryChange(
                                   idx,
@@ -3651,6 +3739,16 @@ const ExtensionsPage = () => {
                               <MenuItem value="">
                                 <em>Select extension</em>
                               </MenuItem>
+                              <ExtensionSelectManualInputMenuItem
+                                value={entry?.destinationType || ""}
+                                onChange={(val) =>
+                                  handleFollowMeEntryChange(
+                                    idx,
+                                    "destinationType",
+                                    val,
+                                  )
+                                }
+                              />
                               {extensionOptions.map((ext) => (
                                 <MenuItem key={ext} value={ext}>
                                   {ext}
@@ -3864,6 +3962,9 @@ const ExtensionsPage = () => {
                           <MuiSelect
                             value={val || ""}
                             displayEmpty
+                            renderValue={extensionSelectRenderValue(
+                              "Select extension",
+                            )}
                             onChange={(e) =>
                               handleDndNumberChange(idx, e.target.value)
                             }
@@ -3872,6 +3973,10 @@ const ExtensionsPage = () => {
                             <MenuItem value="">
                               <em>Select extension</em>
                             </MenuItem>
+                            <ExtensionSelectManualInputMenuItem
+                              value={val || ""}
+                              onChange={(v) => handleDndNumberChange(idx, v)}
+                            />
                             {extensionOptions.map((ext) => (
                               <MenuItem key={ext} value={ext}>
                                 {ext}
