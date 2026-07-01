@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { listAutoProvision } from "../../../api/apiService";
 import {
   Alert,
-  Checkbox,
+
   CircularProgress,
   useMediaQuery,
 } from "@mui/material";
@@ -235,12 +235,7 @@ const autoProvisionTdStyle = {
   whiteSpace: "nowrap",
 };
 
-const autoProvisionTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 const AUTO_PROVISION_TABLE_CARD_RADIUS = 10;
 
@@ -708,24 +703,7 @@ const AutoProvision = () => {
               >
                 <thead>
                   <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={allPageSelected}
-                        indeterminate={somePageSelected}
-                        onChange={handleToggleAll}
-                        sx={autoProvisionTableCheckboxSx}
-                      />
-                    </TH>
+                   
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
                       {AUTO_PROVISION_COLUMNS.macAddress}
                     </TH>
@@ -782,19 +760,7 @@ const AutoProvision = () => {
                             e.currentTarget.style.background = rowBg;
                         }}
                       >
-                        <td
-                          style={{
-                            ...cellStyle,
-                            borderLeft: "none",
-                          }}
-                        >
-                          <Checkbox
-                            size="small"
-                            checked={isSelected}
-                            onChange={() => handleToggleRow(realIdx)}
-                            sx={autoProvisionTableCheckboxSx}
-                          />
-                        </td>
+                        
                         <td style={cellStyle}>{row.macAddress || "—"}</td>
                         <td style={cellStyle}>{row.extension || "—"}</td>
                         <td style={cellStyle}>

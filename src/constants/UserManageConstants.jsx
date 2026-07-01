@@ -84,6 +84,13 @@ export const PAGE_PERMISSION_GROUPS = [
         ],
       },
       {
+        id: "recordSettings",
+        label: "Record Settings",
+        pages: [
+          { id: "recordSettings", label: "Record Settings" },
+        ],
+      },
+      {
         id: "voicePrompts",
         label: "Voice Prompts",
         pages: [{ id: "voicePromptsSettings", label: "Voice Prompts" }],
@@ -97,6 +104,11 @@ export const PAGE_PERMISSION_GROUPS = [
         id: "Voicemail",
         label: "Voicemail",
         pages: [{ id: "voicemailSettings", label: "Voicemail" }],
+      },
+      {
+        id: "autoProvision",
+        label: "Auto Provision",
+        pages: [{ id: "autoProvisionSettings", label: "Auto Provision" }],
       },
     ],
   },
@@ -238,6 +250,7 @@ export const PAGE_PERMISSION_GROUPS = [
         label: "System Settings",
         pages: [
           { id: "sysNetwork", label: "Network" },
+          { id: "sysStorage", label: "Storage" },
           { id: "sysRoutingInterface", label: "Routing Interface" },
           { id: "sysManagement", label: "Management" },
           { id: "sysGlobalSip", label: "Global SIP" },
