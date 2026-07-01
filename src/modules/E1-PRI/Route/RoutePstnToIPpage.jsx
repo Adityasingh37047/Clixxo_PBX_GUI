@@ -15,7 +15,6 @@ import {
   ROUTE_PSTN_IP_SAVE_LABEL,
   ROUTE_PSTN_IP_CLOSE_LABEL,
 } from "../../../constants/RoutePstnToIPConstants";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
   Checkbox,
   Dialog,
@@ -36,6 +35,32 @@ import {
   listGroups,
   listPstnGroups,
 } from "../../../api/apiService";
+
+const ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_MARGIN = 24;
+const ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 600,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -1162,17 +1187,9 @@ const RoutePstnToIPPage = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 600,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: ROUTE_PSTN_TO_IP_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus

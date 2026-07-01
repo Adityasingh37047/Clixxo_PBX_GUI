@@ -1,3 +1,7 @@
+export const PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION = "PCM";
+export const PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE = "Circuit Maintenance";
+
 export const PCM_MAINTENANCE_HEADERS = ['PCM No.', 'PCM Status', 'Check'];
 export const PCM_LOOPBACK_HEADERS = ['PCM No.', 'PCM LoopBack Status', 'Check'];
 export const PCM0_HEADERS = ['Channel No.', ...Array.from({length: 32}, (_, i) => i.toString())];

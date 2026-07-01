@@ -11,10 +11,6 @@ import {
   PSTN_CALL_IN_CALLEEID_MODAL_TITLE_ADD,
   PSTN_CALL_IN_CALLEEID_MODAL_TITLE_EDIT,
 } from "../../../constants/FxsPSTNCallInCalleeIDConstants";
-import {
-  addNewDialogSx,
-  mergeAddNewDialogPaperSx,
-} from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -31,6 +27,32 @@ import {
   Alert,
   Tooltip,
 } from "@mui/material";
+
+const FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_MARGIN = 24;
+const FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 600,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+
 // Stub functions when API imports are commented out
 // ── Local page UI (inlined from fxsSharedUi) ──
 
@@ -1271,17 +1293,9 @@ const PSTNCallInCalleeID = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 600,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: FXS_PSTN_CALL_IN_CALLEE_ID_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus

@@ -1,9 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  NUM_RECEIVING_RULE_FIELDS,
-  NUM_RECEIVING_RULE_INITIAL_FORM,
-  NUM_RECEIVING_RULE_TABLE_COLUMNS,
-  NUM_RECEIVING_RULE_FIELD_TOOLTIPS,
+  PCM_NUM_RECEIVING_RULE_FIELDS,
+  PCM_NUM_RECEIVING_RULE_INITIAL_FORM,
+  PCM_NUM_RECEIVING_RULE_TABLE_COLUMNS,
+  PCM_NUM_RECEIVING_RULE_FIELD_TOOLTIPS,
+  PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_ROOT,
+  PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_SECTION,
+  PCM_NUM_RECEIVING_RULE_PAGE_TITLE,
+  PCM_NUM_RECEIVING_RULE_EMPTY_MESSAGE,
+  PCM_NUM_RECEIVING_RULE_MODAL_TITLE_ADD,
+  PCM_NUM_RECEIVING_RULE_MODAL_TITLE_EDIT,
+  PCM_NUM_RECEIVING_RULE_ADD_NEW_LABEL,
+  PCM_NUM_RECEIVING_RULE_DELETE_LABEL,
+  PCM_NUM_RECEIVING_RULE_SAVE_LABEL,
+  PCM_NUM_RECEIVING_RULE_CLOSE_LABEL,
 } from "../../../constants/PcmNumReceivingRuleConstants";
 import {
   listNumRecv,
@@ -17,14 +27,37 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Select,
-  MenuItem,
   Alert,
   CircularProgress,
   Checkbox,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
+const PCM_NUM_RECEIVING_RULE_COMPACT_MQ = "(max-width: 768px)";
+
+const PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_MARGIN = 24;
+const PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 500,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -63,7 +96,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const PcmNumReceivingRuleFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -86,7 +119,7 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
 };
 
-const E1PriFieldRow = ({
+const PcmNumReceivingRuleFieldRow = ({
   label,
   tooltipKey,
   tooltips,
@@ -97,11 +130,10 @@ const E1PriFieldRow = ({
     style={{
       display: "flex",
       alignItems: "center",
-      justifyContent: "center",
       gap: 12,
     }}
   >
-    <E1PriFieldLabel
+    <PcmNumReceivingRuleFieldLabel
       tooltipKey={tooltipKey}
       tooltips={tooltips}
       style={{
@@ -112,8 +144,8 @@ const E1PriFieldRow = ({
       }}
     >
       {label}
-    </E1PriFieldLabel>
-    <div style={{ width: "min(100%, 320px)" }}>{children}</div>
+    </PcmNumReceivingRuleFieldLabel>
+    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
   </div>
 );
 
@@ -355,6 +387,77 @@ const pcmNumRecvRuleModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const PCM_NUM_RECV_RULE_OUTLINED_BORDER = "#d1d5db";
+const PCM_NUM_RECV_RULE_OUTLINED_HOVER = "#9ca3af";
+const PCM_NUM_RECV_RULE_OUTLINED_FOCUS = "#3E5475";
+const PCM_NUM_RECV_RULE_FOCUS_RING_SHADOW =
+  "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const pcmNumRecvRuleSetFieldDefault = (el) => {
+  el.style.borderColor = PCM_NUM_RECV_RULE_OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const pcmNumRecvRuleSetFieldHover = (el) => {
+  el.style.borderColor = PCM_NUM_RECV_RULE_OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const pcmNumRecvRuleSetFieldFocus = (el) => {
+  el.style.borderColor = PCM_NUM_RECV_RULE_OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = PCM_NUM_RECV_RULE_FOCUS_RING_SHADOW;
+};
+
+const pcmNumRecvRuleInputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    pcmNumRecvRuleSetFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    pcmNumRecvRuleSetFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      pcmNumRecvRuleSetFieldFocus(e.target);
+    } else {
+      pcmNumRecvRuleSetFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      pcmNumRecvRuleSetFieldFocus(e.target);
+    } else {
+      pcmNumRecvRuleSetFieldDefault(e.target);
+    }
+  },
+};
+
+const pcmNumRecvRuleInputStyle = {
+  width: "100%",
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${PCM_NUM_RECV_RULE_OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const pcmNumRecvRuleSelectStyle = {
+  ...pcmNumRecvRuleInputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
+};
+
 const PcmNumRecvRuleBreadcrumb = () => (
   <div
     style={{
@@ -368,12 +471,12 @@ const PcmNumRecvRuleBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>PCM</span>
+    <span>{PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      Number-Receiving Rule
+      {PCM_NUM_RECEIVING_RULE_PAGE_TITLE}
     </span>
   </div>
 );
@@ -530,7 +633,7 @@ const modalSelectSx = {
   },
 };
 
-const addHostFormPanelStyle = {
+const pcmNumReceivingRuleModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
@@ -583,12 +686,13 @@ const tdStyle = {
 };
 
 const PcmNumReceivingRulePage = () => {
+  const isCompact = useMediaQuery(PCM_NUM_RECEIVING_RULE_COMPACT_MQ);
   // State
   const [rules, setRules] = useState([]);
   const [allData, setAllData] = useState([]);
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState(NUM_RECEIVING_RULE_INITIAL_FORM);
+  const [form, setForm] = useState(PCM_NUM_RECEIVING_RULE_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
   const [loading, setLoading] = useState({
     fetch: false,
@@ -686,7 +790,7 @@ const PcmNumReceivingRulePage = () => {
       });
       setEditIndex(item.id);
     } else {
-      setForm(NUM_RECEIVING_RULE_INITIAL_FORM);
+      setForm(PCM_NUM_RECEIVING_RULE_INITIAL_FORM);
       setEditIndex(null);
     }
     setShowModal(true);
@@ -694,7 +798,7 @@ const PcmNumReceivingRulePage = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setForm(NUM_RECEIVING_RULE_INITIAL_FORM);
+    setForm(PCM_NUM_RECEIVING_RULE_INITIAL_FORM);
     setEditIndex(null);
   };
 
@@ -898,7 +1002,12 @@ const PcmNumReceivingRulePage = () => {
   };
 
   return (
-    <div style={pcmNumRecvRulePageWrapStyle}>
+    <div
+      style={{
+        ...pcmNumRecvRulePageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
       <div style={pcmNumRecvRulePageInnerStyle}>
         {message.text && (
           <Alert
@@ -920,7 +1029,14 @@ const PcmNumReceivingRulePage = () => {
         <PcmNumRecvRuleBreadcrumb />
 
         <div style={pcmNumRecvRuleCardStyle}>
-          <div style={pcmNumRecvRuleToolbarStyle}>
+          <div
+            style={{
+              ...pcmNumRecvRuleToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -947,7 +1063,7 @@ const PcmNumReceivingRulePage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || loading.fetch}
+                disabled={loading.delete || loading.fetch || rules.length === 0}
                 style={pcmNumRecvRuleCancelBtnStyle}
               >
                 Inverse
@@ -964,7 +1080,7 @@ const PcmNumReceivingRulePage = () => {
                   <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {PCM_NUM_RECEIVING_RULE_DELETE_LABEL}
               </Btn>
               <Btn
                 variant="cancel"
@@ -984,7 +1100,7 @@ const PcmNumReceivingRulePage = () => {
                 disabled={loading.save || loading.fetch}
                 style={pcmNumRecvRulePrimaryBtnStyle}
               >
-                + Add New
+                {PCM_NUM_RECEIVING_RULE_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -993,7 +1109,7 @@ const PcmNumReceivingRulePage = () => {
             <TableListLoading />
           ) : rules.length === 0 ? (
             <TableListEmptyState
-              message="No Number-Receiving Rules found."
+              message={PCM_NUM_RECEIVING_RULE_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
             />
           ) : (
@@ -1006,6 +1122,7 @@ const PcmNumReceivingRulePage = () => {
                     borderSpacing: 0,
                     tableLayout: "auto",
                     minWidth: 900,
+                    ...(isCompact ? { minWidth: 720 } : {}),
                   }}
                 >
                   <thead>
@@ -1045,7 +1162,7 @@ const PcmNumReceivingRulePage = () => {
                           sx={pcmNumRecvRuleTableCheckboxSx}
                         />
                       </TH>
-                      {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
+                      {PCM_NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
                         (c) => c.key !== "check",
                       ).map((c) => (
                         <TH
@@ -1109,7 +1226,7 @@ const PcmNumReceivingRulePage = () => {
                               sx={pcmNumRecvRuleTableCheckboxSx}
                             />
                           </td>
-                          {NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
+                          {PCM_NUM_RECEIVING_RULE_TABLE_COLUMNS.filter(
                             (col) => col.key !== "check",
                           ).map((col) => {
                             if (col.key === "index") {
@@ -1231,26 +1348,12 @@ const PcmNumReceivingRulePage = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: {
-            width: 500,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          },
+          sx: PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_PAPER_SX,
         }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
@@ -1262,66 +1365,59 @@ const PcmNumReceivingRulePage = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editIndex !== null
-            ? "Edit Number-Receiving Rule"
-            : "Add Number-Receiving Rule"}
+            ? PCM_NUM_RECEIVING_RULE_MODAL_TITLE_EDIT
+            : PCM_NUM_RECEIVING_RULE_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div style={addHostFormPanelStyle}>
-            {NUM_RECEIVING_RULE_FIELDS.map((field) => (
-              <E1PriFieldRow
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
+          <div style={pcmNumReceivingRuleModalFormPanelStyle}>
+            {PCM_NUM_RECEIVING_RULE_FIELDS.map((field) => (
+              <PcmNumReceivingRuleFieldRow
                 key={field.name}
                 label={`${field.label}:`}
                 tooltipKey={field.name}
-                tooltips={NUM_RECEIVING_RULE_FIELD_TOOLTIPS}
+                tooltips={PCM_NUM_RECEIVING_RULE_FIELD_TOOLTIPS}
               >
                 {field.type === "select" ? (
-                  <Select
+                  <select
+                    name={field.name}
                     value={form[field.name]}
                     onChange={(e) =>
                       handleInputChange(field.name, e.target.value)
                     }
-                    size="small"
-                    fullWidth
-                    variant="outlined"
-                    MenuProps={{ PaperProps: { style: { maxHeight: 240 } } }}
-                    sx={modalSelectSx}
+                    style={pcmNumRecvRuleSelectStyle}
+                    {...pcmNumRecvRuleInputInteraction}
                   >
                     {field.options.map((option) => (
-                      <MenuItem
-                        key={option.value}
-                        value={option.value}
-                        sx={{ fontSize: 13 }}
-                      >
+                      <option key={option.value} value={option.value}>
                         {option.label}
-                      </MenuItem>
+                      </option>
                     ))}
-                  </Select>
+                  </select>
                 ) : (
-                  <TextField
-                    type={field.type}
+                  <input
+                    type={field.type || "text"}
+                    name={field.name}
                     value={form[field.name] || ""}
                     onChange={(e) =>
                       handleInputChange(field.name, e.target.value)
                     }
-                    size="small"
-                    fullWidth
-                    variant="outlined"
                     placeholder={field.placeholder || ""}
-                    sx={{ fontSize: 13, ...modalTextFieldSx }}
-                    inputProps={{
-                      style: {
-                        fontSize: 13,
-                        height: 32,
-                        padding: "0 8px",
-                        boxSizing: "border-box",
-                      },
-                    }}
+                    style={pcmNumRecvRuleInputStyle}
+                    {...pcmNumRecvRuleInputInteraction}
                   />
                 )}
-              </E1PriFieldRow>
+              </PcmNumReceivingRuleFieldRow>
             ))}
           </div>
         </DialogContent>
@@ -1341,17 +1437,21 @@ const PcmNumReceivingRulePage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : "Save"}
+            {loading.save ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              PCM_NUM_RECEIVING_RULE_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={pcmNumRecvRuleModalCancelBtnStyle}
+            style={{ ...pcmNumRecvRuleModalCancelBtnStyle, height: 34 }}
           >
-            Cancel
+            {PCM_NUM_RECEIVING_RULE_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

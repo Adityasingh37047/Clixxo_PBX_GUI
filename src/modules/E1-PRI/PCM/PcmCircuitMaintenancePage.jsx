@@ -8,6 +8,9 @@ import {
   PCM_MAINTENANCE_BUTTONS,
   PCM_LOOPBACK_BUTTONS,
   PCM0_BUTTONS,
+  PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT,
+  PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION,
+  PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE,
 } from "../../../constants/PcmCircuitMaintenanceConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import { listPstn, listChannelState } from "../../../api/apiService";
@@ -1411,12 +1414,12 @@ const PcmCircuitMaintenancePage = () => {
             flexWrap: "wrap",
           }}
         >
-          <span>E1-PRI</span>
+          <span>{PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT}</span>
           <span>&gt;</span>
-          <span>PCM</span>
+          <span>{PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Circuit Maintenance
+            {PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE}
           </span>
         </div>
 

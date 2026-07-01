@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   PCM_PSTN_TABLE_COLUMNS,
-  SPAN_FIELDS,
-  CHANNELS_FIELDS,
-  VOICE_FIELDS,
+  PCM_PSTN_SPAN_FIELDS,
+  PCM_PSTN_CHANNELS_FIELDS,
+  PCM_PSTN_VOICE_FIELDS,
   PCM_PSTN_INITIAL_FORM,
   PCM_PSTN_FIELD_TOOLTIPS,
+  PCM_PSTN_PAGE_BREADCRUMB_ROOT,
+  PCM_PSTN_PAGE_BREADCRUMB_SECTION,
+  PCM_PSTN_PAGE_TITLE,
+  PCM_PSTN_EMPTY_MESSAGE,
+  PCM_PSTN_MODAL_TITLE_ADD,
+  PCM_PSTN_MODAL_TITLE_EDIT,
+  PCM_PSTN_ADD_NEW_LABEL,
+  PCM_PSTN_DELETE_LABEL,
+  PCM_PSTN_SAVE_LABEL,
+  PCM_PSTN_CLOSE_LABEL,
 } from "../../../constants/PcmPstnConstants";
 import { listPstn, createPstn, deletePstn } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
-  TextField,
-  Select,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,7 +34,33 @@ import {
   Alert,
   Checkbox,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
+const PCM_PSTN_COMPACT_MQ = "(max-width: 768px)";
+
+const PCM_PSTN_ADD_NEW_DIALOG_MARGIN = 24;
+const PCM_PSTN_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const PCM_PSTN_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const PCM_PSTN_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: PCM_PSTN_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${PCM_PSTN_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${PCM_PSTN_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 600,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
 
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -67,7 +100,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const PcmPstnFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -106,81 +139,100 @@ const C = {
   successGreen: "#16a34a",
 };
 
-// ── Local modal field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const PcmPstnFieldRow = ({
+  label,
+  tooltipKey,
+  tooltips,
+  children,
+  labelWidth = 170,
+  required = false,
+}) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+    <PcmPstnFieldLabel
+      tooltipKey={tooltipKey}
+      tooltips={tooltips}
+      style={{
+        width: labelWidth,
+        flexShrink: 0,
+        textAlign: "left",
+        display: "inline-block",
+        fontSize: 13,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {label}
+      {required ? <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span> : null}
+    </PcmPstnFieldLabel>
+    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
+  </div>
+);
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": {
-      borderColor: OUTLINED_HOVER,
-    },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
+// ── PBX modal field UI (native inputs — matches Num Manipulate / Blocked List) ──
+const PCM_PSTN_OUTLINED_BORDER = "#d1d5db";
+const PCM_PSTN_OUTLINED_HOVER = "#9ca3af";
+const PCM_PSTN_OUTLINED_FOCUS = "#3E5475";
+const PCM_PSTN_FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const pcmPstnSetFieldDefault = (el) => {
+  el.style.borderColor = PCM_PSTN_OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const pcmPstnSetFieldHover = (el) => {
+  el.style.borderColor = PCM_PSTN_OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const pcmPstnSetFieldFocus = (el) => {
+  el.style.borderColor = PCM_PSTN_OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = PCM_PSTN_FOCUS_RING_SHADOW;
+};
+
+const pcmPstnInputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    pcmPstnSetFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    pcmPstnSetFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) pcmPstnSetFieldFocus(e.target);
+    else pcmPstnSetFieldHover(e.target);
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) pcmPstnSetFieldFocus(e.target);
+    else pcmPstnSetFieldDefault(e.target);
   },
 };
 
-const muiSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const modalTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-  },
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-  },
-};
-
-const modalSelectSx = {
-  ...muiSelectSx,
+const pcmPstnInputStyle = {
   width: "100%",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    height: 36,
-    backgroundColor: "#fff",
-  },
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${PCM_PSTN_OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const addHostFormPanelStyle = {
+const pcmPstnSelectStyle = {
+  ...pcmPstnInputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
+};
+
+const pcmPstnModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
@@ -527,6 +579,7 @@ const normalizeChannelString = (value = "") =>
   String(value || "").replace(/\s+/g, "");
 
 const PcmPstnPage = () => {
+  const isCompact = useMediaQuery(PCM_PSTN_COMPACT_MQ);
   const [allData, setAllData] = useState([]);
   const [data, setData] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -1278,59 +1331,34 @@ const PcmPstnPage = () => {
     );
   };
 
-  const renderFormField = (field) => (
-    <div
-      key={field.name}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 12,
-      }}
-    >
-      <E1PriFieldLabel
+  const renderFormField = (field) => {
+    const isRequired = ["id", "context", "signalling", "bchan"].includes(
+      field.name,
+    );
+    const labelText = `${field.label}:`;
+
+    return (
+      <PcmPstnFieldRow
+        key={field.name}
+        label={labelText}
         tooltipKey={field.name}
         tooltips={PCM_PSTN_FIELD_TOOLTIPS}
-        style={{
-          fontSize: 13,
-          whiteSpace: "nowrap",
-          textAlign: "left",
-          width: 170,
-          display: "inline-block",
-        }}
+        required={isRequired}
       >
-        {field.label}
-        {["spanNo", "context", "signalling", "status"].includes(field.name) && (
-          <span style={{ color: C.errorRed, marginLeft: 4 }}>*</span>
-        )}
-        :
-      </E1PriFieldLabel>
-      <div style={{ width: "min(100%, 320px)" }}>
         {field.type === "select" ? (
-          <Select
-            value={formData[field.name] || ""}
+          <select
+            name={field.name}
+            value={formData[field.name] ?? ""}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
-            size="small"
-            fullWidth
-            variant="outlined"
-            displayEmpty
-            renderValue={(selected) => {
-              if (selected === "") {
-                return <span style={{ color: "#9ca3af" }}>Please select</span>;
-              }
-              return selected;
-            }}
-            sx={modalSelectSx}
+            style={pcmPstnSelectStyle}
+            {...pcmPstnInputInteraction}
           >
-            {/* hidden placeholder */}
-            <MenuItem value="" disabled hidden />
-
             {field.options.map((opt) => (
-              <MenuItem key={opt} value={opt} sx={{ fontSize: 13 }}>
+              <option key={opt} value={opt}>
                 {opt}
-              </MenuItem>
+              </option>
             ))}
-          </Select>
+          </select>
         ) : field.type === "radio" ? (
           <RadioGroup
             row
@@ -1345,7 +1373,7 @@ const PcmPstnPage = () => {
                 label={opt}
                 sx={{
                   "& .MuiFormControlLabel-label": {
-                    fontSize: 14,
+                    fontSize: 13,
                     color: "#374151",
                   },
                 }}
@@ -1353,35 +1381,29 @@ const PcmPstnPage = () => {
             ))}
           </RadioGroup>
         ) : (
-          <TextField
-            type={field.type}
-            value={formData[field.name] || ""}
+          <input
+            type={field.type || "text"}
+            name={field.name}
+            value={formData[field.name] ?? ""}
             onChange={(e) => handleInputChange(field.name, e.target.value)}
             onKeyDown={(e) => {
-              if (field.type === "number" && e.key === "e") {
-                e.preventDefault();
-              }
+              if (field.type === "number" && e.key === "e") e.preventDefault();
             }}
-            size="small"
-            fullWidth
-            variant="outlined"
-            inputProps={{
-              style: {
-                fontSize: 13,
-                height: 32,
-                padding: "0 8px",
-                boxSizing: "border-box",
-              },
-            }}
-            sx={modalTextFieldSx}
+            style={pcmPstnInputStyle}
+            {...pcmPstnInputInteraction}
           />
         )}
-      </div>
-    </div>
-  );
+      </PcmPstnFieldRow>
+    );
+  };
 
   return (
-    <div style={pcmPstnPageWrapStyle}>
+    <div
+      style={{
+        ...pcmPstnPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
       {message.text && (
         <Alert
           severity={message.type}
@@ -1412,17 +1434,24 @@ const PcmPstnPage = () => {
             flexWrap: "wrap",
           }}
         >
-          <span>E1-PRI</span>
+          <span>{PCM_PSTN_PAGE_BREADCRUMB_ROOT}</span>
           <span>&gt;</span>
-          <span>PCM</span>
+          <span>{PCM_PSTN_PAGE_BREADCRUMB_SECTION}</span>
           <span>&gt;</span>
           <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            PSTN Settings
+            {PCM_PSTN_PAGE_TITLE}
           </span>
         </div>
 
         <div style={pcmPstnCardStyle}>
-          <div style={pcmPstnToolbarStyle}>
+          <div
+            style={{
+              ...pcmPstnToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1449,7 +1478,7 @@ const PcmPstnPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={loading.delete || isInitialLoad}
+                disabled={loading.delete || isInitialLoad || data.length === 0}
                 style={pcmPstnCancelBtnStyle}
               >
                 Inverse
@@ -1467,7 +1496,7 @@ const PcmPstnPage = () => {
                 ) : (
                   <>
                     <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
+                    {PCM_PSTN_DELETE_LABEL}
                   </>
                 )}
               </Btn>
@@ -1489,7 +1518,7 @@ const PcmPstnPage = () => {
                 disabled={loading.save || isInitialLoad}
                 style={pcmPstnPrimaryBtnStyle}
               >
-                + Add New
+                {PCM_PSTN_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -1498,7 +1527,7 @@ const PcmPstnPage = () => {
             <TableListLoading />
           ) : data.length === 0 ? (
             <TableListEmptyState
-              message="No PSTN settings found."
+              message={PCM_PSTN_EMPTY_MESSAGE}
               onAddNew={handleAddNew}
             />
           ) : (
@@ -1517,6 +1546,7 @@ const PcmPstnPage = () => {
                     borderSpacing: 0,
                     tableLayout: "auto",
                     minWidth: 900,
+                    ...(isCompact ? { minWidth: 720 } : {}),
                   }}
                 >
                   <thead>
@@ -1622,25 +1652,12 @@ const PcmPstnPage = () => {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={PCM_PSTN_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: {
-            width: 600,
-            maxWidth: "95vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-          },
+          sx: PCM_PSTN_ADD_NEW_DIALOG_PAPER_SX,
         }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
@@ -1652,9 +1669,10 @@ const PcmPstnPage = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
-          {editIndex >= 0 ? "Edit PCM PSTN Settings" : "Add PCM PSTN Settings"}
+          {editIndex >= 0 ? PCM_PSTN_MODAL_TITLE_EDIT : PCM_PSTN_MODAL_TITLE_ADD}
         </DialogTitle>
 
         <div style={PCM_PSTN_MODAL_TAB_BAR_STYLE}>
@@ -1680,14 +1698,16 @@ const PcmPstnPage = () => {
           style={{
             padding: "24px",
             backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
           }}
         >
-          <div style={{ ...addHostFormPanelStyle, width: "100%" }}>
+          <div style={{ ...pcmPstnModalFormPanelStyle, width: "100%" }}>
             {(tab === 0
-              ? SPAN_FIELDS
+              ? PCM_PSTN_SPAN_FIELDS
               : tab === 1
-                ? CHANNELS_FIELDS
-                : VOICE_FIELDS
+                ? PCM_PSTN_CHANNELS_FIELDS
+                : PCM_PSTN_VOICE_FIELDS
             ).map(renderFormField)}
           </div>
         </DialogContent>
@@ -1710,7 +1730,11 @@ const PcmPstnPage = () => {
             disabled={loading.save}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : editIndex >= 0 ? "Update" : "Save"}
+            {loading.save ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              PCM_PSTN_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             variant="cancel"
@@ -1718,7 +1742,7 @@ const PcmPstnPage = () => {
             disabled={loading.save}
             style={pcmPstnModalCancelBtnStyle}
           >
-            Close
+            {PCM_PSTN_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

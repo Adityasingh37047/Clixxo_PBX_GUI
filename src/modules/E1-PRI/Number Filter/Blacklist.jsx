@@ -35,7 +35,6 @@ import {
   NUMBER_FILTER_BLACKLIST_LOADING_MESSAGE,
   NUMBER_FILTER_BLACKLIST_NOTE,
 } from "../../../constants/NumberFilterBlacklistConstants";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 // ── Page-local field label tooltip UI ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -151,6 +150,29 @@ const C = {
 };
 
 const CARD_RADIUS = 10;
+const NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_MARGIN = 24;
+const NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 500,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: `${CARD_RADIUS}px`,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -1234,17 +1256,9 @@ const Blacklist = () => {
         open={showModal}
         onClose={() => setShowModal(false)}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 500,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: `${CARD_RADIUS}px`,
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus

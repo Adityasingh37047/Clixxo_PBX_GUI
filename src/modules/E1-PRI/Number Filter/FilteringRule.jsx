@@ -16,7 +16,6 @@ import {
   NUMBER_FILTER_RULE_SAVE_LABEL,
   NUMBER_FILTER_RULE_CLOSE_LABEL,
 } from "../../../constants/NumberFilterRuleConstants";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
   listFinalNumberFilter,
   createFinalNumberFilter,
@@ -38,6 +37,30 @@ import {
 // Modify column disabled — uncomment when enabling modify column:
 // import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_MARGIN = 24;
+const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 600,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
 
 const FILTERING_RULE_COMPACT_MQ = "(max-width: 768px)";
 
@@ -1148,17 +1171,9 @@ const FilteringRule = () => {
           closeModal();
         }}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 600,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus

@@ -29,8 +29,6 @@ import {
   NUM_MANIPULATE_CALLERID_POOL_SET_LABEL,
   NUM_MANIPULATE_CALLERID_POOL_NOTE,
 } from "../../../constants/E1PriCallerIDPoolConstants";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
-
 const FIELD_LABEL_COLOR = "#3E5475";
 
 const FIELD_TOOLTIP_PROPS = {
@@ -142,6 +140,29 @@ const C = {
 };
 
 const CARD_RADIUS = 10;
+const NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_MARGIN = 24;
+const NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 500,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: `${CARD_RADIUS}px`,
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -1039,17 +1060,9 @@ const CallerIDPool = () => {
         open={showModal}
         onClose={handleModalClose}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 500,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: `${CARD_RADIUS}px`,
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus

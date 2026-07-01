@@ -4,6 +4,12 @@ import {
   PCM_RECEPTION_TIMEOUT_FIELDS,
   PCM_RECEPTION_TIMEOUT_INITIAL_FORM,
   PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS,
+  PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_ROOT,
+  PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_SECTION,
+  PCM_RECEPTION_TIMEOUT_PAGE_TITLE,
+  PCM_RECEPTION_TIMEOUT_MODAL_TITLE_EDIT,
+  PCM_RECEPTION_TIMEOUT_SAVE_LABEL,
+  PCM_RECEPTION_TIMEOUT_CLOSE_LABEL,
 } from "../../../constants/PcmReceptionTimeoutConstants";
 import { Alert, Tooltip, useMediaQuery } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
@@ -45,7 +51,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const PcmReceptionTimeoutFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -160,12 +166,12 @@ const PcmReceptionTimeoutBreadcrumb = () => (
       flexWrap: "wrap",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>PCM</span>
+    <span>{PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      Number-Receiving Timeout Info
+      {PCM_RECEPTION_TIMEOUT_PAGE_TITLE}
     </span>
   </div>
 );
@@ -298,42 +304,43 @@ const Btn = ({
   );
 };
 
-// ── Local form field UI (inlined from e1PriSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+// ── PBX modal field UI (native inputs) ──
+const PCM_RECEPTION_TIMEOUT_OUTLINED_BORDER = "#d1d5db";
+const PCM_RECEPTION_TIMEOUT_OUTLINED_HOVER = "#9ca3af";
+const PCM_RECEPTION_TIMEOUT_OUTLINED_FOCUS = "#3E5475";
+const PCM_RECEPTION_TIMEOUT_FOCUS_RING_SHADOW =
+  "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
+  el.style.borderColor = PCM_RECEPTION_TIMEOUT_OUTLINED_BORDER;
   el.style.borderWidth = "1px";
   el.style.boxShadow = "none";
 };
 
 const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
+  el.style.borderColor = PCM_RECEPTION_TIMEOUT_OUTLINED_HOVER;
   el.style.borderWidth = "1px";
   el.style.boxShadow = "none";
 };
 
 const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
+  el.style.borderColor = PCM_RECEPTION_TIMEOUT_OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = PCM_RECEPTION_TIMEOUT_FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInputStyle = {
-  height: 28,
-  width: 200,
-  padding: "0 8px",
+  width: "100%",
+  height: 32,
+  padding: "0 10px",
   fontSize: 13,
-  border: `1px solid ${OUTLINED_BORDER}`,
+  lineHeight: 1.35,
+  border: `1px solid ${PCM_RECEPTION_TIMEOUT_OUTLINED_BORDER}`,
   borderRadius: 4,
   outline: "none",
   backgroundColor: "#fff",
   color: "#0f172a",
   boxSizing: "border-box",
-  boxShadow: "none",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
@@ -362,7 +369,7 @@ const nativeFieldInteraction = {
   },
 };
 
-const addHostFormPanelStyle = pcmReceptionTimeoutFormPanelStyle;
+const pcmReceptionTimeoutModalFormPanelStyle = pcmReceptionTimeoutFormPanelStyle;
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -475,7 +482,7 @@ const PcmReceptionTimeoutPage = () => {
 
         <div style={pcmReceptionTimeoutCardStyle}>
           <div style={pcmReceptionTimeoutToolbarStyle}>
-            <span>Number-Receiving Timeout Info</span>
+            <span>{PCM_RECEPTION_TIMEOUT_PAGE_TITLE}</span>
           </div>
 
           <div style={{ overflowX: "auto", width: "100%" }}>
@@ -632,25 +639,25 @@ const PcmReceptionTimeoutPage = () => {
                   textAlign: "center",
                 }}
               >
-                Number-Receiving Timeout
+                {PCM_RECEPTION_TIMEOUT_MODAL_TITLE_EDIT}
               </div>
               <div style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-                <div style={addHostFormPanelStyle}>
+                <div style={pcmReceptionTimeoutModalFormPanelStyle}>
                   {PCM_RECEPTION_TIMEOUT_FIELDS.map((field) => (
                     <div
                       key={field.name}
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
                         gap: 12,
                       }}
                     >
-                      <E1PriFieldLabel
+                      <PcmReceptionTimeoutFieldLabel
                         tooltipKey={field.name}
                         tooltips={PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS}
                         style={{
                           width: 170,
+                          flexShrink: 0,
                           fontSize: 13,
                           textAlign: "left",
                           whiteSpace: "nowrap",
@@ -658,20 +665,15 @@ const PcmReceptionTimeoutPage = () => {
                         }}
                       >
                         {field.label}:
-                      </E1PriFieldLabel>
-                      <div style={{ width: "min(100%, 320px)" }}>
+                      </PcmReceptionTimeoutFieldLabel>
+                      <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                         <input
                           type={field.type || "text"}
                           name={field.name}
                           value={formData[field.name] ?? ""}
                           onChange={handleInputChange}
                           placeholder={field.placeholder || ""}
-                          style={{
-                            ...nativeFieldInputStyle,
-                            height: 32,
-                            width: "100%",
-                            color: "#1e293b",
-                          }}
+                          style={nativeFieldInputStyle}
                           {...nativeFieldInteraction}
                         />
                       </div>

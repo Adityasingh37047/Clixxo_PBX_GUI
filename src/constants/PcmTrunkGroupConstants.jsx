@@ -30,6 +30,17 @@ export const PCM_TRUNK_GROUP_TABLE_COLUMNS = [
   { key: 'modify', label: 'Modify' },
 ];
 
+export const PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION = "PCM";
+export const PCM_TRUNK_GROUP_PAGE_TITLE = "PCM Trunk Group";
+export const PCM_TRUNK_GROUP_EMPTY_MESSAGE = "No PCM Trunk Groups found.";
+export const PCM_TRUNK_GROUP_MODAL_TITLE_ADD = "Add PCM Trunk Group";
+export const PCM_TRUNK_GROUP_MODAL_TITLE_EDIT = "Edit PCM Trunk Group";
+export const PCM_TRUNK_GROUP_ADD_NEW_LABEL = "+ Add New";
+export const PCM_TRUNK_GROUP_DELETE_LABEL = "Delete";
+export const PCM_TRUNK_GROUP_SAVE_LABEL = "Save";
+export const PCM_TRUNK_GROUP_CLOSE_LABEL = "Close";
+
 /** PCM Trunk Group (PcmTrunkGroupPage) — POST /pstngroups */
 export const PCM_TRUNK_GROUP_FIELD_TOOLTIPS = {
   groupId:

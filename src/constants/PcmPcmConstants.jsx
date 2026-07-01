@@ -1,32 +1,39 @@
-export const TABLE_HEADERS = [
-  'PCM No.',
-  'Signaling Protocol',
-  'Clock',
-  'Control Mode',
-  'Signaling Time Slot',
-  'Signaling Link Type',
-  'Connection Line',
-  'CRC-4',
-  'Sip Trunk No.',
-  'Modify'
+export const PCM_PCM_TABLE_HEADERS = [
+  "PCM No.",
+  "Signaling Protocol",
+  "Clock",
+  "Control Mode",
+  "Signaling Time Slot",
+  "Signaling Link Type",
+  "Connection Line",
+  "CRC-4",
+  "Sip Trunk No.",
+  "Modify",
 ];
 
-export const SIGNALING_PROTOCOL_OPTIONS = [
-  'ISDN User Side',
-  'ISDN Network Side',
-  'SS1R2'
+export const PCM_PCM_SIGNALING_PROTOCOL_OPTIONS = [
+  "ISDN User Side",
+  "ISDN Network Side",
+  "SS1R2",
 ];
 
-export const CLOCK_OPTIONS = [
-  'Line-synchronization',
-  'Free-run',
-  'Slave'
+export const PCM_PCM_CLOCK_OPTIONS = [
+  "Line-synchronization",
+  "Free-run",
+  "Slave",
 ];
 
-export const CONNECTION_LINE_OPTIONS = [
-  'Twisted Pair Cable',
-  'Coaxial Cable'
+export const PCM_PCM_CONNECTION_LINE_OPTIONS = [
+  "Twisted Pair Cable",
+  "Coaxial Cable",
 ];
+
+export const PCM_PCM_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const PCM_PCM_PAGE_BREADCRUMB_SECTION = "PCM";
+export const PCM_PCM_PAGE_TITLE = "PCM Settings";
+export const PCM_PCM_MODAL_TITLE_EDIT = "Edit PCM Settings";
+export const PCM_PCM_SAVE_LABEL = "Save";
+export const PCM_PCM_CLOSE_LABEL = "Close";
 
 /** PCM Settings (PcmPcmPage) — local React state only, no API */
 export const PCM_PCM_FIELD_TOOLTIPS = {

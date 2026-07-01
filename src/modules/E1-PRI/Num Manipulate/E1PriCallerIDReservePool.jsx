@@ -18,7 +18,6 @@ import {
   NUM_MANIPULATE_CALLERID_RESERVE_POOL_CLOSE_LABEL,
   NUM_MANIPULATE_CALLERID_RESERVE_POOL_NOTE,
 } from "../../../constants/E1PriCallerIDReservePoolConstants";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
   Checkbox,
   Dialog,
@@ -30,6 +29,30 @@ import {
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+const NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_MARGIN = 24;
+const NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 500,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
 
 const RESERVE_POOL_COMPACT_MQ = "(max-width: 768px)";
 
@@ -840,17 +863,9 @@ const CallerIDReservePool = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 500,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: NUM_MANIPULATE_CALLERID_RESERVE_POOL_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus

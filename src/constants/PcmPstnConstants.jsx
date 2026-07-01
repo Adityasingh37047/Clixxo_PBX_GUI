@@ -21,7 +21,7 @@ export const PCM_PSTN_TABLE_COLUMNS = [
 // 🧪 Sample data
 
 // 📝 Span section fields
-export const SPAN_FIELDS = [
+export const PCM_PSTN_SPAN_FIELDS = [
   { name: "id", label: "Span ID", type: "number" },
   {
     name: "timing",
@@ -61,7 +61,7 @@ export const SPAN_FIELDS = [
 ];
 
 // 📝 Channels section fields
-export const CHANNELS_FIELDS = [
+export const PCM_PSTN_CHANNELS_FIELDS = [
   {
     name: "signalling",
     label: "Signalling",
@@ -147,7 +147,7 @@ export const CHANNELS_FIELDS = [
 ];
 
 // 📝 Voice section fields
-export const VOICE_FIELDS = [
+export const PCM_PSTN_VOICE_FIELDS = [
   { name: "rxgain", label: "Rx Gain", type: "number", defaultValue: "0.0" },
   { name: "txgain", label: "Tx Gain", type: "number", defaultValue: "0.0" },
   {
@@ -213,6 +213,17 @@ const channelsField = (field, options, extra = "") =>
 
 const yesNoChannels = (field, defaultVal) =>
   channelsField(field, "yes, no", `Default: ${defaultVal}.`);
+
+export const PCM_PSTN_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const PCM_PSTN_PAGE_BREADCRUMB_SECTION = "PCM";
+export const PCM_PSTN_PAGE_TITLE = "PSTN Settings";
+export const PCM_PSTN_EMPTY_MESSAGE = "No PSTN settings found.";
+export const PCM_PSTN_MODAL_TITLE_ADD = "Add PCM PSTN Settings";
+export const PCM_PSTN_MODAL_TITLE_EDIT = "Edit PCM PSTN Settings";
+export const PCM_PSTN_ADD_NEW_LABEL = "+ Add New";
+export const PCM_PSTN_DELETE_LABEL = "Delete";
+export const PCM_PSTN_SAVE_LABEL = "Save";
+export const PCM_PSTN_CLOSE_LABEL = "Close";
 
 /** PCM PSTN (PcmPstnPage) — POST /pstn create */
 export const PCM_PSTN_FIELD_TOOLTIPS = {

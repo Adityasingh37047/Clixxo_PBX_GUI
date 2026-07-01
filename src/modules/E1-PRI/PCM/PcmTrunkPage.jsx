@@ -7,17 +7,48 @@ import {
   PCM_TRUNK_INITIAL_FORM,
   PCM_TRUNK_ITEMS_PER_PAGE,
   PCM_TRUNK_FIELD_TOOLTIPS,
+  PCM_TRUNK_PAGE_BREADCRUMB_ROOT,
+  PCM_TRUNK_PAGE_BREADCRUMB_SECTION,
+  PCM_TRUNK_PAGE_TITLE,
+  PCM_TRUNK_EMPTY_MESSAGE,
+  PCM_TRUNK_MODAL_TITLE,
+  PCM_TRUNK_ADD_NEW_LABEL,
+  PCM_TRUNK_SAVE_LABEL,
+  PCM_TRUNK_CLOSE_LABEL,
 } from "../../../constants/PcmTrunkConstants";
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import Checkbox from "@mui/material/Checkbox";
 import Tooltip from "@mui/material/Tooltip";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+const PCM_TRUNK_COMPACT_MQ = "(max-width: 768px)";
+
+const PCM_TRUNK_ADD_NEW_DIALOG_MARGIN = 24;
+const PCM_TRUNK_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const PCM_TRUNK_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const PCM_TRUNK_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: PCM_TRUNK_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${PCM_TRUNK_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${PCM_TRUNK_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 600,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
 
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -57,7 +88,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const PcmTrunkFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -85,7 +116,8 @@ const LOCAL_STORAGE_KEY = "pcm_trunks";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#0f172a",
   mutedText: "#94a3b8",
@@ -93,7 +125,7 @@ const C = {
   accent: "#3E5475",
 };
 
-const CARD_RADIUS = 20;
+const CARD_RADIUS = 10;
 
 const Btn = ({
   children,
@@ -311,9 +343,9 @@ const tableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   overflow: "hidden",
 };
 const blueBarStyle = {
@@ -381,6 +413,77 @@ const paginationButtonStyle = {
   minWidth: 0,
   borderRadius: 4,
 };
+const pcmTrunkModalFormPanelStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 8,
+  padding: 20,
+};
+
+const pcmTrunkModalCancelBtnStyle = {
+  minWidth: 100,
+  height: 33,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PCM_TRUNK_OUTLINED_BORDER = "#d1d5db";
+const PCM_TRUNK_OUTLINED_HOVER = "#9ca3af";
+const PCM_TRUNK_OUTLINED_FOCUS = "#3E5475";
+const PCM_TRUNK_FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const pcmTrunkSetFieldDefault = (el) => {
+  el.style.borderColor = PCM_TRUNK_OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+const pcmTrunkSetFieldHover = (el) => {
+  el.style.borderColor = PCM_TRUNK_OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+const pcmTrunkSetFieldFocus = (el) => {
+  el.style.borderColor = PCM_TRUNK_OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = PCM_TRUNK_FOCUS_RING_SHADOW;
+};
+const pcmTrunkInputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    pcmTrunkSetFieldFocus(e.target);
+  },
+  onBlur: (e) => pcmTrunkSetFieldDefault(e.target),
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) pcmTrunkSetFieldFocus(e.target);
+    else pcmTrunkSetFieldHover(e.target);
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) pcmTrunkSetFieldFocus(e.target);
+    else pcmTrunkSetFieldDefault(e.target);
+  },
+};
+const pcmTrunkSelectStyle = {
+  width: "100%",
+  height: 32,
+  padding: "0 28px 0 10px",
+  fontSize: 13,
+  border: `1px solid ${PCM_TRUNK_OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  appearance: "auto",
+  cursor: "pointer",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
 const pageSelectStyle = {
   fontSize: 13,
   padding: "2px 6px",
@@ -390,6 +493,7 @@ const pageSelectStyle = {
 };
 
 const PcmTrunkPage = () => {
+  const isCompact = useMediaQuery(PCM_TRUNK_COMPACT_MQ);
   const [trunks, setTrunks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(PCM_TRUNK_INITIAL_FORM);
@@ -485,7 +589,8 @@ const PcmTrunkPage = () => {
       style={{
         backgroundColor: C.pageBg,
         minHeight: "calc(100vh - 80px)",
-        padding: 16,
+        padding: isCompact ? 8 : 16,
+        boxSizing: "border-box",
       }}
     >
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
@@ -501,21 +606,22 @@ const PcmTrunkPage = () => {
             gap: 4,
           }}
         >
-          <span>E1-PRI</span>
+          <span>{PCM_TRUNK_PAGE_BREADCRUMB_ROOT}</span>
           <span>&gt;</span>
-          <span>PCM</span>
+          <span>{PCM_TRUNK_PAGE_BREADCRUMB_SECTION}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            PCM Trunk
+            {PCM_TRUNK_PAGE_TITLE}
           </span>
         </div>
         {trunks.length === 0 ? (
           <div
             style={{
               background: "#ffffff",
-              borderRadius: 10,
-              border: `1.5px solid ${C.cardBorder}`,
-              boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+              borderRadius: CARD_RADIUS,
+              border: `1px solid ${C.cardBorder}`,
+              boxShadow:
+                "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -533,7 +639,7 @@ const PcmTrunkPage = () => {
                 marginBottom: 16,
               }}
             >
-              No available PCM trunk!
+              {PCM_TRUNK_EMPTY_MESSAGE}
             </div>
             <div
               style={{
@@ -600,6 +706,7 @@ const PcmTrunkPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={handleInverse}
+                  disabled={trunks.length === 0}
                   style={{ height: 30 }}
                 >
                   Inverse
@@ -616,6 +723,7 @@ const PcmTrunkPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={handleClearAll}
+                  disabled={trunks.length === 0}
                   style={{ height: 30 }}
                 >
                   Clear All
@@ -779,181 +887,192 @@ const PcmTrunkPage = () => {
       <Dialog
         open={isModalOpen}
         onClose={handleCloseModal}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ sx: { width: 600, maxWidth: "95vw", p: 0 } }}
+        maxWidth={false}
+        sx={PCM_TRUNK_ADD_NEW_DIALOG_SX}
+        PaperProps={{
+          sx: PCM_TRUNK_ADD_NEW_DIALOG_PAPER_SX,
+        }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
-          className="text-white text-center font-semibold text-lg"
           style={{
-            background:
-              "linear-gradient(to bottom, #4a5568 0%, #2d3748 50%, #1a202c 100%)",
-            borderBottom: "1px solid #444444",
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 8,
+            borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
-          PCM Trunk
+          {PCM_TRUNK_MODAL_TITLE}
         </DialogTitle>
         <DialogContent
-          className="flex flex-col gap-2 py-4"
           style={{
-            backgroundColor: "#dde0e4",
-            border: "1px solid #444444",
-            borderTop: "none",
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
           }}
         >
-          {/* Index Block */}
-          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <E1PriFieldLabel
-              tooltipKey="index"
-              tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
-              style={{
-                fontSize: 15,
-                minWidth: 80,
-                marginRight: 8,
-                textAlign: "left",
-                whiteSpace: "nowrap",
-                display: "inline-block",
-              }}
-            >
-              Index:
-            </E1PriFieldLabel>
-            <Select
-              value={form.index}
-              onChange={(e) =>
-                handleFormChange("index", Number(e.target.value))
-              }
-              size="small"
-              fullWidth
-              variant="outlined"
-              className="bg-white"
-              sx={{ maxWidth: 120, minWidth: 0 }}
-            >
-              {PCM_TRUNK_INDEX_OPTIONS.map((i) => (
-                <MenuItem key={i} value={i}>
-                  {i}
-                </MenuItem>
-              ))}
-            </Select>
-          </div>
-          {/* PCM NO. Block */}
-          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <E1PriFieldLabel
-              tooltipKey="pcmNo"
-              tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
-              style={{
-                fontSize: 15,
-                minWidth: 80,
-                marginRight: 8,
-                textAlign: "left",
-                whiteSpace: "nowrap",
-                display: "inline-block",
-              }}
-            >
-              PCM NO.:
-            </E1PriFieldLabel>
-            <Select
-              value={form.pcmNo}
-              onChange={(e) =>
-                handleFormChange("pcmNo", Number(e.target.value))
-              }
-              size="small"
-              fullWidth
-              variant="outlined"
-              className="bg-white"
-              sx={{ maxWidth: 120, minWidth: 0 }}
-            >
-              {PCM_TRUNK_PCM_NO_OPTIONS.map((i) => (
-                <MenuItem key={i} value={i}>
-                  {i}
-                </MenuItem>
-              ))}
-            </Select>
-          </div>
-          {/* Including Ts Block */}
-          <div className="flex flex-col sm:flex-row items-center border border-gray-200 rounded px-2 py-1 gap-2 w-full bg-white mb-2">
-            <E1PriFieldLabel
-              tooltipKey="ts"
-              tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
-              style={{
-                fontSize: 15,
-                minWidth: 80,
-                marginRight: 8,
-                textAlign: "left",
-                whiteSpace: "nowrap",
-                display: "inline-block",
-              }}
-            >
-              Including Ts:
-            </E1PriFieldLabel>
-            <Checkbox
-              checked={checkAll}
-              onChange={handleCheckAllTs}
-              sx={{ mr: 1 }}
-            />
-            <span className="font-medium">Check All</span>
-          </div>
-          {/* TS Checkboxes Block */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-gray-200 rounded bg-white p-2 mb-2 w-full">
-            {form.ts.map((checked, idx) => (
-              <label
-                key={idx}
-                className="flex items-center text-[14px] font-medium mb-0 py-1 min-h-[28px] border-b border-r border-gray-100 last:border-b-0 last:border-r-0 pl-1"
+          <div style={pcmTrunkModalFormPanelStyle}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <PcmTrunkFieldLabel
+                tooltipKey="index"
+                tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
+                style={{
+                  width: 170,
+                  flexShrink: 0,
+                  fontSize: 13,
+                  textAlign: "left",
+                  whiteSpace: "nowrap",
+                  display: "inline-block",
+                }}
+              >
+                Index:
+              </PcmTrunkFieldLabel>
+              <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
+                <select
+                  name="index"
+                  value={form.index}
+                  onChange={(e) =>
+                    handleFormChange("index", Number(e.target.value))
+                  }
+                  style={pcmTrunkSelectStyle}
+                  {...pcmTrunkInputInteraction}
+                >
+                  {PCM_TRUNK_INDEX_OPTIONS.map((i) => (
+                    <option key={i} value={i}>
+                      {i}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <PcmTrunkFieldLabel
+                tooltipKey="pcmNo"
+                tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
+                style={{
+                  width: 170,
+                  flexShrink: 0,
+                  fontSize: 13,
+                  textAlign: "left",
+                  whiteSpace: "nowrap",
+                  display: "inline-block",
+                }}
+              >
+                PCM NO.:
+              </PcmTrunkFieldLabel>
+              <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
+                <select
+                  name="pcmNo"
+                  value={form.pcmNo}
+                  onChange={(e) =>
+                    handleFormChange("pcmNo", Number(e.target.value))
+                  }
+                  style={pcmTrunkSelectStyle}
+                  {...pcmTrunkInputInteraction}
+                >
+                  {PCM_TRUNK_PCM_NO_OPTIONS.map((i) => (
+                    <option key={i} value={i}>
+                      {i}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <PcmTrunkFieldLabel
+                tooltipKey="ts"
+                tooltips={PCM_TRUNK_FIELD_TOOLTIPS}
+                style={{
+                  width: 170,
+                  flexShrink: 0,
+                  fontSize: 13,
+                  textAlign: "left",
+                  whiteSpace: "nowrap",
+                  display: "inline-block",
+                }}
+              >
+                Including Ts:
+              </PcmTrunkFieldLabel>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
               >
                 <Checkbox
-                  checked={checked}
-                  onChange={() => handleTSChange(idx)}
-                  sx={{ p: 0.5, mr: 1 }}
+                  checked={checkAll}
+                  onChange={handleCheckAllTs}
+                  sx={{ p: 0.5 }}
                 />
-                TS[{idx}]
-              </label>
-            ))}
+                <span style={{ fontSize: 13, fontWeight: 600 }}>Check All</span>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                gap: 0,
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 4,
+                background: "#fff",
+                padding: 8,
+                width: "100%",
+              }}
+            >
+              {form.ts.map((checked, idx) => (
+                <label
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    padding: "4px 4px",
+                    minHeight: 28,
+                    borderBottom: "1px solid #f1f5f9",
+                    borderRight: "1px solid #f1f5f9",
+                  }}
+                >
+                  <Checkbox
+                    checked={checked}
+                    onChange={() => handleTSChange(idx)}
+                    sx={{ p: 0.5, mr: 0.5 }}
+                  />
+                  TS[{idx}]
+                </label>
+              ))}
+            </div>
           </div>
         </DialogContent>
-        <DialogActions className="flex justify-center gap-6 pb-4">
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1,
-              minWidth: 100,
-              boxShadow: "0 2px 8px #b3e0ff",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #0e8fd6 0%, #3bb6f5 100%)",
-                color: "#fff",
-              },
-            }}
-            onClick={handleSave}
-          >
-            Save
-          </Button>
-          <Button
-            variant="contained"
-            sx={{
-              background:
-                "linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)",
-              color: "#374151",
-              fontWeight: 600,
-              fontSize: "16px",
-              borderRadius: 1,
-              minWidth: 100,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              textTransform: "none",
-              "&:hover": {
-                background:
-                  "linear-gradient(to bottom, #d1d5db 0%, #e5e7eb 100%)",
-                color: "#374151",
-              },
-            }}
+        <DialogActions
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 12,
+            padding: "16px 24px 24px",
+            background: "#ffffff",
+          }}
+        >
+          <Btn variant="primary" onClick={handleSave}>
+            {PCM_TRUNK_SAVE_LABEL}
+          </Btn>
+          <Btn
+            variant="cancel"
             onClick={handleCloseModal}
+            style={pcmTrunkModalCancelBtnStyle}
           >
-            Close
-          </Button>
+            {PCM_TRUNK_CLOSE_LABEL}
+          </Btn>
         </DialogActions>
       </Dialog>
     </div>
@@ -961,10 +1080,3 @@ const PcmTrunkPage = () => {
 };
 
 export default PcmTrunkPage;
-
-<style>{`
-  .edit-icon-btn:hover svg {
-    color: #1976d2 !important;
-    transform: scale(1.18);
-  }
-`}</style>;

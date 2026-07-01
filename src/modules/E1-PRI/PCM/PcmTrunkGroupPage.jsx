@@ -4,6 +4,16 @@ import {
   PCM_TRUNK_GROUP_INITIAL_FORM,
   PCM_TRUNK_GROUP_TABLE_COLUMNS,
   PCM_TRUNK_GROUP_FIELD_TOOLTIPS,
+  PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT,
+  PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION,
+  PCM_TRUNK_GROUP_PAGE_TITLE,
+  PCM_TRUNK_GROUP_EMPTY_MESSAGE,
+  PCM_TRUNK_GROUP_MODAL_TITLE_ADD,
+  PCM_TRUNK_GROUP_MODAL_TITLE_EDIT,
+  PCM_TRUNK_GROUP_ADD_NEW_LABEL,
+  PCM_TRUNK_GROUP_DELETE_LABEL,
+  PCM_TRUNK_GROUP_SAVE_LABEL,
+  PCM_TRUNK_GROUP_CLOSE_LABEL,
 } from "../../../constants/PcmTrunkGroupConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -19,6 +29,7 @@ import {
   CircularProgress,
   Checkbox,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
 import {
   listPstn,
@@ -28,6 +39,33 @@ import {
   listIpPstnRoutes,
   listNumberManipulations,
 } from "../../../api/apiService";
+
+const PCM_TRUNK_GROUP_COMPACT_MQ = "(max-width: 768px)";
+
+const PCM_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN = 24;
+const PCM_TRUNK_GROUP_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const PCM_TRUNK_GROUP_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const PCM_TRUNK_GROUP_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: PCM_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${PCM_TRUNK_GROUP_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${PCM_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 500,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -66,7 +104,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const PcmTrunkGroupFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -240,6 +278,77 @@ const pcmTrunkGroupModalCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const PCM_TRUNK_GROUP_OUTLINED_BORDER = "#d1d5db";
+const PCM_TRUNK_GROUP_OUTLINED_HOVER = "#9ca3af";
+const PCM_TRUNK_GROUP_OUTLINED_FOCUS = "#3E5475";
+const PCM_TRUNK_GROUP_FOCUS_RING_SHADOW =
+  "0 0 0 2px rgba(62, 84, 117, 0.15)";
+
+const pcmTrunkGroupSetFieldDefault = (el) => {
+  el.style.borderColor = PCM_TRUNK_GROUP_OUTLINED_BORDER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const pcmTrunkGroupSetFieldHover = (el) => {
+  el.style.borderColor = PCM_TRUNK_GROUP_OUTLINED_HOVER;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = "none";
+};
+
+const pcmTrunkGroupSetFieldFocus = (el) => {
+  el.style.borderColor = PCM_TRUNK_GROUP_OUTLINED_FOCUS;
+  el.style.borderWidth = "1px";
+  el.style.boxShadow = PCM_TRUNK_GROUP_FOCUS_RING_SHADOW;
+};
+
+const pcmTrunkGroupInputInteraction = {
+  onFocus: (e) => {
+    if (e.target.disabled) return;
+    pcmTrunkGroupSetFieldFocus(e.target);
+  },
+  onBlur: (e) => {
+    pcmTrunkGroupSetFieldDefault(e.target);
+  },
+  onMouseEnter: (e) => {
+    if (e.target.disabled) return;
+    if (document.activeElement === e.target) {
+      pcmTrunkGroupSetFieldFocus(e.target);
+    } else {
+      pcmTrunkGroupSetFieldHover(e.target);
+    }
+  },
+  onMouseLeave: (e) => {
+    if (document.activeElement === e.target) {
+      pcmTrunkGroupSetFieldFocus(e.target);
+    } else {
+      pcmTrunkGroupSetFieldDefault(e.target);
+    }
+  },
+};
+
+const pcmTrunkGroupInputStyle = {
+  width: "100%",
+  height: 32,
+  padding: "0 10px",
+  fontSize: 13,
+  lineHeight: 1.35,
+  border: `1px solid ${PCM_TRUNK_GROUP_OUTLINED_BORDER}`,
+  borderRadius: 4,
+  outline: "none",
+  backgroundColor: "#fff",
+  color: C.valueText,
+  boxSizing: "border-box",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const pcmTrunkGroupSelectStyle = {
+  ...pcmTrunkGroupInputStyle,
+  padding: "0 28px 0 10px",
+  appearance: "auto",
+  cursor: "pointer",
 };
 
 const TH = ({ children, style: extra }) => (
@@ -517,7 +626,7 @@ const modalSelectSx = {
   },
 };
 
-const addHostFormPanelStyle = {
+const pcmTrunkGroupModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
   gap: 14,
@@ -538,6 +647,7 @@ const pcmTrunkGroupTableCheckboxSx = {
 // const LOCAL_STORAGE_KEY = 'pcmTrunkGroups';
 
 const PcmTrunkGroupPage = () => {
+  const isCompact = useMediaQuery(PCM_TRUNK_GROUP_COMPACT_MQ);
   const tableScrollRef = useRef(null);
   const [groups, setGroups] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -1162,7 +1272,12 @@ const PcmTrunkGroupPage = () => {
   };
 
   return (
-    <div style={pcmTrunkGroupPageWrapStyle}>
+    <div
+      style={{
+        ...pcmTrunkGroupPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
       {message.text && (
         <Alert
           severity={message.type}
@@ -1193,17 +1308,24 @@ const PcmTrunkGroupPage = () => {
             flexWrap: "wrap",
           }}
         >
-          <span>E1-PRI</span>
+          <span>{PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT}</span>
           <span>&gt;</span>
-          <span>PCM</span>
+          <span>{PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION}</span>
           <span>&gt;</span>
           <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            PCM Trunk Group
+            {PCM_TRUNK_GROUP_PAGE_TITLE}
           </span>
         </div>
 
         <div style={pcmTrunkGroupCardStyle}>
-          <div style={pcmTrunkGroupToolbarStyle}>
+          <div
+            style={{
+              ...pcmTrunkGroupToolbarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <div
               style={{
                 display: "flex",
@@ -1231,7 +1353,7 @@ const PcmTrunkGroupPage = () => {
               <Btn
                 variant="cancel"
                 onClick={handleInverse}
-                disabled={isLoadingData}
+                disabled={isLoadingData || groups.length === 0}
                 style={pcmTrunkGroupCancelBtnStyle}
               >
                 Inverse
@@ -1259,7 +1381,7 @@ const PcmTrunkGroupPage = () => {
                 ) : (
                   <>
                     <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
+                    {PCM_TRUNK_GROUP_DELETE_LABEL}
                   </>
                 )}
               </Btn>
@@ -1269,7 +1391,7 @@ const PcmTrunkGroupPage = () => {
                 disabled={isLoadingSpans}
                 style={pcmTrunkGroupPrimaryBtnStyle}
               >
-                + Add New
+                {PCM_TRUNK_GROUP_ADD_NEW_LABEL}
               </Btn>
             </div>
           </div>
@@ -1278,7 +1400,7 @@ const PcmTrunkGroupPage = () => {
             <TableListLoading />
           ) : groups.length === 0 ? (
             <TableListEmptyState
-              message="No PCM Trunk Groups found."
+              message={PCM_TRUNK_GROUP_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
             />
           ) : (
@@ -1297,6 +1419,7 @@ const PcmTrunkGroupPage = () => {
                     borderSpacing: 0,
                     tableLayout: "auto",
                     minWidth: 900,
+                    ...(isCompact ? { minWidth: 720 } : {}),
                   }}
                 >
                   <thead>
@@ -1496,25 +1619,12 @@ const PcmTrunkGroupPage = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        slotProps={{
-          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
-        }}
-        sx={{
-          "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
-          },
-        }}
+        sx={PCM_TRUNK_GROUP_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: {
-            width: 500,
-            maxWidth: "95vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-          },
+          sx: PCM_TRUNK_GROUP_ADD_NEW_DIALOG_PAPER_SX,
         }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
@@ -1526,40 +1636,49 @@ const PcmTrunkGroupPage = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {formData.originalIndex !== undefined
-            ? "Edit PCM Trunk Group"
-            : "Add PCM Trunk Group"}
+            ? PCM_TRUNK_GROUP_MODAL_TITLE_EDIT
+            : PCM_TRUNK_GROUP_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-          <div style={addHostFormPanelStyle}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+        >
+          <div style={pcmTrunkGroupModalFormPanelStyle}>
             {PCM_TRUNK_GROUP_FIELDS.map((field) => (
               <div
                 key={field.name}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
                   gap: 12,
                 }}
               >
-                <E1PriFieldLabel
+                <PcmTrunkGroupFieldLabel
                   tooltipKey={field.name}
                   tooltips={PCM_TRUNK_GROUP_FIELD_TOOLTIPS}
                   style={{
                     fontSize: 13,
                     whiteSpace: "nowrap",
                     width: 170,
+                    flexShrink: 0,
                     textAlign: "left",
                     display: "inline-block",
                   }}
                 >
                   {field.label}:
-                </E1PriFieldLabel>
-                <div style={{ width: "min(100%, 320px)" }}>
+                </PcmTrunkGroupFieldLabel>
+                <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                   {field.type === "select" ? (
-                    <Select
+                    <select
+                      name={field.name}
                       value={formData[field.name]}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -1567,29 +1686,19 @@ const PcmTrunkGroupPage = () => {
                           [field.name]: e.target.value,
                         }))
                       }
-                      size="small"
-                      fullWidth
-                      variant="outlined"
-                      MenuProps={{
-                        PaperProps: {
-                          style: { maxHeight: 240, width: "auto" },
-                        },
-                      }}
-                      sx={modalSelectSx}
+                      style={pcmTrunkGroupSelectStyle}
+                      {...pcmTrunkGroupInputInteraction}
                     >
                       {field.options.map((option) => (
-                        <MenuItem
-                          key={option.value}
-                          value={option.value}
-                          sx={{ fontSize: 13 }}
-                        >
+                        <option key={option.value} value={option.value}>
                           {option.label}
-                        </MenuItem>
+                        </option>
                       ))}
-                    </Select>
+                    </select>
                   ) : (
-                    <TextField
-                      type={field.type}
+                    <input
+                      type={field.type || "text"}
+                      name={field.name}
                       value={formData[field.name] || ""}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -1597,19 +1706,9 @@ const PcmTrunkGroupPage = () => {
                           [field.name]: e.target.value,
                         }))
                       }
-                      size="small"
-                      fullWidth
-                      variant="outlined"
                       placeholder={field.placeholder || ""}
-                      sx={{ fontSize: 13, ...modalTextFieldSx }}
-                      inputProps={{
-                        style: {
-                          fontSize: 13,
-                          height: 32,
-                          padding: "0 8px",
-                          boxSizing: "border-box",
-                        },
-                      }}
+                      style={pcmTrunkGroupInputStyle}
+                      {...pcmTrunkGroupInputInteraction}
                     />
                   )}
                 </div>
@@ -1657,7 +1756,7 @@ const PcmTrunkGroupPage = () => {
                   gap: 8,
                 }}
               >
-                <E1PriFieldLabel
+                <PcmTrunkGroupFieldLabel
                   tooltipKey="pstnIds"
                   tooltips={PCM_TRUNK_GROUP_FIELD_TOOLTIPS}
                   style={{
@@ -1669,7 +1768,7 @@ const PcmTrunkGroupPage = () => {
                   }}
                 >
                   PCM Trunks:
-                </E1PriFieldLabel>
+                </PcmTrunkGroupFieldLabel>
                 <div
                   style={{
                     display: "flex",
@@ -1876,17 +1975,21 @@ const PcmTrunkGroupPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={isSaving}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={{ minWidth: 110, height: 34, fontSize: 13 }}
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              PCM_TRUNK_GROUP_SAVE_LABEL
+            )}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={isSaving}
-            style={pcmTrunkGroupModalCancelBtnStyle}
+            style={{ ...pcmTrunkGroupModalCancelBtnStyle, height: 34 }}
           >
-            Close
+            {PCM_TRUNK_GROUP_CLOSE_LABEL}
           </Btn>
         </DialogActions>
       </Dialog>

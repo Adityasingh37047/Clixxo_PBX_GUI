@@ -26,7 +26,15 @@ export const PCM_RECEPTION_TIMEOUT_TABLE_COLUMNS = [
   { key: 'modify', label: 'Modify' },
 ];
 
-/** Number-Receiving Timeout (PcmReceptionTimeoutPage) — local React state only */
+export const PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_SECTION = "PCM";
+export const PCM_RECEPTION_TIMEOUT_PAGE_TITLE = "Number-Receiving Timeout Info";
+export const PCM_RECEPTION_TIMEOUT_MODAL_TITLE_EDIT =
+  "Edit Reception Timeout";
+export const PCM_RECEPTION_TIMEOUT_SAVE_LABEL = "Save";
+export const PCM_RECEPTION_TIMEOUT_CLOSE_LABEL = "Close";
+
+/** Reception Timeout (PcmReceptionTimeoutPage) — local React state only */
 export const PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS = {
   interDigitTimeout:
     "Inter digit timeout in seconds. Stored in local table state. Default: 4.",

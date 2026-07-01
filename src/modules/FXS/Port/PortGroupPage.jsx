@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -29,6 +28,32 @@ import {
   PORT_GROUP_SAVE_LABEL,
   PORT_GROUP_CLOSE_LABEL,
 } from "../../../constants/PortGroupPageConstants";
+
+const PORT_GROUP_ADD_NEW_DIALOG_MARGIN = 24;
+const PORT_GROUP_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const PORT_GROUP_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const PORT_GROUP_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: PORT_GROUP_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${PORT_GROUP_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${PORT_GROUP_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 720,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+
 
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -1362,17 +1387,9 @@ const PortGroupPage = () => {
           open={isModalOpen}
           onClose={handleCloseModal}
           maxWidth={false}
-          sx={addNewDialogSx}
+          sx={PORT_GROUP_ADD_NEW_DIALOG_SX}
           PaperProps={{
-            sx: mergeAddNewDialogPaperSx({
-              width: 720,
-              maxWidth: "95vw",
-              p: 0,
-              borderRadius: "8px",
-              overflow: "hidden",
-              boxShadow:
-                "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-            }),
+            sx: PORT_GROUP_ADD_NEW_DIALOG_PAPER_SX,
           }}
           disableRestoreFocus
           disableEnforceFocus

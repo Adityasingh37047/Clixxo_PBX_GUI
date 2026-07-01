@@ -15,7 +15,6 @@ import {
   NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_SAVE_LABEL,
   NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_CLOSE_LABEL,
 } from "../../../constants/E1PriPSTNCallInOriCalleeIDConstants";
-import { addNewDialogSx, mergeAddNewDialogPaperSx } from "../../../utils/addNewDialogSx";
 import {
   Checkbox,
   Dialog,
@@ -35,6 +34,32 @@ import {
   deleteNumberManipulation,
   listPstnGroups,
 } from "../../../api/apiService";
+
+const E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_MARGIN = 24;
+const E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 600,
+  maxWidth: "95vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+
 
 const MANIPULATION_TYPE = "pstn_in_oricalleeid";
 
@@ -1277,17 +1302,9 @@ const PSTNCallInOriCalleeID = () => {
           handleCloseModal();
         }}
         maxWidth={false}
-        sx={addNewDialogSx}
+        sx={E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: mergeAddNewDialogPaperSx({
-            width: 600,
-            maxWidth: "95vw",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-            boxShadow:
-              "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          }),
+          sx: E1_PRI_PSTN_CALL_IN_ORI_CALLEE_ID_ADD_NEW_DIALOG_PAPER_SX,
         }}
         disableRestoreFocus
         disableEnforceFocus
