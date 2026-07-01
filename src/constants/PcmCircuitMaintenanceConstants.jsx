@@ -2,12 +2,39 @@ export const PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT = "E1-PRI";
 export const PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION = "PCM";
 export const PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE = "Circuit Maintenance";
 
-export const PCM_MAINTENANCE_HEADERS = ['PCM No.', 'PCM Status', 'Check'];
-export const PCM_LOOPBACK_HEADERS = ['PCM No.', 'PCM LoopBack Status', 'Check'];
-export const PCM0_HEADERS = ['Channel No.', ...Array.from({length: 32}, (_, i) => i.toString())];
-export const PCM0_STATUS_ROW = ['Status', ...Array.from({length: 32}, (_, i) => (i === 0 || i === 16) ? 'red' : 'gray')];
-export const PCM0_CHECK_ROW = ['Check', ...Array.from({length: 32}, () => false)];
+export const PCM_CIRCUIT_MAINTENANCE_SECTION_MAINTENANCE = "PCM Maintenance";
+export const PCM_CIRCUIT_MAINTENANCE_SECTION_LOOPBACK = "PCM LoopBack Config";
+export const PCM_CIRCUIT_MAINTENANCE_PCM0_TITLE = "PCM 0";
+export const PCM_CIRCUIT_MAINTENANCE_PCM_DEFAULT_NO = "0";
 
-export const PCM_MAINTENANCE_BUTTONS = ['Check All', 'Uncheck All', 'Inverse', 'Block', 'Unblock', 'Physical Connect', 'Physical Disconnect'];
-export const PCM_LOOPBACK_BUTTONS = ['Check All', 'Uncheck All', 'Inverse', 'Local LoopBack', 'Remote LoopBack', 'UnLoopBack'];
-export const PCM0_BUTTONS = ['Check All', 'Uncheck All', 'Inverse', 'Block', 'Unblock'];
+export const PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_NO = "PCM No.";
+export const PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_STATUS = "PCM Status";
+export const PCM_CIRCUIT_MAINTENANCE_LABEL_LOOPBACK_STATUS =
+  "PCM LoopBack Status";
+export const PCM_CIRCUIT_MAINTENANCE_LABEL_CHECK = "Check";
+export const PCM_CIRCUIT_MAINTENANCE_LABEL_CHANNEL_NO = "Channel No.";
+export const PCM_CIRCUIT_MAINTENANCE_LABEL_STATUS = "Status";
+
+export const PCM_CIRCUIT_MAINTENANCE_BTN_CHECK_ALL = "Check All";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_UNCHECK_ALL = "Uncheck All";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_INVERSE = "Inverse";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_BLOCK = "Block";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_UNBLOCK = "Unblock";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_CONNECT = "Physical Connect";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_DISCONNECT =
+  "Physical Disconnect";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_LOCAL_LOOPBACK = "Local LoopBack";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_REMOTE_LOOPBACK = "Remote LoopBack";
+export const PCM_CIRCUIT_MAINTENANCE_BTN_UNLOOPBACK = "UnLoopBack";
+
+export const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CHANNEL = "Channel";
+export const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_STATE = "State";
+export const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_IN_SERVICE = "In Service";
+export const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CALLER = "Caller";
+export const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CALLED = "Called";
+
+export const PCM_CIRCUIT_MAINTENANCE_STATE_UNUSABLE = "Unusable";
+export const PCM_CIRCUIT_MAINTENANCE_STATE_RESERVED = "Reserved";
+export const PCM_CIRCUIT_MAINTENANCE_STATE_IDLE = "Idle";
+export const PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_YES = "Yes";
+export const PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_NO = "No";

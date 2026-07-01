@@ -6,7 +6,6 @@ import {
   NETWORK_SETTINGS_INITIAL_FORM,
 } from "../../../constants/NetworkConstants";
 import { Alert, CircularProgress } from "@mui/material";
-import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 import {
   fetchNetwork,
   resetNetworkSettings,
@@ -14,6 +13,8 @@ import {
   postLinuxCmd,
   servicePing,
 } from "../../../api/apiService";
+
+const NETWORK_MAIN_SECTION_HEADING_LEFT = -20;
 
 const C = {
   pageBg: "#f8fafc",
@@ -324,7 +325,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: PBX_MAIN_SECTION_HEADING_LEFT,
+        left: NETWORK_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,

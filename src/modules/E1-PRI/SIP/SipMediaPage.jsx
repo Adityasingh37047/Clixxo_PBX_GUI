@@ -4,15 +4,34 @@ import {
   SIP_MEDIA_CODEC_FIELD,
   SIP_MEDIA_INITIAL_FORM,
   SIP_MEDIA_FIELD_TOOLTIPS,
+  SIP_MEDIA_PAGE_BREADCRUMB_ROOT,
+  SIP_MEDIA_PAGE_BREADCRUMB_SECTION,
+  SIP_MEDIA_PAGE_TITLE,
+  SIP_MEDIA_CARD_TITLE,
+  SIP_MEDIA_SECTION_RTP_DTMF,
+  SIP_MEDIA_SECTION_JITTER_CODEC,
+  SIP_MEDIA_SECTION_HEADING_LEFT,
+  SIP_MEDIA_SECTION_HEADING_COLOR,
+  SIP_MEDIA_BTN_SAVE,
+  SIP_MEDIA_BTN_SAVING,
+  SIP_MEDIA_BTN_RESET,
+  SIP_MEDIA_LOADING_TEXT,
+  SIP_MEDIA_MSG_SETTINGS_UPDATED,
+  SIP_MEDIA_MSG_SAVE_FAILED,
+  SIP_MEDIA_MSG_LOAD_FAILED,
+  SIP_MEDIA_MSG_NETWORK_SAVE_FAILED,
+  SIP_MEDIA_MSG_RESET,
 } from "../../../constants/SipMediaConstants";
-import { CircularProgress, Alert, Tooltip } from "@mui/material";
+import { CircularProgress, Alert, Tooltip, useMediaQuery } from "@mui/material";
 import {
   listMediaSettings,
   updateMediaSettings,
 } from "../../../api/apiService";
 
-// ── Page-local field label tooltip UI (matches SipSipPage pattern) ──
-const FIELD_TOOLTIP_PROPS = {
+const SIP_MEDIA_COMPACT_MQ = "(max-width: 768px)";
+const SIP_MEDIA_SCROLL_CLASS = "sip-media-scroll";
+
+const SIP_MEDIA_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -49,13 +68,12 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-// ── Local page UI (matches SipSipPage design language) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -65,6 +83,7 @@ const C = {
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
+  sectionHeading: SIP_MEDIA_SECTION_HEADING_COLOR,
 };
 
 const CARD_RADIUS = 10;
@@ -75,18 +94,32 @@ const sipFormTextStyle = {
   color: C.labelText,
 };
 
-const SipFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
+const SIP_MEDIA_LABEL_COL_WIDTH = 200;
+const SIP_MEDIA_CONTROL_COL_WIDTH = 220;
+const SIP_MEDIA_FIELD_COL_GAP = 8;
+const SIP_MEDIA_FORM_PAD_X = 28;
+
+const SipFieldRow = ({
+  label,
+  tooltipKey,
+  children,
+  labelStyle = {},
+  labelColWidth = SIP_MEDIA_LABEL_COL_WIDTH,
+}) => {
   const tooltip = tooltipKey ? SIP_MEDIA_FIELD_TOOLTIPS[tooltipKey] || "" : "";
   const labelNode = (
     <label
       style={{
         ...sipFormTextStyle,
         fontWeight: 600,
-        flex: "1 1 auto",
-        minWidth: 0,
-        paddingRight: 16,
+        flex: "0 0 auto",
+        width: "100%",
+        maxWidth: "100%",
         textAlign: "left",
         lineHeight: 1.4,
+        whiteSpace: "normal",
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
         cursor: tooltip ? "help" : undefined,
         ...labelStyle,
       }}
@@ -95,21 +128,36 @@ const SipFieldRow = ({ label, tooltipKey, children, labelStyle = {} }) => {
     </label>
   );
 
+  const labelWrapStyle = {
+    flex: `0 0 ${labelColWidth}px`,
+    width: labelColWidth,
+    maxWidth: labelColWidth,
+    minWidth: labelColWidth,
+  };
+
   return (
     <div
-      className="flex flex-row items-center w-full"
-      style={{ minHeight: 34 }}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        width: "100%",
+        minHeight: 36,
+        gap: SIP_MEDIA_FIELD_COL_GAP,
+      }}
     >
-      {tooltip ? (
-        <Tooltip
-          title={formatFieldTooltipTitle(tooltip)}
-          {...FIELD_TOOLTIP_PROPS}
-        >
-          {labelNode}
-        </Tooltip>
-      ) : (
-        labelNode
-      )}
+      <div style={labelWrapStyle}>
+        {tooltip ? (
+          <Tooltip
+            title={formatFieldTooltipTitle(tooltip)}
+            {...SIP_MEDIA_TOOLTIP_PROPS}
+          >
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
       {children}
     </div>
   );
@@ -300,8 +348,9 @@ const nativeFieldInteraction = {
 
 const nativeFieldInputStyle = {
   height: 32,
-  width: "100%",
-  maxWidth: 220,
+  width: SIP_MEDIA_CONTROL_COL_WIDTH,
+  minWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
+  maxWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
   padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
@@ -315,8 +364,9 @@ const nativeFieldInputStyle = {
 };
 
 const nativeFieldSelectStyle = {
-  width: "100%",
-  maxWidth: 220,
+  width: SIP_MEDIA_CONTROL_COL_WIDTH,
+  minWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
+  maxWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
   minHeight: 32,
   height: 32,
   padding: "4px 28px 4px 10px",
@@ -334,15 +384,20 @@ const nativeFieldSelectStyle = {
 };
 
 const MEDIA_COLUMN_SPLIT_INDEX = Math.ceil(SIP_MEDIA_FIELDS.length / 2);
-const MEDIA_LEFT_COLUMN_FIELDS = SIP_MEDIA_FIELDS.slice(0, MEDIA_COLUMN_SPLIT_INDEX);
-const MEDIA_RIGHT_COLUMN_FIELDS = SIP_MEDIA_FIELDS.slice(MEDIA_COLUMN_SPLIT_INDEX);
+const MEDIA_LEFT_COLUMN_FIELDS = SIP_MEDIA_FIELDS.slice(
+  0,
+  MEDIA_COLUMN_SPLIT_INDEX,
+);
+const MEDIA_RIGHT_COLUMN_FIELDS = SIP_MEDIA_FIELDS.slice(
+  MEDIA_COLUMN_SPLIT_INDEX,
+);
 
 const advancedPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -352,7 +407,7 @@ const advancedPageWrapStyle = {
 const advancedPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };
@@ -361,7 +416,7 @@ const advancedCardShellStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  padding: "6px",
+  padding: 0,
   boxSizing: "border-box",
 };
 
@@ -404,128 +459,199 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const SIP_MEDIA_COLUMN_PAD_X = 36;
-
-const dashboardGridStyle = {
+const sipMediaDashboardGridStyle = (isCompact) => ({
   display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  gridTemplateColumns: isCompact
+    ? "1fr"
+    : "minmax(0, 1fr) 1px minmax(0, 1fr)",
   width: "100%",
   alignItems: "stretch",
-};
+  alignContent: "start",
+});
 
-const dashboardHeadersGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 1fr)",
-  width: "100%",
-  alignItems: "stretch",
-  borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
-  boxSizing: "border-box",
-};
-
-const dashboardHeaderCellStyle = {
-  padding: `12px ${SIP_MEDIA_COLUMN_PAD_X}px`,
-  minHeight: 44,
-  display: "flex",
-  alignItems: "center",
-  boxSizing: "border-box",
-};
-
-const dashboardHeaderDividerStyle = {
-  background: C.divider,
-  width: 1,
-  alignSelf: "stretch",
-  flexShrink: 0,
-};
-
-const dashboardColumnStyle = {
+const sipMediaColumnStyle = (isCompact) => ({
   display: "flex",
   flexDirection: "column",
-  gap: 10,
+  gap: 12,
   minWidth: 0,
-  padding: `16px ${SIP_MEDIA_COLUMN_PAD_X}px 24px`,
+  padding: isCompact
+    ? `16px ${SIP_MEDIA_FORM_PAD_X}px 20px`
+    : "16px 36px 20px",
+  boxSizing: "border-box",
   background: C.cardBg,
-};
+});
 
-const dashboardDividerStyle = {
-  background: C.divider,
-  width: 1,
+const sipMediaDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
   alignSelf: "stretch",
-  flexShrink: 0,
+  padding: "14px 0",
+  boxSizing: "border-box",
 };
 
-const dashboardSectionTitleStyle = {
-  fontSize: 14,
-  fontWeight: 600,
+const sipMediaDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
+};
+
+const sipHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: `10px ${SIP_MEDIA_FORM_PAD_X}px`,
+  fontWeight: 700,
+  fontSize: 13,
   color: C.labelText,
-  margin: 0,
-  lineHeight: 1.35,
-  flexShrink: 0,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
 const dashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  gap: 10,
+  gap: 12,
 };
 
-const SipPcmBreadcrumb = ({ current }) => (
+const SipMediaSectionHeading = ({ title, isFirst = false }) => (
+  <div
+    style={{
+      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      position: "relative",
+      width: "100%",
+    }}
+  >
+    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+    <span
+      style={{
+        position: "absolute",
+        top: -10,
+        left: SIP_MEDIA_SECTION_HEADING_LEFT,
+        background: C.cardBg,
+        paddingRight: 8,
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
+      }}
+    >
+      {title}
+    </span>
+  </div>
+);
+
+const sipMediaFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const SipMediaScrollbarStyles = () => (
+  <style>{`
+    .${SIP_MEDIA_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${SIP_MEDIA_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${SIP_MEDIA_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${SIP_MEDIA_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${SIP_MEDIA_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${SIP_MEDIA_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${SIP_MEDIA_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
+const SipMediaBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
       flexShrink: 0,
+      width: "100%",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{SIP_MEDIA_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>SIP</span>
+    <span>{SIP_MEDIA_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {SIP_MEDIA_PAGE_TITLE}
+    </span>
   </div>
 );
 
-const AdvancedPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle} data-native-scroll>
+const AdvancedPageShell = ({ children, isCompact }) => (
+  <div
+    className={SIP_MEDIA_SCROLL_CLASS}
+    style={{
+      ...advancedPageWrapStyle,
+      ...(isCompact ? { padding: 8 } : {}),
+    }}
+    data-native-scroll
+  >
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
 
 const valueColStyle = {
   flex: "1 1 auto",
-  minWidth: 0,
+  minWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-end",
+  paddingTop: 2,
 };
 
 const controlSlotStyle = {
-  width: 220,
-  maxWidth: "100%",
+  width: SIP_MEDIA_CONTROL_COL_WIDTH,
+  minWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
+  maxWidth: SIP_MEDIA_CONTROL_COL_WIDTH,
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "flex-start",
 };
 
-const fieldInputStyle = {
-  ...nativeFieldInputStyle,
-  width: "100%",
-};
-
-const fieldSelectStyle = {
-  ...nativeFieldSelectStyle,
-  width: "100%",
-};
+const fieldInputStyle = { ...nativeFieldInputStyle };
+const fieldSelectStyle = { ...nativeFieldSelectStyle };
 
 const SipMediaPage = () => {
+  const isCompact = useMediaQuery(SIP_MEDIA_COMPACT_MQ);
   const [formData, setFormData] = useState(SIP_MEDIA_INITIAL_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -541,7 +667,6 @@ const SipMediaPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Map UI names to API keys
   const uiToApi = useMemo(
     () => ({
       dtmfTransmitMode: "dtmf_transmit_mode",
@@ -585,7 +710,7 @@ const SipMediaPage = () => {
         setFormData(next);
       } catch (e) {
         console.error("Failed to fetch media settings:", e);
-        showMessage("error", "Failed to load media settings");
+        showMessage("error", SIP_MEDIA_MSG_LOAD_FAILED);
       } finally {
         setLoading(false);
       }
@@ -602,13 +727,13 @@ const SipMediaPage = () => {
       });
       const res = await updateMediaSettings(payload);
       if (res?.response) {
-        showMessage("success", res?.message || "Settings Updated!");
+        showMessage("success", res?.message || SIP_MEDIA_MSG_SETTINGS_UPDATED);
       } else {
-        showMessage("error", res?.message || "Save failed");
+        showMessage("error", res?.message || SIP_MEDIA_MSG_SAVE_FAILED);
       }
     } catch (e) {
       console.error("Failed to save media settings:", e);
-      showMessage("error", e?.message || "Network error while saving");
+      showMessage("error", e?.message || SIP_MEDIA_MSG_NETWORK_SAVE_FAILED);
     } finally {
       setSaving(false);
     }
@@ -616,7 +741,7 @@ const SipMediaPage = () => {
 
   const handleReset = () => {
     setFormData(SIP_MEDIA_INITIAL_FORM);
-    showMessage("info", "Form reset to defaults");
+    showMessage("info", SIP_MEDIA_MSG_RESET);
   };
 
   const isFieldVisible = (field) => {
@@ -631,6 +756,8 @@ const SipMediaPage = () => {
     return true;
   };
 
+  const labelColWidth = isCompact ? 160 : SIP_MEDIA_LABEL_COL_WIDTH;
+
   const renderFormField = (field) => {
     if (!isFieldVisible(field)) return null;
 
@@ -639,6 +766,7 @@ const SipMediaPage = () => {
         key={field.name}
         label={field.label}
         tooltipKey={field.name}
+        labelColWidth={labelColWidth}
         labelStyle={
           field.name === SIP_MEDIA_CODEC_FIELD.name
             ? { whiteSpace: "normal" }
@@ -678,114 +806,122 @@ const SipMediaPage = () => {
   };
 
   return (
-    <AdvancedPageShell>
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
+    <>
+      <SipMediaScrollbarStyles />
+      <AdvancedPageShell isCompact={isCompact}>
+        {message.text && !saving && (
+          <Alert
+            severity={
+              message.type === "error"
+                ? "error"
+                : message.type === "success"
+                  ? "success"
+                  : "info"
+            }
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={sipMediaFixedAlertSx}
+          >
+            {message.text}
+          </Alert>
+        )}
 
-      <SipPcmBreadcrumb current="Media Parameters" />
+        <SipMediaBreadcrumb />
 
-      <div style={advancedCardShellStyle}>
-        <div style={advancedTableContainerStyle}>
-          {loading ? (
-            <div
-              className="flex items-center justify-center w-full"
-              style={{ minHeight: 400, padding: "48px 32px" }}
-            >
-              <div className="text-center">
-                <CircularProgress size={40} sx={{ color: C.accent }} />
-                <div
-                  style={{
-                    marginTop: 12,
-                    fontSize: 13,
-                    color: C.mutedText,
-                    fontWeight: 500,
-                  }}
-                >
-                  Loading media parameters...
-                </div>
-              </div>
+        <div style={advancedCardShellStyle}>
+          <div style={advancedTableContainerStyle}>
+            <div style={sipHeaderStyle}>
+              <span>{SIP_MEDIA_CARD_TITLE}</span>
             </div>
-          ) : (
-            <>
-              <div style={dashboardHeadersGridStyle}>
-                <div style={dashboardHeaderCellStyle}>
-                  <div style={dashboardSectionTitleStyle}>
-                    RTP &amp; DTMF Settings
-                  </div>
-                </div>
-                <div style={dashboardHeaderDividerStyle} aria-hidden="true" />
-                <div style={dashboardHeaderCellStyle}>
-                  <div style={dashboardSectionTitleStyle}>
-                    Jitter &amp; CODEC Settings
-                  </div>
-                </div>
-              </div>
 
-              <div style={dashboardGridStyle}>
-                <div style={dashboardColumnStyle}>
-                  <div style={dashboardFieldsStackStyle}>
-                    {MEDIA_LEFT_COLUMN_FIELDS.map((field) =>
-                      renderFormField(field),
-                    )}
-                  </div>
-                </div>
-
-                <div style={dashboardDividerStyle} aria-hidden="true" />
-
-                <div style={dashboardColumnStyle}>
-                  <div style={dashboardFieldsStackStyle}>
-                    {MEDIA_RIGHT_COLUMN_FIELDS.map((field) =>
-                      renderFormField(field),
-                    )}
-                    {renderFormField(SIP_MEDIA_CODEC_FIELD)}
+            {loading ? (
+              <div
+                className="flex items-center justify-center w-full"
+                style={{ minHeight: 400, padding: "48px 32px" }}
+              >
+                <div className="text-center">
+                  <CircularProgress size={40} sx={{ color: C.accent }} />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontSize: 13,
+                      color: C.mutedText,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {SIP_MEDIA_LOADING_TEXT}
                   </div>
                 </div>
               </div>
-
-              <div style={advancedFormInlineFooterStyle}>
-                <Btn
-                  variant="primary"
-                  onClick={handleSave}
-                  disabled={loading || saving}
-                  style={advancedFormBtnStyle}
+            ) : (
+              <>
+                <div
+                  className={SIP_MEDIA_SCROLL_CLASS}
+                  style={{ boxSizing: "border-box" }}
                 >
-                  {saving ? (
-                    <>
-                      <CircularProgress size={14} color="inherit" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save"
-                  )}
-                </Btn>
-                <Btn
-                  variant="cancel"
-                  onClick={handleReset}
-                  style={advancedFormBtnStyle}
-                >
-                  Reset
-                </Btn>
-              </div>
-            </>
-          )}
+                  <div style={sipMediaDashboardGridStyle(isCompact)}>
+                    <div style={sipMediaColumnStyle(isCompact)}>
+                      <SipMediaSectionHeading
+                        title={SIP_MEDIA_SECTION_RTP_DTMF}
+                        isFirst
+                      />
+                      <div style={dashboardFieldsStackStyle}>
+                        {MEDIA_LEFT_COLUMN_FIELDS.map((field) =>
+                          renderFormField(field),
+                        )}
+                      </div>
+                    </div>
+
+                    {!isCompact && (
+                      <div style={sipMediaDividerCellStyle} aria-hidden="true">
+                        <div style={sipMediaDividerLineStyle} />
+                      </div>
+                    )}
+
+                    <div style={sipMediaColumnStyle(isCompact)}>
+                      <SipMediaSectionHeading
+                        title={SIP_MEDIA_SECTION_JITTER_CODEC}
+                        isFirst
+                      />
+                      <div style={dashboardFieldsStackStyle}>
+                        {MEDIA_RIGHT_COLUMN_FIELDS.map((field) =>
+                          renderFormField(field),
+                        )}
+                        {renderFormField(SIP_MEDIA_CODEC_FIELD)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={advancedFormInlineFooterStyle}>
+                  <Btn
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={loading || saving}
+                    style={advancedFormBtnStyle}
+                  >
+                    {saving ? (
+                      <>
+                        <CircularProgress size={14} color="inherit" />
+                        {SIP_MEDIA_BTN_SAVING}
+                      </>
+                    ) : (
+                      SIP_MEDIA_BTN_SAVE
+                    )}
+                  </Btn>
+                  <Btn
+                    variant="cancel"
+                    onClick={handleReset}
+                    style={advancedFormBtnStyle}
+                  >
+                    {SIP_MEDIA_BTN_RESET}
+                  </Btn>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </AdvancedPageShell>
+      </AdvancedPageShell>
+    </>
   );
 };
 

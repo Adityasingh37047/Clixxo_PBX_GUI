@@ -24,9 +24,9 @@ import {
   VOICEMAIL_SECTIONS,
   VOICEMAIL_TITLE,
 } from "../../../constants/VoicemailConstants";
-import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
 const VOICEMAIL_COMPACT_MQ = "(max-width: 768px)";
+const VOICEMAIL_MAIN_SECTION_HEADING_LEFT = -20;
 
 const C = {
   pageBg: "#f8fafc",
@@ -275,7 +275,7 @@ const VoicemailSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: PBX_MAIN_SECTION_HEADING_LEFT,
+        left: VOICEMAIL_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,

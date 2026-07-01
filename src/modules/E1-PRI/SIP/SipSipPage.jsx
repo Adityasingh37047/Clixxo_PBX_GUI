@@ -1,16 +1,38 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  SIP_SETTINGS_FIELDS,
-  SIP_SETTINGS_NOTE,
-  SIP_SETTINGS_FIELD_TOOLTIPS,
+  SIP_SIP_FIELDS,
+  SIP_SIP_NOTE,
+  SIP_SIP_FIELD_TOOLTIPS,
+  SIP_SIP_BREADCRUMB_ROOT,
+  SIP_SIP_BREADCRUMB_SECTION,
+  SIP_SIP_PAGE_TITLE,
+  SIP_SIP_CARD_TITLE,
+  SIP_SIP_SECTION_NETWORK,
+  SIP_SIP_SECTION_REGISTRATION,
+  SIP_SIP_NOTE_LABEL,
+  SIP_SIP_BTN_SAVE,
+  SIP_SIP_BTN_SAVING,
+  SIP_SIP_BTN_RESET,
+  SIP_SIP_LOADING_TEXT,
+  SIP_SIP_APPLYING_TEXT,
+  SIP_SIP_CHECKBOX_ENABLE,
+  SIP_SIP_RADIO_YES,
+  SIP_SIP_RADIO_NO,
+  SIP_SIP_PLACEHOLDER_CALLED_PREFIX,
+  SIP_SIP_ERR_LOAD_FAILED,
+  SIP_SIP_MSG_SETTINGS_UPDATED,
+  SIP_SIP_ERR_SAVE_FAILED,
+  SIP_SIP_LABEL_EXTERNAL_BOUND,
 } from "../../../constants/SipSipConstants";
 import { Checkbox, Tooltip } from "@mui/material";
 import { listSipSettings, updateSipSettings } from "../../../api/apiService";
 import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
-import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
-// ── Page-local field label tooltip UI (matches FxsVoipMediaPage pattern) ──
-const FIELD_TOOLTIP_PROPS = {
+const SIP_SIP_SECTION_HEADING_LEFT = -20;
+const SIP_SIP_COMPACT_MQ = "(max-width: 768px)";
+const SIP_SIP_SCROLL_CLASS = "sip-sip-scroll";
+
+const SIP_SIP_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -53,7 +75,7 @@ const C = {
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-    "0 0 20px rgba(0, 0, 0, 0.25), 0 0 8px rgba(0, 0, 0, 0.15)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
@@ -74,27 +96,30 @@ const sipFormTextStyle = {
   color: C.labelText,
 };
 
-const SIP_COMPACT_MQ = "(max-width: 768px)";
+const SIP_COMPACT_MQ = SIP_SIP_COMPACT_MQ;
 
 const SipFieldRow = ({
   label,
   tooltipKey,
   children,
   labelStyle = {},
-  isCompact = false,
+  labelColWidth = SIP_SIP_LABEL_COL_WIDTH,
 }) => {
-  const tooltip = tooltipKey ? SIP_SETTINGS_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const tooltip = tooltipKey ? SIP_SIP_FIELD_TOOLTIPS[tooltipKey] || "" : "";
   const labelNode = (
     <label
       style={{
         ...sipFormTextStyle,
         fontWeight: 600,
-        flex: isCompact ? "0 0 auto" : "1 1 auto",
-        minWidth: 0,
-        width: isCompact ? "100%" : undefined,
-        paddingRight: isCompact ? 0 : 16,
+        flex: "0 0 auto",
+        width: "100%",
+        maxWidth: "100%",
+        paddingRight: 0,
         textAlign: "left",
         lineHeight: 1.4,
+        whiteSpace: "normal",
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
         cursor: tooltip ? "help" : undefined,
         ...labelStyle,
       }}
@@ -103,25 +128,36 @@ const SipFieldRow = ({
     </label>
   );
 
+  const labelWrapStyle = {
+    flex: `0 0 ${labelColWidth}px`,
+    width: labelColWidth,
+    maxWidth: labelColWidth,
+    minWidth: labelColWidth,
+  };
+
   return (
     <div
-      className={isCompact ? "flex flex-col w-full" : "flex flex-row items-center w-full"}
       style={{
-        minHeight: isCompact ? undefined : 34,
-        gap: isCompact ? 8 : 0,
-        padding: isCompact ? "6px 0" : undefined,
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        width: "100%",
+        minHeight: 36,
+        gap: SIP_SIP_FIELD_COL_GAP,
       }}
     >
-      {tooltip ? (
-        <Tooltip
-          title={formatFieldTooltipTitle(tooltip)}
-          {...FIELD_TOOLTIP_PROPS}
-        >
-          {labelNode}
-        </Tooltip>
-      ) : (
-        labelNode
-      )}
+      <div style={labelWrapStyle}>
+        {tooltip ? (
+          <Tooltip
+            title={formatFieldTooltipTitle(tooltip)}
+            {...SIP_SIP_TOOLTIP_PROPS}
+          >
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
       {children}
     </div>
   );
@@ -345,12 +381,12 @@ const nativeFieldSelectStyle = {
   cursor: "pointer",
 };
 
-const SIP_SECTION_SPLIT_INDEX = Math.ceil(SIP_SETTINGS_FIELDS.length / 2);
-const SIP_NETWORK_SECTION_FIELDS = SIP_SETTINGS_FIELDS.slice(
+const SIP_SECTION_SPLIT_INDEX = Math.ceil(SIP_SIP_FIELDS.length / 2);
+const SIP_NETWORK_SECTION_FIELDS = SIP_SIP_FIELDS.slice(
   0,
   SIP_SECTION_SPLIT_INDEX,
 );
-const SIP_REGISTRATION_SECTION_FIELDS = SIP_SETTINGS_FIELDS.slice(
+const SIP_REGISTRATION_SECTION_FIELDS = SIP_SIP_FIELDS.slice(
   SIP_SECTION_SPLIT_INDEX,
 );
 
@@ -359,7 +395,7 @@ const advancedPageWrapStyle = {
   minHeight: "calc(100vh - 80px)",
   width: "100%",
   maxWidth: "100%",
-  padding: "8px 28px 16px",
+  padding: 16,
   display: "flex",
   flexDirection: "column",
   alignItems: "stretch",
@@ -369,7 +405,7 @@ const advancedPageWrapStyle = {
 const advancedPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };
@@ -378,7 +414,7 @@ const advancedCardShellStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  padding: "6px",
+  padding: 0,
   boxSizing: "border-box",
 };
 
@@ -421,7 +457,47 @@ const advancedFormBtnStyle = {
   boxSizing: "border-box",
 };
 
-const SIP_FORM_PAD_X = 36;
+const SIP_FORM_PAD_X = 28;
+const SIP_SIP_LABEL_COL_WIDTH = 200;
+const SIP_SIP_CONTROL_COL_WIDTH = 220;
+const SIP_SIP_FIELD_COL_GAP = 8;
+
+const sipSipDashboardGridStyle = (isCompact) => ({
+  display: "grid",
+  gridTemplateColumns: isCompact
+    ? "1fr"
+    : "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+  alignContent: "start",
+});
+
+const sipSipColumnStyle = (isCompact) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  minWidth: 0,
+  padding: isCompact
+    ? `16px ${SIP_FORM_PAD_X}px 20px`
+    : "16px 36px 20px",
+  boxSizing: "border-box",
+  background: C.cardBg,
+});
+
+const sipSipDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "stretch",
+  padding: "14px 0",
+  boxSizing: "border-box",
+};
+
+const sipSipDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
+};
 
 const sipHeaderStyle = {
   width: "100%",
@@ -431,7 +507,7 @@ const sipHeaderStyle = {
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: "7px 14px",
+  padding: `10px ${SIP_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
@@ -443,7 +519,6 @@ const formBodyStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  padding: `0 ${SIP_FORM_PAD_X}px 24px`,
   background: C.cardBg,
   boxSizing: "border-box",
 };
@@ -451,7 +526,7 @@ const formBodyStyle = {
 const SipSipSectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -461,7 +536,7 @@ const SipSipSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: PBX_MAIN_SECTION_HEADING_LEFT,
+        left: SIP_SIP_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -478,72 +553,128 @@ const dashboardFieldsStackStyle = {
   display: "flex",
   flexDirection: "column",
   width: "100%",
-  gap: 10,
+  gap: 12,
 };
 
-const SipPcmBreadcrumb = ({ current }) => (
+const sipSipFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const SipSipScrollbarStyles = () => (
+  <style>{`
+    .${SIP_SIP_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${SIP_SIP_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${SIP_SIP_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${SIP_SIP_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${SIP_SIP_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${SIP_SIP_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${SIP_SIP_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
+const SipSipBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
       gap: 4,
       flexWrap: "wrap",
       flexShrink: 0,
+      width: "100%",
     }}
   >
-    <span>E1-PRI</span>
+    <span>{SIP_SIP_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>SIP</span>
+    <span>{SIP_SIP_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{SIP_SIP_PAGE_TITLE}</span>
   </div>
 );
 
-const AdvancedPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle} data-native-scroll>
+const AdvancedPageShell = ({ children, isCompact }) => (
+  <div
+    className={SIP_SIP_SCROLL_CLASS}
+    style={{
+      ...advancedPageWrapStyle,
+      ...(isCompact ? { padding: 8 } : {}),
+    }}
+    data-native-scroll
+  >
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
 
-const valueColStyle = (isCompact) => ({
-  flex: isCompact ? "0 0 auto" : "1 1 auto",
-  minWidth: 0,
-  width: isCompact ? "100%" : undefined,
+const valueColStyle = {
+  flex: "1 1 auto",
+  minWidth: SIP_SIP_CONTROL_COL_WIDTH,
   display: "flex",
   alignItems: "center",
-  justifyContent: isCompact ? "flex-start" : "flex-end",
-});
+  justifyContent: "flex-end",
+  paddingTop: 2,
+};
 
-const controlSlotStyle = (isCompact) => ({
-  width: isCompact ? "100%" : 220,
-  maxWidth: "100%",
+const controlSlotStyle = {
+  width: SIP_SIP_CONTROL_COL_WIDTH,
+  minWidth: SIP_SIP_CONTROL_COL_WIDTH,
+  maxWidth: SIP_SIP_CONTROL_COL_WIDTH,
   flexShrink: 0,
   display: "flex",
   alignItems: "center",
-  justifyContent: isCompact ? "flex-start" : "flex-end",
-});
+  justifyContent: "flex-start",
+};
 
-const fieldInputStyle = (isCompact) => ({
+const fieldInputStyle = {
   ...nativeFieldInputStyle,
-  width: "100%",
-  maxWidth: isCompact ? "100%" : nativeFieldInputStyle.maxWidth,
-});
+  width: SIP_SIP_CONTROL_COL_WIDTH,
+  minWidth: SIP_SIP_CONTROL_COL_WIDTH,
+  maxWidth: SIP_SIP_CONTROL_COL_WIDTH,
+};
 
-const fieldSelectStyle = (isCompact) => ({
+const fieldSelectStyle = {
   ...nativeFieldSelectStyle,
-  width: "100%",
-  maxWidth: isCompact ? "100%" : nativeFieldSelectStyle.maxWidth,
-});
+  width: SIP_SIP_CONTROL_COL_WIDTH,
+  minWidth: SIP_SIP_CONTROL_COL_WIDTH,
+  maxWidth: SIP_SIP_CONTROL_COL_WIDTH,
+};
 
 const checkboxSx = {
   padding: "2px",
-  color: OUTLINED_BORDER,
-  "&.Mui-checked": { color: OUTLINED_FOCUS },
-  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const nativeRadioStyle = {
@@ -555,7 +686,7 @@ const nativeRadioStyle = {
 
 const getInitialState = () => {
   const state = {};
-  SIP_SETTINGS_FIELDS.forEach((f) => {
+  SIP_SIP_FIELDS.forEach((f) => {
     if (f.type === "select") {
       if (f.key === "sipWan") {
         state[f.key] = "1";
@@ -665,7 +796,7 @@ const SipSipPage = () => {
         Object.entries(settings).forEach(([apiKey, value]) => {
           const uiKey = apiToUiKeyMap[apiKey];
           if (!uiKey) return;
-          const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === uiKey);
+          const fieldDef = SIP_SIP_FIELDS.find((f) => f.key === uiKey);
           if (!fieldDef) return;
           if (fieldDef.type === "checkbox") {
             next[uiKey] = value === "1";
@@ -680,7 +811,7 @@ const SipSipPage = () => {
         setForm(next);
       } catch (e) {
         console.error("Failed to fetch SIP settings:", e);
-        showMessage("error", "Failed to load SIP settings. Please try again.");
+        showMessage("error", SIP_SIP_ERR_LOAD_FAILED);
       } finally {
         setLoading(false);
       }
@@ -689,7 +820,7 @@ const SipSipPage = () => {
   }, [apiToUiKeyMap]);
 
   const handleChange = (key, value) => {
-    const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === key);
+    const fieldDef = SIP_SIP_FIELDS.find((f) => f.key === key);
     if (fieldDef && fieldDef.validation === "integer") {
       if (value === "" || /^\d+$/.test(value)) {
         setForm((prev) => ({ ...prev, [key]: value }));
@@ -708,7 +839,7 @@ const SipSipPage = () => {
       setSaving(true);
       const settingsPayload = { id: 1 };
       Object.entries(uiToApiKeyMap).forEach(([uiKey, apiKey]) => {
-        const fieldDef = SIP_SETTINGS_FIELDS.find((f) => f.key === uiKey);
+        const fieldDef = SIP_SIP_FIELDS.find((f) => f.key === uiKey);
         if (!fieldDef) return;
         const uiVal = form[uiKey];
         if (fieldDef.type === "checkbox") {
@@ -718,10 +849,10 @@ const SipSipPage = () => {
         }
       });
       const res = await updateSipSettings(settingsPayload);
-      alert(res?.message || "Settings Updated");
+      showMessage("success", res?.message || SIP_SIP_MSG_SETTINGS_UPDATED);
     } catch (e) {
       console.error("Failed to save SIP settings:", e);
-      alert(e?.message || "Failed to save settings");
+      showMessage("error", e?.message || SIP_SIP_ERR_SAVE_FAILED);
     } finally {
       setSaving(false);
     }
@@ -753,26 +884,28 @@ const SipSipPage = () => {
 
     const fieldLabel =
       field.key === "externalBound"
-        ? "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk"
+        ? SIP_SIP_LABEL_EXTERNAL_BOUND
         : field.label;
+
+    const labelColWidth = isCompact ? 160 : SIP_SIP_LABEL_COL_WIDTH;
 
     return (
       <SipFieldRow
         key={field.key}
         label={fieldLabel}
         tooltipKey={field.key}
-        isCompact={isCompact}
+        labelColWidth={labelColWidth}
         labelStyle={
           field.key === "externalBound" ? { whiteSpace: "normal" } : {}
         }
       >
-        <div style={valueColStyle(isCompact)}>
-          <div style={controlSlotStyle(isCompact)}>
+        <div style={valueColStyle}>
+          <div style={controlSlotStyle}>
             {field.type === "text" && (
               <input
                 type={field.key === "calledPrefix" ? "text" : "number"}
                 value={form[field.key]}
-                style={fieldInputStyle(isCompact)}
+                style={fieldInputStyle}
                 {...nativeFieldInteraction}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -788,7 +921,9 @@ const SipSipPage = () => {
                   }
                 }}
                 placeholder={
-                  field.key === "calledPrefix" ? "e.g., 123:456:789" : ""
+                  field.key === "calledPrefix"
+                    ? SIP_SIP_PLACEHOLDER_CALLED_PREFIX
+                    : ""
                 }
               />
             )}
@@ -797,7 +932,7 @@ const SipSipPage = () => {
               <select
                 value={form[field.key]}
                 onChange={(e) => handleChange(field.key, e.target.value)}
-                style={fieldSelectStyle(isCompact)}
+                style={fieldSelectStyle}
                 {...nativeFieldInteraction}
               >
                 {field.options.map((opt) => (
@@ -815,8 +950,8 @@ const SipSipPage = () => {
                   alignItems: "center",
                   minHeight: 32,
                   gap: 8,
-                  width: "100%",
-                  justifyContent: isCompact ? "flex-start" : "flex-end",
+                  width: SIP_SIP_CONTROL_COL_WIDTH,
+                  justifyContent: "flex-start",
                 }}
               >
                 <Checkbox
@@ -831,7 +966,7 @@ const SipSipPage = () => {
                   )
                 ) : (
                   <>
-                    <span style={sipFormTextStyle}>Enable</span>
+                    <span style={sipFormTextStyle}>{SIP_SIP_CHECKBOX_ENABLE}</span>
                     {field.labelAfter && (
                       <span style={sipFormTextStyle}>{field.labelAfter}</span>
                     )}
@@ -847,8 +982,8 @@ const SipSipPage = () => {
                   alignItems: "center",
                   minHeight: 32,
                   gap: 16,
-                  width: "100%",
-                  justifyContent: isCompact ? "flex-start" : "flex-end",
+                  width: SIP_SIP_CONTROL_COL_WIDTH,
+                  justifyContent: "flex-start",
                 }}
               >
                 <label
@@ -868,7 +1003,7 @@ const SipSipPage = () => {
                     onChange={() => handleChange(field.key, "Yes")}
                     style={nativeRadioStyle}
                   />
-                  Yes
+                  {SIP_SIP_RADIO_YES}
                 </label>
                 <label
                   style={{
@@ -887,7 +1022,7 @@ const SipSipPage = () => {
                     onChange={() => handleChange(field.key, "No")}
                     style={nativeRadioStyle}
                   />
-                  No
+                  {SIP_SIP_RADIO_NO}
                 </label>
               </div>
             )}
@@ -898,7 +1033,9 @@ const SipSipPage = () => {
   };
 
   return (
-    <AdvancedPageShell>
+    <>
+      <SipSipScrollbarStyles />
+      <AdvancedPageShell isCompact={isCompact}>
       {message.text && !saving && (
         <Alert
           severity={
@@ -909,15 +1046,7 @@ const SipSipPage = () => {
                 : "info"
           }
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-            fontWeight: 500,
-          }}
+          sx={sipSipFixedAlertSx}
         >
           {message.text}
         </Alert>
@@ -943,22 +1072,24 @@ const SipSipPage = () => {
                 color: C.strongText,
               }}
             >
-              Applying Settings...
+              {SIP_SIP_APPLYING_TEXT}
             </div>
           </div>
         </div>
       )}
 
-     
-      <SipPcmBreadcrumb current="SIP Settings" />
+      <SipSipBreadcrumb />
 
       <div style={advancedCardShellStyle}>
         <div style={advancedTableContainerStyle}>
           <div style={sipHeaderStyle}>
-            <span>SIP Settings</span>
+            <span>{SIP_SIP_CARD_TITLE}</span>
           </div>
 
-          <div style={{ padding: "12px 0 0", boxSizing: "border-box" }}>
+          <div
+            className={SIP_SIP_SCROLL_CLASS}
+            style={{ boxSizing: "border-box" }}
+          >
             {loading ? (
               <div
                 className="flex items-center justify-center w-full"
@@ -974,55 +1105,74 @@ const SipSipPage = () => {
                       fontWeight: 500,
                     }}
                   >
-                    Loading SIP settings...
+                    {SIP_SIP_LOADING_TEXT}
                   </div>
                 </div>
               </div>
             ) : (
               <div style={formBodyStyle}>
-                <SipSipSectionHeading
-                  title="Network & Signaling"
-                  isFirst
-                />
-                <div style={dashboardFieldsStackStyle}>
-                  {SIP_NETWORK_SECTION_FIELDS.map((field) =>
-                    renderFormField(field),
-                  )}
-                </div>
-
-                <SipSipSectionHeading title="Registration & Timers" />
-                <div style={dashboardFieldsStackStyle}>
-                  {SIP_REGISTRATION_SECTION_FIELDS.map((field) =>
-                    renderFormField(field),
-                  )}
-                </div>
-
-                {SIP_SETTINGS_NOTE && (
-                  <div style={{ marginTop: 16 }}>
-                    <div
-                      style={{
-                        ...sipFormTextStyle,
-                        fontWeight: 700,
-                        marginBottom: 8,
-                      }}
-                    >
-                      Note:
+                <div style={sipSipDashboardGridStyle(isCompact)}>
+                  <div style={sipSipColumnStyle(isCompact)}>
+                    <SipSipSectionHeading
+                      title={SIP_SIP_SECTION_NETWORK}
+                      isFirst
+                    />
+                    <div style={dashboardFieldsStackStyle}>
+                      {SIP_NETWORK_SECTION_FIELDS.map((field) =>
+                        renderFormField(field),
+                      )}
                     </div>
-                    <p
-                      style={{
-                        margin: 0,
-                        ...sipFormTextStyle,
-                        lineHeight: 1.5,
-                        whiteSpace: "normal",
-                        overflowWrap: "break-word",
-                        wordBreak: "break-word",
-                        textAlign: "left",
-                      }}
-                    >
-                      {SIP_SETTINGS_NOTE.replace(/^Note:\s*/i, "")}
-                    </p>
                   </div>
-                )}
+
+                  {!isCompact && (
+                    <div style={sipSipDividerCellStyle} aria-hidden="true">
+                      <div style={sipSipDividerLineStyle} />
+                    </div>
+                  )}
+
+                  <div style={sipSipColumnStyle(isCompact)}>
+                    <SipSipSectionHeading
+                      title={SIP_SIP_SECTION_REGISTRATION}
+                      isFirst
+                    />
+                    <div style={dashboardFieldsStackStyle}>
+                      {SIP_REGISTRATION_SECTION_FIELDS.map((field) =>
+                        renderFormField(field),
+                      )}
+                    </div>
+
+                    {SIP_SIP_NOTE && (
+                      <div style={{ marginTop: 12 }}>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: C.strongText,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {SIP_SIP_NOTE_LABEL}
+                        </div>
+                        <div style={{ width: "100%", boxSizing: "border-box" }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: C.mutedText,
+                              fontSize: 11,
+                              lineHeight: 1.5,
+                              whiteSpace: "normal",
+                              overflowWrap: "break-word",
+                              wordBreak: "break-word",
+                              textAlign: "left",
+                            }}
+                          >
+                            {SIP_SIP_NOTE.replace(/^Note:\s*/i, "")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1038,10 +1188,10 @@ const SipSipPage = () => {
                 {saving ? (
                   <>
                     <CircularProgress size={14} color="inherit" />
-                    Saving...
+                    {SIP_SIP_BTN_SAVING}
                   </>
                 ) : (
-                  "Save"
+                  SIP_SIP_BTN_SAVE
                 )}
               </Btn>
               <Btn
@@ -1049,13 +1199,14 @@ const SipSipPage = () => {
                 onClick={handleReset}
                 style={advancedFormBtnStyle}
               >
-                Reset
+                {SIP_SIP_BTN_RESET}
               </Btn>
             </div>
           )}
         </div>
       </div>
     </AdvancedPageShell>
+    </>
   );
 };
 export default SipSipPage;

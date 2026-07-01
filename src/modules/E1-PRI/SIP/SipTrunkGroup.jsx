@@ -1,9 +1,48 @@
 import React, { useState, useEffect } from "react";
 import {
-  SIP_TRUNK_GROUP_FIELDS,
   SIP_TRUNK_GROUP_INITIAL_FORM,
   SIP_TRUNK_GROUP_TABLE_COLUMNS,
   SIP_TRUNK_GROUP_FIELD_TOOLTIPS,
+  SIP_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT,
+  SIP_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION,
+  SIP_TRUNK_GROUP_PAGE_TITLE,
+  SIP_TRUNK_GROUP_BTN_INVERSE,
+  SIP_TRUNK_GROUP_BTN_DELETE,
+  SIP_TRUNK_GROUP_BTN_CLEAR_ALL,
+  SIP_TRUNK_GROUP_BTN_ADD_NEW,
+  SIP_TRUNK_GROUP_BTN_PREV,
+  SIP_TRUNK_GROUP_BTN_NEXT,
+  SIP_TRUNK_GROUP_BTN_SAVE,
+  SIP_TRUNK_GROUP_BTN_SAVING,
+  SIP_TRUNK_GROUP_BTN_CLOSE,
+  SIP_TRUNK_GROUP_MODAL_ADD_TITLE,
+  SIP_TRUNK_GROUP_MODAL_EDIT_TITLE,
+  SIP_TRUNK_GROUP_LABEL_SIP_TRUNK_ID,
+  SIP_TRUNK_GROUP_LABEL_GROUP_ID,
+  SIP_TRUNK_GROUP_PLACEHOLDER_SELECT_TRUNK,
+  SIP_TRUNK_GROUP_PLACEHOLDER_NO_OPTIONS,
+  SIP_TRUNK_GROUP_PLACEHOLDER_GROUP_ID,
+  SIP_TRUNK_GROUP_EMPTY_MESSAGE,
+  SIP_TRUNK_GROUP_RECORD_LABEL,
+  SIP_TRUNK_GROUP_SELECTED_SUFFIX,
+  SIP_TRUNK_GROUP_ERR_REQUIRED_FIELDS,
+  SIP_TRUNK_GROUP_ERR_GROUP_ID_REQUIRED,
+  SIP_TRUNK_GROUP_ERR_DUPLICATE_GROUP_ID,
+  SIP_TRUNK_GROUP_ERR_SAVE_FAILED,
+  SIP_TRUNK_GROUP_ERR_NETWORK,
+  SIP_TRUNK_GROUP_ERR_SELECT_TO_DELETE,
+  SIP_TRUNK_GROUP_ERR_DELETE_FAILED,
+  SIP_TRUNK_GROUP_ERR_IN_USE,
+  SIP_TRUNK_GROUP_MSG_UPDATED,
+  SIP_TRUNK_GROUP_MSG_SAVED,
+  SIP_TRUNK_GROUP_MSG_DELETED_ONE,
+  SIP_TRUNK_GROUP_MSG_DELETED_MANY,
+  SIP_TRUNK_GROUP_MSG_DELETED_ALL,
+  SIP_TRUNK_GROUP_CONFIRM_DELETE_SELECTED,
+  SIP_TRUNK_GROUP_CONFIRM_CLEAR_ALL,
+  SIP_TRUNK_GROUP_CONFIRM_DELETE_ONE,
+  SIP_TRUNK_GROUP_PAGINATION_SHOWING,
+  SIP_TRUNK_GROUP_PAGINATION_PAGE_OF,
 } from "../../../constants/SipTrunkGroupConstants";
 import {
   addGroup,
@@ -32,7 +71,9 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
-const FIELD_TOOLTIP_PROPS = {
+const SIP_TRUNK_GROUP_SCROLL_CLASS = "sip-trunk-group-scroll";
+
+const SIP_TRUNK_GROUP_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -67,7 +108,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const SipTrunkGroupFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -84,7 +125,7 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
   if (!tooltip) return labelNode;
   return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...SIP_TRUNK_GROUP_TOOLTIP_PROPS}>
       {labelNode}
     </Tooltip>
   );
@@ -384,7 +425,7 @@ const sipTrunkGroupPageInnerStyle = {
   margin: "0 auto",
 };
 
-const SipTrunkGroupBreadcrumb = ({ current, style }) => (
+const SipTrunkGroupBreadcrumb = ({ style }) => (
   <div
     style={{
       fontSize: 12,
@@ -398,12 +439,50 @@ const SipTrunkGroupBreadcrumb = ({ current, style }) => (
       ...style,
     }}
   >
-    <span>E1-PRI</span>
+    <span>{SIP_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>SIP</span>
+    <span>{SIP_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {SIP_TRUNK_GROUP_PAGE_TITLE}
+    </span>
   </div>
+);
+
+const SipTrunkGroupScrollbarStyles = () => (
+  <style>{`
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${SIP_TRUNK_GROUP_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
 );
 
 const SipTrunkGroupTableListLoading = () => (
@@ -534,13 +613,12 @@ const SipTrunkGroupPagination = ({
   totalPages,
   recordCount,
   onPageChange,
-  recordLabel = "record",
+  recordLabel = SIP_TRUNK_GROUP_RECORD_LABEL,
   style,
 }) => (
   <div style={{ ...sipTrunkGroupPaginationStyle, ...style }}>
     <span style={{ fontSize: 11, color: C.mutedText }}>
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
+      {SIP_TRUNK_GROUP_PAGINATION_SHOWING(recordCount, recordLabel, page)}
     </span>
     <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
       <Btn
@@ -548,17 +626,17 @@ const SipTrunkGroupPagination = ({
         disabled={page <= 1}
         variant="outline"
       >
-        ← Prev
+        {SIP_TRUNK_GROUP_BTN_PREV}
       </Btn>
       <span style={sipTrunkGroupPageBadgeStyle}>
-        Page {page} of {totalPages}
+        {SIP_TRUNK_GROUP_PAGINATION_PAGE_OF(page, totalPages)}
       </span>
       <Btn
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         variant="outline"
       >
-        Next →
+        {SIP_TRUNK_GROUP_BTN_NEXT}
       </Btn>
     </div>
   </div>
@@ -778,7 +856,7 @@ const SipTrunkGroup = () => {
       }
     } catch (error) {
       console.error("Error fetching groups:", error);
-      showMessage("error", "Network error. Please check your connection.");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_NETWORK);
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
       setIsInitialLoad(false);
@@ -787,12 +865,12 @@ const SipTrunkGroup = () => {
 
   const handleSave = async () => {
     if (!formData.sip_trunk_id || !formData.group_id) {
-      showMessage("error", "Please fill in all required fields");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_REQUIRED_FIELDS);
       return;
     }
     const desiredGroupId = String(formData.group_id ?? "").trim();
     if (desiredGroupId === "") {
-      showMessage("error", "Group ID is required.");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_GROUP_ID_REQUIRED);
       return;
     }
 
@@ -821,7 +899,7 @@ const SipTrunkGroup = () => {
       if (isDuplicate) {
         showMessage(
           "error",
-          `Group ID "${desiredGroupId}" already exists. Please choose a different Group ID.`,
+          SIP_TRUNK_GROUP_ERR_DUPLICATE_GROUP_ID(desiredGroupId),
         );
         return;
       }
@@ -844,8 +922,8 @@ const SipTrunkGroup = () => {
           "success",
           response.message ||
             (editingRecordId != null
-              ? "Updated successfully"
-              : "Saved successfully"),
+              ? SIP_TRUNK_GROUP_MSG_UPDATED
+              : SIP_TRUNK_GROUP_MSG_SAVED),
         );
         setShowModal(false);
         setFormData(SIP_TRUNK_GROUP_INITIAL_FORM);
@@ -853,14 +931,14 @@ const SipTrunkGroup = () => {
         setEditingRecordId(null);
         await fetchGroups();
       } else {
-        showMessage("error", response.message || "Save failed");
+        showMessage("error", response.message || SIP_TRUNK_GROUP_ERR_SAVE_FAILED);
       }
     } catch (error) {
       console.error("Error saving group:", error);
       const apiMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Network error. Please check your connection.";
+        SIP_TRUNK_GROUP_ERR_NETWORK;
       showMessage("error", apiMessage);
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
@@ -891,10 +969,10 @@ const SipTrunkGroup = () => {
     );
   const handleDelete = async () => {
     if (selected.length === 0) {
-      showMessage("error", "Please select items to delete");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_SELECT_TO_DELETE);
       return;
     }
-    if (!window.confirm("Are you sure you want to delete the selected groups?"))
+    if (!window.confirm(SIP_TRUNK_GROUP_CONFIRM_DELETE_SELECTED))
       return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
@@ -909,13 +987,16 @@ const SipTrunkGroup = () => {
         if (reference.inUse) {
           showMessage(
             "error",
-            `SIP Trunk Group "${resolveGroupIdValue(group)}" cannot be deleted because it is used by ${reference.reason}. Remove or update that rule first.`,
+            SIP_TRUNK_GROUP_ERR_IN_USE(
+              resolveGroupIdValue(group),
+              reference.reason,
+            ),
           );
           continue;
         }
         const response = await deleteGroup(group.id);
         if (response?.response === false) {
-          showMessage("error", response.message || "Failed to delete group.");
+          showMessage("error", response.message || SIP_TRUNK_GROUP_ERR_DELETE_FAILED);
           continue;
         }
         deletedCount += 1;
@@ -927,20 +1008,20 @@ const SipTrunkGroup = () => {
         showMessage(
           "success",
           deletedCount === 1
-            ? "SIP trunk group deleted successfully."
-            : `${deletedCount} SIP trunk group(s) deleted successfully.`,
+            ? SIP_TRUNK_GROUP_MSG_DELETED_ONE
+            : SIP_TRUNK_GROUP_MSG_DELETED_MANY(deletedCount),
         );
       }
     } catch (error) {
       console.error("Error deleting groups:", error);
-      showMessage("error", "Network error. Please check your connection.");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_NETWORK);
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
 
   const handleClearAll = async () => {
-    if (!window.confirm("Are you sure you want to delete all groups?")) return;
+    if (!window.confirm(SIP_TRUNK_GROUP_CONFIRM_CLEAR_ALL)) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
       let remainingGroups = [...groups];
@@ -951,13 +1032,16 @@ const SipTrunkGroup = () => {
         if (reference.inUse) {
           showMessage(
             "error",
-            `SIP Trunk Group "${resolveGroupIdValue(group)}" cannot be deleted because it is used by ${reference.reason}. Remove or update that rule first.`,
+            SIP_TRUNK_GROUP_ERR_IN_USE(
+              resolveGroupIdValue(group),
+              reference.reason,
+            ),
           );
           continue;
         }
         const response = await deleteGroup(group.id);
         if (response?.response === false) {
-          showMessage("error", response.message || "Failed to delete group.");
+          showMessage("error", response.message || SIP_TRUNK_GROUP_ERR_DELETE_FAILED);
           continue;
         }
         deletedCount += 1;
@@ -970,13 +1054,13 @@ const SipTrunkGroup = () => {
         showMessage(
           "success",
           deletedCount === groups.length
-            ? "All SIP trunk groups deleted successfully."
-            : `${deletedCount} SIP trunk group(s) deleted successfully.`,
+            ? SIP_TRUNK_GROUP_MSG_DELETED_ALL
+            : SIP_TRUNK_GROUP_MSG_DELETED_MANY(deletedCount),
         );
       }
     } catch (error) {
       console.error("Error clearing all groups:", error);
-      showMessage("error", "Network error. Please check your connection.");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_NETWORK);
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -991,7 +1075,7 @@ const SipTrunkGroup = () => {
     const group = groups[idx];
     if (
       !window.confirm(
-        `Are you sure you want to delete group "${group.group_id}"?`,
+        SIP_TRUNK_GROUP_CONFIRM_DELETE_ONE(group.group_id),
       )
     )
       return;
@@ -1000,7 +1084,10 @@ const SipTrunkGroup = () => {
       if (reference.inUse) {
         showMessage(
           "error",
-          `SIP Trunk Group "${resolveGroupIdValue(group)}" cannot be deleted because it is used by ${reference.reason}. Remove or update that rule first.`,
+          SIP_TRUNK_GROUP_ERR_IN_USE(
+            resolveGroupIdValue(group),
+            reference.reason,
+          ),
         );
         return;
       }
@@ -1009,7 +1096,7 @@ const SipTrunkGroup = () => {
       if (editIndex === idx) handleAddNew();
     } catch (error) {
       console.error("Error deleting group:", error);
-      showMessage("error", "Network error. Please check your connection.");
+      showMessage("error", SIP_TRUNK_GROUP_ERR_NETWORK);
     }
   };
 
@@ -1079,7 +1166,13 @@ const SipTrunkGroup = () => {
   };
 
   return (
-    <div style={sipTrunkGroupPageWrapStyle}>
+    <>
+      <SipTrunkGroupScrollbarStyles />
+      <div
+        className={SIP_TRUNK_GROUP_SCROLL_CLASS}
+        style={sipTrunkGroupPageWrapStyle}
+        data-native-scroll
+      >
       {message.text && (
         <Alert
           severity={
@@ -1097,7 +1190,7 @@ const SipTrunkGroup = () => {
       )}
 
       <div style={sipTrunkGroupPageInnerStyle}>
-        <SipTrunkGroupBreadcrumb current="SIP Trunk Group" />
+        <SipTrunkGroupBreadcrumb />
 
         <div style={sipTrunkGroupCardStyle}>
           <div style={sipTrunkGroupToolbarStyle}>
@@ -1112,7 +1205,7 @@ const SipTrunkGroup = () => {
             >
               {selected.length > 0 && (
                 <span style={sipTrunkGroupSelectedBadgeStyle}>
-                  {selected.length} selected
+                  {selected.length} {SIP_TRUNK_GROUP_SELECTED_SUFFIX}
                 </span>
               )}
             </div>
@@ -1126,11 +1219,11 @@ const SipTrunkGroup = () => {
             >
               <Btn
                 onClick={handleInverse}
-                disabled={loading.delete}
+                disabled={loading.delete || groups.length === 0}
                 variant="cancel"
                 style={sipTrunkGroupCancelBtnStyle}
               >
-                Inverse
+                {SIP_TRUNK_GROUP_BTN_INVERSE}
               </Btn>
               <Btn
                 onClick={handleDelete}
@@ -1142,15 +1235,15 @@ const SipTrunkGroup = () => {
                   <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {SIP_TRUNK_GROUP_BTN_DELETE}
               </Btn>
               <Btn
                 onClick={handleClearAll}
-                disabled={loading.delete}
+                disabled={loading.delete || groups.length === 0}
                 variant="cancel"
                 style={sipTrunkGroupCancelBtnStyle}
               >
-                Clear All
+                {SIP_TRUNK_GROUP_BTN_CLEAR_ALL}
               </Btn>
               <Btn
                 onClick={handleAddNew}
@@ -1158,7 +1251,7 @@ const SipTrunkGroup = () => {
                 variant="primary"
                 style={sipTrunkGroupPrimaryBtnStyle}
               >
-                + Add New
+                {SIP_TRUNK_GROUP_BTN_ADD_NEW}
               </Btn>
             </div>
           </div>
@@ -1167,12 +1260,14 @@ const SipTrunkGroup = () => {
             <SipTrunkGroupTableListLoading />
           ) : groups.length === 0 ? (
             <SipTrunkGroupTableListEmptyState
-              message="No SIP trunk groups found."
+              message={SIP_TRUNK_GROUP_EMPTY_MESSAGE}
               onAddNew={handleAddNew}
+              buttonLabel={SIP_TRUNK_GROUP_BTN_ADD_NEW}
             />
           ) : (
             <>
               <div
+                className={SIP_TRUNK_GROUP_SCROLL_CLASS}
                 style={{
                   overflowX: "auto",
                   overflowY: "auto",
@@ -1304,7 +1399,7 @@ const SipTrunkGroup = () => {
                 page={page}
                 totalPages={totalPages}
                 recordCount={pagedGroups.length}
-                recordLabel="group"
+                recordLabel={SIP_TRUNK_GROUP_RECORD_LABEL}
                 onPageChange={(nextPage) =>
                   setPage(Math.min(totalPages, Math.max(1, nextPage)))
                 }
@@ -1345,8 +1440,8 @@ const SipTrunkGroup = () => {
           }}
         >
           {editingRecordId != null
-            ? "Edit SIP Trunk Group"
-            : "Add SIP Trunk Group"}
+            ? SIP_TRUNK_GROUP_MODAL_EDIT_TITLE
+            : SIP_TRUNK_GROUP_MODAL_ADD_TITLE}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
@@ -1369,7 +1464,7 @@ const SipTrunkGroup = () => {
                   gap: 12,
                 }}
               >
-                <E1PriFieldLabel
+                <SipTrunkGroupFieldLabel
                   tooltipKey="sip_trunk_id"
                   tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
                   style={{
@@ -1379,8 +1474,8 @@ const SipTrunkGroup = () => {
                     display: "inline-block",
                   }}
                 >
-                  SIP Trunk ID:
-                </E1PriFieldLabel>
+                  {SIP_TRUNK_GROUP_LABEL_SIP_TRUNK_ID}
+                </SipTrunkGroupFieldLabel>
 
                 <div style={{ flex: 1 }}>
                   <Select
@@ -1394,12 +1489,12 @@ const SipTrunkGroup = () => {
                     sx={sipTrunkGroupModalSelectSx}
                   >
                     <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                      Select SIP Trunk ID
+                      {SIP_TRUNK_GROUP_PLACEHOLDER_SELECT_TRUNK}
                     </MenuItem>
 
                     {trunkIds.length === 0 ? (
                       <MenuItem value="" disabled sx={{ fontSize: 13 }}>
-                        No options
+                        {SIP_TRUNK_GROUP_PLACEHOLDER_NO_OPTIONS}
                       </MenuItem>
                     ) : (
                       trunkIds.map((opt) => (
@@ -1423,7 +1518,7 @@ const SipTrunkGroup = () => {
                   gap: 12,
                 }}
               >
-                <E1PriFieldLabel
+                <SipTrunkGroupFieldLabel
                   tooltipKey="group_id"
                   tooltips={SIP_TRUNK_GROUP_FIELD_TOOLTIPS}
                   style={{
@@ -1433,8 +1528,8 @@ const SipTrunkGroup = () => {
                     display: "inline-block",
                   }}
                 >
-                  Group ID:
-                </E1PriFieldLabel>
+                  {SIP_TRUNK_GROUP_LABEL_GROUP_ID}
+                </SipTrunkGroupFieldLabel>
 
                 <div style={{ flex: 1 }}>
                   <TextField
@@ -1445,7 +1540,7 @@ const SipTrunkGroup = () => {
                     size="small"
                     fullWidth
                     variant="outlined"
-                    placeholder="Enter Group ID"
+                    placeholder={SIP_TRUNK_GROUP_PLACEHOLDER_GROUP_ID}
                     sx={sipTrunkGroupModalTextFieldSx}
                   />
                 </div>
@@ -1477,7 +1572,7 @@ const SipTrunkGroup = () => {
                 style={{ color: "#fff", marginRight: 8 }}
               />
             ) : null}
-            {loading.save ? "Saving..." : "Save"}
+            {loading.save ? SIP_TRUNK_GROUP_BTN_SAVING : SIP_TRUNK_GROUP_BTN_SAVE}
           </Btn>
           <Btn
             onClick={() => setShowModal(false)}
@@ -1485,11 +1580,12 @@ const SipTrunkGroup = () => {
             disabled={loading.save}
             style={sipTrunkGroupModalCancelBtnStyle}
           >
-            Close
+            {SIP_TRUNK_GROUP_BTN_CLOSE}
           </Btn>
         </DialogActions>
       </Dialog>
     </div>
+    </>
   );
 };
 

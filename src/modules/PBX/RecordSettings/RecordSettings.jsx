@@ -14,9 +14,9 @@ import {
   RECORD_SETTINGS_FORM_FIELDS,
   RECORD_SETTINGS_TITLE,
 } from "../../../constants/RecordSettingsConstants";
-import { PBX_MAIN_SECTION_HEADING_LEFT } from "../../../constants/pbxSectionHeadingConstants";
 
 const RECORD_SETTINGS_COMPACT_MQ = "(max-width: 768px)";
+const RECORD_SETTINGS_MAIN_SECTION_HEADING_LEFT = -20;
 
 const C = {
   pageBg: "#f8fafc",
@@ -428,7 +428,7 @@ const RecordSettingsSectionHeading = ({
         style={{
           position: "absolute",
           top: -10,
-          left: PBX_MAIN_SECTION_HEADING_LEFT,
+          left: RECORD_SETTINGS_MAIN_SECTION_HEADING_LEFT,
           background: C.cardBg,
           paddingRight: 8,
           fontSize: 14,

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -15,20 +14,81 @@ import {
   Select as MuiSelect,
   MenuItem,
   Tooltip,
+  useMediaQuery,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import {
-  CODEC_OPTIONS,
-  SIP_TO_SIP_FIELDS,
-  SIP_TO_SIP_TABLE_COLUMNS,
-  SIP_TO_SIP_INITIAL_FORM,
-  SIP_TO_SIP_FORM_LAYOUT,
-  SIP_TO_SIP_FIELD_TOOLTIPS,
+  SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS,
+  SIP_TO_SIP_ACCOUNT_FIELDS,
+  SIP_TO_SIP_ACCOUNT_TABLE_COLUMNS,
+  SIP_TO_SIP_ACCOUNT_INITIAL_FORM,
+  SIP_TO_SIP_ACCOUNT_FORM_LAYOUT,
+  SIP_TO_SIP_ACCOUNT_FIELD_TOOLTIPS,
+  SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_ROOT,
+  SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_SECTION,
+  SIP_TO_SIP_ACCOUNT_PAGE_TITLE,
+  SIP_TO_SIP_ACCOUNT_BTN_INVERSE,
+  SIP_TO_SIP_ACCOUNT_BTN_DELETE,
+  SIP_TO_SIP_ACCOUNT_BTN_CLEAR_ALL,
+  SIP_TO_SIP_ACCOUNT_BTN_ADD_NEW,
+  SIP_TO_SIP_ACCOUNT_BTN_PREV,
+  SIP_TO_SIP_ACCOUNT_BTN_NEXT,
+  SIP_TO_SIP_ACCOUNT_BTN_SAVE,
+  SIP_TO_SIP_ACCOUNT_BTN_SAVING,
+  SIP_TO_SIP_ACCOUNT_BTN_CLOSE,
+  SIP_TO_SIP_ACCOUNT_MODAL_ADD_TITLE,
+  SIP_TO_SIP_ACCOUNT_MODAL_EDIT_TITLE,
+  SIP_TO_SIP_ACCOUNT_SECTION_GENERAL,
+  SIP_TO_SIP_ACCOUNT_LABEL_ALLOW_CODECS,
+  SIP_TO_SIP_ACCOUNT_COL_MODIFY,
+  SIP_TO_SIP_ACCOUNT_EMPTY_MESSAGE,
+  SIP_TO_SIP_ACCOUNT_RECORD_LABEL,
+  SIP_TO_SIP_ACCOUNT_SELECTED_SUFFIX,
+  SIP_TO_SIP_ACCOUNT_EDIT_TITLE_ACCESS,
+  SIP_TO_SIP_ACCOUNT_CODEC_AVAILABLE,
+  SIP_TO_SIP_ACCOUNT_CODEC_SELECTED,
+  SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_AVAILABLE,
+  SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_SELECTED,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_SELECTED,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_ALL,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_SELECTED,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_ALL,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_TOP,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_UP,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_DOWN,
+  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_BOTTOM,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_PASSWORD,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTEXT,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTACT,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_EXTENSION,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_DOMAIN,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTACT_USER,
+  SIP_TO_SIP_ACCOUNT_PLACEHOLDER_OUTBOUND_PROXY,
+  SIP_TO_SIP_ACCOUNT_CONTACT_PREFIX,
+  SIP_TO_SIP_ACCOUNT_ERR_EXTENSION_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_PASSWORD_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_CONTEXT_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_ALLOW_CODECS_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_CONTACT_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_CONTACT_FORMAT,
+  SIP_TO_SIP_ACCOUNT_ERR_DOMAIN_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_CONTACT_USER_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_OUTBOUND_PROXY_REQUIRED,
+  SIP_TO_SIP_ACCOUNT_ERR_DUPLICATE_EXTENSION,
+  SIP_TO_SIP_ACCOUNT_ERR_LOAD_FAILED,
+  SIP_TO_SIP_ACCOUNT_ERR_SAVE_FAILED,
+  SIP_TO_SIP_ACCOUNT_ERR_DELETE_FAILED,
+  SIP_TO_SIP_ACCOUNT_ERR_CLEAR_ALL_FAILED,
+  SIP_TO_SIP_ACCOUNT_MSG_NO_ACCOUNTS_TO_CLEAR,
+  SIP_TO_SIP_ACCOUNT_CONFIRM_DELETE,
+  SIP_TO_SIP_ACCOUNT_CONFIRM_CLEAR_ALL,
+  SIP_TO_SIP_ACCOUNT_ALERT_DELETE_BLOCKED,
+  SIP_TO_SIP_ACCOUNT_ALERT_CLEAR_BLOCKED,
 } from "../../../constants/SipToSipAccountConstants";
-import { fetchSipAccounts } from "../../../api/apiService";
 import {
+  fetchSipAccounts,
   fetchSipIpTrunkAccounts,
   createSipIpTrunkAccount,
   updateSipIpTrunkAccount,
@@ -40,7 +100,10 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
 
-const FIELD_TOOLTIP_PROPS = {
+const SIP_TO_SIP_ACCOUNT_COMPACT_MQ = "(max-width: 768px)";
+const SIP_TO_SIP_ACCOUNT_SCROLL_CLASS = "sip-to-sip-account-scroll";
+
+const SIP_TO_SIP_ACCOUNT_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -75,7 +138,7 @@ const formatFieldTooltipTitle = (text) => {
   return normalized;
 };
 
-const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
+const SipToSipAccountFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   const tooltip = tooltipKey ? tooltips[tooltipKey] || "" : "";
   const labelNode = (
     <span
@@ -92,7 +155,7 @@ const E1PriFieldLabel = ({ tooltipKey, tooltips, children, style = {} }) => {
   );
   if (!tooltip) return labelNode;
   return (
-    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...FIELD_TOOLTIP_PROPS}>
+    <Tooltip title={formatFieldTooltipTitle(tooltip)} {...SIP_TO_SIP_ACCOUNT_TOOLTIP_PROPS}>
       {labelNode}
     </Tooltip>
   );
@@ -362,63 +425,122 @@ const sipToSipModalSelectSx = {
   },
 };
 
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW;
-};
-
-const nativeFieldInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
-  },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldHover(e.target);
-    }
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldDefault(e.target);
-    }
-  },
-};
-
-const pbxPageWrapStyle = {
+const sipToSipPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const pbxPageInnerStyle = {
+const sipToSipInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const SipToSipBreadcrumb = ({ section, current, style }) => (
+const sipToSipFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  boxShadow: 3,
+};
+
+const sipToSipTableStyle = {
+  width: "100%",
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "auto",
+  minWidth: 900,
+};
+
+const sipToSipEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+const getSipToSipRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const getSipToSipTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const sipToSipModalTitleStyle = {
+  background: "#1e2d42",
+  color: "#ffffff",
+  fontWeight: 600,
+  fontSize: 16,
+  padding: "16px 24px",
+  textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+};
+
+const sipToSipModalActionsStyle = {
+  display: "flex",
+  justifyContent: "center",
+  gap: 16,
+  padding: "16px 24px",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const sipToSipDialogPaperSx = {
+  width: 760,
+  maxWidth: "96vw",
+  mx: "auto",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+};
+
+const SipToSipAccountScrollbarStyles = () => (
+  <style>{`
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
+const SipToSipBreadcrumb = ({ style }) => (
   <div
     style={{
       fontSize: 12,
@@ -432,11 +554,13 @@ const SipToSipBreadcrumb = ({ section, current, style }) => (
       ...style,
     }}
   >
-    <span>E1-PRI</span>
+    <span>{SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>{section}</span>
+    <span>{SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {SIP_TO_SIP_ACCOUNT_PAGE_TITLE}
+    </span>
   </div>
 );
 const TableListLoading = () => (
@@ -567,7 +691,7 @@ const SipToSipPagination = ({
   totalPages,
   recordCount,
   onPageChange,
-  recordLabel = "record",
+  recordLabel = SIP_TO_SIP_ACCOUNT_RECORD_LABEL,
   style,
 }) => (
   <div style={{ ...sipToSipPaginationStyle, ...style }}>
@@ -581,7 +705,7 @@ const SipToSipPagination = ({
         disabled={page <= 1}
         variant="outline"
       >
-        ← Prev
+        {SIP_TO_SIP_ACCOUNT_BTN_PREV}
       </Btn>
       <span style={sipToSipPageBadgeStyle}>
         Page {page} of {totalPages}
@@ -591,7 +715,7 @@ const SipToSipPagination = ({
         disabled={page >= totalPages}
         variant="outline"
       >
-        Next →
+        {SIP_TO_SIP_ACCOUNT_BTN_NEXT}
       </Btn>
     </div>
   </div>
@@ -653,16 +777,16 @@ const SipToSipAllowCodecsSectionHeading = ({ tooltipKey, required = false }) => 
         gap: 0,
       }}
     >
-      <E1PriFieldLabel
+      <SipToSipAccountFieldLabel
         tooltipKey={tooltipKey}
-        tooltips={SIP_TO_SIP_FIELD_TOOLTIPS}
+        tooltips={SIP_TO_SIP_ACCOUNT_FIELD_TOOLTIPS}
         style={{
           fontSize: 14,
           color: SIP_TO_SIP_MODAL_SECTION_HEADING_COLOR,
         }}
       >
-        Allow Codecs
-      </E1PriFieldLabel>
+        {SIP_TO_SIP_ACCOUNT_LABEL_ALLOW_CODECS}
+      </SipToSipAccountFieldLabel>
       {required && <span style={{ color: C.errorRed }}> *</span>}
     </span>
   </div>
@@ -686,7 +810,7 @@ const SipToSipFieldRow = ({
   labelWidth = 130,
   tooltipKey,
 }) => {
-  const tooltip = tooltipKey ? SIP_TO_SIP_FIELD_TOOLTIPS[tooltipKey] || "" : "";
+  const tooltip = tooltipKey ? SIP_TO_SIP_ACCOUNT_FIELD_TOOLTIPS[tooltipKey] || "" : "";
   const labelStyle = {
     fontSize: 13,
     color: C.labelText,
@@ -712,7 +836,7 @@ const SipToSipFieldRow = ({
       {tooltip ? (
         <Tooltip
           title={formatFieldTooltipTitle(tooltip)}
-          {...FIELD_TOOLTIP_PROPS}
+          {...SIP_TO_SIP_ACCOUNT_TOOLTIP_PROPS}
         >
           {labelNode}
         </Tooltip>
@@ -868,7 +992,10 @@ const SipToSipCodecListBox = ({
 }) => {
   const isEmpty = items.length === 0;
   return (
-    <div style={getSipToSipCodecListBoxStyle(variant, isEmpty)}>
+    <div
+      className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
+      style={getSipToSipCodecListBoxStyle(variant, isEmpty)}
+    >
       {isEmpty ? (
         <div style={sipToSipCodecListEmptyStyle}>{emptyText}</div>
       ) : (
@@ -919,13 +1046,6 @@ const parseCodecList = (value) => {
 
 const normalizeAllowCodecs = (value) => parseCodecList(value).join(",");
 
-const sipToSipPageWrapStyle = pbxPageWrapStyle;
-const sipToSipInnerStyle = pbxPageInnerStyle;
-
-const SipToSipModalBreadcrumb = ({ current }) => (
-  <SipToSipBreadcrumb section="SIP" current={current} />
-);
-
 const sipToSipModalCancelBtnStyle = {
   minWidth: 100,
   height: 33,
@@ -936,6 +1056,7 @@ const sipToSipModalCancelBtnStyle = {
 };
 
 const SipToSipAccountPage = () => {
+  const isCompact = useMediaQuery(SIP_TO_SIP_ACCOUNT_COMPACT_MQ);
   const [accounts, setAccounts] = useState([]);
   const [pjsipExtensions, setPjsipExtensions] = useState(new Set());
   const [selected, setSelected] = useState([]);
@@ -947,7 +1068,7 @@ const SipToSipAccountPage = () => {
     save: false,
     delete: false,
   });
-  const [form, setForm] = useState(SIP_TO_SIP_INITIAL_FORM);
+  const [form, setForm] = useState(SIP_TO_SIP_ACCOUNT_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
@@ -973,12 +1094,12 @@ const SipToSipAccountPage = () => {
   );
 
   const availableCodecList = useMemo(
-    () => CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
+    () => SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
     [selectedCodecList],
   );
 
   const getCodecLabel = (value) =>
-    CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
+    SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
 
   const toggleCodecAvailableSelect = (id) =>
     setCodecAvailableSelected((prev) =>
@@ -1019,7 +1140,7 @@ const SipToSipAccountPage = () => {
   };
 
   const addAllCodecs = () => {
-    updateCodecList(CODEC_OPTIONS.map((c) => c.value));
+    updateCodecList(SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.map((c) => c.value));
     setCodecAvailableSelected([]);
   };
 
@@ -1156,7 +1277,7 @@ const SipToSipAccountPage = () => {
         setPjsipExtensions(new Set());
       }
     } catch (e) {
-      showMessageFn("error", e.message || "Failed to load accounts");
+      showMessageFn("error", e.message || SIP_TO_SIP_ACCOUNT_ERR_LOAD_FAILED);
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
       setIsInitialLoad(false);
@@ -1168,13 +1289,13 @@ const SipToSipAccountPage = () => {
     setCodecChosenSelected([]);
     if (row && idx !== null) {
       setForm({
-        ...SIP_TO_SIP_INITIAL_FORM,
+        ...SIP_TO_SIP_ACCOUNT_INITIAL_FORM,
         ...row,
         allow_codecs: normalizeAllowCodecs(row.allow_codecs) || "ulaw,alaw",
       });
       setEditIndex(idx);
     } else {
-      setForm(SIP_TO_SIP_INITIAL_FORM);
+      setForm(SIP_TO_SIP_ACCOUNT_INITIAL_FORM);
       setEditIndex(null);
     }
     setValidationErrors({});
@@ -1192,61 +1313,60 @@ const SipToSipAccountPage = () => {
   // Validation functions
   const validateExtension = (extension) => {
     if (!extension || extension.trim() === "") {
-      return "Extension is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_EXTENSION_REQUIRED;
     }
     return null;
   };
 
   const validatePassword = (password) => {
     if (!password || password.trim() === "") {
-      return "Password is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_PASSWORD_REQUIRED;
     }
     return null;
   };
 
   const validateContext = (context) => {
     if (!context || context.trim() === "") {
-      return "Context is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_CONTEXT_REQUIRED;
     }
     return null;
   };
 
   const validateAllowCodecs = (allowCodecs) => {
     if (!allowCodecs || allowCodecs.trim() === "") {
-      return "Allow Codecs is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_ALLOW_CODECS_REQUIRED;
     }
     return null;
   };
 
   const validateContact = (contact) => {
     if (!contact || String(contact).trim() === "") {
-      return "Contact is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_CONTACT_REQUIRED;
     }
-    // Allow user to type IP like 10.191.15.1 or full sip:10.191.15.1
     const contactRegex = /^(?:sip:)?(?:\d{1,3}\.){3}\d{1,3}$/;
     if (!contactRegex.test(String(contact).trim())) {
-      return "Contact must be like '10.150.18.10' or 'sip:10.150.18.10'";
+      return SIP_TO_SIP_ACCOUNT_ERR_CONTACT_FORMAT;
     }
     return null;
   };
 
   const validateDomainName = (domainName) => {
     if (!domainName || domainName.trim() === "") {
-      return "Domain Name is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_DOMAIN_REQUIRED;
     }
     return null;
   };
 
   const validateContactUser = (contactUser) => {
     if (!contactUser || contactUser.trim() === "") {
-      return "Contact User is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_CONTACT_USER_REQUIRED;
     }
     return null;
   };
 
   const validateOutboundProxy = (outboundProxy) => {
     if (!outboundProxy || outboundProxy.trim() === "") {
-      return "Outbound Proxy is required";
+      return SIP_TO_SIP_ACCOUNT_ERR_OUTBOUND_PROXY_REQUIRED;
     }
     return null;
   };
@@ -1333,7 +1453,7 @@ const SipToSipAccountPage = () => {
     if (pjsipExtensions.has(String(form.extension))) {
       showMessageFn(
         "error",
-        "This extension already exists in SIP Account. Choose a different extension.",
+        SIP_TO_SIP_ACCOUNT_ERR_DUPLICATE_EXTENSION,
       );
       return;
     }
@@ -1354,7 +1474,7 @@ const SipToSipAccountPage = () => {
         showMessageFn("error", resp?.message || "Failed to save");
       }
     } catch (e) {
-      showMessageFn("error", e.message || "Failed to save");
+      showMessageFn("error", e.message || SIP_TO_SIP_ACCOUNT_ERR_SAVE_FAILED);
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
@@ -1362,11 +1482,7 @@ const SipToSipAccountPage = () => {
 
   const handleDelete = async (indices) => {
     if (!indices || indices.length === 0) return;
-    if (
-      !window.confirm(
-        "Are you sure you want to delete the selected account(s)?",
-      )
-    ) {
+    if (!window.confirm(SIP_TO_SIP_ACCOUNT_CONFIRM_DELETE)) {
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
@@ -1390,9 +1506,7 @@ const SipToSipAccountPage = () => {
       const ops = indices.map((i) => {
         const ext = accounts[i].extension;
         if (referencedExtensions.has(String(ext))) {
-          alert(
-            `Cannot delete extension ${ext} because it is used in SIP Trunk Group (e.g., trunkId/${ext}). Delete or modify the SIP Trunk Group first.`,
-          );
+          alert(SIP_TO_SIP_ACCOUNT_ALERT_DELETE_BLOCKED(ext));
           return { skipped: true };
         }
         return deleteSipIpTrunkAccount(ext);
@@ -1406,7 +1520,7 @@ const SipToSipAccountPage = () => {
         showMessageFn("success", `${success} account(s) deleted`);
       await loadData();
     } catch (e) {
-      showMessageFn("error", e.message || "Delete failed");
+      showMessageFn("error", e.message || SIP_TO_SIP_ACCOUNT_ERR_DELETE_FAILED);
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -1414,14 +1528,10 @@ const SipToSipAccountPage = () => {
 
   const handleClearAll = async () => {
     if (accounts.length === 0) {
-      showMessageFn("info", "No accounts to clear");
+      showMessageFn("info", SIP_TO_SIP_ACCOUNT_MSG_NO_ACCOUNTS_TO_CLEAR);
       return;
     }
-    if (
-      !window.confirm(
-        "Are you sure you want to delete ALL SIP To SIP accounts? This action cannot be undone.",
-      )
-    ) {
+    if (!window.confirm(SIP_TO_SIP_ACCOUNT_CONFIRM_CLEAR_ALL)) {
       return;
     }
     setLoading((prev) => ({ ...prev, delete: true }));
@@ -1446,9 +1556,7 @@ const SipToSipAccountPage = () => {
       );
       const blocked = accounts.length - deletables.length;
       if (blocked > 0) {
-        alert(
-          `${blocked} account(s) are referenced in SIP Trunk Group and were not deleted. Please remove references first.`,
-        );
+        alert(SIP_TO_SIP_ACCOUNT_ALERT_CLEAR_BLOCKED(blocked));
       }
 
       const results = await Promise.allSettled(
@@ -1462,7 +1570,7 @@ const SipToSipAccountPage = () => {
       setSelected([]);
       await loadData();
     } catch (e) {
-      showMessageFn("error", e.message || "Clear all failed");
+      showMessageFn("error", e.message || SIP_TO_SIP_ACCOUNT_ERR_CLEAR_ALL_FAILED);
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -1494,13 +1602,13 @@ const SipToSipAccountPage = () => {
         }}
       >
         <div>
-          <div style={sipToSipCodecColumnLabelStyle}>Available</div>
+          <div style={sipToSipCodecColumnLabelStyle}>{SIP_TO_SIP_ACCOUNT_CODEC_AVAILABLE}</div>
           <SipToSipCodecListBox
             variant="available"
             items={availableCodecList}
             selectedIds={codecAvailableSelected}
             onToggle={toggleCodecAvailableSelect}
-            emptyText="Available codecs"
+            emptyText={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_AVAILABLE}
             getLabel={(id) => getCodecLabel(id)}
           />
         </div>
@@ -1512,35 +1620,38 @@ const SipToSipAccountPage = () => {
           <div style={sipToSipCodecBtnColumnStyle}>
             <SipToSipCodecDualListBtn
               onClick={addSelectedCodecs}
-              title="Add selected"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_SELECTED}
             >
               &gt;
             </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn onClick={addAllCodecs} title="Add all">
+            <SipToSipCodecDualListBtn
+              onClick={addAllCodecs}
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_ALL}
+            >
               &gt;&gt;
             </SipToSipCodecDualListBtn>
             <SipToSipCodecDualListBtn
               onClick={removeSelectedCodecs}
-              title="Remove selected"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_SELECTED}
             >
               &lt;
             </SipToSipCodecDualListBtn>
             <SipToSipCodecDualListBtn
               onClick={removeAllCodecs}
-              title="Remove all"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_ALL}
             >
               &lt;&lt;
             </SipToSipCodecDualListBtn>
           </div>
         </div>
         <div>
-          <div style={sipToSipCodecColumnLabelStyle}>Selected</div>
+          <div style={sipToSipCodecColumnLabelStyle}>{SIP_TO_SIP_ACCOUNT_CODEC_SELECTED}</div>
           <SipToSipCodecListBox
             variant="selected"
             items={selectedCodecList}
             selectedIds={codecChosenSelected}
             onToggle={toggleCodecChosenSelect}
-            emptyText="No selected codecs"
+            emptyText={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_SELECTED}
             getLabel={(id) => getCodecLabel(id)}
           />
         </div>
@@ -1552,28 +1663,28 @@ const SipToSipAccountPage = () => {
           <div style={sipToSipCodecBtnColumnStyle}>
             <SipToSipCodecDualListBtn
               reorder
-              title="Move to top"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_TOP}
               onClick={moveCodecToTop}
             >
               ^^
             </SipToSipCodecDualListBtn>
             <SipToSipCodecDualListBtn
               reorder
-              title="Move up"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_UP}
               onClick={moveCodecUp}
             >
               ^
             </SipToSipCodecDualListBtn>
             <SipToSipCodecDualListBtn
               reorder
-              title="Move down"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_DOWN}
               onClick={moveCodecDown}
             >
               v
             </SipToSipCodecDualListBtn>
             <SipToSipCodecDualListBtn
               reorder
-              title="Move to bottom"
+              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_BOTTOM}
               onClick={moveCodecToBottom}
             >
               vv
@@ -1598,7 +1709,7 @@ const SipToSipAccountPage = () => {
             size="small"
             fullWidth
             variant="outlined"
-            placeholder="Enter password"
+            placeholder={SIP_TO_SIP_ACCOUNT_PLACEHOLDER_PASSWORD}
             error={!!validationErrors[field.name]}
             sx={sipToSipModalTextFieldSx}
             InputProps={{
@@ -1642,7 +1753,7 @@ const SipToSipAccountPage = () => {
               sx={sipToSipModalSelectSx}
             >
               <MenuItem value="" disabled>
-                <em>Select Context</em>
+                <em>{SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTEXT}</em>
               </MenuItem>
               {Array.from({ length: 10 }, (_, i) => `sip${i + 1}`).map(
                 (ctx) => (
@@ -1673,11 +1784,13 @@ const SipToSipAccountPage = () => {
             fullWidth
             variant="outlined"
             error={!!validationErrors.contact}
-            placeholder="e.g., 15.158.34.15"
+            placeholder={SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTACT}
             sx={sipToSipModalTextFieldSx}
             InputProps={{
               startAdornment: (
-                <InputAdornment position="start">sip:</InputAdornment>
+                <InputAdornment position="start">
+                  {SIP_TO_SIP_ACCOUNT_CONTACT_PREFIX}
+                </InputAdornment>
               ),
             }}
           />
@@ -1700,13 +1813,13 @@ const SipToSipAccountPage = () => {
           error={!!validationErrors[field.name]}
           placeholder={
             field.name === "extension"
-              ? "e.g., 1001"
+              ? SIP_TO_SIP_ACCOUNT_PLACEHOLDER_EXTENSION
               : field.name === "from_domain"
-                ? "e.g., sip.domain.in"
+                ? SIP_TO_SIP_ACCOUNT_PLACEHOLDER_DOMAIN
                 : field.name === "contact_user"
-                  ? "+91XXXXXXXXXX"
+                  ? SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTACT_USER
                   : field.name === "outbound_proxy"
-                    ? "e.g., 15.158.34.15"
+                    ? SIP_TO_SIP_ACCOUNT_PLACEHOLDER_OUTBOUND_PROXY
                     : `Enter ${field.label.toLowerCase()}`
           }
           disabled={field.name === "extension" && editIndex !== null}
@@ -1730,29 +1843,37 @@ const SipToSipAccountPage = () => {
   );
 
   return (
-    <div style={sipToSipPageWrapStyle}>
-      <div style={sipToSipInnerStyle}>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
-          >
-            {message.text}
-          </Alert>
-        )}
+    <>
+      <SipToSipAccountScrollbarStyles />
+      <div
+        className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
+        style={{
+          ...sipToSipPageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
+        }}
+      >
+        <div style={sipToSipInnerStyle}>
+          {message.text && (
+            <Alert
+              severity={message.type}
+              onClose={() => setMessage({ type: "", text: "" })}
+              sx={sipToSipFixedAlertSx}
+            >
+              {message.text}
+            </Alert>
+          )}
 
-        <SipToSipBreadcrumb current="SIP To SIP Account" />
+          <SipToSipBreadcrumb />
 
-        <div style={sipToSipCardStyle}>
-          <div style={sipToSipToolbarStyle}>
+          <div style={sipToSipCardStyle}>
+            <div
+              style={{
+                ...sipToSipToolbarStyle,
+                ...(isCompact
+                  ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                  : {}),
+              }}
+            >
             <div
               style={{
                 display: "flex",
@@ -1764,7 +1885,7 @@ const SipToSipAccountPage = () => {
             >
               {selected.length > 0 && (
                 <span style={sipToSipSelectedBadgeStyle}>
-                  {selected.length} selected
+                  {selected.length} {SIP_TO_SIP_ACCOUNT_SELECTED_SUFFIX}
                 </span>
               )}
             </div>
@@ -1784,11 +1905,11 @@ const SipToSipAccountPage = () => {
                       .filter((i) => i !== null),
                   )
                 }
-                disabled={loading.delete}
+                disabled={loading.delete || accounts.length === 0}
                 variant="cancel"
                 style={sipToSipCancelBtnStyle}
               >
-                Inverse
+                {SIP_TO_SIP_ACCOUNT_BTN_INVERSE}
               </Btn>
               <Btn
                 onClick={() => handleDelete(selected)}
@@ -1800,7 +1921,7 @@ const SipToSipAccountPage = () => {
                   <CircularProgress size={11} style={{ color: "#374151" }} />
                 ) : null}
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {SIP_TO_SIP_ACCOUNT_BTN_DELETE}
               </Btn>
               <Btn
                 onClick={handleClearAll}
@@ -1808,7 +1929,7 @@ const SipToSipAccountPage = () => {
                 variant="cancel"
                 style={sipToSipCancelBtnStyle}
               >
-                Clear All
+                {SIP_TO_SIP_ACCOUNT_BTN_CLEAR_ALL}
               </Btn>
               <Btn
                 onClick={() => handleOpenModal()}
@@ -1816,7 +1937,7 @@ const SipToSipAccountPage = () => {
                 variant="primary"
                 style={sipToSipPrimaryBtnStyle}
               >
-                + Add New
+                {SIP_TO_SIP_ACCOUNT_BTN_ADD_NEW}
               </Btn>
             </div>
           </div>
@@ -1825,21 +1946,22 @@ const SipToSipAccountPage = () => {
             <TableListLoading />
           ) : accounts.length === 0 ? (
             <TableListEmptyState
-              message="No SIP To SIP accounts found."
+              message={SIP_TO_SIP_ACCOUNT_EMPTY_MESSAGE}
               onAddNew={() => handleOpenModal()}
+              buttonLabel={SIP_TO_SIP_ACCOUNT_BTN_ADD_NEW}
             />
           ) : (
             <>
-              <div style={{ overflowX: "auto", overflowY: "auto", flex: 1 }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "separate",
-                    borderSpacing: 0,
-                    tableLayout: "auto",
-                    minWidth: 900,
-                  }}
-                >
+              <div
+                className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
+                style={{
+                  overflowX: isCompact ? "auto" : "hidden",
+                  overflowY: "auto",
+                  flex: 1,
+                  WebkitOverflowScrolling: "touch",
+                }}
+              >
+                <table style={sipToSipTableStyle}>
                   <thead>
                     <tr>
                       <TH
@@ -1871,7 +1993,7 @@ const SipToSipAccountPage = () => {
                           sx={sipToSipTableCheckboxSx}
                         />
                       </TH>
-                      {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
+                      {SIP_TO_SIP_ACCOUNT_TABLE_COLUMNS.map((col) => (
                         <TH key={col.key}>{col.label}</TH>
                       ))}
                       <TH
@@ -1883,7 +2005,7 @@ const SipToSipAccountPage = () => {
                           zIndex: 10,
                         }}
                       >
-                        Modify
+                        {SIP_TO_SIP_ACCOUNT_COL_MODIFY}
                       </TH>
                     </tr>
                   </thead>
@@ -1892,11 +2014,7 @@ const SipToSipAccountPage = () => {
                       const realIdx = (page - 1) * itemsPerPage + idx;
                       const isSelected = selected.includes(realIdx);
                       const isLastRow = idx === pagedAccounts.length - 1;
-                      const rowBg = isSelected
-                        ? "#eff6ff"
-                        : idx % 2 === 1
-                          ? "#f8fafc"
-                          : "#ffffff";
+                      const rowBg = getSipToSipRowBg(isSelected, idx);
                       const lastRowCellStyle = isLastRow
                         ? { borderBottom: "none" }
                         : {};
@@ -1917,13 +2035,10 @@ const SipToSipAccountPage = () => {
                           }}
                         >
                           <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
+                            style={getSipToSipTdStyle(rowBg, lastRowCellStyle, {
                               borderLeft: "none",
                               width: 36,
-                              ...lastRowCellStyle,
-                            }}
+                            })}
                           >
                             <Checkbox
                               size="small"
@@ -1939,15 +2054,12 @@ const SipToSipAccountPage = () => {
                               sx={sipToSipTableCheckboxSx}
                             />
                           </td>
-                          {SIP_TO_SIP_TABLE_COLUMNS.map((col) => (
+                          {SIP_TO_SIP_ACCOUNT_TABLE_COLUMNS.map((col) => (
                             <td
                               key={col.key}
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
+                              style={getSipToSipTdStyle(rowBg, lastRowCellStyle, {
                                 fontWeight: 400,
-                                ...lastRowCellStyle,
-                              }}
+                              })}
                             >
                               {col.key === "password"
                                 ? "*".repeat(item.password?.length || 0)
@@ -1957,12 +2069,9 @@ const SipToSipAccountPage = () => {
                             </td>
                           ))}
                           <td
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
+                            style={getSipToSipTdStyle(rowBg, lastRowCellStyle, {
                               borderRight: "none",
-                              ...lastRowCellStyle,
-                            }}
+                            })}
                           >
                             <div
                               style={{
@@ -1971,19 +2080,17 @@ const SipToSipAccountPage = () => {
                               }}
                             >
                               <EditDocumentIcon
-                                titleAccess="Edit"
+                                titleAccess={SIP_TO_SIP_ACCOUNT_EDIT_TITLE_ACCESS}
                                 onClick={() => {
                                   if (!loading.delete)
                                     handleOpenModal(item, realIdx);
                                 }}
                                 style={{
+                                  ...sipToSipEditIconStyle,
                                   cursor: loading.delete
                                     ? "not-allowed"
                                     : "pointer",
-                                  color: "#2563eb",
-                                  fontSize: 22,
                                   opacity: loading.delete ? 0.4 : 0.7,
-                                  transition: "opacity 0.15s ease",
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!loading.delete)
@@ -2029,34 +2136,15 @@ const SipToSipAccountPage = () => {
             pt: 8,
           },
         }}
-        PaperProps={{
-          sx: {
-            width: 760,
-            maxWidth: "96vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-          },
-        }}
+        PaperProps={{ sx: sipToSipDialogPaperSx }}
       >
-        <DialogTitle
-          style={{
-            background: "#1e2d42",
-            color: "#ffffff",
-            fontWeight: 600,
-            fontSize: 16,
-            padding: "16px 24px",
-            textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
-          }}
-        >
+        <DialogTitle style={sipToSipModalTitleStyle}>
           {editIndex !== null
-            ? "Edit SIP To SIP Account"
-            : "Add SIP To SIP Account"}
+            ? SIP_TO_SIP_ACCOUNT_MODAL_EDIT_TITLE
+            : SIP_TO_SIP_ACCOUNT_MODAL_ADD_TITLE}
         </DialogTitle>
         <DialogContent
+          className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
           style={{ padding: "24px", backgroundColor: "#ffffff" }}
           sx={{
             maxHeight: "calc(100vh - 180px)",
@@ -2073,7 +2161,7 @@ const SipToSipAccountPage = () => {
                 paddingBottom: 8,
               }}
             >
-              <SipToSipSectionCard title="General" isFirst>
+              <SipToSipSectionCard title={SIP_TO_SIP_ACCOUNT_SECTION_GENERAL} isFirst>
                 <div
                   style={{
                     display: "grid",
@@ -2081,9 +2169,9 @@ const SipToSipAccountPage = () => {
                     gap: "8px 32px",
                   }}
                 >
-                  {SIP_TO_SIP_FORM_LAYOUT.flat()
+                  {SIP_TO_SIP_ACCOUNT_FORM_LAYOUT.flat()
                     .map((name) =>
-                      SIP_TO_SIP_FIELDS.find((f) => f.name === name),
+                      SIP_TO_SIP_ACCOUNT_FIELDS.find((f) => f.name === name),
                     )
                     .filter(Boolean)
                     .map((field) => renderFormField(field))}
@@ -2093,25 +2181,14 @@ const SipToSipAccountPage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions style={sipToSipModalActionsStyle}>
           <Btn
             onClick={handleSave}
             variant="primary"
             disabled={loading.save}
             style={{ minWidth: 100, height: 33, fontSize: 13 }}
           >
-            {loading.save ? "Saving..." : "Save"}
+            {loading.save ? SIP_TO_SIP_ACCOUNT_BTN_SAVING : SIP_TO_SIP_ACCOUNT_BTN_SAVE}
           </Btn>
           <Btn
             onClick={handleCloseModal}
@@ -2119,11 +2196,12 @@ const SipToSipAccountPage = () => {
             disabled={loading.save}
             style={sipToSipModalCancelBtnStyle}
           >
-            Close
+            {SIP_TO_SIP_ACCOUNT_BTN_CLOSE}
           </Btn>
         </DialogActions>
       </Dialog>
     </div>
+    </>
   );
 };
 

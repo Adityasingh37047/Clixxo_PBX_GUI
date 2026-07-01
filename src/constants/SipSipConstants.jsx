@@ -1,4 +1,4 @@
-export const SIP_SETTINGS_FIELDS = [
+export const SIP_SIP_FIELDS = [
   { label: 'SIP Address of WAN', type: 'select', key: 'sipWan', options: [] },
   { label: 'SIP Signaling Port', type: 'text', key: 'sipPort', default: '5060', validation: 'integer' },
   { label: 'TLS', type: 'checkbox', key: 'tls',  },
@@ -78,10 +78,33 @@ export const SIP_SETTINGS_FIELDS = [
   { label: 'UserAgent Field', type: 'text', key: 'userAgent' },
 ];
 
-export const SIP_SETTINGS_NOTE =
+export const SIP_SIP_NOTE =
   'Note: Only one SIP Trunk can be configured and it is "Local Network Port" should be set to "Any Lan" once the feature "Switch Network Port by Packet Loss Rate" is enabled.';
 
-const SIP_SETTINGS_UI_TO_API = {
+export const SIP_SIP_BREADCRUMB_ROOT = "E1-PRI";
+export const SIP_SIP_BREADCRUMB_SECTION = "SIP";
+export const SIP_SIP_PAGE_TITLE = "SIP Settings";
+export const SIP_SIP_CARD_TITLE = "SIP Settings";
+export const SIP_SIP_SECTION_NETWORK = "Network & Signaling";
+export const SIP_SIP_SECTION_REGISTRATION = "Registration & Timers";
+export const SIP_SIP_NOTE_LABEL = "Note:";
+export const SIP_SIP_BTN_SAVE = "Save";
+export const SIP_SIP_BTN_SAVING = "Saving...";
+export const SIP_SIP_BTN_RESET = "Reset";
+export const SIP_SIP_LOADING_TEXT = "Loading SIP settings...";
+export const SIP_SIP_APPLYING_TEXT = "Applying Settings...";
+export const SIP_SIP_CHECKBOX_ENABLE = "Enable";
+export const SIP_SIP_RADIO_YES = "Yes";
+export const SIP_SIP_RADIO_NO = "No";
+export const SIP_SIP_PLACEHOLDER_CALLED_PREFIX = "e.g., 123:456:789";
+export const SIP_SIP_ERR_LOAD_FAILED =
+  "Failed to load SIP settings. Please try again.";
+export const SIP_SIP_MSG_SETTINGS_UPDATED = "Settings Updated";
+export const SIP_SIP_ERR_SAVE_FAILED = "Failed to save settings";
+export const SIP_SIP_LABEL_EXTERNAL_BOUND =
+  "When the externally bound is enabled, only the externally bound address is matched to confirm the SIP trunk";
+
+const SIP_SIP_UI_TO_API = {
   sipWan: "sip_address_of_wan",
   sipPort: "sip_signaling_port",
   tls: "tls_enable",
@@ -147,10 +170,10 @@ const sipFieldOpts = (field) => {
   return `Options: ${opts.join(", ")}.`;
 };
 
-const buildSipSettingsTooltips = () => {
+const buildSipSipFieldTooltips = () => {
   const tooltips = {};
-  SIP_SETTINGS_FIELDS.forEach((field) => {
-    const apiKey = SIP_SETTINGS_UI_TO_API[field.key];
+  SIP_SIP_FIELDS.forEach((field) => {
+    const apiKey = SIP_SIP_UI_TO_API[field.key];
     const parts = [];
     if (apiKey) {
       parts.push(
@@ -181,4 +204,4 @@ const buildSipSettingsTooltips = () => {
 };
 
 /** SIP Settings (SipSipPage) — listSipSettings / updateSipSettings */
-export const SIP_SETTINGS_FIELD_TOOLTIPS = buildSipSettingsTooltips();
+export const SIP_SIP_FIELD_TOOLTIPS = buildSipSipFieldTooltips();

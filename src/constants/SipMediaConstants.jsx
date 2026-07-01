@@ -1,5 +1,26 @@
 // Media Parameters field definitions and initial values for SIP Media Page
 
+export const SIP_MEDIA_PAGE_BREADCRUMB_ROOT = "E1-PRI";
+export const SIP_MEDIA_PAGE_BREADCRUMB_SECTION = "SIP";
+export const SIP_MEDIA_PAGE_TITLE = "Media Parameters";
+export const SIP_MEDIA_CARD_TITLE = "Media Parameters";
+
+export const SIP_MEDIA_SECTION_RTP_DTMF = "RTP & DTMF Settings";
+export const SIP_MEDIA_SECTION_JITTER_CODEC = "Jitter & CODEC Settings";
+
+export const SIP_MEDIA_SECTION_HEADING_LEFT = -20;
+export const SIP_MEDIA_SECTION_HEADING_COLOR = "#30415A";
+
+export const SIP_MEDIA_BTN_SAVE = "Save";
+export const SIP_MEDIA_BTN_SAVING = "Saving...";
+export const SIP_MEDIA_BTN_RESET = "Reset";
+export const SIP_MEDIA_LOADING_TEXT = "Loading media parameters...";
+export const SIP_MEDIA_MSG_SETTINGS_UPDATED = "Settings Updated!";
+export const SIP_MEDIA_MSG_SAVE_FAILED = "Save failed";
+export const SIP_MEDIA_MSG_LOAD_FAILED = "Failed to load media settings";
+export const SIP_MEDIA_MSG_NETWORK_SAVE_FAILED = "Network error while saving";
+export const SIP_MEDIA_MSG_RESET = "Form reset to defaults";
+
 export const SIP_MEDIA_FIELDS = [
   { name: 'dtmfTransmitMode', label: 'DTMF Transmit Mode', type: 'select', options: [
     { value: 'RFC2833', label: 'RFC2833' },

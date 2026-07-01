@@ -1,16 +1,38 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  PCM_MAINTENANCE_HEADERS,
-  PCM_LOOPBACK_HEADERS,
-  PCM0_HEADERS,
-  PCM0_STATUS_ROW,
-  PCM0_CHECK_ROW,
-  PCM_MAINTENANCE_BUTTONS,
-  PCM_LOOPBACK_BUTTONS,
-  PCM0_BUTTONS,
   PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT,
   PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION,
   PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE,
+  PCM_CIRCUIT_MAINTENANCE_SECTION_MAINTENANCE,
+  PCM_CIRCUIT_MAINTENANCE_SECTION_LOOPBACK,
+  PCM_CIRCUIT_MAINTENANCE_PCM0_TITLE,
+  PCM_CIRCUIT_MAINTENANCE_PCM_DEFAULT_NO,
+  PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_NO,
+  PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_STATUS,
+  PCM_CIRCUIT_MAINTENANCE_LABEL_LOOPBACK_STATUS,
+  PCM_CIRCUIT_MAINTENANCE_LABEL_CHECK,
+  PCM_CIRCUIT_MAINTENANCE_LABEL_CHANNEL_NO,
+  PCM_CIRCUIT_MAINTENANCE_LABEL_STATUS,
+  PCM_CIRCUIT_MAINTENANCE_BTN_CHECK_ALL,
+  PCM_CIRCUIT_MAINTENANCE_BTN_UNCHECK_ALL,
+  PCM_CIRCUIT_MAINTENANCE_BTN_INVERSE,
+  PCM_CIRCUIT_MAINTENANCE_BTN_BLOCK,
+  PCM_CIRCUIT_MAINTENANCE_BTN_UNBLOCK,
+  PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_CONNECT,
+  PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_DISCONNECT,
+  PCM_CIRCUIT_MAINTENANCE_BTN_LOCAL_LOOPBACK,
+  PCM_CIRCUIT_MAINTENANCE_BTN_REMOTE_LOOPBACK,
+  PCM_CIRCUIT_MAINTENANCE_BTN_UNLOOPBACK,
+  PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CHANNEL,
+  PCM_CIRCUIT_MAINTENANCE_TOOLTIP_STATE,
+  PCM_CIRCUIT_MAINTENANCE_TOOLTIP_IN_SERVICE,
+  PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CALLER,
+  PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CALLED,
+  PCM_CIRCUIT_MAINTENANCE_STATE_UNUSABLE,
+  PCM_CIRCUIT_MAINTENANCE_STATE_RESERVED,
+  PCM_CIRCUIT_MAINTENANCE_STATE_IDLE,
+  PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_YES,
+  PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_NO,
 } from "../../../constants/PcmCircuitMaintenanceConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import { listPstn, listChannelState } from "../../../api/apiService";
@@ -103,19 +125,89 @@ const ICONS = [
   </div>, // Unusable (dark red phone locked)
 ];
 
-// ── Color palette (matches PSTN Call In CallerID) ─────────────────────────────
+// ── Page-local UI (not shared) ──
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
+  cardBorder: "#d8dde5",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#3E5475",
+  valueText: "#0f172a",
   mutedText: "#94a3b8",
-  strongText: "#0f172a",
+  strongText: "#1e293b",
   accent: "#3E5475",
 };
 
-const CARD_RADIUS = 10;
+const PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS = 10;
+const PCM_CIRCUIT_MAINTENANCE_COMPACT_MQ = "(max-width: 768px)";
+const PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER = 14;
+const PCM_CIRCUIT_MAINTENANCE_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
+const PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS = "pcm-circuit-maintenance-scroll";
+
+const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  enterDelay: 0,
+  enterNextDelay: 0,
+  leaveDelay: 100,
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
+      },
+    },
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const pcmCircuitMaintenancePageInnerStyle = {
+  maxWidth: "100%",
+  margin: "0 auto",
+  paddingLeft: PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
+  paddingRight: PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
+  boxSizing: "border-box",
+};
+
+const pcmCircuitMaintenanceCancelBtnStyle = {
+  minWidth: 88,
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  fontWeight: 600,
+};
+
+const PcmCircuitMaintenanceBreadcrumb = ({ compactChannelScroll }) => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: compactChannelScroll ? 16 : 10,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: C.strongText, fontWeight: 600 }}>
+      {PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE}
+    </span>
+  </div>
+);
 
 const Btn = ({
   children,
@@ -148,7 +240,26 @@ const Btn = ({
     variant === "primary"
       ? "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)"
       : "#b6c2d3";
-  const baseBg = s.background;
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background =
+      variant === "primary"
+        ? "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)"
+        : "#a3b1c2";
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
   return (
     <button
       type="button"
@@ -164,10 +275,12 @@ const Btn = ({
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
         height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -176,6 +289,16 @@ const Btn = ({
       }}
       onMouseLeave={(e) => {
         if (!disabled) e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          clearPressStyle(e.currentTarget);
+        }
       }}
     >
       {children}
@@ -184,11 +307,10 @@ const Btn = ({
 };
 
 const cardStyle = {
-  background: "#ffffff",
-  borderRadius: 10,
+  background: C.cardBg,
+  borderRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
   overflow: "hidden",
-  border: `1.5px solid ${C.cardBorder}`,
-  boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  border: `1px solid ${C.cardBorder}`,
   marginBottom: 24,
 };
 
@@ -204,15 +326,15 @@ const sectionHeaderStyle = {
   justifyContent: "center",
   minHeight: 44,
   padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   textAlign: "center",
   width: "100%",
-  borderTopLeftRadius: CARD_RADIUS,
-  borderTopRightRadius: CARD_RADIUS,
+  borderTopLeftRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
+  borderTopRightRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
 };
 
 const actionBarStyle = {
@@ -221,22 +343,29 @@ const actionBarStyle = {
   gap: 12,
   minHeight: 44,
   padding: "7px 14px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   justifyContent: "center",
-  borderBottomLeftRadius: CARD_RADIUS,
-  borderBottomRightRadius: CARD_RADIUS,
+  borderBottomLeftRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
+  borderBottomRightRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
 };
 
-// PCM Maintenance & LoopBack only — tighter vertical spacing so page fits at 100% zoom
-const topConfigCardStyle = {
-  ...cardStyle,
+const pcmCircuitMaintenanceShadowWrapStyle = {
+  borderRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
+  overflow: "visible",
+  boxShadow: PCM_CIRCUIT_MAINTENANCE_CARD_SHADOW,
   marginBottom: 25,
 };
-
-const topConfigCardLastStyle = {
+const pcmCircuitMaintenanceCardInnerStyle = {
   ...cardStyle,
-  marginBottom: 25,
+  boxShadow: "none",
+  marginBottom: 0,
+};
+
+const pcmCircuitMaintenanceChannelCardInnerStyle = {
+  ...channelCardStyle,
+  boxShadow: "none",
+  marginBottom: 0,
 };
 
 const topConfigSectionHeaderStyle = {
@@ -258,9 +387,9 @@ const tableCellStyle = {
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
 };
 
 const labelCellStyle = {
@@ -282,8 +411,8 @@ const channelThStyle = {
   fontSize: 10,
   padding: "6px 2px",
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
   overflow: "hidden",
 };
@@ -291,11 +420,11 @@ const channelThStyle = {
 const channelTdStyle = {
   padding: "4px 2px",
   textAlign: "center",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   fontSize: 12,
   color: C.valueText,
-  background: "#ffffff",
+  background: C.cardBg,
   overflow: "hidden",
 };
 
@@ -437,6 +566,9 @@ const AdaptiveChannelTable = ({ channelCount, scrollEnabled, children }) => {
 
   return (
     <div
+      className={
+        scrollEnabled ? PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS : undefined
+      }
       style={{
         width: "100%",
         maxWidth: "100%",
@@ -472,14 +604,130 @@ const checkboxSx = {
   padding: "1px",
   color: "#3E5475",
   "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const PAGE_CHROME_OFFSET = 80; // navbar + layout padding
-const PCM_COMPACT_MQ = "(max-width: 768px)";
+const extractCallerFromChannel = (ch) => {
+  if (!ch?.channel) return "";
+  const match = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
+  return match ? match[1] : "";
+};
+
+const extractCalledFromAppdata = (ch) => {
+  if (!ch?.appdata) return "";
+  const match = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
+  return match ? match[1] : "";
+};
+
+const buildChannelTooltipInfo = (ch, channelId, v) => ({
+  channel: ch.channel || `DAHDI/${channelId}`,
+  state:
+    ch.state ||
+    (v === "unusable"
+      ? PCM_CIRCUIT_MAINTENANCE_STATE_UNUSABLE
+      : v === "red"
+        ? PCM_CIRCUIT_MAINTENANCE_STATE_RESERVED
+        : PCM_CIRCUIT_MAINTENANCE_STATE_IDLE),
+  inService:
+    ch?.dahdi_status?.in_service ||
+    (v === "unusable"
+      ? PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_NO
+      : PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_YES),
+  caller: extractCallerFromChannel(ch),
+  called: extractCalledFromAppdata(ch),
+});
+
+const renderChannelTooltipContent = (info) => (
+  <div style={{ whiteSpace: "pre-line" }}>
+    <div>
+      <strong>{PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CHANNEL}:</strong> {info.channel}
+    </div>
+    <div>
+      <strong>{PCM_CIRCUIT_MAINTENANCE_TOOLTIP_STATE}:</strong> {info.state}
+    </div>
+    <div>
+      <strong>{PCM_CIRCUIT_MAINTENANCE_TOOLTIP_IN_SERVICE}:</strong>{" "}
+      {info.inService}
+    </div>
+    {info.caller ? (
+      <div>
+        <strong>{PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CALLER}:</strong> {info.caller}
+      </div>
+    ) : null}
+    {info.called ? (
+      <div>
+        <strong>{PCM_CIRCUIT_MAINTENANCE_TOOLTIP_CALLED}:</strong> {info.called}
+      </div>
+    ) : null}
+  </div>
+);
+
+const statusIndicatorStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: STATUS_BOX_PX,
+  height: STATUS_BOX_PX,
+  margin: "0 auto",
+};
+
+const renderStatusIndicator = (v) => {
+  if (v === "frame") return colorBlock("#222");
+  if (v === "signaling") return colorBlock("#0070a8");
+  if (v === "red") return colorBlock("#e53935");
+  return <div style={statusIndicatorStyle}>{ICONS[Number(v) || 0]}</div>;
+};
+
+const PcmCircuitMaintenanceStatusTooltip = ({ info, children }) => (
+  <Tooltip
+    title={renderChannelTooltipContent(info)}
+    {...PCM_CIRCUIT_MAINTENANCE_TOOLTIP_PROPS}
+  >
+    {children}
+  </Tooltip>
+);
+
+const PcmCircuitMaintenanceScrollbarStyles = () => (
+  <style>{`
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
+const PAGE_CHROME_OFFSET = 80;
 
 const PcmCircuitMaintenancePage = () => {
   const highZoom = useBrowserZoom110();
-  const isCompact = useMediaQuery(PCM_COMPACT_MQ);
+  const isCompact = useMediaQuery(PCM_CIRCUIT_MAINTENANCE_COMPACT_MQ);
   const channelScroll = highZoom || isCompact;
 
   // State for checkboxes and table data
@@ -491,7 +739,6 @@ const PcmCircuitMaintenancePage = () => {
   const [isSpanUp, setIsSpanUp] = useState(false);
   const [channels, setChannels] = useState([]);
   const [spansData, setSpansData] = useState([]);
-  const pollingRef = useRef(null);
   const aliveRef = useRef(true);
 
   const contentRef = useRef(null);
@@ -608,7 +855,6 @@ const PcmCircuitMaintenancePage = () => {
   // Load span status and channel states with sequential logic (same as PSTN Status page)
   useEffect(() => {
     let timeoutId = null;
-    let abortController = null;
     aliveRef.current = true;
 
     const fetchStatusSequential = async () => {
@@ -754,22 +1000,27 @@ const PcmCircuitMaintenancePage = () => {
     return () => {
       aliveRef.current = false;
       if (timeoutId) clearTimeout(timeoutId);
-      if (abortController) abortController.abort();
     };
   }, []);
 
   // PCM Maintenance section
   const renderPcmMaintenance = () => (
     <div
-      style={{ ...topConfigCardStyle, marginBottom: channelScroll ? 25 : 14 }}
+      style={{
+        ...pcmCircuitMaintenanceShadowWrapStyle,
+        marginBottom: channelScroll ? 25 : 14,
+      }}
     >
-      <div style={topConfigSectionHeaderStyle}>PCM Maintenance</div>
+      <div style={pcmCircuitMaintenanceCardInnerStyle}>
+      <div style={topConfigSectionHeaderStyle}>
+        {PCM_CIRCUIT_MAINTENANCE_SECTION_MAINTENANCE}
+      </div>
       <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
           <tbody>
             <tr>
               <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
-                PCM No.
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_NO}
               </td>
               <td
                 style={{
@@ -778,12 +1029,12 @@ const PcmCircuitMaintenancePage = () => {
                   borderRight: "none",
                 }}
               >
-                0
+                {PCM_CIRCUIT_MAINTENANCE_PCM_DEFAULT_NO}
               </td>
             </tr>
             <tr>
               <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
-                PCM Status
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_STATUS}
               </td>
               <td
                 style={{
@@ -811,7 +1062,7 @@ const PcmCircuitMaintenancePage = () => {
                   ...lastTableRowCellStyle,
                 }}
               >
-                Check
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_CHECK}
               </td>
               <td
                 style={{
@@ -838,23 +1089,43 @@ const PcmCircuitMaintenancePage = () => {
           ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
         }}
       >
-        <Btn onClick={() => setMaintenanceChecked(true)}>Check All</Btn>
-        <Btn onClick={() => setMaintenanceChecked(false)}>Uncheck All</Btn>
-        <Btn onClick={() => setMaintenanceChecked((v) => !v)}>Inverse</Btn>
-        <Btn disabled={!maintenanceChecked}>Block</Btn>
-        <Btn disabled={!maintenanceChecked}>Unblock</Btn>
         <Btn
-          disabled={!maintenanceChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 180 }}
+          onClick={() => setMaintenanceChecked(true)}
+          style={pcmCircuitMaintenanceCancelBtnStyle}
         >
-          Physical Connect
+          {PCM_CIRCUIT_MAINTENANCE_BTN_CHECK_ALL}
+        </Btn>
+        <Btn
+          onClick={() => setMaintenanceChecked(false)}
+          style={pcmCircuitMaintenanceCancelBtnStyle}
+        >
+          {PCM_CIRCUIT_MAINTENANCE_BTN_UNCHECK_ALL}
+        </Btn>
+        <Btn
+          onClick={() => setMaintenanceChecked((v) => !v)}
+          style={pcmCircuitMaintenanceCancelBtnStyle}
+        >
+          {PCM_CIRCUIT_MAINTENANCE_BTN_INVERSE}
+        </Btn>
+        <Btn disabled={!maintenanceChecked} style={pcmCircuitMaintenanceCancelBtnStyle}>
+          {PCM_CIRCUIT_MAINTENANCE_BTN_BLOCK}
+        </Btn>
+        <Btn disabled={!maintenanceChecked} style={pcmCircuitMaintenanceCancelBtnStyle}>
+          {PCM_CIRCUIT_MAINTENANCE_BTN_UNBLOCK}
         </Btn>
         <Btn
           disabled={!maintenanceChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 180 }}
+          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 180 }}
         >
-          Physical Disconnect
+          {PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_CONNECT}
         </Btn>
+        <Btn
+          disabled={!maintenanceChecked}
+          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 180 }}
+        >
+          {PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_DISCONNECT}
+        </Btn>
+      </div>
       </div>
     </div>
   );
@@ -863,17 +1134,20 @@ const PcmCircuitMaintenancePage = () => {
   const renderPcmLoopback = () => (
     <div
       style={{
-        ...topConfigCardLastStyle,
+        ...pcmCircuitMaintenanceShadowWrapStyle,
         marginBottom: channelScroll ? 25 : 14,
       }}
     >
-      <div style={topConfigSectionHeaderStyle}>PCM LoopBack Config</div>
+      <div style={pcmCircuitMaintenanceCardInnerStyle}>
+      <div style={topConfigSectionHeaderStyle}>
+        {PCM_CIRCUIT_MAINTENANCE_SECTION_LOOPBACK}
+      </div>
       <div style={{ overflowX: "hidden" }}>
         <table style={tableStyle}>
           <tbody>
             <tr>
               <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
-                PCM No.
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_NO}
               </td>
               <td
                 style={{
@@ -882,12 +1156,12 @@ const PcmCircuitMaintenancePage = () => {
                   borderRight: "none",
                 }}
               >
-                0
+                {PCM_CIRCUIT_MAINTENANCE_PCM_DEFAULT_NO}
               </td>
             </tr>
             <tr>
               <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
-                PCM LoopBack Status
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_LOOPBACK_STATUS}
               </td>
               <td
                 style={{
@@ -915,7 +1189,7 @@ const PcmCircuitMaintenancePage = () => {
                   ...lastTableRowCellStyle,
                 }}
               >
-                Check
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_CHECK}
               </td>
               <td
                 style={{
@@ -942,27 +1216,43 @@ const PcmCircuitMaintenancePage = () => {
           ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
         }}
       >
-        <Btn onClick={() => setLoopbackChecked(true)}>Check All</Btn>
-        <Btn onClick={() => setLoopbackChecked(false)}>Uncheck All</Btn>
-        <Btn onClick={() => setLoopbackChecked((v) => !v)}>Inverse</Btn>
         <Btn
-          disabled={!loopbackChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 160 }}
+          onClick={() => setLoopbackChecked(true)}
+          style={pcmCircuitMaintenanceCancelBtnStyle}
         >
-          Local LoopBack
+          {PCM_CIRCUIT_MAINTENANCE_BTN_CHECK_ALL}
+        </Btn>
+        <Btn
+          onClick={() => setLoopbackChecked(false)}
+          style={pcmCircuitMaintenanceCancelBtnStyle}
+        >
+          {PCM_CIRCUIT_MAINTENANCE_BTN_UNCHECK_ALL}
+        </Btn>
+        <Btn
+          onClick={() => setLoopbackChecked((v) => !v)}
+          style={pcmCircuitMaintenanceCancelBtnStyle}
+        >
+          {PCM_CIRCUIT_MAINTENANCE_BTN_INVERSE}
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 160 }}
+          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 160 }}
         >
-          Remote LoopBack
+          {PCM_CIRCUIT_MAINTENANCE_BTN_LOCAL_LOOPBACK}
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? { minWidth: 0 } : { minWidth: 120 }}
+          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 160 }}
         >
-          UnLoopBack
+          {PCM_CIRCUIT_MAINTENANCE_BTN_REMOTE_LOOPBACK}
         </Btn>
+        <Btn
+          disabled={!loopbackChecked}
+          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 120 }}
+        >
+          {PCM_CIRCUIT_MAINTENANCE_BTN_UNLOOPBACK}
+        </Btn>
+      </div>
       </div>
     </div>
   );
@@ -972,7 +1262,6 @@ const PcmCircuitMaintenancePage = () => {
     setPcm0Checked((prev) => prev.map((v, i) => (i === idx ? !v : v)));
   };
   const allChecked = pcm0Checked.every(Boolean);
-  const noneChecked = pcm0Checked.every((v) => !v);
   const handleCheckAll = () => setPcm0Checked(Array(32).fill(true));
   const handleUncheckAll = () => setPcm0Checked(Array(32).fill(false));
   const handleInverse = () => setPcm0Checked((prev) => prev.map((v) => !v));
@@ -1019,38 +1308,20 @@ const PcmCircuitMaintenancePage = () => {
     padding: channelScroll ? "6px 2px" : "5px 1px",
   });
 
-  // Update PCM0_HEADERS in the component
-  const PCM0_HEADERS = Array(32)
-    .fill("")
-    .map((_, i) => {
-      if (i === 0) return "Channel No.";
-      return i.toString();
-    });
-
-  const PCM0_STATUS_ROW = Array(32)
-    .fill("")
-    .map((_, i) => {
-      if (i === 0) return "Status";
-      return "gray";
-    });
-
-  const PCM0_CHECK_ROW = Array(32)
-    .fill("")
-    .map((_, i) => {
-      if (i === 0) return "Check";
-      return "";
-    });
-
   const renderPcm0 = () => {
     return (
       <div
-        style={{ ...channelCardStyle, marginBottom: channelScroll ? 24 : 12 }}
+        style={{
+          ...pcmCircuitMaintenanceShadowWrapStyle,
+          marginBottom: channelScroll ? 24 : 12,
+        }}
       >
-        <div style={sectionHeaderStyle}>PCM 0</div>
+        <div style={pcmCircuitMaintenanceChannelCardInnerStyle}>
+        <div style={sectionHeaderStyle}>{PCM_CIRCUIT_MAINTENANCE_PCM0_TITLE}</div>
         <AdaptiveChannelTable channelCount={32} scrollEnabled={channelScroll}>
           <thead>
             <tr>
-              <th style={channelLabelThFit()}>Channel No.</th>
+              <th style={channelLabelThFit()}>{PCM_CIRCUIT_MAINTENANCE_LABEL_CHANNEL_NO}</th>
               {Array.from({ length: 32 }, (_, i) => (
                 <th
                   key={i}
@@ -1063,119 +1334,26 @@ const PcmCircuitMaintenancePage = () => {
           </thead>
           <tbody>
             <tr>
-              <td style={channelLabelTdFit()}>Status</td>
+              <td style={channelLabelTdFit()}>{PCM_CIRCUIT_MAINTENANCE_LABEL_STATUS}</td>
               {pcm0Values.map((v, i) => {
                 const ch =
                   channels.find((c) => Number(c.channelid) === i) || {};
+                const info = buildChannelTooltipInfo(ch, i, v);
 
-                // Extract caller from channel field (e.g., "DAHDI/i1/1202210116-1" -> "1202210116")
-                let caller = "";
-                if (ch.channel) {
-                  const channelMatch = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
-                  if (channelMatch) {
-                    caller = channelMatch[1];
-                  }
-                }
-
-                // Extract called from appdata field (e.g., "Dial(PJSIP/07309377930@..." -> "07309377930")
-                let called = "";
-                if (ch.appdata) {
-                  const appdataMatch = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
-                  if (appdataMatch) {
-                    called = appdataMatch[1];
-                  }
-                }
-
-                const info = {
-                  channel: ch.channel || `DAHDI/${i}`,
-                  state:
-                    ch.state ||
-                    (v === "unusable"
-                      ? "Unusable"
-                      : v === "red"
-                        ? "Reserved"
-                        : "Idle"),
-                  inService:
-                    ch?.dahdi_status?.in_service ||
-                    (v === "unusable" ? "No" : "Yes"),
-                  caller: caller,
-                  called: called,
-                };
-                const tooltipContent = (
-                  <div style={{ whiteSpace: "pre-line" }}>
-                    <div>
-                      <strong>Channel:</strong> {info.channel}
-                    </div>
-                    <div>
-                      <strong>State:</strong> {info.state}
-                    </div>
-                    <div>
-                      <strong>In Service:</strong> {info.inService}
-                    </div>
-                    {info.caller ? (
-                      <div>
-                        <strong>Caller:</strong> {info.caller}
-                      </div>
-                    ) : null}
-                    {info.called ? (
-                      <div>
-                        <strong>Called:</strong> {info.called}
-                      </div>
-                    ) : null}
-                  </div>
-                );
                 return (
                   <td key={i} style={statusDataTdFit()}>
-                    <Tooltip
-                      title={tooltipContent}
-                      arrow
-                      placement="top"
-                      enterDelay={0}
-                      enterNextDelay={0}
-                      leaveDelay={100}
-                      componentsProps={{
-                        tooltip: {
-                          sx: {
-                            bgcolor: "#fff",
-                            color: "#111",
-                            border: "1px solid #bbb",
-                            boxShadow: 2,
-                            fontSize: 12,
-                          },
-                        },
-                        arrow: { sx: { color: "#fff" } },
-                      }}
-                    >
+                    <PcmCircuitMaintenanceStatusTooltip info={info}>
                       <div style={statusCellContentStyle}>
-                        {v === "frame" ? (
-                          colorBlock("#222")
-                        ) : v === "signaling" ? (
-                          colorBlock("#0070a8")
-                        ) : v === "red" ? (
-                          colorBlock("#e53935")
-                        ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: STATUS_BOX_PX,
-                              height: STATUS_BOX_PX,
-                              margin: "0 auto",
-                            }}
-                          >
-                            {ICONS[Number(v) || 0]}
-                          </div>
-                        )}
+                        {renderStatusIndicator(v)}
                       </div>
-                    </Tooltip>
+                    </PcmCircuitMaintenanceStatusTooltip>
                   </td>
                 );
               })}
             </tr>
             <tr>
               <td style={{ ...channelLabelTdFit(), ...lastTableRowCellStyle }}>
-                Check
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_CHECK}
               </td>
               {Array.from({ length: 32 }, (_, i) => (
                 <td
@@ -1205,13 +1383,28 @@ const PcmCircuitMaintenancePage = () => {
             ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
           }}
         >
-          <Btn onClick={handleCheckAll}>Check All</Btn>
-          <Btn onClick={handleUncheckAll}>Uncheck All</Btn>
-          <Btn onClick={handleInverse}>Inverse</Btn>
-          <Btn disabled={!(allChecked || pcm0Checked.some(Boolean))}>Block</Btn>
-          <Btn disabled={!(allChecked || pcm0Checked.some(Boolean))}>
-            Unblock
+          <Btn onClick={handleCheckAll} style={pcmCircuitMaintenanceCancelBtnStyle}>
+            {PCM_CIRCUIT_MAINTENANCE_BTN_CHECK_ALL}
           </Btn>
+          <Btn onClick={handleUncheckAll} style={pcmCircuitMaintenanceCancelBtnStyle}>
+            {PCM_CIRCUIT_MAINTENANCE_BTN_UNCHECK_ALL}
+          </Btn>
+          <Btn onClick={handleInverse} style={pcmCircuitMaintenanceCancelBtnStyle}>
+            {PCM_CIRCUIT_MAINTENANCE_BTN_INVERSE}
+          </Btn>
+          <Btn
+            disabled={!(allChecked || pcm0Checked.some(Boolean))}
+            style={pcmCircuitMaintenanceCancelBtnStyle}
+          >
+            {PCM_CIRCUIT_MAINTENANCE_BTN_BLOCK}
+          </Btn>
+          <Btn
+            disabled={!(allChecked || pcm0Checked.some(Boolean))}
+            style={pcmCircuitMaintenanceCancelBtnStyle}
+          >
+            {PCM_CIRCUIT_MAINTENANCE_BTN_UNBLOCK}
+          </Btn>
+        </div>
         </div>
       </div>
     );
@@ -1232,8 +1425,12 @@ const PcmCircuitMaintenancePage = () => {
     return (
       <div
         key={span.spanId}
-        style={{ ...channelCardStyle, marginBottom: channelScroll ? 24 : 12 }}
+        style={{
+          ...pcmCircuitMaintenanceShadowWrapStyle,
+          marginBottom: channelScroll ? 24 : 12,
+        }}
       >
+        <div style={pcmCircuitMaintenanceChannelCardInnerStyle}>
         <div style={sectionHeaderStyle}>
           {span.name} · {span.ip}
         </div>
@@ -1243,7 +1440,7 @@ const PcmCircuitMaintenancePage = () => {
         >
           <thead>
             <tr>
-              <th style={channelLabelThFit()}>Channel No.</th>
+              <th style={channelLabelThFit()}>{PCM_CIRCUIT_MAINTENANCE_LABEL_CHANNEL_NO}</th>
               {span.channelRanges.map((chId, i) => (
                 <th
                   key={i}
@@ -1260,92 +1457,27 @@ const PcmCircuitMaintenancePage = () => {
           </thead>
           <tbody>
             <tr>
-              <td style={channelLabelTdFit()}>Status</td>
+              <td style={channelLabelTdFit()}>{PCM_CIRCUIT_MAINTENANCE_LABEL_STATUS}</td>
               {span.channelRanges.map((channelId, i) => {
                 const v = pcmValues[i];
                 const ch =
                   channels.find((c) => Number(c.channelid) === channelId) || {};
-                let caller = "";
-                if (ch.channel) {
-                  const m = ch.channel.match(/DAHDI\/[^/]+\/(\d+)/);
-                  if (m) caller = m[1];
-                }
-                let called = "";
-                if (ch.appdata) {
-                  const m = ch.appdata.match(/Dial\([^/]+\/(\d+)@/);
-                  if (m) called = m[1];
-                }
-                const info = {
-                  channel: ch.channel || `DAHDI/${channelId}`,
-                  state:
-                    ch.state ||
-                    (v === "unusable"
-                      ? "Unusable"
-                      : v === "red"
-                        ? "Reserved"
-                        : "Idle"),
-                  inService:
-                    ch?.dahdi_status?.in_service ||
-                    (v === "unusable" ? "No" : "Yes"),
-                  caller,
-                  called,
-                };
-                const tooltipContent = (
-                  <div style={{ whiteSpace: "pre-line" }}>
-                    <div>
-                      <strong>Channel:</strong> {info.channel}
-                    </div>
-                    <div>
-                      <strong>State:</strong> {info.state}
-                    </div>
-                    <div>
-                      <strong>In Service:</strong> {info.inService}
-                    </div>
-                    {info.caller ? (
-                      <div>
-                        <strong>Caller:</strong> {info.caller}
-                      </div>
-                    ) : null}
-                    {info.called ? (
-                      <div>
-                        <strong>Called:</strong> {info.called}
-                      </div>
-                    ) : null}
-                  </div>
-                );
+                const info = buildChannelTooltipInfo(ch, channelId, v);
+
                 return (
                   <td key={i} style={statusDataTdFit()}>
-                    <Tooltip title={tooltipContent} arrow placement="top">
+                    <PcmCircuitMaintenanceStatusTooltip info={info}>
                       <div style={statusCellContentStyle}>
-                        {v === "frame" ? (
-                          colorBlock("#222")
-                        ) : v === "signaling" ? (
-                          colorBlock("#0070a8")
-                        ) : v === "red" ? (
-                          colorBlock("#e53935")
-                        ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: STATUS_BOX_PX,
-                              height: STATUS_BOX_PX,
-                              margin: "0 auto",
-                            }}
-                          >
-                            {ICONS[Number(v) || 0]}
-                          </div>
-                        )}
+                        {renderStatusIndicator(v)}
                       </div>
-                    </Tooltip>
+                    </PcmCircuitMaintenanceStatusTooltip>
                   </td>
                 );
               })}
             </tr>
             <tr>
               <td style={{ ...channelLabelTdFit(), ...lastTableRowCellStyle }}>
-                Check
+                {PCM_CIRCUIT_MAINTENANCE_LABEL_CHECK}
               </td>
               {span.channelRanges.map((_, i) => (
                 <td
@@ -1371,64 +1503,56 @@ const PcmCircuitMaintenancePage = () => {
             </tr>
           </tbody>
         </AdaptiveChannelTable>
+        </div>
       </div>
     );
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: C.pageBg,
-        padding: isCompact ? 8 : 16,
-        boxSizing: "border-box",
-        width: "100%",
-        maxWidth: "100vw",
-        overflowX: "hidden",
-        ...(highZoom || isCompact || contentOverflows
-          ? { minHeight: "calc(100vh - 80px)", overflowY: "auto" }
-          : {
-              height: "calc(100vh - 80px)",
-              maxHeight: "calc(100vh - 80px)",
-              overflow: "hidden",
-            }),
-      }}
-    >
+    <>
+      <PcmCircuitMaintenanceScrollbarStyles />
       <div
-        ref={contentRef}
+        className={
+          highZoom || isCompact || contentOverflows
+            ? PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS
+            : undefined
+        }
         style={{
-          maxWidth: "100%",
-          margin: "0 auto",
-          overflow: isCompact ? "visible" : "hidden",
+          backgroundColor: C.pageBg,
+          padding: isCompact ? 8 : 16,
+          boxSizing: "border-box",
+          width: "100%",
+          ...(highZoom || isCompact || contentOverflows
+            ? {
+                minHeight: "calc(100vh - 80px)",
+                overflowY: "auto",
+                overflowX: "visible",
+              }
+            : {
+                height: "calc(100vh - 80px)",
+                maxHeight: "calc(100vh - 80px)",
+                overflowX: "visible",
+                overflowY: "hidden",
+              }),
         }}
       >
-        {/* Breadcrumb */}
         <div
+          ref={contentRef}
           style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: channelScroll ? 16 : 10,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
+            ...pcmCircuitMaintenancePageInnerStyle,
+            overflowX: "visible",
+            overflowY: isCompact ? "visible" : "hidden",
           }}
         >
-          <span>{PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT}</span>
-          <span>&gt;</span>
-          <span>{PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION}</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE}
-          </span>
+          <PcmCircuitMaintenanceBreadcrumb compactChannelScroll={channelScroll} />
+
+          {renderPcmMaintenance()}
+          {renderPcmLoopback()}
+
+          {spansData.length > 0 ? spansData.map(renderSpanBlock) : renderPcm0()}
         </div>
-
-        {renderPcmMaintenance()}
-        {renderPcmLoopback()}
-
-        {spansData.length > 0 ? spansData.map(renderSpanBlock) : renderPcm0()}
       </div>
-    </div>
+    </>
   );
 };
 
