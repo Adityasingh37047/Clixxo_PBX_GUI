@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material"; 
 import { Checkbox, Alert } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -16,28 +15,33 @@ import {
 } from "../../../api/apiService";
 import useAuth from "../../../context/useAuth";
 
-// ── Color palette (matches CallCount) ────────────────────────────────────────
+// ── Color palette (matches SignalingCapture) ─────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
-  cardBorder: "#9CA3AF",
-  divider: "#9CA3AF",
-  cardShadow: "0 10px 30px rgba(15,23,42,0.06)",
+  cardBorder: "#d8dde5",
+  cardShadow:
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
-  strongText: "#0f172a", 
-  mutedText: "#94a3b8",
-  accent: "#3E5475",
-  primary: "#2563eb",
-  primaryHover: "#1d4ed8",
-  successGreen: "#16a34a",
+  valueText: "#1f2937",
+  mutedText: "#6b7280",
+  placeholderText: "#9aa3b2",
+  strongText: "#1f2937",
+  accent: "#4A5D75",
+  accentDark: "#3a4a5e",
   errorRed: "#dc2626",
+  gridHeaderBg: "#F8FAFC",
 };
-// ── Local field UI (inlined from systemSharedUi) ──
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
-const FOCUS_RING_SHADOW = (color) => `0 0 0 1px ${color}`;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
+// ── Local field UI (matches SignalingCapture) ──
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -54,22 +58,21 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
-const nativeFieldInputStyle = {
-  height: 28,
-  width: 200,
-  padding: "0 8px",
-  fontSize: 13,
+const systemToolsFieldInputStyle = {
+  padding: "6px 12px",
+  borderRadius: FIELD_RADIUS,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
+  fontSize: 14,
+  width: "100%",
+  backgroundColor: "#ffffff",
   outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
+  color: C.labelText,
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
   boxShadow: "none",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
 const inputInteraction = {
@@ -99,24 +102,87 @@ const inputInteraction = {
   },
 };
 
-const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
+const inputStyle = systemToolsFieldInputStyle;
 
-const userPermissionFieldInputStyle = {
-  height: 30,
-  padding: "0 10px",
-  border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 6,
+const labelStyle = {
   fontSize: 13,
-  outline: "none",
-  width: "100%",
-  boxSizing: "border-box",
-  color: "#0f172a",
-  background: "#ffffff",
-  boxShadow: "none",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
 };
 
-const inputStyle = userPermissionFieldInputStyle;
+const tableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const pageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+};
+
+const blueBarStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  marginBottom: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "7px 14px",
+  flexWrap: "wrap",
+  gap: 12,
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
+};
+
+const formFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  marginTop: 24,
+  padding: "10px 20px",
+  border: `1.5px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxSizing: "border-box",
+  background: C.cardBg,
+  boxShadow: C.cardShadow,
+};
+
+const formFooterBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+};
 
 
 const tooltipProps = {
@@ -148,19 +214,32 @@ const tooltips = {
   accessType: "The access type of the user.",
   rolePermission: "The role permission of the user.",
 };  
-// ── Button Component ──────────────────────────────────────────────────────────
+// ── Button Component (matches SignalingCapture) ───────────────────────────────
 const Btn = ({
   children,
   onClick,
   disabled,
   variant = "default",
   style: extraStyle,
+  type,
 }) => {
   const styles = {
     default: {
       background: C.cardBg,
       color: C.valueText,
       border: "1px solid #9ca3af",
+    },
+    primary: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     edit: {
       background: "#dcfce7",
@@ -173,77 +252,104 @@ const Btn = ({
       border: "1px solid #fecaca",
     },
     outline: {
-      background: "transparent",
-      color: C.accent,
-      border: `0.5px solid ${C.cardBorder}`,
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     accent: {
       background: C.accent,
       color: C.cardBg,
-      border: `0.5px solid ${C.accent}`,
+      border: `1px solid ${C.accent}`,
     },
     danger: {
       background: C.errorRed,
       color: C.cardBg,
       border: `0.5px solid ${C.errorRed}`,
     },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
   };
   const s = styles[variant] || styles.default;
-  const hoverBg = (() => {
-    switch (variant) {
-      case "edit":
-        return "#bbf7d0";
-      case "delete":
-        return "#fecaca";
-      case "accent":
-        return "#0369a1"; // darker than C.accent
-      case "danger":
-        return "#b91c1c"; // darker than C.errorRed
-      case "outline":
-        return "rgba(2, 132, 199, 0.10)";
-      case "cancel":
-        return "#b6c2d3";
-      case "default":
-      default:
-        return "#e2e8f0";
-    }
-  })();
+  const hoverBg =
+    {
+      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      cancel: "#b6c2d3",
+      edit: "#bbf7d0",
+      delete: "#fecaca",
+      danger: "#b91c1c",
+      accent: C.accentDark,
+      outline: "#e2e8f0",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
+  const activeBg =
+    {
+      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      cancel: "#a3b1c2",
+      edit: "#86efac",
+      delete: "#fca5a5",
+      danger: "#991b1b",
+      accent: "#2C3E57",
+      outline: "#d1d9e6",
+      default: "#d1d5db",
+    }[variant] || "#d1d5db";
+  const baseBg = extraStyle?.background ?? s.background;
+  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow =
+      variant === "primary"
+        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
+        : variant === "cancel"
+          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
+          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
+  };
+
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "5px 14px",
-        borderRadius: 6,
-        fontSize: 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 13,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 5,
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+        height: 36,
+        gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.backgroundColor = hoverBg;
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.backgroundColor = s.background;
-        }
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
       }}
     >
       {children}
@@ -254,17 +360,17 @@ const Btn = ({
 const TH = ({ children, style: extra }) => (
   <th
     style={{
-      background: "#F8FAFC",
+      background: C.gridHeaderBg,
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
-      padding: "9px 14px",
+      padding: "10px 14px",
       textAlign: "center",
-      borderBottom: `1px solid ${C.cardBorder}`,
-      borderRight: `1px solid ${C.cardBorder}`,
+      borderBottom: `1px solid ${C.divider}`,
+      borderRight: `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.14em",
+      letterSpacing: "0.12em",
       ...extra,
     }}
   >
@@ -273,22 +379,22 @@ const TH = ({ children, style: extra }) => (
 );
 
 const tdStyle = {
-  padding: "7px 14px",
+  padding: "9px 14px",
   fontSize: 13,
   color: C.valueText,
   textAlign: "center",
-  background: "#ffffff",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  borderRight: `1px solid ${C.cardBorder}`,
+  background: C.cardBg,
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
   whiteSpace: "nowrap",
 };
 
 const cbSx = {
-  p: 0,
+  padding: "4px",
   color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 16 },
+  "&.Mui-checked": { color: C.accent },
+  "&.MuiCheckbox-indeterminate": { color: C.accent },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 function allChecked(pages, perms) {
@@ -347,7 +453,7 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(15, 23, 42, 0.3)",
+        background: "rgba(15, 23, 42, 0.35)",
         backdropFilter: "blur(4px)",
         zIndex: 1000,
         display: "flex",
@@ -359,22 +465,20 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
       <div
         style={{
           background: C.cardBg,
-          borderRadius: 12,
+          borderRadius: CARD_RADIUS,
           padding: "24px 28px",
           width: 380,
-          border: `1px solid ${C.cardBorder}`,
-          boxShadow:
-            "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
+          maxWidth: "calc(100vw - 32px)",
+          border: `1.5px solid ${C.cardBorder}`,
+          boxShadow: C.cardShadow,
         }}
       >
         <p
           style={{
-            margin: "0 0 14px",
+            margin: "0 0 16px",
             fontSize: 14,
             fontWeight: 700,
-            color: C.accent,
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
+            color: C.labelText,
           }}
         >
           Reset Password — {user.username}
@@ -405,15 +509,15 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
         <div
           style={{
             display: "flex",
-            gap: 10,
+            gap: 12,
             justifyContent: "flex-end",
-            marginTop: 14,
+            marginTop: 16,
           }}
         >
-          <Btn variant="accent" onClick={handle} disabled={loading}>
+          <Btn variant="primary" onClick={handle} disabled={loading}>
             {loading ? "Saving..." : "Save"}
           </Btn>
-          <Btn variant="default" onClick={onCancel}>
+          <Btn variant="cancel" onClick={onCancel}>
             Cancel
           </Btn>
         </div>
@@ -455,19 +559,20 @@ function PermissionTree({ permissions, setPermissions }) {
   return (
     <div
       style={{
-        background: "#ffffff",
+        background: C.cardBg,
         overflow: "hidden",
       }}
     >
-      {PAGE_PERMISSION_GROUPS.map((section, si) => {
+      {PAGE_PERMISSION_GROUPS.map((section) => {
         const secPages = sectionPages(section);
         return (
           <div key={section.id}>
             <div
-              className="flex items-center py-1.5 pr-3"
+              className="flex items-center py-2 pr-4"
               style={{
-                backgroundColor: "#f8fafc",
+                backgroundColor: C.gridHeaderBg,
                 paddingLeft: L1,
+                borderBottom: `1px solid ${C.divider}`,
               }}
             >
               <Checkbox
@@ -478,11 +583,10 @@ function PermissionTree({ permissions, setPermissions }) {
                 sx={cbSx}
               />
               <span
-                className="ml-2 text-[12.5px] font-bold"
+                className="ml-2 text-[13px] font-bold"
                 style={{
-                  color: C.accent,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.03em",
+                  color: C.labelText,
+                  letterSpacing: "0.02em",
                 }}
               >
                 {section.label}
@@ -491,10 +595,11 @@ function PermissionTree({ permissions, setPermissions }) {
             {section.subGroups.map((sub) => (
               <div key={sub.id}>
                 <div
-                  className="flex items-center py-1 pr-3"
+                  className="flex items-center py-1.5 pr-4"
                   style={{
-                    backgroundColor: "#ffffff",
+                    backgroundColor: C.cardBg,
                     paddingLeft: L2,
+                    borderBottom: `1px solid ${C.divider}`,
                   }}
                 >
                   <Checkbox
@@ -505,26 +610,27 @@ function PermissionTree({ permissions, setPermissions }) {
                     sx={cbSx}
                   />
                   <span
-                    className="ml-2 text-[12px] font-semibold"
+                    className="ml-2 text-[12.5px] font-semibold"
                     style={{ color: C.valueText }}
                   >
                     {sub.label}
                   </span>
                 </div>
                 <div
-                  className="pr-4 py-1.5"
+                  className="pr-4 py-2"
                   style={{
                     paddingLeft: L3,
                     display: "grid",
                     gridTemplateColumns:
-                      "repeat(auto-fill, minmax(135px, 1fr))",
-                    gap: "6px 8px",
+                      "repeat(auto-fill, minmax(140px, 1fr))",
+                    gap: "8px 10px",
+                    borderBottom: `1px solid ${C.divider}`,
                   }}
                 >
                   {sub.pages.map((page) => (
                     <label
                       key={page.id}
-                      className="flex items-center gap-1 cursor-pointer select-none"
+                      className="flex items-center gap-1.5 cursor-pointer select-none"
                     >
                       <Checkbox
                         size="small"
@@ -533,8 +639,8 @@ function PermissionTree({ permissions, setPermissions }) {
                         sx={cbSx}
                       />
                       <span
-                        className="text-[11.5px]"
-                        style={{ color: C.labelText }}
+                        className="text-[12px]"
+                        style={{ color: C.labelText, lineHeight: 1.35 }}
                       >
                         {page.label}
                       </span>
@@ -743,11 +849,8 @@ export default function UserManage() {
   };
 
   return (
-    <div
-      className="min-h-[calc(100vh-80px)] p-4 flex flex-col items-center"
-      style={{ backgroundColor: C.pageBg }}
-    >
-      <div className="w-full" style={{ maxWidth: 1000 }}>
+    <div style={pageWrapStyle} data-native-scroll>
+      <div style={pageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
@@ -779,67 +882,30 @@ export default function UserManage() {
         >
           <span>User Manage</span>
           <span>&gt;</span>
-
           <span>User Permission</span>
           <span>&gt;</span>
-
-          <span
-            style={{
-              color: C.strongText,
-              fontWeight: 600,
-            }}
-          >
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
             User Manage
           </span>
         </div>
 
         {/* ── User List Card ── */}
-        <div
-          style={{
-            background: C.cardBg,
-            borderRadius: 10,
-            overflow: "hidden",
-            boxShadow: C.cardShadow,
-            marginBottom: 24,
-            border: `1.5px solid ${C.cardBorder}`,
-          }}
-        >
-          {/* Card Toolbar */}
-          <div
-            style={{
-              minHeight: 44,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.strongText,
-                letterSpacing: "0.02em",
-                marginLeft: 6,
-              }}
-            >
-              User List
-            </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ ...tableContainerStyle, marginTop: 4 }}>
+          <div style={blueBarStyle}>
+            <span>User List</span>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {mode !== null && (
                 <Btn
                   variant="cancel"
                   onClick={closeForm}
-                  style={{ height: 30, padding: "0 14px", borderRadius: 10 }}
+                  style={{ minWidth: 90, height: 33, fontSize: 13 }}
                 >
                   Cancel
                 </Btn>
               )}
               {mode === null && (
-                <button
+                <Btn
+                  variant="primary"
                   onClick={() => {
                     if (!canWrite) {
                       showReadOnlyToast();
@@ -847,32 +913,11 @@ export default function UserManage() {
                     }
                     openAdd();
                   }}
-                  style={{
-                    background:
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                    color: "#fff",
-                    border: "1px solid #5A6F8F",
-                    borderRadius: 10,
-                    padding: "6px 14px",
-                    height: 30,
-                    cursor: !canWrite ? "not-allowed" : "pointer",
-                    fontWeight: 600,
-                    fontSize: 12,
-                    opacity: !canWrite ? 0.5 : 1,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (canWrite)
-                      e.currentTarget.style.background =
-                        "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (canWrite)
-                      e.currentTarget.style.background =
-                        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
-                  }}
+                  disabled={!canWrite}
+                  style={{ minWidth: 110, height: 33, fontSize: 13 }}
                 >
                   + Add User
-                </button>
+                </Btn>
               )}
             </div>
           </div>
@@ -880,9 +925,10 @@ export default function UserManage() {
             <p
               style={{
                 textAlign: "center",
-                padding: 20,
+                padding: "32px 20px",
                 color: C.mutedText,
                 fontSize: 13,
+                fontWeight: 500,
               }}
             >
               Loading users...
@@ -891,9 +937,10 @@ export default function UserManage() {
             <p
               style={{
                 textAlign: "center",
-                padding: 20,
+                padding: "32px 20px",
                 color: C.errorRed,
                 fontSize: 13,
+                fontWeight: 500,
               }}
             >
               {listError}
@@ -902,9 +949,10 @@ export default function UserManage() {
             <p
               style={{
                 textAlign: "center",
-                padding: 20,
+                padding: "32px 20px",
                 color: C.mutedText,
                 fontSize: 13,
+                fontWeight: 500,
               }}
             >
               No users found.
@@ -985,10 +1033,11 @@ export default function UserManage() {
                     const isSuperAdmin =
                       accessType === "superadmin" || accessType === "admin";
                     const isLastRow = i === users.length - 1;
-                    const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                    const rowBg = i % 2 === 1 ? "#f8fafc" : C.cardBg;
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
+                    const hoverBg = "#f1f5f9";
                     return (
                       <tr
                         key={user.id}
@@ -997,7 +1046,7 @@ export default function UserManage() {
                           transition: "background 0.15s ease",
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.background = hoverBg;
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = rowBg;
@@ -1036,8 +1085,10 @@ export default function UserManage() {
                             style={{
                               fontSize: 11,
                               fontWeight: 600,
-                              padding: "2px 8px",
-                              borderRadius: 10,
+                              padding: "3px 10px",
+                              borderRadius: 6,
+                              background: isSuperAdmin ? "#eff6ff" : "#f0fdf4",
+                              border: `1px solid ${isSuperAdmin ? "#bfdbfe" : "#bbf7d0"}`,
                               color: isSuperAdmin ? "#1d4ed8" : "#15803d",
                             }}
                           >
@@ -1106,10 +1157,10 @@ export default function UserManage() {
                                 titleAccess="Edit"
                                 style={{
                                   cursor: canWrite ? "pointer" : "not-allowed",
-                                  color: "#2563eb",
+                                  color: C.accent,
                                   fontSize: 22,
-                                  opacity: canWrite ? 0.7 : 0.3,
-                                  transition: "opacity 0.15s ease",
+                                  opacity: canWrite ? 0.75 : 0.3,
+                                  transition: "opacity 0.15s ease, color 0.15s ease",
                                 }}
                                 onClick={() => {
                                   if (!canWrite) {
@@ -1119,12 +1170,16 @@ export default function UserManage() {
                                   openEdit(user);
                                 }}
                                 onMouseEnter={(e) => {
-                                  if (canWrite)
+                                  if (canWrite) {
                                     e.currentTarget.style.opacity = "1";
+                                    e.currentTarget.style.color = C.accentDark;
+                                  }
                                 }}
                                 onMouseLeave={(e) => {
-                                  if (canWrite)
-                                    e.currentTarget.style.opacity = "0.7";
+                                  if (canWrite) {
+                                    e.currentTarget.style.opacity = "0.75";
+                                    e.currentTarget.style.color = C.accent;
+                                  }
                                 }}
                               />
                             )}
@@ -1133,10 +1188,10 @@ export default function UserManage() {
                                 titleAccess="Delete"
                                 style={{
                                   cursor: canWrite ? "pointer" : "not-allowed",
-                                  color: "#dc2626",
+                                  color: C.errorRed,
                                   fontSize: 22,
-                                  opacity: canWrite ? 0.7 : 0.3,
-                                  transition: "opacity 0.15s ease",
+                                  opacity: canWrite ? 0.75 : 0.3,
+                                  transition: "opacity 0.15s ease, color 0.15s ease",
                                 }}
                                 onClick={() => {
                                   if (!canWrite) {
@@ -1146,12 +1201,16 @@ export default function UserManage() {
                                   handleDelete(user);
                                 }}
                                 onMouseEnter={(e) => {
-                                  if (canWrite)
+                                  if (canWrite) {
                                     e.currentTarget.style.opacity = "1";
+                                    e.currentTarget.style.color = "#b91c1c";
+                                  }
                                 }}
                                 onMouseLeave={(e) => {
-                                  if (canWrite)
-                                    e.currentTarget.style.opacity = "0.7";
+                                  if (canWrite) {
+                                    e.currentTarget.style.opacity = "0.75";
+                                    e.currentTarget.style.color = C.errorRed;
+                                  }
                                 }}
                               />
                             )}
@@ -1169,61 +1228,29 @@ export default function UserManage() {
         {/* ── Add / Edit Form ── */}
         {mode && (
           <>
-            <div
-              style={{
-                background: C.cardBg,
-                borderRadius: 10,
-                overflow: "hidden",
-                boxShadow: C.cardShadow,
-                marginTop: 24,
-                marginBottom: 24,
-                border: `1.5px solid ${C.cardBorder}`,
-              }}
-            >
-              {/* Card Header */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "12px 18px",
-                  borderBottom: `1px solid ${C.divider}`,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: C.strongText,
-                    letterSpacing: "0.02em",
-                  }}
-                >
+            <div style={{ ...tableContainerStyle, marginTop: 20 }}>
+              <div style={{ ...blueBarStyle, justifyContent: "flex-start" }}>
+                <span>
                   {mode === "add"
                     ? "Add User"
                     : `Edit User — ${editUser?.username}`}
                 </span>
               </div>
-              {/* Card Body */}
-              <div
-                style={{ padding: "20px 24px" }}
-                className="flex flex-col items-center"
-              >
-                <div style={{ width: 480 }} className="flex flex-col gap-3">
+              <div className="p-6 flex flex-col items-center">
+                <div
+                  style={{ width: "100%", maxWidth: 520 }}
+                  className="flex flex-col gap-4"
+                >
                   {mode === "add" && (
-                    <div className="flex items-center gap-4">
-                       <Tooltip title={tooltips.username} {...tooltipProps}
-                       >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <Tooltip title={tooltips.username} {...tooltipProps}>
                         <span
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: C.labelText,
-                            width: 120,
-                            shrink: 0,
-                          }}
+                          className="sm:w-[140px] shrink-0"
+                          style={labelStyle}
                         >
                           Username
                         </span>
-                        </Tooltip>
+                      </Tooltip>
                       <input
                         style={inputStyle}
                         type="text"
@@ -1235,22 +1262,15 @@ export default function UserManage() {
                     </div>
                   )}
                   {mode === "add" && (
-                    <div className="flex items-center gap-4">
-                     
-                      <Tooltip title={tooltips.password} {...tooltipProps}
-                      >
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: C.labelText,
-                          width: 120,
-                          shrink: 0,
-                        }}
-                      >
-                            Password
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <Tooltip title={tooltips.password} {...tooltipProps}>
+                        <span
+                          className="sm:w-[140px] shrink-0"
+                          style={labelStyle}
+                        >
+                          Password
                         </span>
-                        </Tooltip>
+                      </Tooltip>
                       <input
                         style={inputStyle}
                         type="password"
@@ -1261,20 +1281,14 @@ export default function UserManage() {
                       />
                     </div>
                   )}
-                  <div className="flex items-center gap-4">
-                    <Tooltip title={tooltips.accessType} {...tooltipProps}
-                    >
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 120,
-                        shrink: 0,
-                      }}
-                    >
-                      Access Type
-                    </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <Tooltip title={tooltips.accessType} {...tooltipProps}>
+                      <span
+                        className="sm:w-[140px] shrink-0"
+                        style={labelStyle}
+                      >
+                        Access Type
+                      </span>
                     </Tooltip>
                     <select
                       style={inputStyle}
@@ -1286,20 +1300,14 @@ export default function UserManage() {
                       <option value="superadmin">Super Admin</option>
                     </select>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Tooltip title={tooltips.rolePermission} {...tooltipProps}
-                    >
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                        width: 120,
-                        shrink: 0,
-                      }}
-                    >
-                      Role Permission
-                    </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <Tooltip title={tooltips.rolePermission} {...tooltipProps}>
+                      <span
+                        className="sm:w-[140px] shrink-0"
+                        style={labelStyle}
+                      >
+                        Role Permission
+                      </span>
                     </Tooltip>
                     <select
                       style={inputStyle}
@@ -1314,37 +1322,10 @@ export default function UserManage() {
                 </div>
               </div>
             </div>
-            {/* Page Permissions */}
-            <div
-              style={{
-                background: C.cardBg,
-                borderRadius: 10,
-                overflow: "hidden",
-                boxShadow: C.cardShadow,
-                marginTop: 24,
-                marginBottom: 0,
-                border: `1.5px solid ${C.cardBorder}`,
-              }}
-            >
-              {/* Card Header */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "12px 18px",
-                  borderBottom: `1px solid ${C.divider}`,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: C.strongText,
-                    letterSpacing: "0.02em",
-                  }}
-                >
-                  Page Permissions
-                </span>
+
+            <div style={{ ...tableContainerStyle, marginTop: 20 }}>
+              <div style={{ ...blueBarStyle, justifyContent: "flex-start" }}>
+                <span>Page Permissions</span>
               </div>
               <PermissionTree
                 permissions={permissions}
@@ -1352,7 +1333,6 @@ export default function UserManage() {
               />
             </div>
 
-            {/* Form error */}
             {formError && (
               <Alert
                 severity="error"
@@ -1370,12 +1350,9 @@ export default function UserManage() {
               </Alert>
             )}
 
-            {/* Form buttons */}
-            <div
-              className="flex gap-3 justify-center py-2"
-              style={{ marginTop: 20, marginBottom: 24 }}
-            >
-              <button
+            <div style={formFooterStyle}>
+              <Btn
+                variant="primary"
                 onClick={() => {
                   if (!canWrite) {
                     showReadOnlyToast();
@@ -1383,62 +1360,18 @@ export default function UserManage() {
                   }
                   handleSave();
                 }}
-                disabled={saving}
-                style={{
-                  background:
-                    "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-                  color: "#fff",
-                  border: "1px solid #5A6F8F",
-                  borderRadius: 12,
-                  padding: "10px 28px",
-                  minWidth: 110,
-                  cursor: saving || !canWrite ? "not-allowed" : "pointer",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  opacity: saving || !canWrite ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (!saving && canWrite)
-                    e.currentTarget.style.background =
-                      "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)";
-                }}
-                onMouseLeave={(e) => {
-                  if (!saving && canWrite)
-                    e.currentTarget.style.background =
-                      "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)";
-                }}
+                disabled={saving || !canWrite}
+                style={formFooterBtnStyle}
               >
                 {saving ? "Saving..." : "Save"}
-              </button>
-              <button
+              </Btn>
+              <Btn
+                variant="cancel"
                 onClick={closeForm}
-                style={{
-                  background: "#cbd5e1",
-                  color: "#374151",
-                  border: "none",
-                  borderRadius: 12,
-                  padding: "10px 28px",
-                  minWidth: 110,
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                  transition:
-                    "background-color 0.15s ease, box-shadow 0.15s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#b6c2d3";
-                  // e.currentTarget.style.boxShadow =
-                  //   "0 4px 10px rgba(15, 23, 42, 0.10)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#cbd5e1";
-                  e.currentTarget.style.boxShadow =
-                    "0 1px 2px rgba(15, 23, 42, 0.08)";
-                }}
+                style={formFooterBtnStyle}
               >
                 Cancel
-              </button>
+              </Btn>
             </div>
           </>
         )}
