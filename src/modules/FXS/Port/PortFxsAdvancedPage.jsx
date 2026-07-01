@@ -982,6 +982,7 @@ const PortFxsAdvancedPage = () => {
             gridTemplateColumns: "40px auto",
             textAlign: "left",
             columnGap: 0,
+            color: C.accent,
           }}
         >
           <div>Note:</div>
