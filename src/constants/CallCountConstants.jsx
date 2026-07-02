@@ -8,7 +8,7 @@ export const CALL_COUNT_BREADCRUMB_SEGMENTS = [
 
 export const CALL_COUNT_ITEMS_PER_PAGE = 50;
 
-export const CALL_COUNT_TABLE_MIN_WIDTH = 1070;
+export const CALL_COUNT_TABLE_MIN_WIDTH = 1150;
 
 export const CALL_COUNT_COMPACT_MQ = "(max-width: 768px)";
 

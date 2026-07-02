@@ -12,6 +12,7 @@ import {
   listIvrDestinations,
   getRecordingSettings,
   updateRecordingSettings,
+  resetRecordingSettings,
 } from "../../../api/apiService";
 import {
   RECORD_SETTINGS_DUAL_LIST_SECTIONS,
@@ -675,7 +676,6 @@ const apiToForm = (msg = {}) => ({
   internalPrompt: msg.internal_prompt ?? "none",
   outboundInboundPrompt: msg.external_prompt ?? "none",
   recordStart: msg.record_start ?? "after_answer",
-  recordMode: msg.record_mode ?? "both",
   recordDirection: DIRECTION_FROM_API[msg.record_direction] ?? "both",
   recordSampleRate: String(msg.sample_rate ?? "8000"),
   recordingFileFormat: msg.file_format ?? "wav",
@@ -683,7 +683,7 @@ const apiToForm = (msg = {}) => ({
 });
 
 const formToApi = (form, trunks, extensions, conferences) => ({
-  enabled: (form.enableRecording ?? "enabled") === "enabled",
+  enabled: form.enableRecording === "enabled",
   internal_prompt: form.internalPrompt,
   external_prompt: form.outboundInboundPrompt,
   record_start: form.recordStart,
@@ -1029,6 +1029,9 @@ const RecordSettings = () => {
       );
     } catch (error) {
       console.error("Failed to load destinations:", error);
+      setAvailableTrunks([]);
+      setAvailableExtensions([]);
+      setAvailableConferences([]);
     }
   };
 
@@ -1107,6 +1110,34 @@ const RecordSettings = () => {
     }
   };
 
+  const handleReset = async () => {
+    setSaving(true);
+    try {
+      const res = await resetRecordingSettings();
+      if (res?.response === false) {
+        showMsg("error", res?.message || "Failed to reset recording settings.");
+        return;
+      }
+      const msg = res?.message ?? res?.data ?? null;
+      if (msg && typeof msg === "object") {
+        setForm(apiToForm(msg));
+        setSelectedTrunks(toValueArray(msg.record_trunks));
+        setSelectedExtensions(toValueArray(msg.record_extensions));
+        setSelectedConferences(toValueArray(msg.record_conferences));
+      } else {
+        setForm(buildInitialForm());
+        setSelectedTrunks([]);
+        setSelectedExtensions([]);
+        setSelectedConferences([]);
+      }
+      showMsg("success", "Recording settings reset to defaults.");
+    } catch (error) {
+      showMsg("error", error?.message || "Failed to reset recording settings.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const recordSettingsLeftFields = RECORD_SETTINGS_FORM_FIELDS.slice(0, 4);
   const recordSettingsRightFields = RECORD_SETTINGS_FORM_FIELDS.slice(4, 8);
 
@@ -1166,7 +1197,11 @@ const RecordSettings = () => {
 
           {message.text ? (
             <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
-              <Alert severity={message.type || "info"} sx={{ fontSize: 13 }}>
+              <Alert
+                severity={message.type || "info"}
+                onClose={() => setMessage({ type: "", text: "" })}
+                sx={{ fontSize: 13 }}
+              >
                 {message.text}
               </Alert>
             </div>
@@ -1218,9 +1253,6 @@ const RecordSettings = () => {
           </div>
 
           <div style={recordSettingsFooterStyle}>
-            <Btn variant="cancel" style={recordSettingsFooterBtnStyle}>
-              Set Storage
-            </Btn>
             <Btn
               variant="primary"
               style={recordSettingsFooterBtnStyle}
@@ -1228,6 +1260,14 @@ const RecordSettings = () => {
               disabled={loading || saving}
             >
               {saving ? "Saving..." : "Save"}
+            </Btn>
+            <Btn
+              variant="cancel"
+              style={recordSettingsFooterBtnStyle}
+              onClick={handleReset}
+              disabled={loading || saving}
+            >
+              Reset Defaults
             </Btn>
           </div>
         </div>

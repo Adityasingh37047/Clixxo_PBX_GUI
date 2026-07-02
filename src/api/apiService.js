@@ -1219,7 +1219,6 @@ const buildSipExtensionPayload = (accountData = {}) => ({
   vm_password: accountData.vm_password || accountData.voicemail_password,
   voicemail_email: accountData.voicemail_email,
   voicemail_file: accountData.voicemail_file,
-  voicemail_voice: accountData.voicemail_voice,
   voicemail_keep_local: accountData.voicemail_keep_local,
   cf_always_enabled: accountData.cf_always_enabled,
   cf_always_dest: accountData.cf_always_dest,
@@ -1524,6 +1523,37 @@ export const updateFeatureCodes = async (data) => {
     return response.data;
   } catch (error) {
     console.error('Error updating feature codes:', error.message);
+    throw error;
+  }
+};
+
+// Recording Settings API — POST /recording-settings
+export const getRecordingSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/recording-settings', { type: 'get' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recording settings:', error.message);
+    throw error;
+  }
+};
+
+export const updateRecordingSettings = async (data) => {
+  try {
+    const response = await axiosInstance.post('/recording-settings', { type: 'update', data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating recording settings:', error.message);
+    throw error;
+  }
+};
+
+export const resetRecordingSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/recording-settings', { type: 'reset_defaults' });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting recording settings:', error.message);
     throw error;
   }
 };
@@ -3277,47 +3307,12 @@ export const restoreBackup = async (file) => {
   }
 };
 
-// Recording Settings API — POST /recording-settings
-export const getRecordingSettings = async () => {
-  try {
-    const response = await axiosInstance.post('/recording-settings', { type: 'get' });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching recording settings:', error.message);
-    throw error;
-  }
-};
-
-export const updateRecordingSettings = async (data) => {
-  try {
-    const response = await axiosInstance.post('/recording-settings', { type: 'update', data });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating recording settings:', error.message);
-    throw error;
-  }
-};
-
-export const resetRecordingSettings = async () => {
-  try {
-    const response = await axiosInstance.post('/recording-settings', { type: 'reset_defaults' });
-    return response.data;
-  } catch (error) {
-    console.error('Error resetting recording settings:', error.message);
-    throw error;
-  }
-};
-
 // ==============================
 // CDR API
 // ==============================
-export const fetchCdr = async (page = 1, limit = 50, filters = {}) => {
+export const fetchCdr = async (page = 1, limit = 50) => {
   try {
-    const payload = { page, limit };
-    if (filters.startdate) payload.startdate = filters.startdate;
-    if (filters.enddate) payload.enddate = filters.enddate;
-    if (filters.trunk_name) payload.trunk_name = filters.trunk_name;
-    const response = await axiosInstance.post('/cdr', payload);
+    const response = await axiosInstance.post('/cdr', { page, limit });
     return response.data;
   } catch (error) {
     console.error('Error fetching CDR data:', error.message);
@@ -3348,15 +3343,18 @@ export const downloadCdr = async () => {
   }
 };
 
+// CDR Recording — GET /cdr-recording?uniqueid=<uniqueid> → audio blob (wav/mpeg).
+// Uses axiosInstance so the Bearer auth header is added automatically.
 export const fetchCdrRecording = async (uniqueid) => {
   const response = await axiosInstance.get('/cdr-recording', {
     params: { uniqueid },
     responseType: 'blob',
     timeout: 60000,
   });
-  return response.data;
+  return response.data; // Blob (audio/wav or audio/mpeg)
 };
 
+// Delete a CDR recording — POST /delete-cdr-recording { uniqueid }
 export const deleteCdrRecording = async (uniqueid) => {
   try {
     const response = await axiosInstance.post('/delete-cdr-recording', { uniqueid });

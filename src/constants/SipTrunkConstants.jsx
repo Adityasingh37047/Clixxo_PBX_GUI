@@ -18,6 +18,8 @@ export const GLOBAL_SIP_COL_MODIFY = "Modify";
 export const GLOBAL_SIP_EMPTY_MESSAGE = "No Global SIP settings configured!";
 export const GLOBAL_SIP_RECORD_LABEL = "record";
 export const GLOBAL_SIP_SELECTED_SUFFIX = "selected";
+export const GLOBAL_SIP_SHOWING_RECORDS = (count, recordLabel = "record") =>
+  `Showing ${count} ${recordLabel}${count !== 1 ? "s" : ""}`;
 export const GLOBAL_SIP_EDIT_TITLE_ACCESS = "Edit";
 export const GLOBAL_SIP_SECTION_GENERAL = "General";
 
@@ -53,8 +55,7 @@ export const GLOBAL_SIP_MSG_DELETED = (count) =>
   `${count} setting(s) deleted. SIP service will restart briefly.`;
 export const GLOBAL_SIP_MSG_DELETED_ALL = (count) =>
   `All ${count} setting(s) deleted. SIP service will restart briefly.`;
-export const GLOBAL_SIP_MSG_SAVE_RESTART =
-  "SIP service will restart briefly.";
+export const GLOBAL_SIP_MSG_SAVE_RESTART = "SIP service will restart briefly.";
 export const GLOBAL_SIP_PAGINATION_SHOWING = (count, recordLabel, page) =>
   `Showing ${count} ${recordLabel}${count !== 1 ? "s" : ""} on page ${page}`;
 export const GLOBAL_SIP_PAGINATION_PAGE_OF = (page, totalPages) =>
@@ -118,7 +119,7 @@ export const SIP_TRUNK_FIELDS = [
 ];
 
 export const SIP_TRUNK_TABLE_COLUMNS = [
-  { key: "index", label: "Index" },
+  { key: "index", label: "Id" },
   { key: "description", label: "Description" },
   { key: "local_ip", label: "Local IP" },
   { key: "local_port", label: "Local SIP Port" },

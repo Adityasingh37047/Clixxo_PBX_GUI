@@ -11,8 +11,6 @@ import {
   GLOBAL_SIP_BTN_DELETE,
   GLOBAL_SIP_BTN_CLEAR_ALL,
   GLOBAL_SIP_BTN_ADD_NEW,
-  GLOBAL_SIP_BTN_PREV,
-  GLOBAL_SIP_BTN_NEXT,
   GLOBAL_SIP_BTN_SAVE,
   GLOBAL_SIP_BTN_SAVING,
   GLOBAL_SIP_BTN_CLOSE,
@@ -23,6 +21,7 @@ import {
   GLOBAL_SIP_EMPTY_MESSAGE,
   GLOBAL_SIP_RECORD_LABEL,
   GLOBAL_SIP_SELECTED_SUFFIX,
+  GLOBAL_SIP_SHOWING_RECORDS,
   GLOBAL_SIP_EDIT_TITLE_ACCESS,
   GLOBAL_SIP_TOOLTIP_DELETE,
   GLOBAL_SIP_FIELD_TOOLTIPS,
@@ -36,8 +35,6 @@ import {
   GLOBAL_SIP_MSG_DELETED,
   GLOBAL_SIP_MSG_DELETED_ALL,
   GLOBAL_SIP_MSG_SAVE_RESTART,
-  GLOBAL_SIP_PAGINATION_SHOWING,
-  GLOBAL_SIP_PAGINATION_PAGE_OF,
 } from "../../../constants/SipTrunkConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -305,25 +302,13 @@ const systemSettingsToolbarStyle = {
 const systemSettingsPaginationStyle = {
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: "flex-start",
   padding: "7px 14px",
   background: "#ffffff",
   borderTop: `1px solid ${C.divider}`,
   borderBottomLeftRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
   borderBottomRightRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
   overflow: "hidden",
-  flexWrap: "wrap",
-  gap: 8,
-};
-
-const systemSettingsPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
 };
 
 const systemSettingsCancelBtnStyle = {
@@ -782,15 +767,6 @@ const SipTrunkPage = () => {
     return raw;
   };
 
-  // Pagination
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(registers.length / itemsPerPage));
-  const pagedRegisters = registers.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
   const fetchGlobalSipSettings = async () => {
     try {
       setLoading((prev) => ({ ...prev, fetch: true }));
@@ -1061,7 +1037,6 @@ const SipTrunkPage = () => {
         if (row?.id != null) await deleteGlobalSipSettings(row.id);
       }
       setSelected([]);
-      setPage(1);
       await fetchGlobalSipSettings();
       showMessage("success", GLOBAL_SIP_MSG_DELETED_ALL(totalCount));
     } catch (error) {
@@ -1070,12 +1045,6 @@ const SipTrunkPage = () => {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
-
-  const handlePageChange = (newPage) => {
-    setPage(Math.max(1, Math.min(totalPages, newPage)));
-  };
-
-  const pagedStart = (page - 1) * itemsPerPage;
 
   return (
     <>
@@ -1266,9 +1235,9 @@ const SipTrunkPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedRegisters.map((reg, idx) => {
-                    const realIdx = pagedStart + idx;
-                    const isLastRow = idx === pagedRegisters.length - 1;
+                  {registers.map((reg, idx) => {
+                    const realIdx = idx;
+                    const isLastRow = idx === registers.length - 1;
                     const isRowChecked = selected.includes(realIdx);
                     const rowBg = isRowChecked
                       ? "#eff6ff"
@@ -1328,7 +1297,7 @@ const SipTrunkPage = () => {
                             }}
                           >
                             {col.key === "index"
-                              ? pagedStart + idx + 1
+                              ? idx + 1
                               : renderCellValue(col.key, reg)}
                           </td>
                         ))}
@@ -1390,33 +1359,11 @@ const SipTrunkPage = () => {
               <span
                 style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.2 }}
               >
-                {GLOBAL_SIP_PAGINATION_SHOWING(
+                {GLOBAL_SIP_SHOWING_RECORDS(
                   registers.length,
                   GLOBAL_SIP_RECORD_LABEL,
-                  page,
                 )}
               </span>
-              {totalPages > 1 && (
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <SystemSettingsBtn
-                    onClick={() => handlePageChange(page - 1)}
-                    disabled={page <= 1}
-                    variant="outline"
-                  >
-                    {GLOBAL_SIP_BTN_PREV}
-                  </SystemSettingsBtn>
-                  <span style={systemSettingsPageBadgeStyle}>
-                    {GLOBAL_SIP_PAGINATION_PAGE_OF(page, totalPages)}
-                  </span>
-                  <SystemSettingsBtn
-                    onClick={() => handlePageChange(page + 1)}
-                    disabled={page >= totalPages}
-                    variant="outline"
-                  >
-                    {GLOBAL_SIP_BTN_NEXT}
-                  </SystemSettingsBtn>
-                </div>
-              )}
             </div>
           )}
         </div>
