@@ -443,7 +443,7 @@ export const EXTENSION_FORM_FIELDS = [
   {
     name: "follow_me_entries",
     label: "Follow Me Destinations",
-    type: "text",
+    type: "input_list",
     defaultValue: [],
   },
   {

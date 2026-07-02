@@ -46,7 +46,13 @@ import {
   exportSipAccountsCsv,
   importSipAccountsCsv,
 } from "../../../api/apiService";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
+
 const EXTENSION_COMPACT_MQ = "(max-width: 768px)";
+
+const extensionFilterOptions = createFilterOptions({
+  limit: 50,
+});
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 const C = {
@@ -835,59 +841,61 @@ const extensionModalSelectSx = {
   },
 };
 
-const extensionSelectManualInputMenuItemSx = {
-  py: 1,
-  px: 2,
-  cursor: "default",
-  backgroundColor: "transparent !important",
-  "&:hover": { backgroundColor: "transparent !important" },
-  "&.Mui-focusVisible": { backgroundColor: "transparent !important" },
-  "&.Mui-selected": { backgroundColor: "transparent !important" },
-};
+const DestinationAutocomplete = React.memo(function DestinationAutocomplete({
+  value,
+  onCommit,
+  options,
+  disabled,
+  placeholder,
+  sx,
+}) {
+  const [inputValue, setInputValue] = useState(value || "");
 
-const extensionSelectRenderValue = (emptyLabel) => (selected) => {
-  if (!selected) {
-    return <em>{emptyLabel}</em>;
-  }
-  return selected;
-};
+  useEffect(() => {
+    setInputValue(value || "");
+  }, [value]);
 
-const ExtensionSelectManualInputMenuItem = ({ value = "", onChange }) => (
-  <MenuItem
-    disableRipple
-    onClick={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }}
-    onMouseDown={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }}
-    sx={extensionSelectManualInputMenuItemSx}
-  >
-    <TextField
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
-      onClick={(e) => e.stopPropagation()}
-      onMouseDown={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.stopPropagation()}
-      placeholder="Enter Number"
+  return (
+    <Autocomplete
+      freeSolo
       size="small"
-      fullWidth
-      variant="outlined"
-      autoComplete="off"
-      sx={extensionModalTextFieldSx}
-      inputProps={{
-        style: {
-          fontSize: 13,
-          height: 32,
-          padding: "0 8px",
-          boxSizing: "border-box",
-        },
+      disabled={disabled}
+      options={options}
+      filterOptions={extensionFilterOptions}
+      inputValue={inputValue}
+      onInputChange={(e, newValue, reason) => {
+        if (reason === "input" || reason === "clear") {
+          setInputValue(newValue);
+        }
       }}
+      onBlur={() => onCommit(inputValue)}
+      onChange={(e, newValue) => {
+        const v = newValue || "";
+        setInputValue(v);
+        onCommit(v);
+      }}
+      sx={sx}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          placeholder={placeholder}
+          sx={{
+            ...extensionModalTextFieldSx,
+            "& .MuiOutlinedInput-input": {
+              ...(extensionModalTextFieldSx["& .MuiOutlinedInput-input"] || {}),
+              fontSize: 13,
+            },
+            "& .MuiInputBase-input::placeholder": {
+              fontSize: 13,
+              fontWeight: 300,
+              opacity: 1,
+            },
+          }}
+        />
+      )}
     />
-  </MenuItem>
-);
+  );
+});
 
 const extensionGatedModalFieldSx = (
   enabled,
@@ -1345,6 +1353,19 @@ const EXTENSION_FOLLOW_ME_DESTINATION_TYPES = [
   "Voicemails",
   "Other",
 ];
+
+const CF_OTHER_FORWARD_RULES = ["busy", "no_answer", "not_registered"];
+
+const normalizeCallForwardMutex = (formState) => {
+  if ((formState.cf_always_enabled || "disabled") !== "enabled") {
+    return formState;
+  }
+  const next = { ...formState };
+  CF_OTHER_FORWARD_RULES.forEach((rule) => {
+    next[`cf_${rule}_enabled`] = "disabled";
+  });
+  return next;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1868,7 +1889,23 @@ const ExtensionsPage = () => {
   };
 
   const handleChange = (key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      if (
+        CF_OTHER_FORWARD_RULES.some((rule) => key === `cf_${rule}_enabled`) &&
+        value === "enabled" &&
+        (prev.cf_always_enabled || "disabled") === "enabled"
+      ) {
+        return prev;
+      }
+
+      let next = { ...prev, [key]: value };
+      if (key === "cf_always_enabled" && value === "enabled") {
+        CF_OTHER_FORWARD_RULES.forEach((rule) => {
+          next[`cf_${rule}_enabled`] = "disabled";
+        });
+      }
+      return next;
+    });
     if (validationErrors[key]) {
       setValidationErrors((prev) => {
         const n = { ...prev };
@@ -2063,9 +2100,11 @@ const ExtensionsPage = () => {
     setCodecAvailableSelected([]);
     setCodecChosenSelected([]);
     setForm(
-      row
-        ? { ...row, allow_codecs: row.allow_codecs || "ulaw,alaw" }
-        : { ...EXTENSION_INITIAL_FORM },
+      normalizeCallForwardMutex(
+        row
+          ? { ...row, allow_codecs: row.allow_codecs || "ulaw,alaw" }
+          : { ...EXTENSION_INITIAL_FORM },
+      ),
     );
     setEditIndex(row ? idx : null);
     setFormMode("single");
@@ -3443,26 +3482,33 @@ const ExtensionsPage = () => {
 
                 {/* Call Forwarding */}
                 <SectionCard title="Call Forwarding">
-                  {[
-                    { key: "always", label: "Always", tooltipKey: "cf_always" },
-                    { key: "busy", label: "On Busy", tooltipKey: "cf_busy" },
-                    {
-                      key: "no_answer",
-                      label: "No Answer",
-                      tooltipKey: "cf_no_answer",
-                    },
-                    {
-                      key: "not_registered",
-                      label: "Not Registered",
-                      tooltipKey: "cf_not_registered",
-                    },
-                  ].map((rule) => {
-                    const cfRuleEnabled =
-                      (form[`cf_${rule.key}_enabled`] || "disabled") ===
-                      "enabled";
-                    const cfFieldSx = extensionGatedModalFieldSx(cfRuleEnabled);
+                  {(() => {
+                    const cfAlwaysEnabled =
+                      (form.cf_always_enabled || "disabled") === "enabled";
 
-                    return (
+                    return [
+                      { key: "always", label: "Always", tooltipKey: "cf_always" },
+                      { key: "busy", label: "On Busy", tooltipKey: "cf_busy" },
+                      {
+                        key: "no_answer",
+                        label: "No Answer",
+                        tooltipKey: "cf_no_answer",
+                      },
+                      {
+                        key: "not_registered",
+                        label: "Not Registered",
+                        tooltipKey: "cf_not_registered",
+                      },
+                    ].map((rule) => {
+                      const cfOtherLocked =
+                        cfAlwaysEnabled && rule.key !== "always";
+                      const cfRuleEnabled =
+                        !cfOtherLocked &&
+                        (form[`cf_${rule.key}_enabled`] || "disabled") ===
+                          "enabled";
+                      const cfFieldSx = extensionGatedModalFieldSx(cfRuleEnabled);
+
+                      return (
                       <div
                         key={rule.key}
                         style={{
@@ -3481,7 +3527,11 @@ const ExtensionsPage = () => {
                         </ExtensionTooltipLabel>
                         <RadioGroup
                           row
-                          value={form[`cf_${rule.key}_enabled`] || "disabled"}
+                          value={
+                            cfOtherLocked
+                              ? "disabled"
+                              : form[`cf_${rule.key}_enabled`] || "disabled"
+                          }
                           onChange={(e) =>
                             handleChange(
                               `cf_${rule.key}_enabled`,
@@ -3494,6 +3544,7 @@ const ExtensionsPage = () => {
                             value="disabled"
                             control={<Radio size="small" />}
                             label="Disabled"
+                            disabled={cfOtherLocked}
                             sx={{
                               mr: 1.5,
                               whiteSpace: "nowrap",
@@ -3504,6 +3555,7 @@ const ExtensionsPage = () => {
                             value="enabled"
                             control={<Radio size="small" />}
                             label="Enabled"
+                            disabled={cfOtherLocked}
                             sx={{
                               mr: 0,
                               whiteSpace: "nowrap",
@@ -3511,47 +3563,21 @@ const ExtensionsPage = () => {
                             }}
                           />
                         </RadioGroup>
-                        <FormControl
-                          size="small"
+                        <DestinationAutocomplete
                           disabled={!cfRuleEnabled}
+                          options={extensionOptions}
+                          value={form[`cf_${rule.key}_number`] || ""}
+                          onCommit={(val) =>
+                            handleChange(`cf_${rule.key}_number`, val)
+                          }
+                          placeholder="Destination Number"
                           sx={{
-                            minWidth: 150,
+                            minWidth: 180,
                             width: 150,
                             maxWidth: 150,
                             flexShrink: 0,
                           }}
-                        >
-                          <MuiSelect
-                            value={form[`cf_${rule.key}_number`] || ""}
-                            displayEmpty
-                            disabled={!cfRuleEnabled}
-                            renderValue={extensionSelectRenderValue(
-                              "Destination Number",
-                            )}
-                            onChange={(e) =>
-                              handleChange(
-                                `cf_${rule.key}_number`,
-                                e.target.value,
-                              )
-                            }
-                            sx={cfFieldSx}
-                          >
-                            <MenuItem value="">
-                              <em>Destination Number</em>
-                            </MenuItem>
-                            <ExtensionSelectManualInputMenuItem
-                              value={form[`cf_${rule.key}_number`] || ""}
-                              onChange={(val) =>
-                                handleChange(`cf_${rule.key}_number`, val)
-                              }
-                            />
-                            {extensionOptions.map((ext) => (
-                              <MenuItem key={ext} value={ext}>
-                                {ext}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
+                        />
                         <span
                           style={{
                             fontSize: 12,
@@ -3583,8 +3609,9 @@ const ExtensionsPage = () => {
                           </MuiSelect>
                         </FormControl>
                       </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </SectionCard>
 
                 {/* Follow Me */}
@@ -3720,42 +3747,19 @@ const ExtensionsPage = () => {
                           key={idx}
                           style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
                         >
-                          <FormControl size="small" sx={{ minWidth: 150 }}>
-                            <MuiSelect
-                              value={entry?.destinationType || ""}
-                              displayEmpty
-                              renderValue={extensionSelectRenderValue(
-                                "Select extension",
-                              )}
-                              onChange={(e) =>
-                                handleFollowMeEntryChange(
-                                  idx,
-                                  "destinationType",
-                                  e.target.value,
-                                )
-                              }
-                              sx={extensionModalSelectSx}
-                            >
-                              <MenuItem value="">
-                                <em>Select extension</em>
-                              </MenuItem>
-                              <ExtensionSelectManualInputMenuItem
-                                value={entry?.destinationType || ""}
-                                onChange={(val) =>
-                                  handleFollowMeEntryChange(
-                                    idx,
-                                    "destinationType",
-                                    val,
-                                  )
-                                }
-                              />
-                              {extensionOptions.map((ext) => (
-                                <MenuItem key={ext} value={ext}>
-                                  {ext}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
+                          <DestinationAutocomplete
+                            options={extensionOptions}
+                            value={entry?.destinationType || ""}
+                            onCommit={(val) =>
+                              handleFollowMeEntryChange(
+                                idx,
+                                "destinationType",
+                                val,
+                              )
+                            }
+                            placeholder="Destination Number"
+                            sx={{ minWidth: 180 }}
+                          />
                           <FormControl size="small" sx={{ minWidth: 80 }}>
                             <MuiSelect
                               value={entry?.timeout ?? 30}
@@ -3954,36 +3958,14 @@ const ExtensionsPage = () => {
                         ? form.dnd_special_numbers
                         : [""]
                       ).map((val, idx) => (
-                        <FormControl
+                        <DestinationAutocomplete
                           key={idx}
-                          size="small"
-                          sx={{ maxWidth: 260 }}
-                        >
-                          <MuiSelect
-                            value={val || ""}
-                            displayEmpty
-                            renderValue={extensionSelectRenderValue(
-                              "Select extension",
-                            )}
-                            onChange={(e) =>
-                              handleDndNumberChange(idx, e.target.value)
-                            }
-                            sx={extensionModalSelectSx}
-                          >
-                            <MenuItem value="">
-                              <em>Select extension</em>
-                            </MenuItem>
-                            <ExtensionSelectManualInputMenuItem
-                              value={val || ""}
-                              onChange={(v) => handleDndNumberChange(idx, v)}
-                            />
-                            {extensionOptions.map((ext) => (
-                              <MenuItem key={ext} value={ext}>
-                                {ext}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
+                          options={extensionOptions}
+                          value={val || ""}
+                          onCommit={(v) => handleDndNumberChange(idx, v)}
+                          placeholder="Destination Number"
+                          sx={{ maxWidth: 180 }}
+                        />
                       ))}
                     </div>
                   )}
