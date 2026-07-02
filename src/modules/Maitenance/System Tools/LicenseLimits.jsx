@@ -242,7 +242,16 @@ const LicenseLimitsPageWrapStyle = {
   margin: "0 auto",
 };
 
-
+const licenseLimitsBtnStyle = {
+  minWidth: 110,
+  height: 34,
+  fontSize: 13,
+  margin: 0,
+  padding: "0 28px",
+  lineHeight: "34px",
+  boxSizing: "border-box",
+  borderRadius: 10, // ya 12
+};
 const blueBarStyle = {
   width: "100%",
   minHeight: 44,
@@ -445,36 +454,41 @@ const LicenseLimits = () => {
               className="w-full mt-3 flex flex-col items-center"
               style={{ borderTop: `1px solid ${C.divider}` }}
             >
-              <div
-                className="w-full flex flex-col items-center justify-center"
-                style={{ minHeight: 88, padding: "10px 20px 12px" }}
-              >
-                <Btn
-                  variant="primary"
-                  type="button"
-                  disabled={loading}
-                  onClick={handleSave}
-                  style={{ minWidth: 100, height: 33, fontSize: 13 }}
-                >
-                  {loading ? "Saving..." : "Save"}
-                </Btn>
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: C.mutedText,
-                    textAlign: "center",
-                    margin: "6px 0 0",
-                    lineHeight: 1.35,
-                    maxWidth: 480,
-                  }}
-                >
-                  Set maximum allowed extensions, FXS ports, and trunks for this
-                  system.
-                </p>
-              </div>
+           <div
+  className="w-full flex flex-col items-center justify-center"
+  style={{
+    minHeight: 53,
+    padding: "9px 20px",
+  }}
+>
+  <Btn
+    variant="primary"
+    type="button"
+    disabled={loading}
+    onClick={handleSave}
+    style={{
+      ...licenseLimitsBtnStyle,
+    }}
+  >
+    {loading ? "Saving..." : "Save"}
+  </Btn>
+</div>
             </div>
           </div>
         </div>
+        <p
+                  style={{
+                    fontSize: 12,
+                    color: C.accent,
+                    textAlign: "Center",
+                    margin: "6px 0 0",
+                    lineHeight: 1.35,
+                    maxWidth: "100%",
+                    padding: "0 20px",
+                  }}
+                >
+                 Note: Set maximum allowed extensions, FXS ports, and trunks for this system.
+                </p>
       </div>
     </div>
   );

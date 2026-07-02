@@ -589,9 +589,9 @@ const Radius = () => {
                 style={{ marginBottom: 12 }}
               >
                 {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {/* Enable checkboxes — same spacing as Call Type list, tighter rows only */}
-                  <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                  {/* Enable checkboxes */}
+                  <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 mb-2">
                     {ENABLE_CHECKBOX_FIELDS.map((field) => (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
