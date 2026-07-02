@@ -216,9 +216,39 @@ const Btn = ({
   );
 };
 
-const extensionModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const extensionModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -1037,88 +1067,6 @@ const ExtensionDualListBtn = ({ onClick, title, children, reorder = false }) => 
   </button>
 );
 
-// Same eased wheel scroll as Layout.jsx (FXS Media pages use the layout main scroll).
-const EXTENSION_MODAL_SCROLL_EASE = 0.1;
-const EXTENSION_MODAL_SCROLL_DELTA_SCALE = 0.75;
-
-const getExtensionModalScrollParent = (el, root) => {
-  let node = el;
-  while (node && node !== root) {
-    const style = window.getComputedStyle(node);
-    const overflowY = style.overflowY;
-    const canScrollY =
-      (overflowY === "auto" || overflowY === "scroll") &&
-      node.scrollHeight > node.clientHeight;
-    if (canScrollY) return node;
-    node = node.parentElement;
-  }
-  return root;
-};
-
-const attachExtensionModalSmoothWheelScroll = (container) => {
-  if (!container) return () => {};
-
-  const state = new WeakMap();
-  const activeRafs = new Set();
-
-  const getState = (el) => {
-    if (!state.has(el)) {
-      state.set(el, {
-        target: el.scrollTop,
-        current: el.scrollTop,
-        rafId: null,
-      });
-    }
-    return state.get(el);
-  };
-
-  const clamp = (el, value) =>
-    Math.max(0, Math.min(value, el.scrollHeight - el.clientHeight));
-
-  const tick = (el) => {
-    const s = getState(el);
-    const diff = s.target - s.current;
-    if (Math.abs(diff) < 0.5) {
-      s.current = s.target;
-      el.scrollTop = s.current;
-      if (s.rafId != null) activeRafs.delete(s.rafId);
-      s.rafId = null;
-      return;
-    }
-    s.current += diff * EXTENSION_MODAL_SCROLL_EASE;
-    el.scrollTop = s.current;
-    const rafId = requestAnimationFrame(() => tick(el));
-    if (s.rafId != null) activeRafs.delete(s.rafId);
-    s.rafId = rafId;
-    activeRafs.add(rafId);
-  };
-
-  const onWheel = (e) => {
-    const scrollEl = getExtensionModalScrollParent(e.target, container);
-    const s = getState(scrollEl);
-
-    e.preventDefault();
-    s.target = clamp(
-      scrollEl,
-      s.target + e.deltaY * EXTENSION_MODAL_SCROLL_DELTA_SCALE,
-    );
-    if (!s.rafId) {
-      s.current = scrollEl.scrollTop;
-      const rafId = requestAnimationFrame(() => tick(scrollEl));
-      s.rafId = rafId;
-      activeRafs.add(rafId);
-    }
-  };
-
-  container.addEventListener("wheel", onWheel, { passive: false });
-
-  return () => {
-    container.removeEventListener("wheel", onWheel);
-    activeRafs.forEach((rafId) => cancelAnimationFrame(rafId));
-    activeRafs.clear();
-  };
-};
-
 const EXTENSION_MONITOR_DUAL_LIST_LABEL_OFFSET = 28;
 
 // ── CODEC Priority style dual-list (matches FXS Media page) ──
@@ -1392,7 +1340,6 @@ const ExtensionsPage = () => {
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = React.useRef(null);
-  const modalScrollRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
@@ -1414,22 +1361,6 @@ const ExtensionsPage = () => {
       loadAccounts();
     }
   }, []);
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    let detach = () => {};
-    const frame = requestAnimationFrame(() => {
-      if (modalScrollRef.current) {
-        detach = attachExtensionModalSmoothWheelScroll(modalScrollRef.current);
-      }
-    });
-
-    return () => {
-      cancelAnimationFrame(frame);
-      detach();
-    };
-  }, [showModal, activeTab]);
 
   // ── Filter rows by search ──────────────────────────────────────────────────
   const filteredAccounts = searchQuery.trim()
@@ -2858,19 +2789,12 @@ const ExtensionsPage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            backgroundColor: "#dde0e4",
-            justifyContent: "center",
-            gap: 16,
-            padding: "12px 24px 16px",
-          }}
-        >
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={handleImportSubmit}
             disabled={importLoading || !importFile}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {importLoading && (
               <CircularProgress size={11} style={{ color: "#fff" }} />
@@ -2950,8 +2874,6 @@ const ExtensionsPage = () => {
         />
 
         <DialogContent
-          ref={modalScrollRef}
-          className="app-main-scroll"
           style={{ padding: "24px", backgroundColor: "#ffffff" }}
           sx={{
             maxHeight: "calc(100vh - 180px)",
@@ -4482,23 +4404,12 @@ const ExtensionsPage = () => {
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={formMode === "single" ? handleSave : handleBulkSave}
             disabled={loading.save}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? "Saving..." : "Save"}
           </Btn>

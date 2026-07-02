@@ -177,7 +177,7 @@ const advancedFormInlineFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "center",
   gap: 12,
   width: "100%",
   margin: 0,
@@ -186,16 +186,16 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const routingHeaderBtnStyle = {
@@ -1003,15 +1003,6 @@ const RoutingInterface = () => {
           {showForm && !loading && (
             <div style={advancedFormInlineFooterStyle}>
               <Btn
-                variant="cancel"
-                type="button"
-                onClick={handleCancel}
-                disabled={saving}
-                style={advancedFormBtnStyle}
-              >
-                {ROUTING_INTERFACE_BTN_CANCEL}
-              </Btn>
-              <Btn
                 variant="primary"
                 type="submit"
                 form="routing-switch-form"
@@ -1019,6 +1010,15 @@ const RoutingInterface = () => {
                 style={advancedFormBtnStyle}
               >
                 {saving ? ROUTING_INTERFACE_BTN_APPLYING : ROUTING_INTERFACE_BTN_APPLY}
+              </Btn>
+              <Btn
+                variant="cancel"
+                type="button"
+                onClick={handleCancel}
+                disabled={saving}
+                style={advancedFormBtnStyle}
+              >
+                {ROUTING_INTERFACE_BTN_CANCEL}
               </Btn>
             </div>
           )}

@@ -1,29 +1,58 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Alert } from "@mui/material";
+import React, { useState, useRef, useEffect } from "react";
+import { Alert, CircularProgress } from "@mui/material";
 import { Tooltip } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { postTracerttest, fetchNetwork } from "../../../api/apiService";
 import {
-  TRACERT_TITLE,
   TRACERT_LABELS,
   TRACERT_SOURCE_OPTIONS,
   TRACERT_BUTTONS,
+  TRACERT_TEST_PAGE_BREADCRUMB_ROOT,
+  TRACERT_TEST_PAGE_BREADCRUMB_SECTION,
+  TRACERT_TEST_PAGE_TITLE,
+  TRACERT_TEST_CARD_TITLE,
+  TRACERT_TEST_SECTION_HEADING_COLOR,
+  TRACERT_TEST_SECTION_CONFIG,
+  TRACERT_TEST_SECTION_OUTPUT,
+  TRACERT_TEST_OUTPUT_PLACEHOLDER,
+  TRACERT_TEST_BTN_CLEAR,
+  TRACERT_TEST_SOURCE_LOADING,
+  TRACERT_TEST_FIELD_TOOLTIPS,
+  TRACERT_TEST_ERR_INVALID_SOURCE_IP,
+  TRACERT_TEST_ERR_INVALID_DEST_IP,
+  TRACERT_TEST_ERR_INVALID_JUMPS,
+  TRACERT_TEST_ERR_FIX_BEFORE_START,
+  TRACERT_TEST_TOAST_STARTED,
+  TRACERT_TEST_TOAST_COMPLETED,
+  TRACERT_TEST_TOAST_CONTINUOUS_STARTED,
+  TRACERT_TEST_TOAST_ALREADY_RUNNING,
+  TRACERT_TEST_TOAST_STOPPED,
+  TRACERT_TEST_TOAST_NOT_RUNNING,
+  TRACERT_TEST_TOAST_SERVER_ERROR,
+  TRACERT_TEST_TOAST_CONNECTION_ERROR,
 } from "../../../constants/TRACERTTestConstants";
 
+const TRACERT_TEST_SCROLL_CLASS = "tracert-test-scroll";
+const TRACERT_TEST_COMPACT_MQ = "(max-width: 768px)";
+const TRACERT_TEST_LABEL_COL_WIDTH = 188;
+const TRACERT_TEST_FIELD_COL_GAP = 16;
+const TRACERT_TEST_FORM_PAD_X = 28;
+
 const C = {
-  pageBg: "#f8fafc",
+  pageBg: "#fbfcfe",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
+  labelText: "#5a6d87",
+  valueText: "#374151",
+  mutedText: "#94a3b8",
+  placeholderText: "#b0b9c6",
+  strongText: "#374151",
+  accent: "#3E5475",
   errorRed: "#dc2626",
+  sectionHeading: TRACERT_TEST_SECTION_HEADING_COLOR,
 };
 
 const CARD_RADIUS = 10;
@@ -97,28 +126,63 @@ const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
-  padding: "6px 10px",
+  minWidth: 0,
+  maxWidth: "100%",
+  padding: "0 12px",
   borderRadius: FIELD_RADIUS,
   boxSizing: "border-box",
   background: "#fff",
-  lineHeight: 1.4,
-  minHeight: 34,
-};
-
-const systemFieldInputStyleNarrow = {
-  ...systemFieldInputStyle,
-  maxWidth: "280px",
+  lineHeight: 1.35,
+  minHeight: 36,
+  height: 36,
 };
 
 const systemFieldSelectStyle = {
   ...systemFieldInputStyle,
   appearance: "auto",
-  minHeight: 36,
-  height: 36,
   paddingTop: 7,
   paddingBottom: 7,
-  lineHeight: 1.35,
   cursor: "pointer",
+};
+
+const inputStyle = systemFieldInputStyle;
+const selectStyle = systemFieldSelectStyle;
+
+const tracertFieldErrorStyle = {
+  fontSize: 11,
+  color: C.errorRed,
+  marginTop: 6,
+  lineHeight: 1.35,
+};
+
+const tracertFieldRowStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "flex-start",
+  width: "100%",
+  gap: TRACERT_TEST_FIELD_COL_GAP,
+};
+
+const tracertFieldLabelWrapStyle = {
+  flex: `0 0 ${TRACERT_TEST_LABEL_COL_WIDTH}px`,
+  width: TRACERT_TEST_LABEL_COL_WIDTH,
+  minWidth: TRACERT_TEST_LABEL_COL_WIDTH,
+  maxWidth: TRACERT_TEST_LABEL_COL_WIDTH,
+  paddingTop: 9,
+};
+
+const tracertFieldControlWrapStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  width: "100%",
+};
+
+const tracertFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const tooltipProps = {
@@ -131,89 +195,48 @@ const tooltipProps = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
+        fontSize: 12,
+        lineHeight: 1.45,
         maxWidth: 500,
-        padding: "12px 16px",
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
       },
     },
     arrow: { sx: { color: "#fff" } },
   },
 };
 
-const tooltips = {
-  sourceIp:
-    "Select the source IP address from which the traceroute request will be sent.",
-  destIp:
-    "Enter the destination IP address or hostname to trace the network path.",
-  maxJumps:
-    "Specify the maximum number of hops the traceroute can traverse before stopping.",
-  info:
-    "Displays traceroute results, including intermediate hops and response details.",
-};
-const inputStyle = systemFieldInputStyleNarrow;
-const selectStyle = systemFieldSelectStyle;
-const textareaStyle = {
-  ...systemFieldInputStyle,
-  minHeight: 180,
-  maxHeight: 320,
-  fontSize: 12,
-  fontFamily: "monospace",
-  lineHeight: 1.5,
-  resize: "vertical",
-  whiteSpace: "pre-wrap",
-  backgroundColor: "#f8fafc",
-};
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "10px 28px",
-  borderTop: `1px solid ${C.divider}`,
-  background: C.cardBg,
-  boxSizing: "border-box",
-  flexShrink: 0,
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
 const FieldRow = ({ name, label, children }) => {
-  const tooltip = tooltips[name];
+  const tooltip = TRACERT_TEST_FIELD_TOOLTIPS[name];
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        lineHeight: 1.4,
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
+      {label}
+    </label>
+  );
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-      <Tooltip
-        title={tooltip || ""}
-        disableHoverListener={!tooltip}
-        {...tooltipProps}
-      >
-        <label
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: C.labelText,
-            width: "100%",
-            maxWidth: 220,
-            flexShrink: 0,
-            cursor: tooltip ? "help" : "default",
-          }}
-        >
-          {label}
-        </label>
-      </Tooltip>
-      <div className="flex-1 w-full max-w-[280px]">{children}</div>
+    <div style={tracertFieldRowStyle}>
+      <div style={tracertFieldLabelWrapStyle}>
+        {tooltip ? (
+          <Tooltip title={tooltip} {...tooltipProps}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
+      <div style={tracertFieldControlWrapStyle}>{children}</div>
     </div>
   );
 };
@@ -238,15 +261,12 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
   };
 
@@ -254,14 +274,14 @@ const Btn = ({
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      default: "#d1d5db",
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
     }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
@@ -291,18 +311,15 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding:
-          variant === "primary" || variant === "cancel"
-            ? "8px 32px"
-            : "6px 14px",
-        borderRadius: 8,
-        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: variant === "primary" || variant === "cancel" ? 38 : 30,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
@@ -333,31 +350,118 @@ const Btn = ({
   );
 };
 
-const SectionHeading = ({ title, isFirst = false }) => (
-  <div
-    style={{
-      margin: isFirst ? "0 0 28px 0" : "24px 0 28px 0",
-      position: "relative",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.divider}` }} />
+const PanelTitle = ({ title, subtitle }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
     <span
       style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 500,
-        color: C.labelText,
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
         letterSpacing: "0.01em",
       }}
     >
       {title}
     </span>
+    {subtitle ? (
+      <span style={{ fontSize: 12, color: C.mutedText, lineHeight: 1.4 }}>
+        {subtitle}
+      </span>
+    ) : null}
   </div>
 );
+
+const tracertBodyStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
+  padding: `20px ${TRACERT_TEST_FORM_PAD_X}px 24px`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const tracertConfigPanelStyle = {
+  background: "#fcfdfe",
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
+};
+
+const tracertConfigHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 16,
+  flexWrap: "wrap",
+  padding: "14px 18px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "linear-gradient(to bottom, #ffffff 0%, #fbfcfe 100%)",
+};
+
+const tracertConfigActionsStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  flexWrap: "wrap",
+};
+
+const tracertConfigBodyStyle = {
+  padding: "18px 18px 20px",
+};
+
+const tracertFieldsGridStyle = (isCompact) => ({
+  display: "grid",
+  gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+  gap: isCompact ? 16 : 24,
+  width: "100%",
+  alignItems: "start",
+});
+
+const tracertFieldsColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  minWidth: 0,
+};
+
+const tracertOutputPanelStyle = {
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  background: C.cardBg,
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.02)",
+};
+
+const tracertOutputHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  padding: "12px 16px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: tracertConfigHeaderStyle.background,
+};
+
+const tracertOutputTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 220,
+  maxHeight: 320,
+  margin: 0,
+  padding: "16px 18px",
+  border: "none",
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 12,
+  lineHeight: 1.6,
+  fontFamily:
+    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
+  color: "#475569",
+  background: "#ffffff",
+  whiteSpace: "pre-wrap",
+};
 
 const tracertPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -369,12 +473,10 @@ const tracertPageWrapStyle = {
 const tracertPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };
-
-
 
 const tracertTableContainerStyle = {
   width: "100%",
@@ -390,24 +492,23 @@ const tracertTableContainerStyle = {
   boxSizing: "border-box",
 };
 
-const tracertToolbarStyle = {
+const tracertHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
+  padding: `10px ${TRACERT_TEST_FORM_PAD_X}px`,
+  fontWeight: 700,
+  fontSize: 13,
+  color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
-  flexWrap: "wrap",
-  gap: 12,
+  boxSizing: "border-box",
 };
 
-const tracertFieldGroupStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 18,
-  width: "100%",
-};
+const tracertClearBtnStyle = tracertFooterBtnStyle;
 
 const tracertFixedAlertSx = {
   position: "fixed",
@@ -421,10 +522,53 @@ const tracertFixedAlertSx = {
   fontWeight: 500,
 };
 
+const TracertScrollbarStyles = () => (
+  <style>{`
+    .${TRACERT_TEST_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${TRACERT_TEST_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${TRACERT_TEST_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${TRACERT_TEST_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${TRACERT_TEST_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${TRACERT_TEST_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${TRACERT_TEST_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
 const TracertPageShell = ({ children }) => (
-  <div style={tracertPageWrapStyle} data-native-scroll>
-    <div style={tracertPageInnerStyle}>{children}</div>
-  </div>
+  <>
+    <TracertScrollbarStyles />
+    <div
+      className={TRACERT_TEST_SCROLL_CLASS}
+      style={tracertPageWrapStyle}
+      data-native-scroll
+    >
+      <div style={tracertPageInnerStyle}>{children}</div>
+    </div>
+  </>
 );
 
 const TracertBreadcrumb = () => (
@@ -432,7 +576,7 @@ const TracertBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -441,11 +585,13 @@ const TracertBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{TRACERT_TEST_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{TRACERT_TEST_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{TRACERT_TITLE}</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {TRACERT_TEST_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -454,18 +600,21 @@ function isValidIp(ip) {
     ip,
   );
 }
+
 function isValidJumps(val) {
   const num = Number(val);
   return Number.isInteger(num) && num >= 1 && num <= 255;
 }
 
 const TRACERTTest = () => {
+  const isCompact = useMediaQuery(TRACERT_TEST_COMPACT_MQ);
+  const outputRef = useRef(null);
   const [sourceIp, setSourceIp] = useState("");
   const [destIp, setDestIp] = useState("");
   const [maxJumps, setMaxJumps] = useState("");
   const [info, setInfo] = useState("");
   const [error, setError] = useState(false);
-  const [loadind, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ msg: "", type: "success" });
   const intervalRef = useRef(null);
   const [sourceIpError, setSourceIpError] = useState("");
@@ -473,6 +622,11 @@ const TRACERTTest = () => {
   const [jumpsError, setJumpsError] = useState("");
   const [sourceOptions, setSourceOptions] = useState([]);
   const [loadingSource, setLoadingSource] = useState(true);
+
+  useEffect(() => {
+    if (!outputRef.current || !info) return;
+    outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [info]);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
@@ -486,13 +640,11 @@ const TRACERTTest = () => {
         const netData = await fetchNetwork();
         const allIfaces = netData?.data?.interfaces || [];
 
-        // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
         const lanIfaces = allIfaces.filter((i) => {
           const kn = (i.interface || "").toLowerCase();
           return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
         });
 
-        // Sequential "LAN 1", "LAN 2", … — never rely on the API name field
         const options = lanIfaces
           .filter((i) => i.ipAddress)
           .map((iface, idx) => ({
@@ -500,7 +652,6 @@ const TRACERTTest = () => {
             label: `LAN ${idx + 1}:${iface.ipAddress}`,
           }));
 
-        // VLAN sub-interfaces of the first physical interface
         const primaryKernel = lanIfaces[0]?.interface || "eth0";
         for (const iface of allIfaces) {
           const kn = (iface.interface || "").toString();
@@ -517,7 +668,6 @@ const TRACERTTest = () => {
           }
         }
 
-        // VPN / non-LAN interfaces (tap0, tun0, vpn_vpn, etc.)
         const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
         for (const iface of allIfaces) {
           const kn = (iface.interface || "").toLowerCase();
@@ -541,8 +691,8 @@ const TRACERTTest = () => {
           setSourceOptions(TRACERT_SOURCE_OPTIONS);
           setSourceIp(TRACERT_SOURCE_OPTIONS[0]?.value || "");
         }
-      } catch (error) {
-        console.error("Error fetching network interfaces:", error);
+      } catch (err) {
+        console.error("Error fetching network interfaces:", err);
         setSourceOptions(TRACERT_SOURCE_OPTIONS);
         setSourceIp(TRACERT_SOURCE_OPTIONS[0]?.value || "");
       } finally {
@@ -559,61 +709,58 @@ const TRACERTTest = () => {
     setJumpsError("");
     let valid = true;
     if (!isValidIp(sourceIp)) {
-      setSourceIpError("Please enter a valid IP address.");
+      setSourceIpError(TRACERT_TEST_ERR_INVALID_SOURCE_IP);
       valid = false;
     }
     if (!isValidIp(destIp)) {
-      setDestIpError("Please enter a valid IP address.");
+      setDestIpError(TRACERT_TEST_ERR_INVALID_DEST_IP);
       valid = false;
     }
     if (maxJumps && !isValidJumps(maxJumps)) {
-      setJumpsError("Maximum Jumps must be between 1 and 255.");
+      setJumpsError(TRACERT_TEST_ERR_INVALID_JUMPS);
       valid = false;
     }
     if (!valid) {
-      showToast("Please correct the errors before starting.", "error");
+      showToast(TRACERT_TEST_ERR_FIX_BEFORE_START, "error");
       return;
     }
     setLoading(true);
     if (!maxJumps) {
-      // Interval mode: run every 2 seconds
       if (!intervalRef.current) {
-        // Call once immediately and check if it succeeds before starting interval
         const success = await handleTracert();
         if (success) {
           intervalRef.current = setInterval(() => {
             handleTracert();
           }, 2000);
-          showToast("Continuous tracert started.", "success");
+          showToast(TRACERT_TEST_TOAST_CONTINUOUS_STARTED, "success");
         } else {
           setLoading(false);
         }
       } else {
-        showToast("Tracert test is already running.", "warning");
+        showToast(TRACERT_TEST_TOAST_ALREADY_RUNNING, "warning");
         setLoading(false);
       }
     } else {
-      // Single run mode
-      showToast("Tracert test started.", "info");
+      showToast(TRACERT_TEST_TOAST_STARTED, "info");
       const success = await handleTracert();
       setLoading(false);
       if (success) {
-        showToast("Tracert test completed.", "success");
+        showToast(TRACERT_TEST_TOAST_COMPLETED, "success");
       }
     }
   };
 
   const stopTracertInterval = () => {
-    const wasRunning = !!intervalRef.current || loadind;
+    const wasRunning = !!intervalRef.current || loading;
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
     setLoading(false);
     if (wasRunning) {
-      showToast("Tracert stopped.", "success");
+      showToast(TRACERT_TEST_TOAST_STOPPED, "success");
     } else {
-      showToast("No tracert test is running.", "warning");
+      showToast(TRACERT_TEST_TOAST_NOT_RUNNING, "warning");
     }
   };
 
@@ -623,7 +770,6 @@ const TRACERTTest = () => {
       intervalRef.current = null;
     }
     setLoading(false);
-    // Don't show "Tracert stopped!" message for errors
   };
 
   const handleTracert = async () => {
@@ -636,41 +782,38 @@ const TRACERTTest = () => {
       });
       console.log("Tracert API Response:", Apiresponse);
 
-      // Check if response is successful
       if (Apiresponse.response) {
         if (maxJumps) {
-          // Single run mode: replace info
           setInfo(Apiresponse.responseData);
         } else {
-          // Interval mode: append result
           setInfo((prev) =>
             prev
               ? prev + "\n" + Apiresponse.responseData
               : Apiresponse.responseData,
           );
-          console.log("Tracert result:", Apiresponse.responseData);
         }
-        return true; // Success
-      } else {
-        setInfo((prev) =>
-          prev
-            ? prev + "\n" + (Apiresponse.message || "No response data")
-            : Apiresponse.message || "No response data",
-        );
-        showToast(Apiresponse.message || "Server error occurred", "error");
-        stopTracertOnError();
-        return false; // Failed
+        return true;
       }
+
+      setInfo((prev) =>
+        prev
+          ? prev + "\n" + (Apiresponse.message || TRACERT_TEST_TOAST_SERVER_ERROR)
+          : Apiresponse.message || TRACERT_TEST_TOAST_SERVER_ERROR,
+      );
+      showToast(Apiresponse.message || TRACERT_TEST_TOAST_SERVER_ERROR, "error");
+      stopTracertOnError();
+      return false;
     } catch (err) {
       console.error("Tracert API Error:", err);
-      showToast(
-        "Server is not connected. Please check your connection.",
-        "error",
-      );
+      showToast(TRACERT_TEST_TOAST_CONNECTION_ERROR, "error");
       setError(true);
       stopTracertOnError();
-      return false; // Failed
+      return false;
     }
+  };
+
+  const clearOutput = () => {
+    setInfo("");
   };
 
   return (
@@ -689,137 +832,148 @@ const TRACERTTest = () => {
 
       <div>
         <div style={tracertTableContainerStyle}>
-          <div style={tracertToolbarStyle}>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
-              }}
-            >
-              {TRACERT_TITLE}
-            </span>
+          <div style={tracertHeaderStyle}>
+            <span>{TRACERT_TEST_CARD_TITLE}</span>
           </div>
 
-          <div style={{ padding: "16px 36px 32px" }}>
-            <div
-              className="flex flex-col w-full"
-              style={{
-                ...tracertFieldGroupStyle,
-                maxWidth: 640,
-                margin: "0 auto",
-              }}
-            >
-              <FieldRow name="sourceIp" label={TRACERT_LABELS.sourceIp}>
-                <div>
-                  <select
-                    style={selectStyle}
-                    value={sourceIp}
-                    onChange={(e) => {
-                      setSourceIp(e.target.value);
-                      setInfo("");
-                      setSourceIpError("");
-                    }}
-                    disabled={loadingSource}
-                    {...inputInteraction}
+          <div style={tracertBodyStyle}>
+            <div style={tracertConfigPanelStyle}>
+              <div style={tracertConfigHeaderStyle}>
+                <PanelTitle title={TRACERT_TEST_SECTION_CONFIG} />
+                <div style={tracertConfigActionsStyle}>
+                  <Btn
+                    variant="cancel"
+                    onClick={stopTracertInterval}
+                    disabled={!loading}
+                    style={tracertFooterBtnStyle}
                   >
-                    {loadingSource ? (
-                      <option value="">Loading...</option>
+                    {TRACERT_BUTTONS.end}
+                  </Btn>
+                  <Btn
+                    variant="primary"
+                    onClick={startTracert}
+                    disabled={loading || !destIp.trim()}
+                    style={tracertFooterBtnStyle}
+                  >
+                    {loading ? (
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <CircularProgress size={12} color="inherit" />
+                        {TRACERT_BUTTONS.loading}
+                      </span>
                     ) : (
-                      sourceOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))
+                      TRACERT_BUTTONS.start
                     )}
-                  </select>
-                  <div style={{ minHeight: 18, marginTop: 2 }}>
-                    {sourceIpError && (
-                      <span style={{ color: C.errorRed, fontSize: 11 }}>
-                        {sourceIpError}
-                      </span>
-                    )}
-                  </div>
+                  </Btn>
                 </div>
-              </FieldRow>
+              </div>
 
-              <FieldRow name="destIp" label={TRACERT_LABELS.destIp}>
-                <div>
-                  <input
-                    type="text"
-                    style={inputStyle}
-                    value={destIp}
-                    onChange={(e) => {
-                      setDestIp(e.target.value);
-                      setInfo("");
-                      setDestIpError("");
-                    }}
-                    {...inputInteraction}
-                  />
-                  <div style={{ minHeight: 18, marginTop: 2 }}>
-                    {destIpError && (
-                      <span style={{ color: C.errorRed, fontSize: 11 }}>
-                        {destIpError}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </FieldRow>
+              <div style={tracertConfigBodyStyle}>
+                <div style={tracertFieldsGridStyle(isCompact)}>
+                  <div style={tracertFieldsColumnStyle}>
+                    <FieldRow name="sourceIp" label={TRACERT_LABELS.sourceIp}>
+                      <select
+                        style={selectStyle}
+                        value={sourceIp}
+                        onChange={(e) => {
+                          setSourceIp(e.target.value);
+                          setInfo("");
+                          setSourceIpError("");
+                        }}
+                        disabled={loadingSource}
+                        {...inputInteraction}
+                      >
+                        {loadingSource ? (
+                          <option value="">{TRACERT_TEST_SOURCE_LOADING}</option>
+                        ) : (
+                          sourceOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                      {sourceIpError ? (
+                        <div style={tracertFieldErrorStyle}>{sourceIpError}</div>
+                      ) : null}
+                    </FieldRow>
 
-              <FieldRow name="maxJumps" label={TRACERT_LABELS.maxJumps}>
-                <div>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={maxJumps}
-                    onChange={(e) => {
-                      setMaxJumps(e.target.value);
-                      setInfo("");
-                      setJumpsError("");
-                    }}
-                    {...inputInteraction}
-                  />
-                  <div style={{ minHeight: 18, marginTop: 2 }}>
-                    {jumpsError && (
-                      <span style={{ color: C.errorRed, fontSize: 11 }}>
-                        {jumpsError}
-                      </span>
-                    )}
+                    <FieldRow name="destIp" label={TRACERT_LABELS.destIp}>
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        value={destIp}
+                        onChange={(e) => {
+                          setDestIp(e.target.value);
+                          setInfo("");
+                          setDestIpError("");
+                        }}
+                        placeholder="e.g. 8.8.8.8"
+                        {...inputInteraction}
+                      />
+                      {destIpError ? (
+                        <div style={tracertFieldErrorStyle}>{destIpError}</div>
+                      ) : null}
+                    </FieldRow>
+                  </div>
+
+                  <div style={tracertFieldsColumnStyle}>
+                    <FieldRow name="maxJumps" label={TRACERT_LABELS.maxJumps}>
+                      <input
+                        type="number"
+                        style={inputStyle}
+                        value={maxJumps}
+                        onChange={(e) => {
+                          setMaxJumps(e.target.value);
+                          setInfo("");
+                          setJumpsError("");
+                        }}
+                        placeholder="30"
+                        {...inputInteraction}
+                      />
+                      {jumpsError ? (
+                        <div style={tracertFieldErrorStyle}>{jumpsError}</div>
+                      ) : null}
+                    </FieldRow>
                   </div>
                 </div>
-              </FieldRow>
+              </div>
             </div>
-          </div>
 
-          <div style={advancedFormInlineFooterStyle}>
-            <Btn
-              variant="cancel"
-              onClick={stopTracertInterval}
-              style={advancedFormBtnStyle}
-            >
-              {TRACERT_BUTTONS.end}
-            </Btn>
-            <Btn
-              variant="primary"
-              onClick={startTracert}
-              disabled={loadind}
-              style={advancedFormBtnStyle}
-            >
-              {loadind
-                ? TRACERT_BUTTONS.loading || "Loading..."
-                : TRACERT_BUTTONS.start || "Start"}
-            </Btn>
-          </div>
-
-          <div style={{ padding: "16px 36px 32px" }}>
-            <SectionHeading title={TRACERT_LABELS.info} isFirst />
-            <textarea
-              style={textareaStyle}
-              value={info}
-              onChange={(e) => setInfo(e.target.value)}
-              {...inputInteraction}
-            />
+            <div style={tracertOutputPanelStyle}>
+              <div style={tracertOutputHeaderStyle}>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: C.sectionHeading,
+                  }}
+                >
+                  {TRACERT_TEST_SECTION_OUTPUT}
+                </span>
+                <Btn
+                  variant="cancel"
+                  onClick={clearOutput}
+                  disabled={!info || loading}
+                  style={tracertClearBtnStyle}
+                >
+                  {TRACERT_TEST_BTN_CLEAR}
+                </Btn>
+              </div>
+              <textarea
+                ref={outputRef}
+                className={TRACERT_TEST_SCROLL_CLASS}
+                style={tracertOutputTextareaStyle}
+                value={info}
+                readOnly
+                placeholder={TRACERT_TEST_OUTPUT_PLACEHOLDER}
+              />
+            </div>
           </div>
         </div>
       </div>

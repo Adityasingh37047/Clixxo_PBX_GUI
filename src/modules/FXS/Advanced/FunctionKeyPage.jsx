@@ -310,9 +310,17 @@ const TH = ({ children, align = "left", width, style: extraStyle }) => (
   </th>
 );
 
+const pageFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
 const footerStyle = {
   display: "flex",
-  justifyContent: "flex-end",
+  justifyContent: "center",
   gap: 12,
   padding: "10px 28px",
   borderTop: `1px solid ${C.divider}`,
@@ -650,10 +658,20 @@ const FunctionKeyPage = () => {
         </div>
 
         <div style={footerStyle}>
-          <Btn type="button" variant="primary" onClick={handleSave}>
+          <Btn
+            type="button"
+            variant="primary"
+            onClick={handleSave}
+            style={pageFooterBtnStyle}
+          >
             {FUNCTION_KEY_SAVE_LABEL}
           </Btn>
-          <Btn type="button" variant="cancel" onClick={handleReset}>
+          <Btn
+            type="button"
+            variant="cancel"
+            onClick={handleReset}
+            style={pageFooterBtnStyle}
+          >
             {FUNCTION_KEY_RESET_LABEL}
           </Btn>
         </div>

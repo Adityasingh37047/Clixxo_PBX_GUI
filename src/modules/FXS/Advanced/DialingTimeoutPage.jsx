@@ -232,9 +232,10 @@ const Btn = ({
 };
 
 
-const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
-const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
-const OUTLINED_FOCUS = "#1976d2";
+const OUTLINED_BORDER = "#d1d5db";
+const OUTLINED_HOVER = "#9ca3af";
+const OUTLINED_FOCUS = "#3E5475";
+const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const muiTextFieldSx = {
   "& .MuiOutlinedInput-root": {
@@ -248,11 +249,13 @@ const muiTextFieldSx = {
     },
     "&.Mui-focused fieldset": {
       borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
+      borderWidth: 1,
+      boxShadow: FOCUS_RING_SHADOW,
     },
     "&.Mui-focused:hover fieldset": {
       borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
+      borderWidth: 1,
+      boxShadow: FOCUS_RING_SHADOW,
     },
   },
 };
@@ -284,7 +287,8 @@ const muiSelectSx = {
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: 1,
+    boxShadow: FOCUS_RING_SHADOW,
   },
 };
 
@@ -393,6 +397,38 @@ const dialingTimeoutTableBodyStyle = {
   width: "100%",
 };
 
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
 const DialingTimeoutBreadcrumb = () => (
   <div
     style={{
@@ -485,15 +521,6 @@ const addHostFormPanelStyle = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
-};
-
-const addHostModalFooterStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 12,
-  padding: "10px 16px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  background: "#f8fafc",
 };
 
 const DIALING_TIMEOUT_FIELD_LABEL_WIDTH = 220;
@@ -771,18 +798,18 @@ const DialingTimeoutPage = () => {
             </FieldRow>
           </div>
         </DialogContent>
-        <DialogActions style={addHostModalFooterStyle}>
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
-            style={{ minWidth: 100, height: 34, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             Save
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
-            style={{ minWidth: 100, height: 34 }}
+            style={addNewModalFooterCancelBtnStyle}
           >
             Close
           </Btn>

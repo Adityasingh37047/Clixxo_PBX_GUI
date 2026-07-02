@@ -158,9 +158,31 @@ const pcmPcmModalFormPanelStyle = {
   padding: 20,
 };
 
-const pcmPcmModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const pcmPcmModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -702,22 +724,15 @@ const PcmPcmPage = () => {
                 </div>
               </div>
               <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: 12,
-                  padding: "16px 24px 24px",
-                  background: "#ffffff",
-                  flexShrink: 0,
-                }}
+                style={addNewModalFooterStyle}
               >
-                <Btn variant="primary" onClick={handleSave}>
+                <Btn variant="primary" onClick={handleSave} style={addNewModalFooterBtnStyle}>
                   {PCM_PCM_SAVE_LABEL}
                 </Btn>
                 <Btn
                   variant="cancel"
                   onClick={closeModal}
-                  style={pcmPcmModalCancelBtnStyle}
+                  style={{ ...addNewModalFooterBtnStyle, ...pcmPcmModalCancelBtnStyle }}
                 >
                   {PCM_PCM_CLOSE_LABEL}
                 </Btn>

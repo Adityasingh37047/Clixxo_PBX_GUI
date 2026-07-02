@@ -373,12 +373,25 @@ const formBodyStyle = {
 
 const footerStyle = {
   display: "flex",
-  justifyContent: "flex-end",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
   gap: 12,
+  width: "100%",
+  margin: 0,
   padding: "10px 28px",
   borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
+};
+
+const pageFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const RouteRoutingParameterBreadcrumb = () => (
@@ -494,7 +507,7 @@ const RouteRoutingParameterPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            style={pageFooterBtnStyle}
           >
             {loading ? (
               <>

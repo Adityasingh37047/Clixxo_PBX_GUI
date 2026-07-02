@@ -246,9 +246,39 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const outboundRestrictionModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const outboundRestrictionModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -849,17 +879,6 @@ const outboundRestrictionModalFormStyle = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
-};
-
-const outboundRestrictionModalActionsStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
 };
 
 const OUTBOUND_RESTRICTION_CODEC_LIST_BOX_HEIGHT = 188;
@@ -2144,12 +2163,12 @@ const OutboundRestrictions = () => {
             </SectionCard>
           </div>
         </DialogContent>
-        <DialogActions style={outboundRestrictionModalActionsStyle}>
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? (
               <>

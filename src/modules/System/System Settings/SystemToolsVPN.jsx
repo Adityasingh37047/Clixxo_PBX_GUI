@@ -1,9 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import {
-  VPN_TYPES,
+  SYSTEM_TOOLS_VPN_TYPES,
   SYSTEM_TOOLS_VPN_INITIAL,
-  VPN_RUNNING_INFO,
+  SYSTEM_TOOLS_VPN_RUNNING_INFO,
+  SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_ROOT,
+  SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_SECTION,
+  SYSTEM_TOOLS_VPN_PAGE_TITLE,
+  SYSTEM_TOOLS_VPN_SECTION_TITLE,
+  SYSTEM_TOOLS_VPN_TYPE_LABEL,
+  SYSTEM_TOOLS_VPN_BTN_SAVE,
+  SYSTEM_TOOLS_VPN_BTN_SAVING,
+  SYSTEM_TOOLS_VPN_BTN_START,
+  SYSTEM_TOOLS_VPN_BTN_STARTING,
+  SYSTEM_TOOLS_VPN_BTN_STOP,
+  SYSTEM_TOOLS_VPN_BTN_STOPPING,
+  SYSTEM_TOOLS_VPN_BTN_UPLOAD,
+  SYSTEM_TOOLS_VPN_BTN_UPLOADING,
+  SYSTEM_TOOLS_VPN_BTN_REFRESH_LOGS,
+  SYSTEM_TOOLS_VPN_BTN_REFRESHING_LOGS,
+  SYSTEM_TOOLS_VPN_BTN_CLEAR_LOGS,
+  SYSTEM_TOOLS_VPN_BTN_CHOOSE_FILE,
 } from "../../../constants/SystemToolsVPNConstants";
 import {
   Alert,
@@ -35,6 +52,9 @@ import {
   seVpnDelete,
   seVpnState,
 } from "../../../api/apiService";
+
+const SYSTEM_TOOLS_VPN_SCROLL_CLASS = "system-tools-vpn-scroll";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -47,8 +67,7 @@ const C = {
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
+  accent: "#3E5475",
   errorRed: "#dc2626",
 };
 
@@ -125,11 +144,12 @@ const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
-  padding: "6px 10px",
+  padding: "0 10px",
   borderRadius: FIELD_RADIUS,
   background: "#fff",
-  lineHeight: 1.4,
-  minHeight: 34,
+  lineHeight: 1.35,
+  minHeight: 32,
+  height: 32,
 };
 
 const systemFieldSelectStyle = {
@@ -187,6 +207,8 @@ const vpnToolbarStyle = {
   background: C.cardBg,
   flexWrap: "wrap",
   gap: 12,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const vpnContentStyle = {
@@ -210,23 +232,19 @@ const vpnFixedAlertSx = {
   fontWeight: 500,
 };
 
-const vpnActionBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const vpnToolbarBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
 };
 
-const vpnCompactBtnStyle = {
-  minWidth: 80,
-  height: 34,
-  fontSize: 13,
-  padding: "0 20px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const vpnSaveBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const vpnLogTextareaStyle = {
@@ -246,10 +264,14 @@ const vpnLogTextareaStyle = {
 };
 
 const vpnChooseFileLabelStyle = {
-  padding: "5px 12px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  height: 30,
+  padding: "6px 14px",
   background: "#cbd5e1",
   border: "1px solid #cbd5e1",
-  borderRadius: 8,
+  borderRadius: 10,
   fontSize: 12,
   fontWeight: 600,
   color: "#374151",
@@ -258,6 +280,7 @@ const vpnChooseFileLabelStyle = {
   cursor: "pointer",
   userSelect: "none",
   boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+  boxSizing: "border-box",
   transition:
     "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
 };
@@ -270,10 +293,53 @@ const vpnUploadLabelStyle = {
   boxShadow: "none",
 };
 
+const VpnScrollbarStyles = () => (
+  <style>{`
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${SYSTEM_TOOLS_VPN_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
 const VpnPageShell = ({ children }) => (
-  <div style={vpnPageWrapStyle} data-native-scroll>
-    <div style={vpnPageInnerStyle}>{children}</div>
-  </div>
+  <>
+    <VpnScrollbarStyles />
+    <div
+      className={SYSTEM_TOOLS_VPN_SCROLL_CLASS}
+      style={vpnPageWrapStyle}
+      data-native-scroll
+    >
+      <div style={vpnPageInnerStyle}>{children}</div>
+    </div>
+  </>
 );
 
 const VpnBreadcrumb = () => (
@@ -281,6 +347,7 @@ const VpnBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -289,11 +356,13 @@ const VpnBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>VPN</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {SYSTEM_TOOLS_VPN_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -320,9 +389,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -335,6 +401,19 @@ const Btn = ({
       color: C.cardBg,
       border: `1px solid ${C.errorRed}`,
     },
+    tabActive: {
+      background:
+        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
+      color: "#fff",
+      border: "1px solid #5A6F8F",
+      fontWeight: 600,
+    },
+    tabInactive: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
+      fontWeight: 600,
+    },
   };
 
   const s = styles[variant] || styles.default;
@@ -343,6 +422,8 @@ const Btn = ({
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
       error: "#b91c1c",
+      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
+      tabInactive: "#e2e8f0",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const activeBg =
@@ -350,6 +431,8 @@ const Btn = ({
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
       cancel: "#a3b1c2",
       error: "#991b1b",
+      tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
+      tabInactive: "#d1d9e6",
       default: "#d1d5db",
     }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
@@ -381,24 +464,15 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding:
-          variant === "primary" || variant === "cancel" || variant === "error"
-            ? "8px 32px"
-            : "6px 14px",
-        borderRadius: 8,
-        fontSize:
-          variant === "primary" || variant === "cancel" || variant === "error"
-            ? 14
-            : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height:
-          variant === "primary" || variant === "cancel" || variant === "error"
-            ? 38
-            : 30,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
@@ -443,9 +517,10 @@ const disabledInputStyle = {
 };
 
 const SystemToolsVPN = () => {
+  const vpnFileInputRef = useRef(null);
   const [form, setForm] = useState(SYSTEM_TOOLS_VPN_INITIAL);
   const [showAdvanced, setShowAdvanced] = useState(true); // Hidden when disabled via toggle
-  const [runningInfo, setRunningInfo] = useState(VPN_RUNNING_INFO);
+  const [runningInfo, setRunningInfo] = useState(SYSTEM_TOOLS_VPN_RUNNING_INFO);
 
   // OpenVPN specific states
   const [vpnStatus, setVpnStatus] = useState("Unknown");
@@ -509,10 +584,8 @@ const SystemToolsVPN = () => {
     }
   };
 
-  const handleTypeChange = (e) => {
-    const newType = e.target.value;
+  const handleVpnTypeSelect = (newType) => {
     setForm((prev) => ({ ...prev, vpnType: newType }));
-    // Always show advanced options for OpenVPN and SoftEtherVPN
     setShowAdvanced(true);
   };
 
@@ -1695,7 +1768,7 @@ const SystemToolsVPN = () => {
     >
       <label
         style={{
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: 600,
           color: C.labelText,
           width: "100%",
@@ -1721,38 +1794,7 @@ const SystemToolsVPN = () => {
         </Alert>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          marginBottom: 12,
-        }}
-      >
-        <VpnBreadcrumb />
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}>
-            VPN Type:
-          </span>
-          <select
-            value={form.vpnType}
-            onChange={handleTypeChange}
-            style={{ ...selectStyle, width: 220 }}
-            onFocus={inputInteraction.onFocus}
-            onBlur={inputInteraction.onBlur}
-            onMouseEnter={inputInteraction.onMouseEnter}
-            onMouseLeave={inputInteraction.onMouseLeave}
-          >
-            {VPN_TYPES.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      <VpnBreadcrumb />
 
       <div >
         <div style={vpnTableContainerStyle}>
@@ -1765,8 +1807,28 @@ const SystemToolsVPN = () => {
                 letterSpacing: "0.02em",
               }}
             >
-              VPN Settings
+              {SYSTEM_TOOLS_VPN_SECTION_TITLE}
             </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{ fontSize: 13, fontWeight: 600, color: C.labelText }}
+              >
+                {SYSTEM_TOOLS_VPN_TYPE_LABEL}
+              </span>
+              {SYSTEM_TOOLS_VPN_TYPES.map((opt) => (
+                <Btn
+                  key={opt.value}
+                  type="button"
+                  variant={
+                    form.vpnType === opt.value ? "tabActive" : "tabInactive"
+                  }
+                  onClick={() => handleVpnTypeSelect(opt.value)}
+                  style={{ height: 30 }}
+                >
+                  {opt.label}
+                </Btn>
+              ))}
+            </div>
           </div>
 
           <div style={vpnContentStyle}>
@@ -1842,9 +1904,9 @@ const SystemToolsVPN = () => {
                         variant="primary"
                         onClick={handleSaveEnable}
                         disabled={loading.toggle}
-                        style={vpnCompactBtnStyle}
+                        style={vpnSaveBtnStyle}
                       >
-                        {loading.toggle ? "Saving..." : "Save"}
+                        {loading.toggle ? SYSTEM_TOOLS_VPN_BTN_SAVING : SYSTEM_TOOLS_VPN_BTN_SAVE}
                       </Btn>
                     </div>
                   </ROW>
@@ -1872,24 +1934,21 @@ const SystemToolsVPN = () => {
                             }}
                           >
                             <input
+                              ref={vpnFileInputRef}
                               id="vpn-file-upload"
                               type="file"
                               accept=".ovpn,.conf"
                               onChange={handleCertChange}
                               style={{ display: "none" }}
                             />
-                            <label
-                              htmlFor="vpn-file-upload"
-                              style={vpnChooseFileLabelStyle}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = "#b6c2d3";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = "#cbd5e1";
-                              }}
+                            <Btn
+                              type="button"
+                              variant="cancel"
+                              onClick={() => vpnFileInputRef.current?.click()}
+                              style={vpnToolbarBtnStyle}
                             >
-                              Choose File
-                            </label>
+                              {SYSTEM_TOOLS_VPN_BTN_CHOOSE_FILE}
+                            </Btn>
                             <span
                               style={{
                                 fontSize: 11,
@@ -1921,9 +1980,9 @@ const SystemToolsVPN = () => {
                                 <UploadIcon sx={{ fontSize: 13 }} />
                               )
                             }
-                            style={{ ...vpnActionBtnStyle, minWidth: 105, flexShrink: 0 }}
+                            style={{ ...vpnToolbarBtnStyle, minWidth: 105, flexShrink: 0 }}
                           >
-                            {loading.upload ? "Uploading..." : "Upload File"}
+                            {loading.upload ? SYSTEM_TOOLS_VPN_BTN_UPLOADING : SYSTEM_TOOLS_VPN_BTN_UPLOAD}
                           </Btn>
                         </div>
                       </ROW>
@@ -1970,9 +2029,9 @@ const SystemToolsVPN = () => {
                               <StartIcon sx={{ fontSize: 13 }} />
                             )
                           }
-                          style={vpnActionBtnStyle}
+                          style={vpnToolbarBtnStyle}
                         >
-                          {loading.start ? "Starting..." : "Start VPN"}
+                          {loading.start ? SYSTEM_TOOLS_VPN_BTN_STARTING : SYSTEM_TOOLS_VPN_BTN_START}
                         </Btn>
                         <Btn
                           variant="primary"
@@ -1985,9 +2044,9 @@ const SystemToolsVPN = () => {
                               <StopIcon sx={{ fontSize: 13 }} />
                             )
                           }
-                          style={vpnActionBtnStyle}
+                          style={vpnToolbarBtnStyle}
                         >
-                          {loading.stop ? "Stopping..." : "Stop VPN"}
+                          {loading.stop ? SYSTEM_TOOLS_VPN_BTN_STOPPING : SYSTEM_TOOLS_VPN_BTN_STOP}
                         </Btn>
                         <Btn
                           variant="cancel"
@@ -2000,7 +2059,7 @@ const SystemToolsVPN = () => {
                               <CheckCircleIcon sx={{ fontSize: 13 }} />
                             )
                           }
-                          style={{ ...vpnActionBtnStyle, minWidth: 130 }}
+                          style={{ ...vpnToolbarBtnStyle, minWidth: 130 }}
                         >
                           {loading.status ? "Checking..." : "Check Status"}
                         </Btn>
@@ -2049,6 +2108,7 @@ const SystemToolsVPN = () => {
                         variant="cancel"
                         onClick={handleRefreshLogs}
                         disabled={loading.logs}
+                        style={vpnToolbarBtnStyle}
                         startIcon={
                           loading.logs ? (
                             <CircularProgress size={13} color="inherit" />
@@ -2057,12 +2117,13 @@ const SystemToolsVPN = () => {
                           )
                         }
                       >
-                        {loading.logs ? "Refreshing..." : "Refresh Logs"}
+                        {loading.logs ? SYSTEM_TOOLS_VPN_BTN_REFRESHING_LOGS : SYSTEM_TOOLS_VPN_BTN_REFRESH_LOGS}
                       </Btn>
                     </div>
                     <textarea
                       value={vpnLogs || "No logs available"}
                       readOnly
+                      className={SYSTEM_TOOLS_VPN_SCROLL_CLASS}
                       style={vpnLogTextareaStyle}
                     />
                   </div>
@@ -2142,9 +2203,9 @@ const SystemToolsVPN = () => {
                         variant="primary"
                         onClick={handleSaveSeEnable}
                         disabled={loading.toggle}
-                        style={vpnCompactBtnStyle}
+                        style={vpnSaveBtnStyle}
                       >
-                        {loading.toggle ? "Saving..." : "Save"}
+                        {loading.toggle ? SYSTEM_TOOLS_VPN_BTN_SAVING : SYSTEM_TOOLS_VPN_BTN_SAVE}
                       </Btn>
                     </div>
                   </ROW>
@@ -2379,7 +2440,7 @@ const SystemToolsVPN = () => {
                           variant="primary"
                           onClick={handleSeCreateFlow}
                           disabled={loading.seCreate || !areSeFieldsFilled()}
-                          style={{ ...vpnActionBtnStyle, minWidth: 130 }}
+                          style={{ ...vpnToolbarBtnStyle, minWidth: 130 }}
                         >
                           {loading.seCreate
                             ? "Processing..."
@@ -2396,7 +2457,7 @@ const SystemToolsVPN = () => {
                                 loading.seDisconnect ||
                                 !seForm.connectionName.trim()
                               }
-                              style={vpnActionBtnStyle}
+                              style={vpnToolbarBtnStyle}
                             >
                               {loading.seDisconnect
                                 ? "Disconnecting..."
@@ -2410,7 +2471,7 @@ const SystemToolsVPN = () => {
                                 loading.seConnect ||
                                 !seForm.connectionName.trim()
                               }
-                              style={vpnActionBtnStyle}
+                              style={vpnToolbarBtnStyle}
                             >
                               {loading.seConnect ? "Connecting..." : "Connect"}
                             </Btn>
@@ -2419,7 +2480,7 @@ const SystemToolsVPN = () => {
                             variant="cancel"
                             onClick={() => handleSeStatus(false)}
                             disabled={loading.seStatus}
-                            style={vpnActionBtnStyle}
+                            style={vpnToolbarBtnStyle}
                           >
                             {loading.seStatus ? "Checking..." : "Check Status"}
                           </Btn>
@@ -2427,7 +2488,7 @@ const SystemToolsVPN = () => {
                             variant="default"
                             onClick={handleSeState}
                             disabled={loading.seState}
-                            style={{ ...vpnActionBtnStyle, minWidth: 100 }}
+                            style={{ ...vpnToolbarBtnStyle, minWidth: 100 }}
                           >
                             {loading.seState ? "Checking..." : "VPN State"}
                           </Btn>
@@ -2437,7 +2498,7 @@ const SystemToolsVPN = () => {
                               handleSeDelete(seForm.connectionName)
                             }
                             disabled={loading.seDelete}
-                            style={vpnActionBtnStyle}
+                            style={vpnToolbarBtnStyle}
                           >
                             {loading.seDelete
                               ? "Deleting..."
@@ -2482,13 +2543,18 @@ const SystemToolsVPN = () => {
                             Client activity log
                           </span>
                         </div>
-                        <Btn variant="cancel" onClick={() => setSeLogs("")}>
-                          Clear Logs
+                        <Btn
+                          variant="cancel"
+                          onClick={() => setSeLogs("")}
+                          style={vpnToolbarBtnStyle}
+                        >
+                          {SYSTEM_TOOLS_VPN_BTN_CLEAR_LOGS}
                         </Btn>
                       </div>
                       <textarea
                         value={seLogs || "No logs yet"}
                         readOnly
+                        className={SYSTEM_TOOLS_VPN_SCROLL_CLASS}
                         style={vpnLogTextareaStyle}
                       />
                     </div>

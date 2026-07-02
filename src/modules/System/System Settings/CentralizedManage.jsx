@@ -3,13 +3,28 @@ import Tooltip from "@mui/material/Tooltip";
 import {
   CENTRALIZED_MANAGE_FIELDS,
   MANAGEMENT_PLATFORM_OPTIONS,
-  CENTRALIZED_MANAGE_BUTTONS,
   CENTRALIZED_PROTOCOL_OPTIONS,
   SNMP_VERSION_OPTIONS,
+  CENTRALIZED_MANAGE_PAGE_BREADCRUMB_ROOT,
+  CENTRALIZED_MANAGE_PAGE_BREADCRUMB_SECTION,
+  CENTRALIZED_MANAGE_PAGE_TITLE,
+  CENTRALIZED_MANAGE_CARD_TITLE,
+  CENTRALIZED_MANAGE_BTN_SAVE,
+  CENTRALIZED_MANAGE_BTN_RESET,
+  CENTRALIZED_MANAGE_BTN_DOWNLOAD_MIB,
+  CENTRALIZED_MANAGE_BTN_SAVING,
+  CENTRALIZED_MANAGE_BTN_APPLYING,
+  CENTRALIZED_MANAGE_ENABLE_LABEL,
+  CENTRALIZED_MANAGE_APPLY_STATUS_CONNECTING,
+  CENTRALIZED_MANAGE_INITIAL_FORM,
+  CENTRALIZED_MANAGE_FIELD_TOOLTIPS,
 } from "../../../constants/CentralizedManageConstants";
 import { Alert, CircularProgress, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
 import axiosInstance from "../../../api/axiosInstance";
+
+const CENTRALIZED_MANAGE_SCROLL_CLASS = "centralized-manage-scroll";
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -22,8 +37,7 @@ const C = {
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
+  accent: "#3E5475",
   errorRed: "#dc2626",
 };
 
@@ -98,11 +112,12 @@ const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 const systemFieldInputStyle = {
   ...nativeFieldBase,
   width: "100%",
-  padding: "6px 10px",
+  padding: "0 10px",
   borderRadius: FIELD_RADIUS,
   background: "#fff",
-  lineHeight: 1.4,
-  minHeight: 34,
+  lineHeight: 1.35,
+  minHeight: 32,
+  height: 32,
 };
 
 const systemFieldInputStyleNarrow = {
@@ -137,17 +152,9 @@ const centralizedManagePageWrapStyle = {
 const centralizedManagePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
-};
-
-const centralizedManageCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
 };
 
 const centralizedManageTableContainerStyle = {
@@ -174,6 +181,8 @@ const centralizedManageToolbarStyle = {
   background: C.cardBg,
   flexWrap: "wrap",
   gap: 12,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const centralizedManageContentStyle = {
@@ -181,7 +190,7 @@ const centralizedManageContentStyle = {
   flexDirection: "column",
   gap: 12,
   minWidth: 0,
-  padding: "16px 36px 0",
+  padding: "16px 36px 24px",
   background: C.cardBg,
 };
 
@@ -219,11 +228,11 @@ const centralizedManageFixedAlertSx = {
   fontWeight: 500,
 };
 
-const advancedFormInlineFooterStyle = {
+const centralizedManageFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "center",
   gap: 12,
   width: "100%",
   margin: 0,
@@ -232,16 +241,16 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const centralizedManageFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const checkboxSx = {
@@ -262,80 +271,87 @@ const tooltipProps = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
+        fontSize: 12,
+        lineHeight: 1.45,
         maxWidth: 500,
-        padding: "12px 16px",
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
       },
     },
     arrow: { sx: { color: "#fff" } },
   },
 };
 
-const tooltips = {
-  centralizedManage:
-    "Enable centralized management to allow remote monitoring and configuration of this device from a management platform.",
-  notificationSetting:
-    "Enable SNMP trap notifications when system resource thresholds are exceeded or connection rates fall below configured limits.",
-  trapServerPort:
-    "UDP port on the trap receiver host where SNMP alert notifications are sent. The standard trap port is 162.",
-  cpuUsage:
-    "CPU utilization percentage that triggers an SNMP trap when exceeded. Alerts the management platform of high processor load.",
-  memoryUsage:
-    "Memory utilization percentage that triggers an SNMP trap when exceeded. Alerts the management platform of low available memory.",
-  highCps:
-    "Calls-per-second percentage threshold that triggers an SNMP trap when call volume is unusually high.",
-  lowConnRate:
-    "Connection success rate percentage below which an SNMP trap is sent to indicate degraded call connectivity.",
-  autoChangeGateway:
-    "Automatically switch the default network gateway when directed by the centralized management platform.",
-  managementPlatform:
-    "Select the remote management system this device registers with. DCMS uses the Clixxo cloud platform; Custom1 and Others use direct SNMP configuration.",
-  centralizedProtocol:
-    "Protocol used for centralized management communication. Currently SNMP is supported for device monitoring and remote management.",
-  snmpVersion:
-    "SNMP protocol version used for management queries and traps. V2 is recommended for most deployments; V3 adds authentication and encryption.",
-  snmpServerAddress:
-    "IP address of the SNMP management station allowed to query this device. Use 'all' or '*' to permit any manager.",
-  monitoringPort:
-    "UDP port on which the local SNMP agent listens for management queries. The standard monitoring port is 161; enable the checkbox to use a custom port.",
-  communityString:
-    "SNMP community name used for authentication between this device and the management station. Must match the value configured on the manager.",
-  companyName:
-    "Company or organization name registered with the DCMS management platform for device identification.",
-  gatewayDesc:
-    "Descriptive label for this gateway device as displayed in the DCMS management console.",
-  snmpServer:
-    "IP address of the SNMP trap server used by DCMS to receive alerts and status updates from this device.",
-  authCode:
-    "Authorization code provided by DCMS to authenticate and register this device with the management platform.",
-};
-
 const FieldLabel = ({ name, style, children }) => {
   const labelStyle = {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 600,
     color: C.labelText,
     width: "100%",
     maxWidth: 220,
     flexShrink: 0,
-    cursor: tooltips[name] ? "help" : "default",
+    cursor: CENTRALIZED_MANAGE_FIELD_TOOLTIPS[name] ? "help" : "default",
     ...style,
   };
   const label = <label style={labelStyle}>{children}</label>;
 
-  if (!tooltips[name]) return label;
+  if (!CENTRALIZED_MANAGE_FIELD_TOOLTIPS[name]) return label;
 
   return (
-    <Tooltip title={tooltips[name]} {...tooltipProps}>
+    <Tooltip title={CENTRALIZED_MANAGE_FIELD_TOOLTIPS[name]} {...tooltipProps}>
       {label}
     </Tooltip>
   );
 };
 
+const CentralizedManageScrollbarStyles = () => (
+  <style>{`
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${CENTRALIZED_MANAGE_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
 const CentralizedManagePageShell = ({ children }) => (
-  <div style={centralizedManagePageWrapStyle} data-native-scroll>
-    <div style={centralizedManagePageInnerStyle}>{children}</div>
-  </div>
+  <>
+    <CentralizedManageScrollbarStyles />
+    <div
+      className={CENTRALIZED_MANAGE_SCROLL_CLASS}
+      style={centralizedManagePageWrapStyle}
+      data-native-scroll
+    >
+      <div style={centralizedManagePageInnerStyle}>{children}</div>
+    </div>
+  </>
 );
 
 const CentralizedManageBreadcrumb = () => (
@@ -343,7 +359,7 @@ const CentralizedManageBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -352,12 +368,12 @@ const CentralizedManageBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{CENTRALIZED_MANAGE_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{CENTRALIZED_MANAGE_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
     <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      Centralized Manage
+      {CENTRALIZED_MANAGE_PAGE_TITLE}
     </span>
   </div>
 );
@@ -383,9 +399,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -437,18 +450,15 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding:
-          variant === "primary" || variant === "cancel"
-            ? "8px 32px"
-            : "6px 14px",
-        borderRadius: 8,
-        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: variant === "primary" || variant === "cancel" ? 38 : 30,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
@@ -487,31 +497,8 @@ const disabledInputStyle = {
   borderColor: "#e2e8f0",
 };
 
-const initialForm = {
-  centralizedManage: false,
-  notificationSetting: false,
-  trapServerPort: "162",
-  cpuUsage: "90",
-  memoryUsage: "90",
-  highCps: "90",
-  lowConnRate: "20",
-  autoChangeGateway: false,
-  managementPlatform: "DCMS",
-  centralizedProtocol: "SNMP",
-  snmpVersion: "V2",
-  snmpServerAddress: "127.0.0.1",
-  monitoringPort: false,
-  monitoringPortValue: "161",
-  communityString: "public",
-  companyName: "",
-  gatewayDesc: "",
-  snmpServer: "127.0.0.1",
-  authCode: "",
-  workingStatus: "Requesting authentication",
-};
-
 const CentralizedManage = () => {
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState(CENTRALIZED_MANAGE_INITIAL_FORM);
   const [isApplying, setIsApplying] = useState(false);
   const [applyStatus, setApplyStatus] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -529,7 +516,7 @@ const CentralizedManage = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === "object") {
-          setForm({ ...initialForm, ...parsed });
+          setForm({ ...CENTRALIZED_MANAGE_INITIAL_FORM, ...parsed });
         }
       }
     } catch {}
@@ -568,7 +555,7 @@ const CentralizedManage = () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {}
-    setForm(initialForm);
+    setForm(CENTRALIZED_MANAGE_INITIAL_FORM);
   };
 
   const buildSnmpCommand = () => {
@@ -728,7 +715,7 @@ echo "DCMS configuration saved"`;
 
     try {
       setIsApplying(true);
-      setApplyStatus("Connecting SNMP...");
+      setApplyStatus(CENTRALIZED_MANAGE_APPLY_STATUS_CONNECTING);
       const commands = [];
 
       if (form.managementPlatform === "DCMS") {
@@ -1015,7 +1002,7 @@ fi`;
                 letterSpacing: "0.02em",
               }}
             >
-              Info
+              {CENTRALIZED_MANAGE_CARD_TITLE}
             </span>
           </div>
 
@@ -1131,7 +1118,7 @@ fi`;
                               sx={checkboxSx}
                             />
                             <span style={{ fontSize: 12, color: C.valueText }}>
-                              Enable
+                              {CENTRALIZED_MANAGE_ENABLE_LABEL}
                             </span>
                           </div>
                         ) : field.type === "select" ? (
@@ -1219,39 +1206,39 @@ fi`;
               >
                 <CircularProgress size={18} sx={{ color: C.accent }} />
                 <span style={{ fontSize: 13, fontWeight: 500 }}>
-                  {applyStatus || "Applying…"}
+                  {applyStatus || CENTRALIZED_MANAGE_BTN_APPLYING}
                 </span>
               </div>
             )}
           </div>
 
-          <div style={advancedFormInlineFooterStyle}>
+          <div style={centralizedManageFooterStyle}>
             <Btn
               variant="primary"
               type="submit"
               form="centralized-manage-form"
               disabled={isApplying}
-              style={advancedFormBtnStyle}
+              style={centralizedManageFooterBtnStyle}
             >
-              {isApplying ? "Connecting…" : "Save"}
+              {isApplying ? CENTRALIZED_MANAGE_BTN_SAVING : CENTRALIZED_MANAGE_BTN_SAVE}
             </Btn>
             <Btn
               variant="cancel"
               type="button"
               onClick={handleReset}
               disabled={isApplying}
-              style={advancedFormBtnStyle}
+              style={centralizedManageFooterBtnStyle}
             >
-              Reset
+              {CENTRALIZED_MANAGE_BTN_RESET}
             </Btn>
             <Btn
               variant="primary"
               type="button"
               onClick={handleDownloadMib}
               disabled={isApplying}
-              style={advancedFormBtnStyle}
+              style={centralizedManageFooterBtnStyle}
             >
-              {CENTRALIZED_MANAGE_BUTTONS[2].label}
+              {CENTRALIZED_MANAGE_BTN_DOWNLOAD_MIB}
             </Btn>
           </div>
         </div>

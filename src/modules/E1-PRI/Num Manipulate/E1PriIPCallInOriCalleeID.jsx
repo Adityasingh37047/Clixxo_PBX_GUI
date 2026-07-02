@@ -387,9 +387,31 @@ const ipCallInOriCalleeIdPrimaryBtnStyle = {
   borderRadius: 10,
 };
 
-const ipCallInOriCalleeIdModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const ipCallInOriCalleeIdModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -1596,23 +1618,12 @@ const IPCallInOriCalleeID = () => {
             ))}
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? (
               <CircularProgress size={20} color="inherit" />
@@ -1624,7 +1635,7 @@ const IPCallInOriCalleeID = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ ...ipCallInOriCalleeIdModalCancelBtnStyle, height: 34 }}
+            style={ipCallInOriCalleeIdModalCancelBtnStyle}
           >
             {NUM_MANIPULATE_IP_CALL_IN_ORICALLEEID_CLOSE_LABEL}
           </Btn>

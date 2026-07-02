@@ -530,20 +530,39 @@ const ringGroupModalDialogContentSx = {
   WebkitOverflowScrolling: "touch",
 };
 
-const ringGroupModalActionsStyle = {
+const addNewModalFooterStyle = {
   display: "flex",
+  alignItems: "center",
   justifyContent: "center",
-  gap: 16,
+  gap: 12,
+  width: "100%",
+  margin: 0,
   padding: "16px 24px",
+  boxSizing: "border-box",
   background: "#f8fafc",
-  borderTop: `1px solid ${C.divider}`,
+  borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: 8,
   borderBottomRightRadius: 8,
 };
 
-const ringGroupModalCancelBtnStyle = {
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const ringGroupModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -2113,12 +2132,12 @@ const RingGroup = () => {
           </div>
         </DialogContent>
 
-        <DialogActions style={ringGroupModalActionsStyle}>
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? (
               <>

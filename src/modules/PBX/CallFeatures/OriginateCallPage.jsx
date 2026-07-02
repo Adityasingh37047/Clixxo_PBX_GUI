@@ -430,6 +430,14 @@ const originateCallFormNoteStyle = {
   boxSizing: "border-box",
 };
 
+const pageFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
 const originateCallFormFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
@@ -437,7 +445,7 @@ const originateCallFormFooterStyle = {
   justifyContent: "center",
   gap: 12,
   width: "100%",
-  padding: "16px 24px",
+  padding: "10px 28px",
   borderTop: `1px solid ${C.divider}`,
   background: "#f8fafc",
   boxSizing: "border-box",
@@ -446,13 +454,11 @@ const originateCallFormFooterStyle = {
 };
 
 const originateCallFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const originateCallFixedAlertSx = {

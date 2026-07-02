@@ -454,9 +454,31 @@ const numberPoolPrimaryBtnStyle = {
   borderRadius: 10,
 };
 
-const numberPoolModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const numberPoolModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -1248,22 +1270,11 @@ const NumberPool = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
             disabled={loading}
           >
             {loading ? (
@@ -1275,7 +1286,7 @@ const NumberPool = () => {
           <Btn
             onClick={closeModal}
             variant="cancel"
-            style={{ ...numberPoolModalCancelBtnStyle, height: 34 }}
+            style={numberPoolModalCancelBtnStyle}
             disabled={loading}
           >
             {NUMBER_FILTER_POOL_CLOSE_LABEL}

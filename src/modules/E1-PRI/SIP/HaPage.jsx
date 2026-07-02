@@ -269,7 +269,7 @@ const HaPage = () => {
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-center gap-8 mt-6">
+        <div className="flex justify-center gap-3 mt-6">
           <Button
             variant="contained"
             sx={{
@@ -277,9 +277,9 @@ const HaPage = () => {
                 "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
               color: "#fff",
               fontWeight: 600,
-              fontSize: "16px",
+              fontSize: "12px",
               minWidth: 100,
-              minHeight: 42,
+              minHeight: 30,
               px: 2,
               py: 0.5,
               boxShadow: "0 2px 8px #b3e0ff",
@@ -301,9 +301,9 @@ const HaPage = () => {
                 "linear-gradient(to bottom, #3bb6f5 0%, #0e8fd6 100%)",
               color: "#fff",
               fontWeight: 600,
-              fontSize: "16px",
+              fontSize: "12px",
               minWidth: 100,
-              minHeight: 42,
+              minHeight: 30,
               px: 2,
               py: 0.5,
               boxShadow: "0 2px 8px #b3e0ff",

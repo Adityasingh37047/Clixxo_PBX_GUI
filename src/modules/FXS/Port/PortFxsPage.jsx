@@ -347,6 +347,38 @@ const portFxsPaginationStyle = {
   overflow: "hidden",
 };
 
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
 const PortFxsBreadcrumb = () => (
   <div
     style={{
@@ -460,14 +492,6 @@ const fxsDialogTitleStyle = {
   textAlign: "center",
   borderTopLeftRadius: 8,
   borderTopRightRadius: 8,
-};
-
-const fxsDialogActionsStyle = {
-  padding: "16px 24px",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.divider}`,
-  justifyContent: "center",
-  gap: 12,
 };
 
 const PortFxsPage = () => {
@@ -920,19 +944,19 @@ const PortFxsPage = () => {
               onClose={() => setShowBatchModify(false)}
             />
           </DialogContent>
-          <DialogActions style={fxsDialogActionsStyle}>
+          <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
             <Btn
               variant="primary"
               type="submit"
               form="fxs-batch-modify-form"
-              style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              style={addNewModalFooterBtnStyle}
             >
               Save
             </Btn>
             <Btn
               variant="cancel"
               onClick={() => setShowBatchModify(false)}
-              style={{ minWidth: 100, height: 34 }}
+              style={addNewModalFooterCancelBtnStyle}
             >
               Close
             </Btn>
@@ -991,13 +1015,13 @@ const PortFxsPage = () => {
               />
             )}
           </DialogContent>
-          <DialogActions style={fxsDialogActionsStyle}>
+          <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
             <Btn
               variant="primary"
               type="submit"
               form="fxs-modify-form"
               disabled={modifySaving}
-              style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              style={addNewModalFooterBtnStyle}
             >
               {modifySaving ? "Saving..." : "Modify"}
             </Btn>
@@ -1006,7 +1030,7 @@ const PortFxsPage = () => {
               type="button"
               onClick={() => modifyFormRef.current?.reset()}
               disabled={modifySaving}
-              style={{ minWidth: 100, height: 34 }}
+              style={addNewModalFooterCancelBtnStyle}
             >
               Reset
             </Btn>
@@ -1018,7 +1042,7 @@ const PortFxsPage = () => {
                 setModifyPortData(null);
                 setModifySaving(false);
               }}
-              style={{ minWidth: 100, height: 34 }}
+              style={addNewModalFooterCancelBtnStyle}
             >
               Close
             </Btn>

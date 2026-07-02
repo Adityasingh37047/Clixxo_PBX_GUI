@@ -456,6 +456,38 @@ const portGroupPaginationStyle = {
   overflow: "hidden",
 };
 
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
 const PortGroupBreadcrumb = () => (
   <div
     style={{
@@ -1438,27 +1470,18 @@ const PortGroupPage = () => {
               {renderPortsSection()}
             </div>
           </DialogContent>
-          <DialogActions
-            style={{
-              padding: "16px 24px",
-              background: "#f8fafc",
-              borderTop: `1px solid ${C.divider}`,
-              justifyContent: "center",
-              gap: 12,
-              flexShrink: 0,
-            }}
-          >
+          <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
             <Btn
               variant="primary"
               onClick={handleSave}
-              style={{ minWidth: 100, height: 34, fontSize: 13 }}
+              style={addNewModalFooterBtnStyle}
             >
               {PORT_GROUP_SAVE_LABEL}
             </Btn>
             <Btn
               variant="cancel"
               onClick={handleCloseModal}
-              style={{ minWidth: 100, height: 34 }}
+              style={addNewModalFooterCancelBtnStyle}
             >
               {PORT_GROUP_CLOSE_LABEL}
             </Btn>

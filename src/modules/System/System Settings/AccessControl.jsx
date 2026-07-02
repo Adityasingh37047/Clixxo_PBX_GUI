@@ -1,6 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Tooltip } from "@mui/material";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,25 +7,52 @@ import {
   Alert,
   CircularProgress,
   Checkbox,
+  Tooltip,
 } from "@mui/material";
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { postLinuxCmd } from "../../../api/apiService";
-import { IPTABLES_INFO } from "../../../constants/AccessControlConstants";
+import {
+  IPTABLES_INFO,
+  ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT,
+  ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION,
+  ACCESS_CONTROL_PAGE_TITLE,
+  ACCESS_CONTROL_BTN_INVERSE,
+  ACCESS_CONTROL_BTN_DELETE,
+  ACCESS_CONTROL_BTN_CLEAR_ALL,
+  ACCESS_CONTROL_BTN_ADD_NEW,
+  ACCESS_CONTROL_BTN_SAVE,
+  ACCESS_CONTROL_BTN_CLOSE,
+  ACCESS_CONTROL_BTN_APPLY,
+  ACCESS_CONTROL_BTN_CANCEL,
+  ACCESS_CONTROL_MODAL_TITLE,
+  ACCESS_CONTROL_EMPTY_MESSAGE,
+  ACCESS_CONTROL_EMPTY_BTN,
+  ACCESS_CONTROL_RECORD_LABEL,
+  ACCESS_CONTROL_SHOWING_RECORDS,
+  ACCESS_CONTROL_SELECTED_SUFFIX,
+  ACCESS_CONTROL_LOG_TITLE,
+  ACCESS_CONTROL_LOG_NOTES,
+  ACCESS_CONTROL_FIELD_TOOLTIPS,
+  ACCESS_CONTROL_INDEX_PLACEHOLDER,
+  ACCESS_CONTROL_COMMAND_PLACEHOLDER,
+  ACCESS_CONTROL_TABLE_COLUMNS,
+} from "../../../constants/AccessControlConstants";
+
+const ACCESS_CONTROL_SCROLL_CLASS = "access-control-scroll";
 
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
+  accent: "#3E5475",
   errorRed: "#dc2626",
 };
 
@@ -101,11 +126,11 @@ const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 
 const systemModalFieldInputStyle = {
   ...nativeFieldBase,
-  minHeight: 34,
-  height: 34,
+  minHeight: 32,
+  height: 32,
   width: "100%",
-  padding: "6px 10px",
-  lineHeight: 1.4,
+  padding: "0 10px",
+  lineHeight: 1.35,
   color: C.valueText,
   borderRadius: FIELD_RADIUS,
 };
@@ -155,13 +180,15 @@ const accessControlToolbarStyle = {
   background: C.cardBg,
   flexWrap: "wrap",
   gap: 12,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const accessControlFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: "center",
   gap: 12,
   width: "100%",
   margin: 0,
@@ -170,23 +197,47 @@ const accessControlFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const accessControlToolbarBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 8,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
-const accessControlFooterBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
   margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
+  padding: "16px 24px",
   boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+const accessControlModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 const accessControlSelectedBadgeStyle = {
@@ -221,9 +272,10 @@ const accessControlLogSectionStyle = {
 };
 
 const accessControlLogTitleStyle = {
-  fontSize: 13,
+  fontSize: 15,
   fontWeight: 600,
   color: C.labelText,
+  marginTop: 10,
   marginBottom: 8,
   textAlign: "center",
   letterSpacing: "0.01em",
@@ -250,7 +302,8 @@ const accessControlLogPreStyle = {
   background: C.cardBg,
   color: C.valueText,
   fontSize: 11,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  fontFamily:
+    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   whiteSpace: "pre-wrap",
   margin: 0,
   padding: 0,
@@ -264,7 +317,7 @@ const accessControlLogNotesStyle = {
   lineHeight: 1.5,
 };
 
-const tooltipProps = {
+const ACCESS_CONTROL_FIELD_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
   slotProps: {
@@ -282,13 +335,70 @@ const tooltipProps = {
     arrow: { sx: { color: "#fff" } },
   },
 };
-  
-const tooltips = {
-  index: "Enter the index of the rule to edit.",
-  command: "Enter the command to execute.",
 
+const AccessControlFieldLabel = ({ tooltipKey, children, style = {} }) => {
+  const tooltip = ACCESS_CONTROL_FIELD_TOOLTIPS[tooltipKey] || "";
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: 130,
+        flexShrink: 0,
+        textAlign: "left",
+        whiteSpace: "nowrap",
+        cursor: tooltip ? "help" : undefined,
+        display: "block",
+        ...style,
+      }}
+    >
+      {children}
+    </label>
+  );
+  if (!tooltip) return labelNode;
+  return (
+    <Tooltip title={tooltip} {...ACCESS_CONTROL_FIELD_TOOLTIP_PROPS}>
+      {labelNode}
+    </Tooltip>
+  );
 };
 
+const AccessControlScrollbarStyles = () => (
+  <style>{`
+    .${ACCESS_CONTROL_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${ACCESS_CONTROL_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
 
 const TH = ({ children, style: extra }) => (
   <th
@@ -325,10 +435,10 @@ const tdStyle = {
 };
 
 const checkboxSx = {
-  padding: "4px",
-  color: OUTLINED_BORDER,
-  "&.Mui-checked": { color: OUTLINED_FOCUS },
-  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
   "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
@@ -343,9 +453,16 @@ const getAccessControlRowBg = (isSelected, idx) =>
   isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
 const AccessControlPageShell = ({ children }) => (
-  <div style={accessControlPageWrapStyle} data-native-scroll>
-    <div style={accessControlPageInnerStyle}>{children}</div>
-  </div>
+  <>
+    <AccessControlScrollbarStyles />
+    <div
+      className={ACCESS_CONTROL_SCROLL_CLASS}
+      style={accessControlPageWrapStyle}
+      data-native-scroll
+    >
+      <div style={accessControlPageInnerStyle}>{children}</div>
+    </div>
+  </>
 );
 
 const AccessControlBreadcrumb = () => (
@@ -362,11 +479,13 @@ const AccessControlBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Access Control</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {ACCESS_CONTROL_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -384,13 +503,13 @@ const AccessControlTableEmptyState = ({ onAddNew, disabled }) => (
   >
     <div
       style={{
-        color: C.labelText,
+        color: "#3E5475",
         fontSize: 13,
         fontWeight: 600,
         marginBottom: 16,
       }}
     >
-      No command configured!
+      {ACCESS_CONTROL_EMPTY_MESSAGE}
     </div>
     <Btn
       variant="cancel"
@@ -398,7 +517,7 @@ const AccessControlTableEmptyState = ({ onAddNew, disabled }) => (
       disabled={disabled}
       style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
     >
-      + Add New Command
+      {ACCESS_CONTROL_EMPTY_BTN}
     </Btn>
   </div>
 );
@@ -447,15 +566,17 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
       color: "#374151",
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+    },
+    outline: {
+      background: C.cardBg,
+      color: C.labelText,
+      border: `1px solid ${C.cardBorder}`,
     },
     error: {
       background: C.errorRed,
@@ -469,6 +590,7 @@ const Btn = ({
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
+      outline: "#e2e8f0",
       error: "#b91c1c",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
@@ -476,6 +598,7 @@ const Btn = ({
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
       cancel: "#a3b1c2",
+      outline: "#d1d9e6",
       error: "#991b1b",
       default: "#d1d5db",
     }[variant] || "#d1d5db";
@@ -507,18 +630,15 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding:
-          variant === "primary" || variant === "cancel"
-            ? "8px 32px"
-            : "6px 14px",
-        borderRadius: 8,
-        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: variant === "primary" || variant === "cancel" ? 38 : 30,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
@@ -569,48 +689,6 @@ const AccessControl = () => {
   const [toast, setToast] = useState({ msg: "", type: "success" });
   const [executionLogs, setExecutionLogs] = useState(IPTABLES_INFO);
   const [iptablesInfo, setIptablesInfo] = useState(IPTABLES_INFO);
-
-  // Scroll state for custom horizontal scrollbar
-  const tableScrollRef = useRef(null);
-  const [scrollState, setScrollState] = useState({
-    left: 0,
-    width: 0,
-    scrollWidth: 0,
-  });
-  const [showCustomScrollbar, setShowCustomScrollbar] = useState(false);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 10;
-  const totalPages = Math.max(1, Math.ceil(commands.length / itemsPerPage));
-  const pagedCommands = commands.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) setPage(newPage);
-  };
-
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [commands.length, totalPages, page]);
-
-  // Update scroll state when data changes
-  useEffect(() => {
-    const update = () => {
-      if (tableScrollRef.current) {
-        const el = tableScrollRef.current;
-        setScrollState({
-          left: el.scrollLeft,
-          width: el.clientWidth,
-          scrollWidth: el.scrollWidth,
-        });
-        setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-      }
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [commands]);
 
   // Toast handling
   const showToast = (msg, type = "success") => {
@@ -906,45 +984,6 @@ const AccessControl = () => {
     }
   };
 
-  // Scroll handling functions
-  const handleTableScroll = (e) =>
-    setScrollState({
-      left: e.target.scrollLeft,
-      width: e.target.clientWidth,
-      scrollWidth: e.target.scrollWidth,
-    });
-  const handleScrollbarDrag = (e) => {
-    const track = e.target.parentNode;
-    if (!track) return;
-    const rect = track.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft =
-        (scrollState.scrollWidth - scrollState.width) * percent;
-  };
-  const handleArrowClick = (dir) => {
-    if (tableScrollRef.current)
-      tableScrollRef.current.scrollLeft += dir === "left" ? -100 : 100;
-  };
-
-  // Calculate scrollbar thumb dimensions
-  const thumbWidth =
-    scrollState.width && scrollState.scrollWidth
-      ? Math.max(
-          40,
-          (scrollState.width / scrollState.scrollWidth) *
-            (scrollState.width - 8),
-        )
-      : 40;
-  const thumbLeft =
-    scrollState.width &&
-    scrollState.scrollWidth &&
-    scrollState.scrollWidth > scrollState.width
-      ? (scrollState.left / (scrollState.scrollWidth - scrollState.width)) *
-        (scrollState.width - thumbWidth - 16)
-      : 0;
-
   return (
     <AccessControlPageShell>
       {toast.msg && (
@@ -960,89 +999,79 @@ const AccessControl = () => {
       <AccessControlBreadcrumb />
 
       <div style={accessControlTableContainerStyle}>
-          <div style={accessControlToolbarStyle}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flex: 1,
-                minWidth: 0,
-              }}
-            >
-              {selected.length > 0 && (
-                <span style={accessControlSelectedBadgeStyle}>
-                  {selected.length} selected
-                </span>
-              )}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <Btn
-                variant="cancel"
-                onClick={handleInverse}
-                disabled={loading.delete || commands.length === 0}
-                style={accessControlToolbarBtnStyle}
-              >
-                Inverse
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleDelete}
-                disabled={selected.length === 0 || loading.delete}
-                style={accessControlToolbarBtnStyle}
-              >
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                {loading.delete ? "Deleting..." : "Delete"}
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleClearAll}
-                disabled={commands.length === 0 || loading.delete}
-                style={accessControlToolbarBtnStyle}
-              >
-                {loading.delete ? "Clearing..." : "Clear All"}
-              </Btn>
-              <Btn
-                variant="primary"
-                onClick={() => handleOpenModal()}
-                disabled={loading.save}
-                style={accessControlToolbarBtnStyle}
-              >
-                + Add New
-              </Btn>
-            </div>
+        <div style={accessControlToolbarStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {selected.length > 0 && (
+              <span style={accessControlSelectedBadgeStyle}>
+                {selected.length} {ACCESS_CONTROL_SELECTED_SUFFIX}
+              </span>
+            )}
           </div>
-
-          {commands.length === 0 ? (
-            <AccessControlTableEmptyState
-              onAddNew={() => handleOpenModal()}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <Btn
+              variant="cancel"
+              onClick={handleInverse}
+              disabled={loading.delete || commands.length === 0}
+              style={accessControlToolbarBtnStyle}
+            >
+              {ACCESS_CONTROL_BTN_INVERSE}
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleDelete}
+              disabled={selected.length === 0 || loading.delete}
+              style={accessControlToolbarBtnStyle}
+            >
+              <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+              {loading.delete ? "Deleting..." : ACCESS_CONTROL_BTN_DELETE}
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={handleClearAll}
+              disabled={commands.length === 0 || loading.delete}
+              style={accessControlToolbarBtnStyle}
+            >
+              {loading.delete ? "Clearing..." : ACCESS_CONTROL_BTN_CLEAR_ALL}
+            </Btn>
+            <Btn
+              variant="primary"
+              onClick={() => handleOpenModal()}
               disabled={loading.save}
-            />
-          ) : (
+              style={accessControlToolbarBtnStyle}
+            >
+              {ACCESS_CONTROL_BTN_ADD_NEW}
+            </Btn>
+          </div>
+        </div>
+
+        {commands.length === 0 ? (
+          <AccessControlTableEmptyState
+            onAddNew={() => handleOpenModal()}
+            disabled={loading.save}
+          />
+        ) : (
+          <>
             <div
-              ref={tableScrollRef}
+              className={ACCESS_CONTROL_SCROLL_CLASS}
               style={{
                 overflowX: "auto",
                 overflowY: "auto",
                 flex: 1,
-              }}
-              onScroll={() => {
-                if (tableScrollRef.current) {
-                  const el = tableScrollRef.current;
-                  setScrollState({
-                    left: el.scrollLeft,
-                    width: el.clientWidth,
-                    scrollWidth: el.scrollWidth,
-                  });
-                  setShowCustomScrollbar(el.scrollWidth > el.clientWidth);
-                }
               }}
             >
               <table
@@ -1056,42 +1085,58 @@ const AccessControl = () => {
               >
                 <thead>
                   <tr>
-                    <TH
-                      style={{
-                        width: 40,
-                        padding: 0,
-                        borderLeft: "none",
-                      }}
-                    >
-                      <Checkbox
-                        size="small"
-                        checked={
-                          commands.length > 0 &&
-                          selected.length === commands.length
-                        }
-                        indeterminate={
-                          selected.length > 0 &&
-                          selected.length < commands.length
-                        }
-                        onChange={(e) =>
-                          e.target.checked
-                            ? handleCheckAll()
-                            : handleUncheckAll()
-                        }
-                        sx={checkboxSx}
-                      />
-                    </TH>
-                    <TH style={{ width: 36 }}>Id</TH>
-                    <TH>Command</TH>
-                    <TH style={{ width: 70, borderRight: "none" }}>Modify</TH>
+                    {ACCESS_CONTROL_TABLE_COLUMNS.map((col) => {
+                      if (col.key === "check") {
+                        return (
+                          <TH
+                            key={col.key}
+                            style={{
+                              width: col.width,
+                              padding: 0,
+                              borderLeft: "none",
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={
+                                commands.length > 0 &&
+                                selected.length === commands.length
+                              }
+                              indeterminate={
+                                selected.length > 0 &&
+                                selected.length < commands.length
+                              }
+                              onChange={(e) =>
+                                e.target.checked
+                                  ? handleCheckAll()
+                                  : handleUncheckAll()
+                              }
+                              sx={checkboxSx}
+                            />
+                          </TH>
+                        );
+                      }
+                      return (
+                        <TH
+                          key={col.key}
+                          style={{
+                            ...(col.width ? { width: col.width } : {}),
+                            ...(col.key === "modify"
+                              ? { borderRight: "none" }
+                              : {}),
+                          }}
+                        >
+                          {col.label}
+                        </TH>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody>
-                  {pagedCommands.map((cmd, pageIdx) => {
-                    const rowIdx = (page - 1) * itemsPerPage + pageIdx;
-                    const isLastRow = pageIdx === pagedCommands.length - 1;
+                  {commands.map((cmd, rowIdx) => {
+                    const isLastRow = rowIdx === commands.length - 1;
                     const isSelected = selected.includes(rowIdx);
-                    const rowBg = getAccessControlRowBg(isSelected, pageIdx);
+                    const rowBg = getAccessControlRowBg(isSelected, rowIdx);
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
@@ -1113,10 +1158,14 @@ const AccessControl = () => {
                         }}
                       >
                         <td
-                          style={getAccessControlTdStyle(rowBg, lastRowCellStyle, {
-                            width: 36,
-                            borderLeft: "none",
-                          })}
+                          style={getAccessControlTdStyle(
+                            rowBg,
+                            lastRowCellStyle,
+                            {
+                              width: 36,
+                              borderLeft: "none",
+                            },
+                          )}
                         >
                           <Checkbox
                             size="small"
@@ -1126,16 +1175,30 @@ const AccessControl = () => {
                             sx={checkboxSx}
                           />
                         </td>
-                        <td style={getAccessControlTdStyle(rowBg, lastRowCellStyle)}>
+                        <td
+                          style={getAccessControlTdStyle(
+                            rowBg,
+                            lastRowCellStyle,
+                          )}
+                        >
                           {cmd.index}
                         </td>
-                        <td style={getAccessControlTdStyle(rowBg, lastRowCellStyle)}>
+                        <td
+                          style={getAccessControlTdStyle(
+                            rowBg,
+                            lastRowCellStyle,
+                          )}
+                        >
                           {cmd.command}
                         </td>
                         <td
-                          style={getAccessControlTdStyle(rowBg, lastRowCellStyle, {
-                            borderRight: "none",
-                          })}
+                          style={getAccessControlTdStyle(
+                            rowBg,
+                            lastRowCellStyle,
+                            {
+                              borderRight: "none",
+                            },
+                          )}
                         >
                           <div
                             style={{
@@ -1155,20 +1218,22 @@ const AccessControl = () => {
                 </tbody>
               </table>
             </div>
-          )}
+          </>
+        )}
 
+        {commands.length > 0 && (
           <div style={accessControlFooterStyle}>
-            {commands.length > 0 && (
             <span style={{ fontSize: 11, color: C.mutedText }}>
-              Showing {commands.length} record
-              {commands.length !== 1 ? "s" : ""}
+              {ACCESS_CONTROL_SHOWING_RECORDS(
+                commands.length,
+                ACCESS_CONTROL_RECORD_LABEL,
+              )}
             </span>
-            )}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
+                gap: 8,
                 flexWrap: "wrap",
               }}
             >
@@ -1176,14 +1241,14 @@ const AccessControl = () => {
                 variant="primary"
                 onClick={handleApply}
                 disabled={loading.apply}
-                style={accessControlFooterBtnStyle}
+                style={accessControlToolbarBtnStyle}
                 startIcon={
                   loading.apply ? (
                     <CircularProgress size={11} style={{ color: "#fff" }} />
                   ) : null
                 }
               >
-                Apply
+                {ACCESS_CONTROL_BTN_APPLY}
               </Btn>
               <Btn
                 variant="cancel"
@@ -1196,28 +1261,27 @@ const AccessControl = () => {
                   );
                 }}
                 disabled={loading.apply}
-                style={accessControlFooterBtnStyle}
+                style={accessControlToolbarBtnStyle}
               >
-                Cancel
+                {ACCESS_CONTROL_BTN_CANCEL}
               </Btn>
             </div>
           </div>
-        </div>
+        )}
+      </div>
 
       <div style={accessControlLogSectionStyle}>
-        <div style={accessControlLogTitleStyle}>Iptables Info</div>
-        <div style={accessControlLogBoxStyle}>
+        <div style={accessControlLogTitleStyle}>{ACCESS_CONTROL_LOG_TITLE}</div>
+        <div
+          className={ACCESS_CONTROL_SCROLL_CLASS}
+          style={accessControlLogBoxStyle}
+        >
           <pre style={accessControlLogPreStyle}>{executionLogs}</pre>
         </div>
         <div style={accessControlLogNotesStyle}>
-          <div>
-            Note: Please don't enable "SIP" =&gt; "Calls from SIP Trunk Address
-            only".
-          </div>
-          <div>
-            Note: Application and cancel application buttons are for all current
-            set rules, not direct at a certain rule.
-          </div>
+          {ACCESS_CONTROL_LOG_NOTES.map((note, idx) => (
+            <div key={idx}>{note}</div>
+          ))}
         </div>
       </div>
 
@@ -1232,7 +1296,7 @@ const AccessControl = () => {
         }}
         PaperProps={{
           sx: {
-            width: 500,
+            width: 520,
             maxWidth: "96vw",
             mx: "auto",
             p: 0,
@@ -1255,7 +1319,7 @@ const AccessControl = () => {
             borderTopRightRadius: 8,
           }}
         >
-          Access Control Command
+          {ACCESS_CONTROL_MODAL_TITLE}
         </DialogTitle>
         <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
           <div
@@ -1278,34 +1342,20 @@ const AccessControl = () => {
                 width: "100%",
               }}
             >
-              <Tooltip title={tooltips.index} {...tooltipProps}>
-                <label
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    width: "100%",
-                    maxWidth: 220,
-                    flexShrink: 0,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                    cursor: "help",
-                  }}
-                >
-                  Index:
-                </label>
-              </Tooltip>
+              <AccessControlFieldLabel tooltipKey="index">
+                Index:
+              </AccessControlFieldLabel>
               <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                 <input
                   type="text"
                   value={form.index || ""}
                   onChange={(e) => handleChange("index", e.target.value)}
                   disabled={editIndex !== null}
-                  placeholder="Auto-generated"
+                  placeholder={ACCESS_CONTROL_INDEX_PLACEHOLDER}
                   style={
                     editIndex !== null
-                      ? disabledInputStyle
-                      : systemModalFieldInputStyle
+                      ? { ...disabledInputStyle, width: "100%" }
+                      : { ...systemModalFieldInputStyle, width: "100%" }
                   }
                   {...(editIndex === null ? inputInteraction : {})}
                 />
@@ -1320,68 +1370,43 @@ const AccessControl = () => {
                 width: "100%",
               }}
             >
-              <Tooltip title={tooltips.command} {...tooltipProps}>
-                <label
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.labelText,
-                    width: "100%",
-                    maxWidth: 220,
-                    flexShrink: 0,
-                    textAlign: "left",
-                    whiteSpace: "nowrap",
-                    cursor: "help",
-                  }}
-                >
-                  Command:
-                </label>
-              </Tooltip>
+              <AccessControlFieldLabel tooltipKey="command">
+                Command:
+              </AccessControlFieldLabel>
               <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
                 <input
                   type="text"
                   value={form.command || ""}
                   onChange={(e) => handleChange("command", e.target.value)}
-                  placeholder="e.g., iptables -P OUTPUT ACCEPT"
-                  style={systemModalFieldInputStyle}
+                  placeholder={ACCESS_CONTROL_COMMAND_PLACEHOLDER}
+                  style={{ ...systemModalFieldInputStyle, width: "100%" }}
                   {...inputInteraction}
                 />
               </div>
             </div>
           </div>
         </DialogContent>
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: 8,
-            borderBottomRightRadius: 8,
-          }}
-        >
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={accessControlFooterBtnStyle}
+            style={addNewModalFooterBtnStyle}
             startIcon={
               loading.save ? (
                 <CircularProgress size={11} style={{ color: "#fff" }} />
               ) : null
             }
           >
-            {loading.save ? "Saving..." : "Save"}
+            {loading.save ? "Saving..." : ACCESS_CONTROL_BTN_SAVE}
           </Btn>
           <Btn
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={accessControlFooterBtnStyle}
+            style={accessControlModalCancelBtnStyle}
           >
-            Close
+            {ACCESS_CONTROL_BTN_CLOSE}
           </Btn>
         </DialogActions>
       </Dialog>

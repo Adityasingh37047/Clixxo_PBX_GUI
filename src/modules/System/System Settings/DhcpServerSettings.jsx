@@ -3,6 +3,22 @@ import Tooltip from "@mui/material/Tooltip";
 import {
   buildDhcpLanSections,
   DHCP_SERVER_SETTINGS_INITIAL_FORM,
+  DHCP_SERVER_PAGE_BREADCRUMB_ROOT,
+  DHCP_SERVER_PAGE_BREADCRUMB_SECTION,
+  DHCP_SERVER_PAGE_TITLE,
+  DHCP_SERVER_CARD_TITLE,
+  DHCP_SERVER_SECTION_HEADING_LEFT,
+  DHCP_SERVER_SECTION_HEADING_COLOR,
+  DHCP_SERVER_BTN_SAVE,
+  DHCP_SERVER_BTN_RESET,
+  DHCP_SERVER_BTN_SAVING,
+  DHCP_SERVER_BTN_RESETTING,
+  DHCP_SERVER_ENABLE_LABEL,
+  DHCP_SERVER_LOADING_TEXT,
+  DHCP_SERVER_EMPTY_MESSAGE,
+  DHCP_SERVER_SUCCESS_SAVE,
+  DHCP_SERVER_SUCCESS_RESET,
+  DHCP_SERVER_FIELD_TOOLTIPS,
 } from "../../../constants/DhcpServerSettingsConstants";
 import {
   fetchDhcpSettings,
@@ -10,6 +26,18 @@ import {
   fetchResetDhcpSettings,
 } from "../../../api/apiService";
 import { Alert, Checkbox, CircularProgress } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+
+const DHCP_SERVER_SCROLL_CLASS = "dhcp-server-scroll";
+const DHCP_SERVER_COMPACT_MQ = "(max-width: 768px)";
+const DHCP_SERVER_LABEL_COL_WIDTH = 200;
+const DHCP_SERVER_CONTROL_COL_WIDTH = 220;
+const DHCP_SERVER_FIELD_COL_GAP = 8;
+const DHCP_SERVER_FORM_PAD_X = 28;
+const DHCP_SETTINGS_SECTION_HEADING_FIRST_MARGIN = "12px 0 24px 0";
+const DHCP_SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
+const DHCP_SETTINGS_COLUMN_GAP = 12;
+const DHCP_SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
 
 const C = {
   pageBg: "#f8fafc",
@@ -23,9 +51,9 @@ const C = {
   mutedText: "#6b7280",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
+  accent: "#3E5475",
   errorRed: "#dc2626",
+  sectionHeading: DHCP_SERVER_SECTION_HEADING_COLOR,
 };
 
 const CARD_RADIUS = 10;
@@ -57,7 +85,9 @@ const setFieldFocus = (el) => {
 
 const nativeFieldInputStyle = {
   height: 32,
-  width: 200,
+  width: DHCP_SERVER_CONTROL_COL_WIDTH,
+  minWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+  maxWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
   padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
@@ -99,26 +129,54 @@ const { height: _nativeHeight, ...nativeFieldBase } = nativeFieldInputStyle;
 
 const systemFieldInputStyle = {
   ...nativeFieldBase,
-  width: "100%",
-  padding: "6px 10px",
+  width: DHCP_SERVER_CONTROL_COL_WIDTH,
+  minWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+  maxWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+  padding: "0 10px",
   borderRadius: FIELD_RADIUS,
   background: "#fff",
-  lineHeight: 1.4,
-  minHeight: 34,
+  lineHeight: 1.35,
+  minHeight: 32,
+  height: 32,
 };
 
-const systemFieldInputStyleNarrow = {
-  ...systemFieldInputStyle,
-  maxWidth: "280px",
+const inputStyle = systemFieldInputStyle;
+
+const dhcpValueColStyle = {
+  flex: "1 1 auto",
+  minWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-end",
+  justifyContent: "flex-start",
+  paddingTop: 2,
 };
 
-const inputStyle = systemFieldInputStyleNarrow;
+const dhcpControlSlotStyle = {
+  width: DHCP_SERVER_CONTROL_COL_WIDTH,
+  minWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+  maxWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+  flexShrink: 0,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  justifyContent: "flex-start",
+};
 
-const advancedFormInlineFooterStyle = {
+const dhcpFieldRowStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "flex-start",
+  width: "100%",
+  minHeight: 36,
+  gap: DHCP_SERVER_FIELD_COL_GAP,
+};
+
+const dhcpFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "center",
   gap: 12,
   width: "100%",
   margin: 0,
@@ -127,16 +185,24 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const dhcpFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+const checkboxSx = {
+  padding: "4px",
+  color: OUTLINED_BORDER,
+  "&.Mui-checked": { color: OUTLINED_FOCUS },
+  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 const tooltipProps = {
@@ -149,57 +215,62 @@ const tooltipProps = {
         color: "#333",
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
+        fontSize: 12,
+        lineHeight: 1.45,
         maxWidth: 500,
-        padding: "12px 16px",
+        padding: "10px 12px",
+        textTransform: "none",
+        letterSpacing: "normal",
       },
     },
     arrow: { sx: { color: "#fff" } },
   },
 };
 
-const tooltips = {
-  enabled:
-    "Enable the DHCP server on this LAN interface. When enabled, connected devices can automatically obtain IP addresses from the configured address pool.",
-  ipRange:
-    "Specify the range of IP addresses the DHCP server can assign to clients on this interface. Typically entered as a start and end address (e.g., 192.168.1.100-192.168.1.200).",
-  subnetMask:
-    "Specify the subnet mask for the DHCP address pool. It must match the subnet of this LAN interface.",
-  defaultGateway:
-    "Specify the default gateway IP address assigned to DHCP clients. Clients will use this address to route traffic outside the local network.",
-  dnsServer:
-    "Specify the DNS server IP address provided to DHCP clients for domain name resolution.",
-};
-
 const getTooltipKey = (name) => name.replace(/\d+$/, "");
 
-const FieldRow = ({ name, label, labelStyle, children }) => {
+const FieldRow = ({ name, label, labelStyle, children, labelColWidth }) => {
   const tooltipKey = getTooltipKey(name);
-  const tooltip = tooltips[tooltipKey];
+  const tooltip = DHCP_SERVER_FIELD_TOOLTIPS[tooltipKey];
+  const resolvedLabelWidth = labelColWidth ?? DHCP_SERVER_LABEL_COL_WIDTH;
+  const labelWrapStyle = {
+    flex: `0 0 ${resolvedLabelWidth}px`,
+    width: resolvedLabelWidth,
+    maxWidth: resolvedLabelWidth,
+    minWidth: resolvedLabelWidth,
+  };
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 12,
+        color: C.labelText,
+        fontWeight: 600,
+        width: "100%",
+        minWidth: 0,
+        lineHeight: 1.35,
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : "default",
+        ...labelStyle,
+      }}
+    >
+      {label}
+    </label>
+  );
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
-      <Tooltip
-        title={tooltip || ""}
-        disableHoverListener={!tooltip}
-        {...tooltipProps}
-      >
-        <label
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: C.labelText,
-            width: "100%",
-            maxWidth: 220,
-            flexShrink: 0,
-            cursor: tooltip ? "help" : "default",
-            ...labelStyle,
-          }}
-        >
-          {label}
-        </label>
-      </Tooltip>
-      <div className="flex-1 w-full max-w-[280px]">{children}</div>
+    <div style={dhcpFieldRowStyle}>
+      <div style={labelWrapStyle}>
+        {tooltip ? (
+          <Tooltip title={tooltip} disableHoverListener={!tooltip} {...tooltipProps}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
+      <div style={dhcpValueColStyle}>
+        <div style={dhcpControlSlotStyle}>{children}</div>
+      </div>
     </div>
   );
 };
@@ -225,9 +296,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -278,18 +346,15 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding:
-          variant === "primary" || variant === "cancel"
-            ? "8px 32px"
-            : "6px 14px",
-        borderRadius: 8,
-        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: variant === "primary" || variant === "cancel" ? 38 : 30,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
@@ -331,8 +396,11 @@ const disabledInputStyle = {
 const SectionHeading = ({ title, isFirst = false }) => (
   <div
     style={{
-      margin: isFirst ? "0 0 28px 0" : "24px 0 28px 0",
+      margin: isFirst
+        ? DHCP_SETTINGS_SECTION_HEADING_FIRST_MARGIN
+        : DHCP_SETTINGS_SECTION_HEADING_NEXT_MARGIN,
       position: "relative",
+      width: "100%",
     }}
   >
     <div style={{ borderTop: `1px solid ${C.divider}` }} />
@@ -340,13 +408,12 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: 0,
+        left: DHCP_SERVER_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
-        fontSize: 13,
-        fontWeight: 500,
-        color: C.labelText,
-        letterSpacing: "0.01em",
+        fontSize: 14,
+        fontWeight: 600,
+        color: C.sectionHeading,
       }}
     >
       {title}
@@ -364,12 +431,16 @@ const dhcpPageWrapStyle = {
 const dhcpPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
-  margin: 0,
+  margin: "0 auto",
   display: "flex",
   flexDirection: "column",
 };
 
-
+const dhcpContentStyle = {
+  padding: 0,
+  boxSizing: "border-box",
+  background: C.cardBg,
+};
 
 const dhcpTableContainerStyle = {
   width: "100%",
@@ -385,24 +456,78 @@ const dhcpTableContainerStyle = {
   boxSizing: "border-box",
 };
 
-const dhcpToolbarStyle = {
+const dhcpHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
+  padding: `10px ${DHCP_SERVER_FORM_PAD_X}px`,
+  fontWeight: 700,
+  fontSize: 13,
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
-  background: C.cardBg,
-  flexWrap: "wrap",
-  gap: 12,
+  boxSizing: "border-box",
 };
 
 const dhcpFieldGroupStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: 18,
+  gap: DHCP_SETTINGS_COLUMN_GAP,
   width: "100%",
 };
+
+const dhcpLanGridStyle = (isCompact, sectionCount) => ({
+  display: "grid",
+  gridTemplateColumns:
+    isCompact || sectionCount <= 1
+      ? "minmax(0, 1fr)"
+      : "minmax(0, 1fr) 1px minmax(0, 1fr)",
+  width: "100%",
+  alignItems: "stretch",
+  alignContent: "start",
+  minHeight: "100%",
+});
+
+const dhcpLanColumnStyle = (isCompact) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: DHCP_SETTINGS_COLUMN_GAP,
+  minWidth: 0,
+  padding: isCompact
+    ? `16px ${DHCP_SERVER_FORM_PAD_X}px 20px`
+    : DHCP_SETTINGS_COLUMN_PADDING_DESKTOP,
+  background: C.cardBg,
+  boxSizing: "border-box",
+});
+
+const dhcpLanDividerCellStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignSelf: "stretch",
+  padding: "14px 0",
+  boxSizing: "border-box",
+};
+
+const dhcpLanDividerLineStyle = {
+  flex: 1,
+  width: 1,
+  background: C.divider,
+  margin: "0 auto",
+};
+
+const dhcpLanGridResponsiveCss = `
+  @media (max-width: 768px) {
+    .dhcp-lan-grid {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+    .dhcp-lan-divider {
+      display: none !important;
+    }
+  }
+`;
 
 const dhcpFixedAlertSx = {
   position: "fixed",
@@ -416,10 +541,54 @@ const dhcpFixedAlertSx = {
   fontWeight: 500,
 };
 
+const DhcpScrollbarStyles = () => (
+  <style>{`
+    ${dhcpLanGridResponsiveCss}
+    .${DHCP_SERVER_SCROLL_CLASS} {
+      scroll-behavior: smooth;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
+    }
+    .${DHCP_SERVER_SCROLL_CLASS}::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      transition: width 0.2s ease, height 0.2s ease;
+    }
+    .${DHCP_SERVER_SCROLL_CLASS}::-webkit-scrollbar:hover {
+      width: 11px;
+      height: 11px;
+    }
+    .${DHCP_SERVER_SCROLL_CLASS}::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .${DHCP_SERVER_SCROLL_CLASS}::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .${DHCP_SERVER_SCROLL_CLASS}::-webkit-scrollbar-thumb {
+      background-color: rgba(100, 116, 139, 0.45);
+      border-radius: 6px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      transition: background-color 0.2s ease;
+    }
+    .${DHCP_SERVER_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(71, 85, 105, 0.65);
+    }
+  `}</style>
+);
+
 const DhcpPageShell = ({ children }) => (
-  <div style={dhcpPageWrapStyle} data-native-scroll>
-    <div style={dhcpPageInnerStyle}>{children}</div>
-  </div>
+  <>
+    <DhcpScrollbarStyles />
+    <div
+      className={DHCP_SERVER_SCROLL_CLASS}
+      style={dhcpPageWrapStyle}
+      data-native-scroll
+    >
+      <div style={dhcpPageInnerStyle}>{children}</div>
+    </div>
+  </>
 );
 
 const DhcpBreadcrumb = () => (
@@ -427,7 +596,7 @@ const DhcpBreadcrumb = () => (
     style={{
       fontSize: 12,
       color: "#94a3b8",
-      marginBottom: 12,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -436,11 +605,13 @@ const DhcpBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>System</span>
+    <span>{DHCP_SERVER_PAGE_BREADCRUMB_ROOT}</span>
     <span>&gt;</span>
-    <span>System Settings</span>
+    <span>{DHCP_SERVER_PAGE_BREADCRUMB_SECTION}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>DHCP Server</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {DHCP_SERVER_PAGE_TITLE}
+    </span>
   </div>
 );
 
@@ -455,6 +626,7 @@ const buildSavePayload = (formData, sections) => {
 };
 
 const DhcpServerSettings = () => {
+  const isCompact = useMediaQuery(DHCP_SERVER_COMPACT_MQ);
   const [form, setForm] = useState(DHCP_SERVER_SETTINGS_INITIAL_FORM);
   const [lanSections, setLanSections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -554,7 +726,7 @@ const DhcpServerSettings = () => {
       const response = await fetchResetDhcpSettings();
 
       if (response && response.success) {
-        setSuccess("DHCP settings reset successfully!");
+        setSuccess(DHCP_SERVER_SUCCESS_RESET);
         await fetchDhcpData();
       } else {
         throw new Error(response?.message || "Failed to reset DHCP settings");
@@ -595,7 +767,7 @@ const DhcpServerSettings = () => {
       );
 
       if (response && response.success) {
-        setSuccess("DHCP settings saved successfully!");
+        setSuccess(DHCP_SERVER_SUCCESS_SAVE);
       } else {
         throw new Error(response?.message || "Failed to save DHCP settings");
       }
@@ -624,6 +796,103 @@ const DhcpServerSettings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const labelColWidth = isCompact ? 160 : DHCP_SERVER_LABEL_COL_WIDTH;
+
+  const renderLanSection = (lanGroup, isFirst) => {
+    const isEnabled = form[lanGroup.fields[0].name];
+
+    return (
+      <>
+        <SectionHeading title={lanGroup.lan} isFirst={isFirst} />
+
+        <div style={dhcpFieldGroupStyle}>
+          <FieldRow
+            name={lanGroup.fields[0].name}
+            label={lanGroup.fields[0].label}
+            labelColWidth={labelColWidth}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                minHeight: 32,
+              }}
+            >
+              <Checkbox
+                size="small"
+                name={lanGroup.fields[0].name}
+                checked={isEnabled || false}
+                onChange={handleChange}
+                sx={checkboxSx}
+              />
+              <span style={{ fontSize: 12, color: C.valueText }}>
+                {DHCP_SERVER_ENABLE_LABEL}
+              </span>
+            </div>
+          </FieldRow>
+
+          {lanGroup.fields.slice(1).map((field) => (
+            <FieldRow
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              labelColWidth={labelColWidth}
+              labelStyle={{
+                opacity: isEnabled ? 1 : 0.6,
+              }}
+            >
+              <input
+                type="text"
+                name={field.name}
+                value={form[field.name] || ""}
+                onChange={handleChange}
+                disabled={!isEnabled}
+                style={isEnabled ? inputStyle : disabledInputStyle}
+                onFocus={isEnabled ? inputInteraction.onFocus : undefined}
+                onBlur={isEnabled ? inputInteraction.onBlur : undefined}
+                onMouseEnter={
+                  isEnabled ? inputInteraction.onMouseEnter : undefined
+                }
+                onMouseLeave={
+                  isEnabled ? inputInteraction.onMouseLeave : undefined
+                }
+              />
+            </FieldRow>
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  const renderLanGrid = () => {
+    if (isCompact || lanSections.length <= 1) {
+      return lanSections.map((lanGroup, idx) => (
+        <div key={lanGroup.lan} style={dhcpLanColumnStyle(isCompact)}>
+          {renderLanSection(lanGroup, idx === 0)}
+        </div>
+      ));
+    }
+
+    return (
+      <>
+        <div style={dhcpLanColumnStyle(isCompact)}>
+          {renderLanSection(lanSections[0], true)}
+        </div>
+        <div
+          className="dhcp-lan-divider"
+          style={dhcpLanDividerCellStyle}
+          aria-hidden="true"
+        >
+          <div style={dhcpLanDividerLineStyle} />
+        </div>
+        <div style={dhcpLanColumnStyle(isCompact)}>
+          {renderLanSection(lanSections[1], true)}
+        </div>
+      </>
+    );
   };
 
   return (
@@ -655,26 +924,23 @@ const DhcpServerSettings = () => {
 
       <div>
         <div style={dhcpTableContainerStyle}>
-          <div style={dhcpToolbarStyle}>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: C.labelText,
-                letterSpacing: "0.02em",
-              }}
-            >
-              DHCP Server
-            </span>
+          <div style={dhcpHeaderStyle}>
+            <span>{DHCP_SERVER_CARD_TITLE}</span>
           </div>
 
-          <div style={{ padding: "24px 36px 32px" }}>
+          <div style={dhcpContentStyle}>
             {loading && lanSections.length === 0 ? (
               <div
-                className="flex items-center justify-center w-full"
-                style={{ minHeight: 400, padding: "48px 32px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  minHeight: 400,
+                  padding: "48px 32px",
+                }}
               >
-                <div className="text-center">
+                <div style={{ textAlign: "center" }}>
                   <CircularProgress size={40} sx={{ color: C.accent }} />
                   <div
                     style={{
@@ -684,7 +950,7 @@ const DhcpServerSettings = () => {
                       fontWeight: 500,
                     }}
                   >
-                    Loading DHCP settings...
+                    {DHCP_SERVER_LOADING_TEXT}
                   </div>
                 </div>
               </div>
@@ -692,8 +958,7 @@ const DhcpServerSettings = () => {
               <form
                 id="dhcp-settings-form"
                 onSubmit={handleSave}
-                className="flex flex-col"
-                style={{ gap: 24 }}
+                style={{ display: "flex", flexDirection: "column", gap: 24 }}
               >
                 {lanSections.length === 0 ? (
                   <div
@@ -704,122 +969,39 @@ const DhcpServerSettings = () => {
                       padding: "24px 0",
                     }}
                   >
-                    No connected LAN ports found.
+                    {DHCP_SERVER_EMPTY_MESSAGE}
                   </div>
                 ) : (
-                  lanSections.map((lanGroup, idx) => {
-                    const isEnabled = form[lanGroup.fields[0].name];
-                    return (
-                      <div key={lanGroup.lan} className="flex flex-col gap-0">
-                        <SectionHeading
-                          title={lanGroup.lan}
-                          isFirst={idx === 0}
-                        />
-
-                        <div
-                          className="flex flex-col w-full"
-                          style={{
-                            ...dhcpFieldGroupStyle,
-                            maxWidth: 640,
-                            margin: "0 auto",
-                          }}
-                        >
-                          <FieldRow
-                            name={lanGroup.fields[0].name}
-                            label="DHCP Server:"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Checkbox
-                                size="small"
-                                name={lanGroup.fields[0].name}
-                                checked={isEnabled || false}
-                                onChange={handleChange}
-                                sx={{
-                                  padding: "4px",
-                                  color: "#64748b",
-                                  "&.Mui-checked": { color: C.accent },
-                                }}
-                              />
-                              <span
-                                style={{
-                                  fontSize: 12,
-                                  color: C.valueText,
-                                }}
-                              >
-                                Enable
-                              </span>
-                            </div>
-                          </FieldRow>
-
-                          {lanGroup.fields.slice(1).map((field) => (
-                            <FieldRow
-                              key={field.name}
-                              name={field.name}
-                              label={`${field.label}:`}
-                              labelStyle={{
-                                opacity: isEnabled ? 1 : 0.6,
-                              }}
-                            >
-                              <input
-                                type="text"
-                                name={field.name}
-                                value={form[field.name] || ""}
-                                onChange={handleChange}
-                                disabled={!isEnabled}
-                                style={
-                                  isEnabled ? inputStyle : disabledInputStyle
-                                }
-                                onFocus={
-                                  isEnabled
-                                    ? inputInteraction.onFocus
-                                    : undefined
-                                }
-                                onBlur={
-                                  isEnabled
-                                    ? inputInteraction.onBlur
-                                    : undefined
-                                }
-                                onMouseEnter={
-                                  isEnabled
-                                    ? inputInteraction.onMouseEnter
-                                    : undefined
-                                }
-                                onMouseLeave={
-                                  isEnabled
-                                    ? inputInteraction.onMouseLeave
-                                    : undefined
-                                }
-                              />
-                            </FieldRow>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })
+                  <div
+                    className="dhcp-lan-grid"
+                    style={dhcpLanGridStyle(isCompact, lanSections.length)}
+                  >
+                    {renderLanGrid()}
+                  </div>
                 )}
               </form>
             )}
           </div>
 
           {(!loading || lanSections.length > 0) && (
-            <div style={advancedFormInlineFooterStyle}>
+            <div style={dhcpFooterStyle}>
               <Btn
                 variant="cancel"
                 type="button"
                 onClick={handleReset}
                 disabled={loading || lanSections.length === 0}
-                style={advancedFormBtnStyle}
+                style={dhcpFooterBtnStyle}
               >
-                {loading ? "Resetting..." : "Reset"}
+                {loading ? DHCP_SERVER_BTN_RESETTING : DHCP_SERVER_BTN_RESET}
               </Btn>
               <Btn
                 variant="primary"
                 type="submit"
                 form="dhcp-settings-form"
                 disabled={loading || lanSections.length === 0}
-                style={advancedFormBtnStyle}
+                style={dhcpFooterBtnStyle}
               >
-                {loading ? "Saving..." : "Save"}
+                {loading ? DHCP_SERVER_BTN_SAVING : DHCP_SERVER_BTN_SAVE}
               </Btn>
             </div>
           )}

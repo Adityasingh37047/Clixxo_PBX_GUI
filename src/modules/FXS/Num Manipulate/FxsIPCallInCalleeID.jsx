@@ -359,6 +359,38 @@ const numManipulatePaginationStyle = {
   overflow: "hidden",
 };
 
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
 const IpCallInCalleeIdBreadcrumb = () => (
   <div
     style={{
@@ -381,18 +413,6 @@ const IpCallInCalleeIdBreadcrumb = () => (
     </span>
   </div>
 );
-
-const numManipulateDialogActionsStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-  flexShrink: 0,
-};
 
 const listNumberManipulations = async () => ({ response: true, message: [] });
 const createNumberManipulation = async () => ({
@@ -1321,12 +1341,12 @@ const IPCallInCalleeID = () => {
             ))}
           </div>
         </DialogContent>
-        <DialogActions style={numManipulateDialogActionsStyle}>
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 34, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save
               ? "Saving..."
@@ -1338,7 +1358,7 @@ const IPCallInCalleeID = () => {
             variant="cancel"
             onClick={handleCloseModal}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 34 }}
+            style={addNewModalFooterCancelBtnStyle}
           >
             Close
           </Btn>

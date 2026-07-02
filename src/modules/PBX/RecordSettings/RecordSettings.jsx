@@ -213,6 +213,14 @@ const recordSettingsHeaderStyle = {
   borderBottom: `1px solid ${C.divider}`,
 };
 
+const pageFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
 const recordSettingsFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
@@ -220,7 +228,7 @@ const recordSettingsFooterStyle = {
   justifyContent: "center",
   gap: 12,
   width: "100%",
-  padding: "12px 20px",
+  padding: "10px 28px",
   borderTop: `1px solid ${C.divider}`,
   boxSizing: "border-box",
   background: "#ffffff",
@@ -229,13 +237,11 @@ const recordSettingsFooterStyle = {
 };
 
 const recordSettingsFooterBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const RecordSettingsBreadcrumb = ({ section, current }) => (

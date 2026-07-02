@@ -229,9 +229,39 @@ const blockedListTableCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const blockedListModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const blockedListModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -531,17 +561,6 @@ const blockedListModalFormStyle = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   padding: 20,
-};
-
-const blockedListModalActionsStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: 16,
-  padding: "16px 24px",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
 };
 
 const BLOCKED_LIST_TOOLTIP_PROPS = {
@@ -1500,12 +1519,12 @@ const BlockedListPage = () => {
           </div>
         </DialogContent>
 
-        <DialogActions style={blockedListModalActionsStyle}>
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={handleSave}
             disabled={loading.save}
             variant="primary"
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? (
               <>

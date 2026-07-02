@@ -1046,9 +1046,31 @@ const parseCodecList = (value) => {
 
 const normalizeAllowCodecs = (value) => parseCodecList(value).join(",");
 
-const sipToSipModalCancelBtnStyle = {
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   minWidth: 100,
-  height: 33,
+};
+
+const sipToSipModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -2181,12 +2203,12 @@ const SipToSipAccountPage = () => {
             </div>
           </div>
         </DialogContent>
-        <DialogActions style={sipToSipModalActionsStyle}>
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={handleSave}
             variant="primary"
             disabled={loading.save}
-            style={{ minWidth: 100, height: 33, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? SIP_TO_SIP_ACCOUNT_BTN_SAVING : SIP_TO_SIP_ACCOUNT_BTN_SAVE}
           </Btn>

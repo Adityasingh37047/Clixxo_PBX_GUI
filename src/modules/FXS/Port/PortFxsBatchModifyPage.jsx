@@ -92,6 +92,52 @@ const C = {
 
 const CARD_RADIUS = 10;
 
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+const addNewModalFooterCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const pageFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+  flexShrink: 0,
+};
+
 const Btn = ({
   children,
   onClick,
@@ -858,18 +904,13 @@ const PortFxsBatchModifyPage = ({
 
           {!inDialog && (
             <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 12,
-                padding: "24px 0",
-              }}
+              style={pageFooterStyle}
             >
               <Btn
                 variant="primary"
                 type="button"
                 onClick={handleSave}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                style={addNewModalFooterBtnStyle}
               >
                 Save
               </Btn>
@@ -877,7 +918,7 @@ const PortFxsBatchModifyPage = ({
                 variant="cancel"
                 type="button"
                 onClick={handleCancel}
-                style={{ minWidth: 100, height: 33 }}
+                style={addNewModalFooterCancelBtnStyle}
               >
                 Close
               </Btn>

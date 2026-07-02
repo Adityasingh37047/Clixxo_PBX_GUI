@@ -324,6 +324,29 @@ const panelNoteStyle = {
   boxSizing: "border-box",
 };
 
+const addNewModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+};
+
+const addNewModalFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
 const WhitelistBreadcrumb = () => (
   <div
     style={{
@@ -1341,22 +1364,11 @@ const Whitelist = () => {
           </div>
         </DialogContent>
 
-        <DialogActions
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-            padding: "16px 24px",
-            background: "#f8fafc",
-            borderTop: `1px solid ${C.cardBorder}`,
-            borderBottomLeftRadius: CARD_RADIUS,
-            borderBottomRightRadius: CARD_RADIUS,
-          }}
-        >
+        <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>
           <Btn
             onClick={handleSave}
             variant="primary"
-            style={{ minWidth: 110, height: 34, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -1368,15 +1380,7 @@ const Whitelist = () => {
           <Btn
             onClick={() => setShowModal(false)}
             variant="cancel"
-            style={{
-              minWidth: 110,
-              height: 34,
-              fontSize: 13,
-              background: "#cbd5e1",
-              color: "#374151",
-              border: "1px solid #cbd5e1",
-              boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-            }}
+            style={whitelistModalCancelBtnStyle}
             disabled={isLoading}
           >
             {NUMBER_FILTER_WHITELIST_CLOSE_LABEL}

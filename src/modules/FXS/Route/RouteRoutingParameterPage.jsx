@@ -306,14 +306,27 @@ const formBodyStyle = {
   boxSizing: "border-box",
 };
 
+const pageFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
 const footerStyle = {
   display: "flex",
-  justifyContent: "flex-end",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
   gap: 12,
+  width: "100%",
+  margin: 0,
   padding: "10px 28px",
   borderTop: `1px solid ${C.divider}`,
   background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
 };
 
 const RouteRoutingParameterBreadcrumb = () => (
@@ -508,10 +521,16 @@ const RouteRoutingParameterPage = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading}
+            style={pageFooterBtnStyle}
           >
             {loading ? "Saving..." : ROUTE_ROUTING_PARAMETER_SAVE_LABEL}
           </Btn>
-          <Btn type="button" variant="cancel" onClick={handleReset}>
+          <Btn
+            type="button"
+            variant="cancel"
+            onClick={handleReset}
+            style={pageFooterBtnStyle}
+          >
             {ROUTE_ROUTING_PARAMETER_RESET_LABEL}
           </Btn>
         </div>
