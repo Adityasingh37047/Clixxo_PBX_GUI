@@ -39,7 +39,8 @@ export const CALL_COUNT_COLUMNS = [
   { key: "disposition", label: "Call Status", width: "8%", compact: true },
   { key: "billsec", label: "Duration", width: "7%", compact: true },
   { key: "dcontext", label: "Context", width: "5%" },
-  { key: "hangup_cause", label: "Hangup Cause", width: "16%" },
+  { key: "hangup_cause", label: "Hangup Cause", width: "13%" },
+  { key: "recording", label: "Recording", width: "9%", compact: true },
 ];
 
 export const CALL_COUNT_STATUS_OPTIONS = [

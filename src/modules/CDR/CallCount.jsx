@@ -9,7 +9,13 @@ import {
   DialogActions,
   Tooltip,
 } from "@mui/material";
-import { fetchCdr, deleteCdr, downloadCdr } from "../../api/apiService";
+import {
+  fetchCdr,
+  deleteCdr,
+  downloadCdr,
+  fetchCdrRecording,
+  deleteCdrRecording,
+} from "../../api/apiService";
 import {
   CALL_COUNT_BREADCRUMB_SEGMENTS,
   CALL_COUNT_COLUMNS,
@@ -26,6 +32,8 @@ import {
   CALL_COUNT_TALK_DURATION_OPERATOR_OPTIONS,
 } from "../../constants/CallCountConstants";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
+import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 
 // ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
 const C = {
@@ -498,6 +506,34 @@ const callCountTableCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
+const recordingIconBtnBase = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 26,
+  height: 24,
+  borderRadius: 6,
+  fontSize: 12,
+  lineHeight: 1,
+  cursor: "pointer",
+  padding: 0,
+  transition: "all 0.15s ease",
+};
+
+const recordingIconBtnStyle = {
+  ...recordingIconBtnBase,
+  background: "#eff6ff",
+  color: "#3E5475",
+  border: "1px solid #bfdbfe",
+};
+
+const recordingDeleteBtnStyle = {
+  ...recordingIconBtnBase,
+  background: "#fef2f2",
+  color: "#dc2626",
+  border: "1px solid #fecaca",
+};
+
 // ── Column definitions ────────────────────────────────────────────────────────
 const columns = CALL_COUNT_COLUMNS;
 
@@ -917,6 +953,11 @@ const getRowKey = (row, idx) =>
     .map((value) => normalizeValue(value))
     .join("|");
 
+const hasRecording = (row) => {
+  const f = row?.recordingfile;
+  return typeof f === "string" && f.trim() !== "";
+};
+
 // ── Pill badge ────────────────────────────────────────────────────────────────
 const Pill = ({ text, bg, color }) => (
   <span
@@ -1113,6 +1154,90 @@ const CallCount = () => {
 
   const [filterDraft, setFilterDraft] = useState({ ...DEFAULT_FILTERS });
   const [appliedFilters, setAppliedFilters] = useState({ ...DEFAULT_FILTERS });
+  const [recording, setRecording] = useState({
+    uniqueid: null,
+    url: "",
+    loading: false,
+  });
+  const audioRef = useRef(null);
+  const recordingUrlRef = useRef("");
+
+  useEffect(() => {
+    recordingUrlRef.current = recording.url;
+  }, [recording.url]);
+
+  useEffect(
+    () => () => {
+      if (recordingUrlRef.current) URL.revokeObjectURL(recordingUrlRef.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (recording.url && audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, [recording.url]);
+
+  const stopRecording = () => {
+    if (recordingUrlRef.current) URL.revokeObjectURL(recordingUrlRef.current);
+    setRecording({ uniqueid: null, url: "", loading: false });
+  };
+
+  const handlePlayRecording = async (row) => {
+    const uniqueid = row?.uniqueid;
+    if (!uniqueid) return;
+    if (recording.uniqueid === uniqueid && recording.url) {
+      stopRecording();
+      return;
+    }
+    if (recordingUrlRef.current) URL.revokeObjectURL(recordingUrlRef.current);
+    setError("");
+    setRecording({ uniqueid, url: "", loading: true });
+    try {
+      const blob = await fetchCdrRecording(uniqueid);
+      const url = URL.createObjectURL(blob);
+      setRecording({ uniqueid, url, loading: false });
+    } catch (err) {
+      const status = err?.response?.status;
+      setError(
+        status === 404
+          ? "Recording not found for this call."
+          : "Failed to load recording. Please try again.",
+      );
+      setRecording({ uniqueid: null, url: "", loading: false });
+    }
+  };
+
+  const handleDeleteRecording = async (row) => {
+    const uniqueid = row?.uniqueid;
+    if (!uniqueid) return;
+    if (
+      !window.confirm(
+        "Delete the recording for this call? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await deleteCdrRecording(uniqueid);
+      if (res && res.response === false) {
+        setError(res.message || "Failed to delete recording.");
+        return;
+      }
+      if (recording.uniqueid === uniqueid) stopRecording();
+      setRows((prev) =>
+        prev.map((r) =>
+          r.uniqueid === uniqueid ? { ...r, recordingfile: "" } : r,
+        ),
+      );
+    } catch {
+      setError("Failed to delete recording. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadCdr = async (pageToLoad = page, filters = appliedFilters) => {
     try {
@@ -1753,11 +1878,75 @@ const CallCount = () => {
                                 padding:
                                   getCallCountCellPadding("hangup_cause"),
                                 background: rowBg,
-                                borderRight: "none",
                                 ...lastRowCellStyle,
                               }}
                             >
                               {row.hangup_cause || (
+                                <span style={{ color: C.mutedText }}>—</span>
+                              )}
+                            </td>
+
+                            <td
+                              style={{
+                                ...callCountTableTdStyle,
+                                padding: getCallCountCellPadding("recording"),
+                                background: rowBg,
+                                borderRight: "none",
+                                whiteSpace: "nowrap",
+                                overflow: "visible",
+                                ...lastRowCellStyle,
+                              }}
+                            >
+                              {hasRecording(row) ? (
+                                <div
+                                  style={{
+                                    display: "inline-flex",
+                                    gap: 6,
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    title={
+                                      recording.uniqueid === row.uniqueid &&
+                                      recording.url
+                                        ? "Stop"
+                                        : "Play recording"
+                                    }
+                                    onClick={() => handlePlayRecording(row)}
+                                    disabled={
+                                      recording.loading &&
+                                      recording.uniqueid === row.uniqueid
+                                    }
+                                    style={recordingIconBtnStyle}
+                                  >
+                                    {recording.loading &&
+                                    recording.uniqueid === row.uniqueid ? (
+                                      <CircularProgress
+                                        size={13}
+                                        sx={{ color: C.accent }}
+                                      />
+                                    ) : recording.uniqueid === row.uniqueid &&
+                                      recording.url ? (
+                                      <PauseOutlinedIcon sx={{ fontSize: 14 }} />
+                                    ) : (
+                                      <PlayArrowOutlinedIcon
+                                        sx={{ fontSize: 14 }}
+                                      />
+                                    )}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Delete recording"
+                                    onClick={() => handleDeleteRecording(row)}
+                                    style={recordingDeleteBtnStyle}
+                                  >
+                                    <DeleteOutlineOutlinedIcon
+                                      sx={{ fontSize: 14 }}
+                                    />
+                                  </button>
+                                </div>
+                              ) : (
                                 <span style={{ color: C.mutedText }}>—</span>
                               )}
                             </td>
@@ -1785,6 +1974,69 @@ const CallCount = () => {
             </>
           )}
         </div>
+
+        {(recording.url || recording.loading) && (
+          <div
+            style={{
+              position: "fixed",
+              left: "50%",
+              bottom: 20,
+              transform: "translateX(-50%)",
+              zIndex: 1300,
+              width: isCompact ? "calc(100vw - 24px)" : 560,
+              maxWidth: "calc(100vw - 24px)",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              background: "#ffffff",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 12,
+              boxShadow: "0 12px 32px rgba(15, 23, 42, 0.18)",
+              padding: "10px 14px",
+              boxSizing: "border-box",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: C.labelText,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {recording.loading ? "Loading…" : "Recording"}
+            </span>
+            {recording.url ? (
+              <audio
+                ref={audioRef}
+                src={recording.url}
+                controls
+                autoPlay
+                onEnded={stopRecording}
+                style={{ height: 36, flex: 1, minWidth: 0 }}
+              />
+            ) : (
+              <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={22} sx={{ color: C.accent }} />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={stopRecording}
+              style={{
+                border: "none",
+                background: "transparent",
+                color: C.mutedText,
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        )}
 
         <Dialog
           open={showModifyModal}

@@ -6,8 +6,13 @@ import {
   TextField,
   Tooltip,
   useMediaQuery,
+  Alert,
 } from "@mui/material";
-import { listIvrDestinations } from "../../../api/apiService";
+import {
+  listIvrDestinations,
+  getRecordingSettings,
+  updateRecordingSettings,
+} from "../../../api/apiService";
 import {
   RECORD_SETTINGS_DUAL_LIST_SECTIONS,
   RECORD_SETTINGS_FIELD_TOOLTIPS,
@@ -647,6 +652,50 @@ const normalizeDestinationList = (list) => {
     .filter(Boolean);
 };
 
+const toValueArray = (raw) => {
+  if (Array.isArray(raw)) {
+    return raw.map((v) => String(v).trim()).filter(Boolean);
+  }
+  if (raw == null || raw === "") return [];
+  return String(raw)
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+};
+
+const truthy = (v) =>
+  v === true ||
+  ["true", "yes", "1", "on", "enabled"].includes(String(v).toLowerCase());
+
+const DIRECTION_TO_API = { both: "both", incoming: "in", outgoing: "out" };
+const DIRECTION_FROM_API = { both: "both", in: "incoming", out: "outgoing" };
+
+const apiToForm = (msg = {}) => ({
+  enableRecording: truthy(msg.enabled) ? "enabled" : "disabled",
+  internalPrompt: msg.internal_prompt ?? "none",
+  outboundInboundPrompt: msg.external_prompt ?? "none",
+  recordStart: msg.record_start ?? "after_answer",
+  recordMode: msg.record_mode ?? "both",
+  recordDirection: DIRECTION_FROM_API[msg.record_direction] ?? "both",
+  recordSampleRate: String(msg.sample_rate ?? "8000"),
+  recordingFileFormat: msg.file_format ?? "wav",
+  recordpath: msg.record_path ?? "",
+});
+
+const formToApi = (form, trunks, extensions, conferences) => ({
+  enabled: (form.enableRecording ?? "enabled") === "enabled",
+  internal_prompt: form.internalPrompt,
+  external_prompt: form.outboundInboundPrompt,
+  record_start: form.recordStart,
+  record_direction: DIRECTION_TO_API[form.recordDirection] ?? "both",
+  sample_rate: Number(form.recordSampleRate) || 8000,
+  file_format: form.recordingFileFormat,
+  record_path: form.recordpath || "",
+  record_trunks: trunks,
+  record_extensions: extensions,
+  record_conferences: conferences,
+});
+
 const RecordCodecListBox = ({
   items,
   selectedIds,
@@ -683,7 +732,7 @@ const RecordCodecListBox = ({
 };
 
 const buildInitialForm = () => {
-  const form = {};
+  const form = apiToForm();
   RECORD_SETTINGS_FORM_FIELDS.forEach((field) => {
     form[field.key] = field.defaultValue;
   });
@@ -947,6 +996,9 @@ const RecordSettings = () => {
   const [selectedTrunks, setSelectedTrunks] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
   const [selectedConferences, setSelectedConferences] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   const [expandedSections] = useState({
     trunks: true,
@@ -957,24 +1009,49 @@ const RecordSettings = () => {
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [availableConferences, setAvailableConferences] = useState([]);
 
-  useEffect(() => {
-    const loadDestinations = async () => {
-      try {
-        const data = await listIvrDestinations();
-        const msg = data?.message ?? data?.data ?? data ?? {};
-        setAvailableTrunks(normalizeDestinationList(msg.Trunks || msg.trunks));
-        setAvailableExtensions(
-          normalizeDestinationList(msg.Extensions || msg.extensions),
-        );
-        setAvailableConferences(
-          normalizeDestinationList(msg.Conferences || msg.conferences),
-        );
-      } catch (error) {
-        console.error("Failed to load destinations:", error);
-      }
-    };
+  const showMsg = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 4000);
+  };
 
-    loadDestinations();
+  const loadDestinations = async () => {
+    try {
+      const data = await listIvrDestinations();
+      const msg = data?.message ?? data?.data ?? data ?? {};
+      setAvailableTrunks(normalizeDestinationList(msg.Trunks || msg.trunks));
+      setAvailableExtensions(
+        normalizeDestinationList(msg.Extensions || msg.extensions),
+      );
+      setAvailableConferences(
+        normalizeDestinationList(
+          msg.ConferenceRooms || msg.Conferences || msg.conferences,
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to load destinations:", error);
+    }
+  };
+
+  const loadSettings = async () => {
+    setLoading(true);
+    try {
+      const res = await getRecordingSettings();
+      const msg = res?.message ?? res?.data ?? null;
+      if (res?.response !== false && msg && typeof msg === "object") {
+        setForm(apiToForm(msg));
+        setSelectedTrunks(toValueArray(msg.record_trunks));
+        setSelectedExtensions(toValueArray(msg.record_extensions));
+        setSelectedConferences(toValueArray(msg.record_conferences));
+      }
+    } catch (error) {
+      showMsg("error", error?.message || "Failed to load recording settings.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDestinations().finally(loadSettings);
   }, []);
 
   const dualListConfig = {
@@ -1000,6 +1077,35 @@ const RecordSettings = () => {
 
   const handleChange = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload = formToApi(
+        form,
+        selectedTrunks,
+        selectedExtensions,
+        selectedConferences,
+      );
+      const res = await updateRecordingSettings(payload);
+      if (res?.response === false) {
+        showMsg("error", res?.message || "Failed to save recording settings.");
+        return;
+      }
+      const msg = res?.message ?? res?.data ?? null;
+      if (msg && typeof msg === "object") {
+        setForm(apiToForm(msg));
+        setSelectedTrunks(toValueArray(msg.record_trunks));
+        setSelectedExtensions(toValueArray(msg.record_extensions));
+        setSelectedConferences(toValueArray(msg.record_conferences));
+      }
+      showMsg("success", "Recording settings saved successfully.");
+    } catch (error) {
+      showMsg("error", error?.message || "Failed to save recording settings.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const recordSettingsLeftFields = RECORD_SETTINGS_FORM_FIELDS.slice(0, 4);
   const recordSettingsRightFields = RECORD_SETTINGS_FORM_FIELDS.slice(4, 8);
@@ -1058,6 +1164,14 @@ const RecordSettings = () => {
             <span>{RECORD_SETTINGS_TITLE}</span>
           </div>
 
+          {message.text ? (
+            <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
+              <Alert severity={message.type || "info"} sx={{ fontSize: 13 }}>
+                {message.text}
+              </Alert>
+            </div>
+          ) : null}
+
           <div style={{ padding: "20px 20px 0", boxSizing: "border-box" }}>
             <div
               style={{
@@ -1107,8 +1221,13 @@ const RecordSettings = () => {
             <Btn variant="cancel" style={recordSettingsFooterBtnStyle}>
               Set Storage
             </Btn>
-            <Btn variant="primary" style={recordSettingsFooterBtnStyle}>
-              Save
+            <Btn
+              variant="primary"
+              style={recordSettingsFooterBtnStyle}
+              onClick={handleSave}
+              disabled={loading || saving}
+            >
+              {saving ? "Saving..." : "Save"}
             </Btn>
           </div>
         </div>

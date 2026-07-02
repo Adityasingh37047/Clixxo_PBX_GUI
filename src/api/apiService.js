@@ -3277,6 +3277,37 @@ export const restoreBackup = async (file) => {
   }
 };
 
+// Recording Settings API — POST /recording-settings
+export const getRecordingSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/recording-settings', { type: 'get' });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recording settings:', error.message);
+    throw error;
+  }
+};
+
+export const updateRecordingSettings = async (data) => {
+  try {
+    const response = await axiosInstance.post('/recording-settings', { type: 'update', data });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating recording settings:', error.message);
+    throw error;
+  }
+};
+
+export const resetRecordingSettings = async () => {
+  try {
+    const response = await axiosInstance.post('/recording-settings', { type: 'reset_defaults' });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting recording settings:', error.message);
+    throw error;
+  }
+};
+
 // ==============================
 // CDR API
 // ==============================
@@ -3313,6 +3344,25 @@ export const downloadCdr = async () => {
     return response;
   } catch (error) {
     console.error('Error downloading CDR:', error.message);
+    throw error;
+  }
+};
+
+export const fetchCdrRecording = async (uniqueid) => {
+  const response = await axiosInstance.get('/cdr-recording', {
+    params: { uniqueid },
+    responseType: 'blob',
+    timeout: 60000,
+  });
+  return response.data;
+};
+
+export const deleteCdrRecording = async (uniqueid) => {
+  try {
+    const response = await axiosInstance.post('/delete-cdr-recording', { uniqueid });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting CDR recording:', error.message);
     throw error;
   }
 };
