@@ -5,6 +5,13 @@ import {
   CERTIFICATE_FIELDS,
   CERTIFICATE_BUTTONS,
   CERTIFICATE_NOTE,
+  CERTIFICATE_BREADCRUMB,
+  CERTIFICATE_CARD_TITLE,
+  CERTIFICATE_TOAST_DEFAULT,
+  CERTIFICATE_TOAST_DURATION,
+  CERTIFICATE_MESSAGES,
+  CERTIFICATE_TOOLTIPS,
+  PRIMARY_CERTIFICATE_ACTIONS,
 } from "../../../constants/CertificateManageConstants";
 import { Alert } from "@mui/material";
 // ── Color palette (same as AccountManage) ────────────────────────────────────
@@ -382,22 +389,14 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  country: "Specifies the country of the certificate.",
-  province: "Specifies the province of the certificate.",
-  city: "Specifies the city of the certificate.",
-  company: "Specifies the company of the certificate.",
-  department: "Specifies the department of the certificate.",
-  hostName: "Specifies the host name of the certificate.",
-  email: "Specifies the email of the certificate.",
-};
+
 const CertificateManage = () => {
   const [form, setForm] = useState({});
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(CERTIFICATE_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(CERTIFICATE_TOAST_DEFAULT), CERTIFICATE_TOAST_DURATION);
   };
 
   const handleChange = (e) => {
@@ -405,7 +404,10 @@ const CertificateManage = () => {
   };
 
   const handleAction = (btnName) => {
-    showToast(`${btnName} action triggered successfully`, "success");
+    showToast(
+      CERTIFICATE_MESSAGES.ACTION_SUCCESS(btnName),
+      "success"
+    );
   };
 
   return (
@@ -417,7 +419,7 @@ const CertificateManage = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(CERTIFICATE_TOAST_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -432,7 +434,7 @@ const CertificateManage = () => {
       )}
 
       {/* ── Breadcrumb ── */}
-   
+
         <div
           style={{
             fontSize: 12,
@@ -444,18 +446,17 @@ const CertificateManage = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
-          <span>&gt;</span>
-          <span>System Tool</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Certificate Management
-          </span>
+          {CERTIFICATE_BREADCRUMB.map((crumb, index) => (
+            <React.Fragment key={index}>
+              <span>{crumb}</span>
+              {index < CERTIFICATE_BREADCRUMB.length - 1 && <span>&gt;</span>}
+            </React.Fragment>
+          ))}
         </div>
 
         <div style={{ ...tableContainerStyle, }}>
           <div style={blueBarStyle}>
-            <span>Certificate Management</span>
+            <span>{CERTIFICATE_CARD_TITLE}</span>
           </div>
 
           <div
@@ -468,7 +469,7 @@ const CertificateManage = () => {
             >
               {CERTIFICATE_FIELDS.map((field) => (
                 <React.Fragment key={field.name}>
-                  <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                  <Tooltip title={CERTIFICATE_TOOLTIPS[field.name]} {...tooltipProps}>
                     <span style={labelStyle}>{field.label}:</span>
                   </Tooltip>
                   <div className="flex items-center min-w-0 w-full">
@@ -499,8 +500,9 @@ const CertificateManage = () => {
                 key={btn.name}
                 type="button"
                 variant={
-                  btn.name.toLowerCase() === "generate" ||
-                  btn.name.toLowerCase() === "download"
+                  PRIMARY_CERTIFICATE_ACTIONS.includes(
+                    btn.name.toLowerCase()
+                  )
                     ? "primary"
                     : "cancel"
                 }

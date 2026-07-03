@@ -4,6 +4,11 @@ import {
   MR_BUTTONS,
   MR_NOTE,
   MR_PLACEHOLDER,
+  MR_BREADCRUMB,
+  MR_COMMANDS,
+  MR_MESSAGES,
+  MR_DEFAULT_TOAST,
+  MR_TOAST_DURATION,
 } from "../../../constants/ModificationRecordConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
@@ -249,29 +254,29 @@ const blueBarStyle = {
 const ModificationRecord = () => {
   const [record, setRecord] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(MR_DEFAULT_TOAST);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+    setTimeout(() => setToast(MR_DEFAULT_TOAST), MR_TOAST_DURATION);
   };
 
   // Handle check button click - fetch latest 100 lines from /var/log/auth.log
   const handleCheck = async () => {
     try {
       setLoading(true);
-      const fetchCmd = `tail -n 100 /var/log/auth.log 2>/dev/null || echo "Error reading auth.log"`;
+      const fetchCmd = MR_COMMANDS.fetchLatest;
       const response = await postLinuxCmd({ cmd: fetchCmd });
       const logData = String(response?.responseData || "").trim();
 
-      if (logData.includes("Error reading auth.log") || !logData) {
-        setRecord("Error: Could not read /var/log/auth.log or file is empty.");
+      if (logData.includes(MR_MESSAGES.readError) || !logData) {
+        setRecord(MR_MESSAGES.fileUnreadableOrEmpty);
       } else {
         setRecord(logData);
       }
     } catch (error) {
       console.error("Error fetching auth.log:", error);
-      setRecord("Error: Failed to fetch auth.log. Please try again.");
+        setRecord(MR_MESSAGES.fetchFailed);
     } finally {
       setLoading(false);
     }
@@ -281,17 +286,17 @@ const ModificationRecord = () => {
   const handleDownload = async () => {
     try {
       setLoading(true);
-      const fetchCmd = `cat /var/log/auth.log 2>/dev/null || echo "Error reading auth.log"`;
+      const fetchCmd = MR_COMMANDS.fetchAll;
       const response = await postLinuxCmd({ cmd: fetchCmd });
       const logData = String(response?.responseData || "").trim();
 
-      if (logData.includes("Error reading auth.log")) {
-        showToast("Error: Could not read /var/log/auth.log.", "error");
+      if (logData.includes(MR_MESSAGES.readError)) {
+        showToast(MR_MESSAGES.fileUnreadable, "error");
         return;
       }
 
       if (!logData) {
-        showToast("auth.log file is empty.", "error");
+        showToast(MR_MESSAGES.fileEmpty, "error");
         return;
       }
 
@@ -306,10 +311,7 @@ const ModificationRecord = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading auth.log:", error);
-      showToast(
-        "Error: Failed to download auth.log. Please try again.",
-        "error",
-      );
+      showToast(MR_MESSAGES.downloadFailed, "error");
     } finally {
       setLoading(false);
     }
@@ -331,12 +333,12 @@ const ModificationRecord = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{MR_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{MR_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Modification Record
+            {MR_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -344,7 +346,7 @@ const ModificationRecord = () => {
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(MR_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 20,

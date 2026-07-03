@@ -5,6 +5,29 @@ import {
   IDS_INITIAL_FORM,
   IDS_WARNING_LOG,
   IDS_LOG_NOTE,
+  IDS_BREADCRUMB_ROOT,
+  IDS_BREADCRUMB_SECTION,
+  IDS_PAGE_TITLE,
+  IDS_BREADCRUMB_SEPARATOR,
+  IDS_CARD_TITLE,
+  IDS_BTN_RESET,
+  IDS_BTN_SAVE,
+  IDS_BTN_DOWNLOAD,
+  IDS_LABEL_SETTINGS,
+  IDS_LABEL_ENABLE,
+  IDS_TABLE_HEADER_TYPE,
+  IDS_TABLE_HEADER_WARNING,
+  IDS_TABLE_HEADER_BLACKLIST,
+  IDS_TOOLTIPS,
+  IDS_LABEL_BLACKLIST_VALIDITY,
+  IDS_CARD_TITLE_WARNING_LOG,
+  IDS_LABEL_WARNING_SHORT,
+  IDS_LABEL_BLACKLIST_SHORT,
+  IDS_MSG_SAVE_SUCCESS,
+  IDS_MSG_RESET_SUCCESS,
+  IDS_MSG_DOWNLOAD_STARTED,
+  IDS_TOAST_DEFAULT,
+  IDS_TOAST_DURATION,
 } from "../../../constants/IDSSettingsConstants";
 import { Alert, Checkbox } from "@mui/material";
 // ── Color palette (same as AccountManage) ────────────────────────────────────
@@ -202,31 +225,7 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  idsSettings:
-  "Enable or configure Intrusion Detection System (IDS) settings for monitoring and detecting suspicious network activity.",
-  enable: "Shows the current enable status of the IDS settings.",
-  type: "Select the type of IDS to use.",
-  warningThreshold: "Shows the current warning threshold for the IDS.",
-  blacklistThreshold: "Shows the current blacklist threshold for the IDS.",
-  blacklistValidity: "Shows the current blacklist validity for the IDS.", "TLS Connection Failed":
-    "Triggered when TLS handshake or secure SIP connection establishment fails.",
 
-  "Malformed SIP Datagram":
-    "Triggered when invalid or malformed SIP packets are received.",
-
-  "Registration Failed":
-    "Triggered when SIP registration attempts repeatedly fail.",
-
-  "Call Failed":
-    "Triggered when call setup attempts fail unexpectedly.",
-
-  "SIP Exception Flow":
-    "Triggered when abnormal or excessive SIP traffic patterns are detected.",
-
-    blacklistValidityTooltip:
-  "Specifies how long a blacklisted IP address remains blocked before being automatically removed from the blacklist.",
-};
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
@@ -236,9 +235,9 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
-  form,
+
   component,
-  title,
+ 
 }) => {
   const styles = {
     default: {
@@ -420,11 +419,11 @@ const blueBarStyle = {
 const IDSSettings = () => {
   const [form, setForm] = useState(IDS_INITIAL_FORM);
   const [log, setLog] = useState(IDS_WARNING_LOG);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(IDS_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(IDS_TOAST_DEFAULT), IDS_TOAST_DURATION);
   };
 
   const handleCheckbox = (key) => {
@@ -448,16 +447,17 @@ const IDSSettings = () => {
   };
   const handleSave = (e) => {
     e.preventDefault();
-    showToast("IDS Settings saved successfully!", "success");
+    showToast(IDS_MSG_SAVE_SUCCESS, "success");
   };
+  
   const handleReset = () => {
     setForm(IDS_INITIAL_FORM);
-    showToast("Form reset to default values", "info");
+    showToast(IDS_MSG_RESET_SUCCESS, "info");
   };
+  
   const handleDownload = () => {
-    showToast("Download started", "success");
+    showToast(IDS_MSG_DOWNLOAD_STARTED, "success");
   };
-
   return (
       <div style={IDSSettingsPageWrapStyle} data-native-scroll>
       <div style={IDSSettingsPageInnerStyle}>
@@ -466,7 +466,7 @@ const IDSSettings = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(IDS_TOAST_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -493,19 +493,19 @@ const IDSSettings = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
-          <span>&gt;</span>
-          <span>System Tool</span>
-          <span>&gt;</span>
+          <span>{IDS_BREADCRUMB_ROOT}</span>
+          <span>{IDS_BREADCRUMB_SEPARATOR}</span>
+          <span>{IDS_BREADCRUMB_SECTION}</span>
+          <span>{IDS_BREADCRUMB_SEPARATOR}</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            IDS Settings
+            {IDS_PAGE_TITLE}
           </span>
         </div>
 
         {/* IDS Settings Section */}
         <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
-            <span>IDS Settings</span>
+            <span>{IDS_CARD_TITLE}</span>
           </div>
 
           <form onSubmit={handleSave} className="w-full">
@@ -523,7 +523,7 @@ const IDSSettings = () => {
                 }}
               >
                <Tooltip
-  title={tooltips.idsSettings}
+  title={IDS_TOOLTIPS.idsSettings}
   {...tooltipProps}
 >
   <span
@@ -535,7 +535,7 @@ const IDSSettings = () => {
       display: "inline-block",
     }}
   >
-    IDS Settings:
+    {IDS_LABEL_SETTINGS}
   </span>
 </Tooltip>
                 <div className="flex items-center gap-2">
@@ -550,11 +550,11 @@ const IDSSettings = () => {
                     }}
                   />
   <Tooltip
-    title={tooltips.enable}
+    title={IDS_TOOLTIPS.enable}
     {...tooltipProps}
   >
     <span style={{ fontSize: 14, color: C.valueText }}>
-      Enable
+      {IDS_LABEL_ENABLE}
     </span>
   </Tooltip>
                 </div>
@@ -562,27 +562,27 @@ const IDSSettings = () => {
 
               {/* Table Header - Hidden on mobile, shown on larger screens */}
               <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-3 px-2 py-2 rounded">
-              <Tooltip title={tooltips.type} {...tooltipProps}>
+              <Tooltip title={IDS_TOOLTIPS.type} {...tooltipProps}>
   <span
     style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
   >
-    Type
+    {IDS_TABLE_HEADER_TYPE}
   </span>
 </Tooltip>
 
-<Tooltip title={tooltips.warningThreshold} {...tooltipProps}>
+<Tooltip title={IDS_TOOLTIPS.warningThreshold} {...tooltipProps}>
   <span
     style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
   >
-    Warning Threshold (per 10 seconds)
+    {IDS_TABLE_HEADER_WARNING}
   </span>
 </Tooltip>
 
-<Tooltip title={tooltips.blacklistThreshold} {...tooltipProps}>
+<Tooltip title={IDS_TOOLTIPS.blacklistThreshold} {...tooltipProps}>
   <span
     style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
   >
-    Blacklist Threshold (per 10 seconds)
+    {IDS_TABLE_HEADER_BLACKLIST}
   </span>
 </Tooltip>
                 </div>
@@ -603,7 +603,7 @@ const IDSSettings = () => {
                         }}
                       />
                   <Tooltip
-  title={tooltips[type.label] || ""}
+  title={IDS_TOOLTIPS[type.label] || ""}
   {...tooltipProps}
 >
   <span
@@ -690,7 +690,7 @@ const IDSSettings = () => {
                             marginBottom: 4,
                           }}
                         >
-                          Warning Threshold
+                          {IDS_LABEL_WARNING_SHORT}
                         </label>
                         <input
                           type="number"
@@ -712,7 +712,7 @@ const IDSSettings = () => {
                             marginBottom: 4,
                           }}
                         >
-                          Blacklist Threshold
+                          {IDS_LABEL_BLACKLIST_SHORT}
                         </label>
                         <input
                           type="number"
@@ -736,35 +736,43 @@ const IDSSettings = () => {
 
               {/* Blacklist Validity */}
               <div
-                className="flex flex-col sm:flex-row items-start sm:items-center mt-3 pt-3 gap-2"
-                style={{ borderTop: `1px solid ${C.divider}` }}
-              >
-               <Tooltip
-  title={tooltips.blacklistValidity}
-  {...tooltipProps}
+  className="flex items-center gap-4 mt-3 pt-3"
+  style={{
+    borderTop: `1px solid ${C.divider}`,
+  }}
 >
-  <span
+  <div style={{ width: 290 }}>
+    <Tooltip
+      title={IDS_TOOLTIPS.blacklistValidity}
+      {...tooltipProps}
+    >
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+          display: "inline-block",
+          width: "100%",
+          marginLeft: 42,
+
+        }}
+      >
+        {IDS_LABEL_BLACKLIST_VALIDITY}
+      </span>
+    </Tooltip>
+  </div>
+
+  <input
+    type="number"
+    value={form.blacklistValidity}
+    onChange={(e) => handleValidity(Number(e.target.value))}
     style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      minWidth: 140,
+      ...systemToolsEditableFieldInputStyle,
+      width: 140,
     }}
-  >
-    Blacklist Validity(s)
-  </span>
-</Tooltip>
-                <input
-                  type="number"
-                  value={form.blacklistValidity}
-                  onChange={(e) => handleValidity(Number(e.target.value))}
-                  style={{
-                    ...systemToolsEditableFieldInputStyle,
-                    maxWidth: 180,
-                  }}
-                  {...inputInteraction}
-                />
-              </div>
+    {...inputInteraction}
+  />
+</div>
             </div>
             </div>
 
@@ -782,10 +790,10 @@ const IDSSettings = () => {
                 onClick={handleReset}
                 style={advancedFormBtnStyle}
               >
-                Reset
+                {IDS_BTN_RESET}
               </Btn>
               <Btn type="submit" variant="primary" style={advancedFormBtnStyle}>
-                Save
+                {IDS_BTN_SAVE}
               </Btn>
             </div>
           </form>
@@ -797,7 +805,7 @@ const IDSSettings = () => {
     marginTop: 20,
   }}>
           <div style={blueBarStyle}>
-            <span>IDS Warning Log</span>
+            <span>{IDS_CARD_TITLE_WARNING_LOG}</span>
           </div>
 
           <div className="px-5 pt-3 pb-2">
@@ -823,7 +831,7 @@ const IDSSettings = () => {
                   onClick={handleDownload}
                   style={{ minWidth: 110, height: 34 }}
                 >
-                  Download
+                  {IDS_BTN_DOWNLOAD}
                 </Btn>
               </div>
             </div>

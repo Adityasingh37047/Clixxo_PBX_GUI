@@ -5,7 +5,16 @@ import {
   RADIUS_FIELDS,
   LOCAL_IP_OPTIONS,
   CALL_TYPE_OPTIONS,
-  RADIUS_BUTTONS,
+  RADIUS_INITIAL_FORM,
+  RADIUS_BREADCRUMB,
+  RADIUS_CARD_TITLE,
+  RADIUS_BUTTON_LABELS,
+  RADIUS_BUTTON_VARIANTS,
+  RADIUS_TOOLTIPS,
+  RADIUS_TOAST_DEFAULT,
+  RADIUS_TOAST_DURATION,
+  RADIUS_MESSAGES,
+  RADIUS_SELECT_LOCAL_IP_PLACEHOLDER,
 } from "../../../constants/RadiusConstants";
 import {
   Checkbox,
@@ -249,20 +258,7 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  radius: "Specifies whether the Radius is enabled or disabled.",
-  certification: "Specifies whether the Certification is enabled or disabled.",
-  allowCalls: "Specifies whether the Allow Calls is enabled or disabled.",
-  localIp: "Specifies the local IP address.",
-  masterServer: "Specifies the master server address.",
-  sharedKey: "Specifies the shared key.",
-  spareServer: "Specifies the spare server address.",
-  spareSharedKey: "Specifies the spare shared key.",
-  timeout: "Specifies the timeout in seconds.",
-  retransmission: "Specifies the retransmission times.",
-  transmitInterval: "Specifies the transmit interval of charge alive package(s).",
-  callType: "Specifies the call type.",
-};
+
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
@@ -481,28 +477,13 @@ const ENABLE_CHECKBOX_FIELDS = RADIUS_FIELDS.filter(
 );
 const RADIUS_FORM_FIELDS = RADIUS_FIELDS.filter((f) => f.type !== "checkbox");
 
-const RADIUS_INITIAL_FORM = {
-  radius: false,
-  certification: false,
-  allowCalls: false,
-  localIp: "",
-  masterServer: "",
-  sharedKey: "",
-  spareServer: "",
-  spareSharedKey: "",
-  timeout: "",
-  retransmission: "",
-  transmitInterval: "",
-  callType: [],
-};
-
 const Radius = () => {
   const [form, setForm] = useState(RADIUS_INITIAL_FORM);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(RADIUS_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(RADIUS_TOAST_DEFAULT), RADIUS_TOAST_DURATION);
   };
 
   const handleChange = (e) => {
@@ -527,12 +508,12 @@ const Radius = () => {
 
   const handleReset = () => {
     setForm(RADIUS_INITIAL_FORM);
-    showToast("Form reset to default.", "success");
+    showToast(RADIUS_MESSAGES.resetSuccess, "success");
   };
 
   const handleSave = (e) => {
     e.preventDefault();
-    showToast("Radius settings saved successfully!", "success");
+    showToast(RADIUS_MESSAGES.saveSuccess, "success");
   };
 
   return (
@@ -543,7 +524,7 @@ const Radius = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(RADIUS_TOAST_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -569,18 +550,20 @@ const Radius = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{RADIUS_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{RADIUS_BREADCRUMB[1]}</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Radius</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {RADIUS_BREADCRUMB[2]}
+          </span>
         </div>
 
         <form onSubmit={handleSave} autoComplete="off">
           <div style={tableContainerStyle}>
             {/* Header */}
             <div style={blueBarStyle}>
-              <span>Radius Configuration</span>
+              <span>{RADIUS_CARD_TITLE}</span>
             </div>
 
             <div className="px-5 pt-3 pb-0">
@@ -595,7 +578,7 @@ const Radius = () => {
                     {ENABLE_CHECKBOX_FIELDS.map((field) => (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
-                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                          <Tooltip title={RADIUS_TOOLTIPS[field.name]} {...tooltipProps}>
                             <span style={{ color: C.labelText }}>
                             {field.label}
                             </span>
@@ -617,7 +600,7 @@ const Radius = () => {
                     field.type === "checkboxGroup" ? (
                       <React.Fragment key={field.name || "callTypeGroup"}>
                         <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
-                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                          <Tooltip title={RADIUS_TOOLTIPS[field.name]} {...tooltipProps}>
                             <span style={{ color: C.labelText }}>
                             {field.label}
                             </span>
@@ -639,7 +622,7 @@ const Radius = () => {
                     ) : (
                       <React.Fragment key={field.name}>
                         <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[34px]">
-                          <Tooltip title={tooltips[field.name]} {...tooltipProps}>
+                          <Tooltip title={RADIUS_TOOLTIPS[field.name]} {...tooltipProps}>
                             <span style={{ color: C.labelText }}>
                             {field.label}
                             </span>
@@ -661,7 +644,7 @@ const Radius = () => {
                               }}
                             >
                               <MenuItem value="">
-                                <em>Select Local IP</em>
+                                <em>{RADIUS_SELECT_LOCAL_IP_PLACEHOLDER}</em>
                               </MenuItem>
                               {LOCAL_IP_OPTIONS.map((opt) => (
                                 <MenuItem key={opt.value} value={opt.value}>
@@ -699,19 +682,19 @@ const Radius = () => {
             >
               <Btn
                 type="button"
-                variant="cancel"
+                variant={RADIUS_BUTTON_VARIANTS.RESET}
                 onClick={handleReset}
                 style={advancedFormBtnStyle}
               >
-                Reset
+                {RADIUS_BUTTON_LABELS.RESET}
               </Btn>
               <Btn
                 type="submit"
-                variant="primary"
+                variant={RADIUS_BUTTON_VARIANTS.SAVE}
                 onClick={handleSave}
                 style={advancedFormBtnStyle}
               >
-                Save
+                {RADIUS_BUTTON_LABELS.SAVE}
               </Btn>
             </div>
           </div>

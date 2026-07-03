@@ -2,8 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material"; 
 import {
+  UPGRADE_TABLE_HEADERS,
   UPGRADE_LABELS,
   UPGRADE_BUTTONS,
+  UPGRADE_BREADCRUMB,
+  UPGRADE_STATUS,
+  UPGRADE_BUTTON_STATUS,
+  UPGRADE_TOOLTIPS,
+  UPGRADE_MESSAGES,
+  UPGRADE_TIMINGS,
+  UPGRADE_FILE,
+  UPGRADE_COMMANDS,
+  UPGRADE_ROUTES,
+  UPGRADE_API,
 } from "../../../constants/UpgradeConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import {
@@ -286,14 +297,14 @@ const upgradeFooterBtnStyle = {
 };
 
 const formatVersionValue = (raw) => {
-  if (raw == null || raw === "") return "Unavailable";
+  if (raw == null || raw === "") return UPGRADE_STATUS.unavailable;
   if (typeof raw === "object") {
     const parts = [raw.version, raw.timestamp, raw.boot, raw.boot_time, raw.value]
       .filter((v) => v != null && String(v).trim() !== "")
       .map((v) => String(v).trim());
-    return parts.length ? parts.join(" ") : "Unavailable";
+    return parts.length ? parts.join(" ") : UPGRADE_STATUS.unavailable;
   }
-  return String(raw).trim() || "Unavailable";
+  return String(raw).trim() || UPGRADE_STATUS.unavailable;
 };
 
 const tooltipProps = {
@@ -318,55 +329,46 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  serialNumber: "The serial number of the device.",
-  webVersion: "The web version of the device.",
-  service: "The service of the device.",
-  uboot: "The uboot of the device.",
-  kernel: "The kernel of the device.",
-  firmware: "The firmware of the device.",
-};
-
 const VERSION_FIELDS = [
   {
     key: "serial_no",
-    label: "Serial Number",
-    formatter: (val) => val || "Unavailable",
-    tooltip: tooltips.serialNumber,
+    label: UPGRADE_TABLE_HEADERS[0],
+    formatter: (val) => val || UPGRADE_STATUS.unavailable,
+    tooltip: UPGRADE_TOOLTIPS.serialNumber,
   },
   {
     key: "web_version",
-    label: "WEB",
-    formatter: (val) => val || "Unavailable",
-    tooltip: tooltips.webVersion,
+    label: UPGRADE_TABLE_HEADERS[1],
+    formatter: (val) => val || UPGRADE_STATUS.unavailable,
+    tooltip: UPGRADE_TOOLTIPS.webVersion,
   },
   {
     key: "service",
-    label: "Service",
-    formatter: (val) => val || "Unavailable",
-    tooltip: tooltips.service,
+    label: UPGRADE_TABLE_HEADERS[2],
+    formatter: (val) => val || UPGRADE_STATUS.unavailable,
+    tooltip: UPGRADE_TOOLTIPS.service,
   },
   {
     key: "uboot",
-    label: "Uboot",
-    formatter: (val) => val || "Unavailable",
-    tooltip: tooltips.uboot,
+    label: UPGRADE_TABLE_HEADERS[3],
+    formatter: (val) => val || UPGRADE_STATUS.unavailable,
+    tooltip: UPGRADE_TOOLTIPS.uboot,
   },
   {
     key: "kernel",
-    label: "Kernel",
-    formatter: (val) => val || "Unavailable",
-    tooltip: tooltips.kernel,
+    label: UPGRADE_TABLE_HEADERS[4],
+    formatter: (val) => val || UPGRADE_STATUS.unavailable,
+    tooltip: UPGRADE_TOOLTIPS.kernel,
   },
   {
     key: "firmware",
-    label: "Firmware",
-    formatter: (val) => val || "Unavailable",
-    tooltip: tooltips.firmware,
+    label: UPGRADE_TABLE_HEADERS[5],
+    formatter: (val) => val || UPGRADE_STATUS.unavailable,
+    tooltip: UPGRADE_TOOLTIPS.firmware,
   },
 ];
 
-const createInitialRows = (placeholder = "Loading...") =>
+const createInitialRows = (placeholder = UPGRADE_STATUS.loading) =>
   VERSION_FIELDS.map((field) => ({
     ...field,
     version: placeholder,
@@ -411,14 +413,14 @@ const Upgrade = () => {
   // Auto-hide alerts after 5 seconds
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => setError(""), 5000);
+      const timer = setTimeout(() => setError(""), UPGRADE_TIMINGS.alertHideMs);
       return () => clearTimeout(timer);
     }
   }, [error]);
 
   useEffect(() => {
     if (success) {
-      const timer = setTimeout(() => setSuccess(""), 5000);
+      const timer = setTimeout(() => setSuccess(""), UPGRADE_TIMINGS.alertHideMs);
       return () => clearTimeout(timer);
     }
   }, [success]);
@@ -448,20 +450,20 @@ const Upgrade = () => {
 
   const loadVersionInfo = async () => {
     setVersionLoading(true);
-    setVersionRows(createInitialRows("Loading..."));
+    setVersionRows(createInitialRows(UPGRADE_STATUS.loading));
     try {
       const res = await postLinuxCmd({
-        cmd: "cat /home/clixxo/server/config/web_version.json",
+        cmd: UPGRADE_COMMANDS.readVersion,
       });
       if (!res?.response || !res?.responseData) {
-        throw new Error(res?.message || "Invalid response");
+        throw new Error(res?.message || UPGRADE_MESSAGES.invalidResponse);
       }
 
       let parsed = {};
       try {
         parsed = JSON.parse(res.responseData);
       } catch (_) {
-        throw new Error("Failed to parse version data");
+        throw new Error(UPGRADE_MESSAGES.parseFailed);
       }
 
       const updatedRows = VERSION_FIELDS.map((field) => {
@@ -480,8 +482,8 @@ const Upgrade = () => {
       setError("");
     } catch (err) {
       console.error("Failed to load version info:", err);
-      setVersionRows(createInitialRows("Unavailable"));
-      setError("Failed to load current version details.");
+      setVersionRows(createInitialRows(UPGRADE_STATUS.unavailable));
+      setError(UPGRADE_MESSAGES.loadVersionFailed);
     } finally {
       setVersionLoading(false);
     }
@@ -489,7 +491,7 @@ const Upgrade = () => {
 
   const checkDeviceOnline = async () => {
     try {
-      await axiosInstance.get("/service-ping", { timeout: 4000 });
+      await axiosInstance.get(UPGRADE_API.servicePing, { timeout: UPGRADE_TIMINGS.pingTimeoutMs });
       return true;
     } catch (err) {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
@@ -501,34 +503,32 @@ const Upgrade = () => {
 
   const beginOnlinePolling = () => {
     clearPolling();
-    setProgressMessage(
-      "Device is rebooting. Waiting for it to come back online...",
-    );
+    setProgressMessage(UPGRADE_MESSAGES.rebootingWait);
     let attempts = 0;
     pingIntervalRef.current = setInterval(async () => {
       attempts += 1;
       const online = await checkDeviceOnline();
       if (online) {
         clearPolling();
-        setProgressMessage("Device is back online. Redirecting to login...");
+        setProgressMessage(UPGRADE_MESSAGES.backOnline);
         setTimeout(() => {
-          window.location.href = "/login";
-        }, 3000);
-      } else if (attempts >= 60) {
+          window.location.href = UPGRADE_ROUTES.login;
+        }, UPGRADE_TIMINGS.redirectDelayMs);
+      } else if (attempts >= UPGRADE_TIMINGS.maxPingAttempts) {
         // ~5 minutes
         clearPolling();
         setRebooting(false);
         setProgressMessage("");
-        setError("Device did not come back online. Please verify manually.");
+        setError(UPGRADE_MESSAGES.deviceOfflineTimeout);
       }
-    }, 5000);
+    }, UPGRADE_TIMINGS.pingIntervalMs);
   };
 
   const initiateReboot = async () => {
     setRebooting(true);
-    setProgressMessage("Update uploaded. Initiating reboot...");
+    setProgressMessage(UPGRADE_MESSAGES.initiatingReboot);
     try {
-      await postLinuxCmd({ cmd: "reboot" });
+      await postLinuxCmd({ cmd: UPGRADE_COMMANDS.reboot });
     } catch (err) {
       console.warn(
         "Reboot command failed (continuing to poll):",
@@ -537,7 +537,7 @@ const Upgrade = () => {
     }
     rebootDelayRef.current = setTimeout(() => {
       beginOnlinePolling();
-    }, 5000);
+    }, UPGRADE_TIMINGS.rebootDelayMs);
   };
 
   const handleUpdate = async () => {
@@ -545,33 +545,31 @@ const Upgrade = () => {
     setSuccess("");
 
     if (!selectedFile) {
-      setError("Please select a .tar update package to upload.");
+      setError(UPGRADE_MESSAGES.selectFileRequired);
       return;
     }
-    if (!/\.tar$/i.test(selectedFile.name)) {
-      setError("Only .tar update packages are supported.");
+    if (!UPGRADE_FILE.tarRegex.test(selectedFile.name)) {
+      setError(UPGRADE_MESSAGES.tarOnly);
       return;
     }
 
     try {
       setUploading(true);
-      setProgressMessage("Uploading update package...");
+      setProgressMessage(UPGRADE_MESSAGES.uploading);
       const response = await uploadSoftwareUpdate(selectedFile);
       if (!response?.response) {
         throw new Error(
-          response?.message || "Failed to upload update package.",
+          response?.message || UPGRADE_MESSAGES.uploadFailed,
         );
       }
-      setSuccess(response?.message || "Update package uploaded successfully.");
+      setSuccess(response?.message || UPGRADE_MESSAGES.uploadSuccess);
       setUploading(false);
 
       // Wait 4-5 seconds before rebooting, show loading during wait
       setRebooting(true);
-      setProgressMessage(
-        "Update uploaded successfully. Preparing to reboot in a few seconds...",
-      );
+      setProgressMessage(UPGRADE_MESSAGES.preparingReboot);
 
-      await new Promise((resolve) => setTimeout(resolve, 4500)); // 4.5 seconds wait
+      await new Promise((resolve) => setTimeout(resolve, UPGRADE_TIMINGS.preRebootWaitMs));
 
       await initiateReboot();
     } catch (err) {
@@ -584,7 +582,7 @@ const Upgrade = () => {
           : err?.message ||
             err?.error ||
             err?.response?.message ||
-            "Failed to upload update package.";
+            UPGRADE_MESSAGES.uploadFailed;
       setError(message);
     }
   };
@@ -600,8 +598,8 @@ const Upgrade = () => {
             <div className="text-gray-700 text-sm whitespace-pre-line">
               {progressMessage ||
                 (rebooting
-                  ? "Device is rebooting. Please wait..."
-                  : "Uploading update package...")}
+                  ? UPGRADE_MESSAGES.rebootingPleaseWait
+                  : UPGRADE_MESSAGES.uploading)}
             </div>
           </div>
         </div>
@@ -619,11 +617,13 @@ const Upgrade = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{UPGRADE_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{UPGRADE_BREADCRUMB[1]}</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Upgrade</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {UPGRADE_BREADCRUMB[2]}
+          </span>
         </div>
 
         {/* Alerts */}
@@ -684,7 +684,7 @@ const Upgrade = () => {
                   </Tooltip>
                   <div className="flex flex-col min-w-0 w-full">
                     <div style={valueBoxStyle}>
-                      {row.version || "Unavailable"}
+                      {row.version || UPGRADE_STATUS.unavailable}
                     </div>
                     {row.timestamp ? (
                       <div
@@ -770,9 +770,9 @@ const Upgrade = () => {
             style={upgradeFooterBtnStyle}
           >
             {uploading
-              ? "Uploading..."
+              ? UPGRADE_BUTTON_STATUS.uploading
               : rebooting
-                ? "Rebooting..."
+                ? UPGRADE_BUTTON_STATUS.rebooting
                 : UPGRADE_BUTTONS.update}
           </Btn>
           <Btn

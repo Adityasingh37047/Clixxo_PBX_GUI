@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import {
   DEVICE_LOCK_OPTIONS,
   DEVICE_LOCK_LABELS,
+  DEVICE_LOCK_BREADCRUMB,
+  DEVICE_LOCK_MESSAGES,
+  DEVICE_LOCK_DEFAULT_TOAST,
+  DEVICE_LOCK_TOAST_DURATION,
+  DEVICE_LOCK_ERROR_HIDE_MS,
 } from "../../../constants/DeviceLockConstants";
 import { Alert, TextField, Checkbox } from "@mui/material";
 const C = {
@@ -407,17 +412,17 @@ const DeviceLock = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [error, setError] = useState("");
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(DEVICE_LOCK_DEFAULT_TOAST);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(DEVICE_LOCK_DEFAULT_TOAST), DEVICE_LOCK_TOAST_DURATION);
   };
 
   // Auto-hide error after 5 seconds
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => setError(""), 5000);
+      const timer = setTimeout(() => setError(""), DEVICE_LOCK_ERROR_HIDE_MS);
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -436,16 +441,16 @@ const DeviceLock = () => {
   const handleLock = (e) => {
     e.preventDefault();
     if (!password || !confirmPassword) {
-      setError("Please fill out both password fields.");
+      setError(DEVICE_LOCK_MESSAGES.passwordRequired);
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(DEVICE_LOCK_MESSAGES.passwordMismatch);
       return;
     }
 
     // Add lock logic here
-    showToast("Device locked successfully!");
+    showToast(DEVICE_LOCK_MESSAGES.lockSuccess);
   };
 
   return (
@@ -464,12 +469,12 @@ const DeviceLock = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{DEVICE_LOCK_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{DEVICE_LOCK_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Device Lock
+            {DEVICE_LOCK_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -477,7 +482,7 @@ const DeviceLock = () => {
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(DEVICE_LOCK_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 16,

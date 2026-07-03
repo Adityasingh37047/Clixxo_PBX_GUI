@@ -3,8 +3,29 @@ import { CircularProgress, Alert } from "@mui/material";
 import { Tooltip } from "@mui/material";
 import {
   DEFAULT_SERIAL,
-  DEFAULT_STATUS,
   AUTH_STATUS,
+  AUTH_ERROR_LOAD_FAILED,
+  AUTH_BREADCRUMB_ROOT,
+  AUTH_BREADCRUMB_SECTION,
+  AUTH_PAGE_TITLE,
+  AUTH_BREADCRUMB_SEPARATOR,
+  AUTH_BTN_REFRESH,
+  AUTH_BTN_LOADING,
+  AUTH_LICENSE_NOTE,
+  AUTH_CARD_TITLE,
+  DEFAULT_DEVICE_TYPE,
+  DEFAULT_EXPIRY_DATE,
+  DEFAULT_MAX_E1_PRI,
+  AUTH_TOOLTIPS,
+  AUTH_LABEL_SERIAL,
+  AUTH_LABEL_STATUS,
+  AUTH_LABEL_DEVICE_TYPE,
+  AUTH_LABEL_EXPIRY_DATE,
+  AUTH_LABEL_SIP_EXTENSIONS,
+  AUTH_LABEL_FXS_CHANNELS,
+  AUTH_LABEL_FXO_CHANNELS,
+  AUTH_LABEL_SIP_TRUNK_CHANNELS,
+  AUTH_LABEL_E1_PRI,
 } from "../../../constants/AuthorizationConstants";
 import {
   getLicenseInfo,
@@ -101,20 +122,6 @@ const inputInteraction = {
   },
 };
 
-const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
-  if (!hasError) return inputInteraction;
-  const ring = (el, focused) => {
-    el.style.borderColor = errorColor;
-    el.style.borderWidth = "1px";
-    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
-  };
-  return {
-    onFocus: (e) => ring(e.target, true),
-    onBlur: (e) => ring(e.target, false),
-    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
-    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
-  };
-};
 
 const systemToolsFieldInputStyle = {
   padding: "6px 12px",
@@ -176,9 +183,9 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
-  form,
+
   component,
-  title,
+  
 }) => {
   const styles = {
     default: {
@@ -371,9 +378,7 @@ const inputStyleWithAuth = {
   cursor: "text",
 };
 
-const DEFAULT_DEVICE_TYPE = "IPPBX";
-const DEFAULT_EXPIRY_DATE = "2027-04-10";
-const DEFAULT_MAX_E1_PRI = "2";
+
 
 function strOrEmpty(v) {
   return v === "" || v === undefined || v === null ? "" : String(v);
@@ -527,34 +532,7 @@ const tooltipProps = {
     },
   },
 };
-const tooltips = {
-  "Serial Number:":
-    "Displays the unique serial number assigned to this device.",
 
-  "Authorization Status:":
-    "Shows the current authorization or license status of the device.",
-
-  "Device Type:":
-    "Displays the model or type of the device.",
-
-  "Expiry Date:":
-    "Shows the date on which the current authorization or license expires.",
-
-  "Maximum Number of SIP Extensions:":
-    "Displays the maximum number of SIP extensions supported by this device.",
-
-  "Maximum Number of FXS Channels:":
-    "Displays the maximum number of FXS channels supported by this device.",
-
-  "Maximum Number of FXO Channels:":
-    "Displays the maximum number of FXO channels supported by this device.",
-
-  "Maximum Number of SIP Trunk Channels:":
-    "Displays the maximum number of SIP trunk channels supported by this device.",
-
-  "Maximum Number of E1-PRI:":
-    "Displays the maximum number of E1-PRI interfaces supported by this device.",
-};
   
 const Authorization = () => {
   const [serial, setSerial] = useState(DEFAULT_SERIAL);
@@ -565,7 +543,7 @@ const Authorization = () => {
   const [maxFxoChannels, setMaxFxoChannels] = useState("");
   const [maxSipTrunkChannels, setMaxSipTrunkChannels] = useState("");
   const [maxE1, setMaxE1] = useState("");
-  const [authStatus, setAuthStatus] = useState(DEFAULT_STATUS);
+  const [authStatus, setAuthStatus] = useState(AUTH_STATUS.UNAUTHORIZED);
   const [loadingInfo, setLoadingInfo] = useState(false);
   const [error, setError] = useState("");
 
@@ -591,7 +569,7 @@ const Authorization = () => {
       }
     } catch (err) {
       console.error("Failed to load license info:", err);
-      setError(err?.message || "Failed to load license information.");
+      setError(err?.message || AUTH_ERROR_LOAD_FAILED);
     } finally {
       setLoadingInfo(false);
     }
@@ -679,26 +657,47 @@ const Authorization = () => {
       ? { color: "#166534", fontWeight: 600, fontSize: "12px" }
       : { color: "#991b1b", fontWeight: 600, fontSize: "12px" };
 
-  const rows = [
-    { label: "Serial Number:", value: serial, loading: loadingInfo },
-    {
-      label: "Authorization Status:",
-      value: authStatus,
-      loading: loadingInfo,
-      isStatus: true,
-    },
-    { label: "Device Type:", value: deviceType },
-    { label: "Expiry Date:", value: formatDisplayDate(expireDate) },
-    { label: "Maximum Number of SIP Extensions:", value: sipExtensions },
-    { label: "Maximum Number of FXS Channels:", value: fxsPorts },
-    { label: "Maximum Number of FXO Channels:", value: maxFxoChannels },
-    {
-      label: "Maximum Number of SIP Trunk Channels:",
-      value: maxSipTrunkChannels,
-    },
-    { label: "Maximum Number of E1-PRI:", value: maxE1 },
-  ];
-
+      const rows = [
+        {
+          label: AUTH_LABEL_SERIAL,
+          value: serial,
+          loading: loadingInfo,
+        },
+        {
+          label: AUTH_LABEL_STATUS,
+          value: authStatus,
+          loading: loadingInfo,
+          isStatus: true,
+        },
+        {
+          label: AUTH_LABEL_DEVICE_TYPE,
+          value: deviceType,
+        },
+        {
+          label: AUTH_LABEL_EXPIRY_DATE,
+          value: formatDisplayDate(expireDate),
+        },
+        {
+          label: AUTH_LABEL_SIP_EXTENSIONS,
+          value: sipExtensions,
+        },
+        {
+          label: AUTH_LABEL_FXS_CHANNELS,
+          value: fxsPorts,
+        },
+        {
+          label: AUTH_LABEL_FXO_CHANNELS,
+          value: maxFxoChannels,
+        },
+        {
+          label: AUTH_LABEL_SIP_TRUNK_CHANNELS,
+          value: maxSipTrunkChannels,
+        },
+        {
+          label: AUTH_LABEL_E1_PRI,
+          value: maxE1,
+        },
+      ];
   return (
     <div style={authorizationPageWrapStyle} data-native-scroll>
       <div style={authorizationPageInnerStyle}>
@@ -732,20 +731,20 @@ const Authorization = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
-          <span>&gt;</span>
-          <span>System Tool</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Authorization
-          </span>
+    <span>{AUTH_BREADCRUMB_ROOT}</span>
+<span>{AUTH_BREADCRUMB_SEPARATOR}</span>
+<span>{AUTH_BREADCRUMB_SECTION}</span>
+<span>{AUTH_BREADCRUMB_SEPARATOR}</span>
+<span style={{ color: C.strongText, fontWeight: 600 }}>
+  {AUTH_PAGE_TITLE}
+</span>
         </div>
 
         {/* ── Content ── */}
         <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
-            <span>Authorization Information</span>
-          </div>
+        <div style={blueBarStyle}>
+  <span>{AUTH_CARD_TITLE}</span>
+</div>
 
           <div
             className="w-full px-5 pt-3 pb-0 flex flex-col items-center"
@@ -758,7 +757,7 @@ const Authorization = () => {
               {rows.map((row) => (
                 <React.Fragment key={row.label}>
            <Tooltip
-  title={tooltips[row.label] || ""}
+  title={AUTH_TOOLTIPS[row.label] || ""}
   {...tooltipProps}
 >
   <span style={labelStyle}>
@@ -794,15 +793,15 @@ const Authorization = () => {
               marginRight: 0,
             }}
           >
-            <Btn
-              type="button"
-              variant="primary"
-              onClick={refreshAll}
-              disabled={busy}
-              style={advancedFormBtnStyle}
-            >
-              {busy ? "Loading…" : "Refresh"}
-            </Btn>
+         <Btn
+  type="button"
+  variant="primary"
+  onClick={refreshAll}
+  disabled={busy}
+  style={advancedFormBtnStyle}
+>
+  {busy ? AUTH_BTN_LOADING : AUTH_BTN_REFRESH}
+</Btn>
           </div>
         </div>
 
@@ -817,8 +816,7 @@ const Authorization = () => {
             overflowX: "auto",
           }}
         >
-          Note - The information above is a summary of your license. For any
-          change, contact your vendor or authorized supplier.
+         {AUTH_LICENSE_NOTE}
         </div>
       </div>
     </div>

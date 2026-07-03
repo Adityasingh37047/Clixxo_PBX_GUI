@@ -1,13 +1,28 @@
 // ConfigFile Page Constants
 export const CONFIG_FILE_TITLE = 'Config File';
+
+export const CONFIG_FILE_BREADCRUMB = [
+  "Maintenance",
+  "System Tool",
+  CONFIG_FILE_TITLE,
+];
+
+export const CONFIG_FILE_HOSTS_VALUE = 'hosts';
+
 export const CONFIG_FILE_OPTIONS = [
   { label: 'SMConfig.ini', value: 'SMConfig.ini' },
   { label: 'ShConfig.ini', value: 'ShConfig.ini' },
   { label: 'Ss7Server.ini', value: 'Ss7Server.ini' },
-  { label: 'hosts', value: 'hosts' }
+  { label: 'hosts', value: CONFIG_FILE_HOSTS_VALUE }
 ];
-export const CONFIG_FILE_EDIT_BUTTON = 'Edit';
-export const CONFIG_FILE_SAVE_BUTTON = 'Save';
+
+export const CONFIG_FILE_TEXTAREA_PLACEHOLDER =
+  "Click to edit configuration content...";
+
+export const CONFIG_FILE_MESSAGE_DEFAULT = { type: "", text: "" };
+export const CONFIG_FILE_MESSAGE_TIMEOUT_MS = 5000;
+
+export const CONFIG_FILE_NETWORK_ERROR = "Network Error";
 
 export const CONFIG_FILE_CONTENT_SMCONFIG = `
 [WATCHDOG]
@@ -140,6 +155,20 @@ export const CONFIG_FILE_CONTENT_MAP = {
   'ShConfig.ini': CONFIG_FILE_CONTENT_SHCONFIG,
   'Ss7Server.ini': CONFIG_FILE_CONTENT_SS7SERVER,
   'SMConfig.ini': CONFIG_FILE_CONTENT_SMCONFIG,
-  'hosts': CONFIG_FILE_CONTENT_HOSTS
+  [CONFIG_FILE_HOSTS_VALUE]: CONFIG_FILE_CONTENT_HOSTS
 };
 
+export const CONFIG_FILE_MESSAGES = {
+  LOAD_SUCCESS: "Hosts file loaded successfully",
+  LOAD_FAILED: "Failed to load hosts file",
+  SAVE_SUCCESS: "Hosts file saved successfully",
+  SAVE_FAILED: "Failed to save hosts file",
+  NETWORK_ERROR: "Network error. Please check your connection.",
+};
+
+export const CONFIG_FILE_STATUS_MESSAGES = {
+  LOADING_FILE: "Loading config file...",
+  SAVING: "Saving...",
+  RESET: "Reset",
+  SAVE_CHANGES: "Save Changes",
+};

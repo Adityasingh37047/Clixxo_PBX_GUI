@@ -2,9 +2,18 @@ import React, { useState, useEffect } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material";
 import {
-  DDOS_FIELDS,
   DDOS_INITIAL_FORM,
   DDOS_INFO_LOG,
+  DDOS_SETTINGS_BREADCRUMB,
+  DDOS_LOCAL_STORAGE_KEY,
+  DDOS_SERVICE_PORTS,
+  DDOS_SIMULATION_IPS,
+  DDOS_CARD_TITLE,
+  DDOS_TOOLTIPS,
+  DDOS_BUTTON_LABELS,
+  DDOS_MESSAGE_DEFAULT,
+  DDOS_MESSAGE_TIMEOUT_MS,
+  DDOS_MESSAGES,
 } from "../../../constants/DDOSSettingsConstants";
 import { Alert, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
@@ -178,21 +187,6 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  webPortAttack:
-    "Protects the system from suspicious or excessive access attempts targeting web management ports.",
-  ftpPortAttack: "Protects the system from suspicious or excessive access attempts targeting FTP ports.",
-  sshPortAttack: "Protects the system from suspicious or excessive access attempts targeting SSH ports.",
-  telnetPortAttack: "Protects the system from suspicious or excessive access attempts targeting TELNET ports.",
-  blacklistValidity: "Specifies how long a blacklisted IP address remains blocked before being automatically removed from the blacklist.",
-  blacklistTime: "Specifies the time duration for which a blacklisted IP address remains blocked.",
-  ftpLimit: "Specifies the maximum number of FTP connections allowed per minute.",
-  sshLimit: "Specifies the maximum number of SSH connections allowed per minute.",
-  telnetLimit: "Specifies the maximum number of TELNET connections allowed per minute.",
-  blacklistValidityTooltip: "Specifies how long a blacklisted IP address remains blocked before being automatically removed from the blacklist.",
-  blacklistTimeTooltip: "Specifies the time duration for which a blacklisted IP address remains blocked.",
-  webLimit: "Specifies the maximum number of WEB connections allowed per minute.",
-};
 
 
 // ── Button Component (same as AccountManage) ─────────────────────────────────
@@ -204,9 +198,9 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
-  form,
+
   component,
-  title,
+ 
 }) => {
   const styles = {
     default: {
@@ -402,18 +396,18 @@ const DDOSSettings = () => {
   const [form, setForm] = useState(DDOS_INITIAL_FORM);
   const [log, setLog] = useState(DDOS_INFO_LOG);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState(DDOS_MESSAGE_DEFAULT);
   const [blacklistedIPs, setBlacklistedIPs] = useState(new Set());
   const [initialized, setInitialized] = useState(false);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+    setTimeout(() => setMessage(DDOS_MESSAGE_DEFAULT), DDOS_MESSAGE_TIMEOUT_MS);
   };
 
   // Load saved form state from localStorage on component mount
   useEffect(() => {
-    const savedForm = localStorage.getItem("ddosSettingsForm");
+    const savedForm = localStorage.getItem(DDOS_LOCAL_STORAGE_KEY);
     if (savedForm) {
       try {
         const parsedForm = JSON.parse(savedForm);
@@ -433,7 +427,7 @@ const DDOSSettings = () => {
   // Save form state to localStorage whenever form changes
   useEffect(() => {
     if (initialized) {
-      localStorage.setItem("ddosSettingsForm", JSON.stringify(form));
+        localStorage.setItem(DDOS_LOCAL_STORAGE_KEY, JSON.stringify(form));
     }
   }, [form, initialized]);
 
@@ -525,7 +519,7 @@ const DDOSSettings = () => {
 
   const simulateAttackDetection = async () => {
     // Simulate detecting attacks and managing blacklist
-    const ports = { web: [80, 443], ftp: [21], ssh: [22], telnet: [23] };
+   
     const serviceLimits = {
       web: form.webPortAttack ? form.webLimit : 0,
       ftp: form.ftpPortAttack ? form.ftpLimit : 0,
@@ -534,18 +528,13 @@ const DDOSSettings = () => {
     };
 
     // Simulate random IP attacks
-    const randomIPs = [
-      "192.168.1.100",
-      "10.0.0.50",
-      "172.16.0.25",
-      "203.0.113.10",
-    ];
+  
 
     for (const [service, limit] of Object.entries(serviceLimits)) {
       if (limit > 0) {
-        const servicePorts = ports[service];
+        const servicePorts = DDOS_SERVICE_PORTS[service];
         const randomIP =
-          randomIPs[Math.floor(Math.random() * randomIPs.length)];
+          DDOS_SIMULATION_IPS[Math.floor(Math.random() * DDOS_SIMULATION_IPS.length)];
         const randomPort =
           servicePorts[Math.floor(Math.random() * servicePorts.length)];
 
@@ -701,10 +690,10 @@ const DDOSSettings = () => {
         simulateAttackDetection();
       }, 2000); // Wait 2 seconds after configuration
 
-      showMessage("success", "DDOS Protection configured successfully!");
+      showMessage("success", DDOS_MESSAGES.configureSuccess);
     } catch (error) {
       console.error("Error configuring DDOS protection:", error);
-      showMessage("error", "Failed to configure DDOS protection");
+      showMessage("error", DDOS_MESSAGES.configureFailed);
     } finally {
       setLoading(false);
     }
@@ -730,10 +719,10 @@ const DDOSSettings = () => {
     setLoading(true);
     try {
       await removeAllDDOSProtection();
-      showMessage("success", "DDOS Protection removed successfully!");
+      showMessage("success", DDOS_MESSAGES.removeSuccess);
     } catch (error) {
       console.error("Error removing DDOS protection:", error);
-      showMessage("error", "Failed to remove DDOS protection");
+      showMessage("error", DDOS_MESSAGES.removeFailed);
     } finally {
       setLoading(false);
     }
@@ -746,19 +735,19 @@ const DDOSSettings = () => {
 
   const handleReset = () => {
     setForm(DDOS_INITIAL_FORM);
-    localStorage.removeItem("ddosSettingsForm"); // Clear saved state
-    showMessage("info", "Form reset to default values");
+    localStorage.removeItem(DDOS_LOCAL_STORAGE_KEY); // Clear saved state
+    showMessage("info", DDOS_MESSAGES.resetSuccess);
   };
 
   const handleSimulateAttack = () => {
     simulateAttackDetection();
-    showMessage("info", "Attack simulation triggered");
+    showMessage("info", DDOS_MESSAGES.simulateTriggered);
   };
 
   const handleClearLogs = () => {
     setLog("");
     setBlacklistedIPs(new Set());
-    showMessage("info", "Logs cleared");
+    showMessage("info", DDOS_MESSAGES.logsCleared);
   };
 
   return (
@@ -769,7 +758,7 @@ const DDOSSettings = () => {
       {message.text && (
         <Alert
           severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
+          onClose={() => setMessage(DDOS_MESSAGE_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -796,19 +785,19 @@ const DDOSSettings = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
-          <span>&gt;</span>
-          <span>System Tool</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            DDOS Settings
-          </span>
+          <span>{DDOS_SETTINGS_BREADCRUMB[0]}</span>
+<span>&gt;</span>
+<span>{DDOS_SETTINGS_BREADCRUMB[1]}</span>
+<span>&gt;</span>
+<span style={{ color: C.strongText, fontWeight: 600 }}>
+  {DDOS_SETTINGS_BREADCRUMB[2]}
+</span>
         </div>
 
         <div style={tableContainerStyle}>
           {/* Header */}
           <div style={blueBarStyle}>
-            <span>DDOS Settings</span>
+            <span>{DDOS_CARD_TITLE}</span>
           </div>
 
           <div className="w-full px-5 pt-3 pb-2 flex flex-col items-center">
@@ -818,7 +807,7 @@ const DDOSSettings = () => {
             >
               {/* Form Fields Grid — centered like Signaling Call Test */}
               <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center">
-                <Tooltip title={tooltips.webPortAttack} {...tooltipProps}>
+                <Tooltip title={DDOS_TOOLTIPS.webPortAttack} {...tooltipProps}>
                   <span style={labelStyle}>WEB Port Attack Protection</span>
                 </Tooltip>
                 <div className="flex items-center gap-2">
@@ -841,7 +830,7 @@ const DDOSSettings = () => {
 
                 {form.webPortAttack && (
                   <>
-                    <Tooltip title={tooltips.webLimit} {...tooltipProps}>
+                    <Tooltip title={DDOS_TOOLTIPS.webLimit} {...tooltipProps}>
                       <span style={labelStyle}>WEB Limit</span>
                     </Tooltip>
                     <input
@@ -860,7 +849,7 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <Tooltip title={tooltips.ftpPortAttack} {...tooltipProps}>
+                <Tooltip title={DDOS_TOOLTIPS.ftpPortAttack} {...tooltipProps}>
                   <span style={labelStyle}>FTP Port Attack Protection</span>
                 </Tooltip>
                 <div className="flex items-center gap-2">
@@ -883,7 +872,7 @@ const DDOSSettings = () => {
 
                 {form.ftpPortAttack && (
                   <>
-                    <Tooltip title={tooltips.ftpLimit} {...tooltipProps}>
+                        <Tooltip title={DDOS_TOOLTIPS.ftpLimit} {...tooltipProps}>
                       <span style={labelStyle}>FTP Limit</span>
                     </Tooltip>
                     <input
@@ -902,7 +891,7 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <Tooltip title={tooltips.sshPortAttack} {...tooltipProps}>
+                <Tooltip title={DDOS_TOOLTIPS.sshPortAttack} {...tooltipProps}>
                   <span style={labelStyle}>SSH Port Attack Protection</span>
                 </Tooltip>
                 <div className="flex items-center gap-2">
@@ -925,7 +914,7 @@ const DDOSSettings = () => {
 
                 {form.sshPortAttack && (
                   <>
-                    <Tooltip title={tooltips.sshLimit} {...tooltipProps}>
+                    <Tooltip title={DDOS_TOOLTIPS.sshLimit} {...tooltipProps}>
                       <span style={labelStyle}>SSH Limit</span>
                     </Tooltip>
                     <input
@@ -944,7 +933,7 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                <Tooltip title={tooltips.telnetPortAttack} {...tooltipProps}>
+                <Tooltip title={DDOS_TOOLTIPS.telnetPortAttack} {...tooltipProps}>
                   <span style={labelStyle}>TELNET Port Attack Protection</span>
                 </Tooltip>
                 <div className="flex items-center gap-2">
@@ -967,7 +956,7 @@ const DDOSSettings = () => {
 
                 {form.telnetPortAttack && (
                   <>
-                    <Tooltip title={tooltips.telnetLimit} {...tooltipProps}>
+                    <Tooltip title={DDOS_TOOLTIPS.telnetLimit} {...tooltipProps}>
                       <span style={labelStyle}>TELNET Limit</span>
                     </Tooltip>
                     <input
@@ -986,7 +975,7 @@ const DDOSSettings = () => {
                   </>
                 )}
 
-                  <Tooltip title={tooltips.blacklistValidity} {...tooltipProps}>
+                      <Tooltip title={DDOS_TOOLTIPS.blacklistValidity} {...tooltipProps}>
                   <span style={labelStyle}>
                   Set Validity of Attacker IP Blacklist
                 </span>
@@ -1009,7 +998,7 @@ const DDOSSettings = () => {
 
                 {form.blacklistValidityType === "inSetTime" && (
                   <>
-                    <Tooltip title={tooltips.blacklistTime} {...tooltipProps}>
+                    <Tooltip title={DDOS_TOOLTIPS.blacklistTime} {...tooltipProps}>
                       <span style={labelStyle}>Time (Min)</span>
                     </Tooltip>
                     <input
@@ -1035,32 +1024,36 @@ const DDOSSettings = () => {
                   className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 pt-2 pb-2"
                   style={{ borderTop: `1px solid ${C.divider}` }}
                 >
-                  <Btn
-                    type="button"
-                    variant="cancel"
-                    onClick={handleReset}
-                    disabled={loading}
-                    style={{ minWidth: 110, height: 34 }}
-                  >
-                    Reset
-                  </Btn>
-                  <Btn
-                    type="submit"
-                    variant="primary"
-                    disabled={loading}
-                    style={{ minWidth: 110, height: 34 }}
-                  >
-                    {loading ? "Configuring..." : "Save"}
-                  </Btn>
-                  <Btn
-                    type="button"
-                    variant="cancel"
-                    onClick={handleSimulateAttack}
-                    disabled={loading}
-                    style={{ minWidth: 110, height: 34 }}
-                  >
-                    Simulate Attack
-                  </Btn>
+                 <Btn
+  type="button"
+  variant="cancel"
+  onClick={handleReset}
+  disabled={loading}
+  style={{ minWidth: 110, height: 34 }}
+>
+  {DDOS_BUTTON_LABELS.RESET}
+</Btn>
+
+<Btn
+  type="submit"
+  variant="primary"
+  disabled={loading}
+  style={{ minWidth: 110, height: 34 }}
+>
+  {loading
+    ? DDOS_BUTTON_LABELS.CONFIGURING
+    : DDOS_BUTTON_LABELS.SAVE}
+</Btn>
+
+<Btn
+  type="button"
+  variant="cancel"
+  onClick={handleSimulateAttack}
+  disabled={loading}
+  style={{ minWidth: 110, height: 34 }}
+>
+  {DDOS_BUTTON_LABELS.SIMULATE_ATTACK}
+</Btn>
                 </div>
                 <div
                   style={{
@@ -1085,7 +1078,7 @@ const DDOSSettings = () => {
                       disabled={loading}
                       style={{ minWidth: 100, height: 28, fontSize: 12 }}
                     >
-                      Clear Logs
+                      {DDOS_BUTTON_LABELS.CLEAR_LOGS}
                     </Btn>
                   </div>
                 </div>
