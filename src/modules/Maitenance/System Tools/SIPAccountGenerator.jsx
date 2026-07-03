@@ -2,11 +2,16 @@ import React, { useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material";
 import {
-  SIP_ACCOUNT_FIELDS,
+  SIP_ACCOUNT_FORM_FIELDS,
   SIP_ACCOUNT_NOTE,
   SIP_ACCOUNT_UPLOAD,
   SIP_ACCOUNT_DOWNLOAD,
   SIP_ACCOUNT_SAVE_BUTTON,
+  SIP_ACCOUNT_MESSAGES,
+  SIP_ACCOUNT_DEFAULT_FORM,
+  SIP_ACCOUNT_TOAST_DEFAULT,
+  SIP_ACCOUNT_TOAST_DURATION,
+  SIP_ACCOUNT_BREADCRUMB,
 } from "../../../constants/SIPAccountGeneratorConstants";
 import { Alert } from "@mui/material";
 // ── Color palette (same as AccountManage) ────────────────────────────────────
@@ -161,12 +166,7 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  sipTrunkNo: "Specifies the SIP trunk number.",
-  registrationPeriod: "Specifies the registration validity period in seconds.",
-  registrationAddress: "Specifies the registration address.",
-  description: "Specifies the description.",
-};
+
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
@@ -176,9 +176,7 @@ const Btn = ({
   style: extraStyle,
   type,
   startIcon,
-  form,
   component,
-  title,
 }) => {
   const styles = {
     default: {
@@ -356,20 +354,17 @@ const blueBarStyle = {
 };
 
 const SIPAccountGenerator = () => {
-  const [form, setForm] = useState({
-    sipTrunkNo: "0",
-    registrationPeriod: "1800",
-    registrationAddress: "",
-    description: "default",
-  });
+  const [form, setForm] = useState(SIP_ACCOUNT_DEFAULT_FORM);
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState(SIP_ACCOUNT_UPLOAD.noFile);
   const fileInputRef = useRef();
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(SIP_ACCOUNT_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => {
+      setToast(SIP_ACCOUNT_TOAST_DEFAULT);
+    }, SIP_ACCOUNT_TOAST_DURATION);
   };
 
   const handleInputChange = (e) => {
@@ -384,21 +379,21 @@ const SIPAccountGenerator = () => {
 
   const handleSave = (e) => {
     e.preventDefault();
-    showToast("SIP Account saved successfully", "success");
+    showToast(SIP_ACCOUNT_MESSAGES.SAVE_SUCCESS, "success");
     // Save logic here
   };
 
   const handleUpload = () => {
     if (!file) {
-      showToast("Please select a file to upload", "error");
+      showToast(SIP_ACCOUNT_MESSAGES.FILE_REQUIRED, "error");
       return;
     }
-    showToast("File uploaded successfully", "success");
+    showToast(SIP_ACCOUNT_MESSAGES.UPLOAD_SUCCESS, "success");
     // Upload logic here
   };
 
   const handleDownload = () => {
-    showToast("Download started", "success");
+    showToast(SIP_ACCOUNT_MESSAGES.DOWNLOAD_STARTED, "success");
     // Download logic here
   };
 
@@ -410,7 +405,7 @@ const SIPAccountGenerator = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(SIP_ACCOUNT_TOAST_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -436,12 +431,12 @@ const SIPAccountGenerator = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{SIP_ACCOUNT_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{SIP_ACCOUNT_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Sip Account Generator
+            {SIP_ACCOUNT_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -449,116 +444,53 @@ const SIPAccountGenerator = () => {
           {/* SIP Account Generator Section */}
           <div style={tableContainerStyle}>
             <div style={blueBarStyle}>
-              <span>SIP Account Generator</span>
+            <span>{SIP_ACCOUNT_BREADCRUMB[2]}</span>
             </div>
             <div className="p-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 {/* Inputs Row */}
-                <div className="flex flex-col md:flex-row flex-wrap gap-6 flex-1">
-                  {/* SIP Trunk No. */}
-                  <div className="flex flex-col gap-1">
-                    <label
-                      htmlFor="sipTrunkNo"
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      <Tooltip title={tooltips.sipTrunkNo} {...tooltipProps}>
-                        <span style={{ color: C.labelText }}>SIP Trunk No.</span>
-                      </Tooltip>
-                    </label>
-                    <input
-                      id="sipTrunkNo"
-                      name="sipTrunkNo"
-                      type="text"
-                      value={form.sipTrunkNo}
-                      onChange={handleInputChange}
-                      placeholder="0"
-                      style={{ ...inputStyle, minWidth: 80 }}
-                      {...inputInteraction}
-                    />
-                  </div>
+            {/* Inputs Row */}
+<div className="flex flex-col md:flex-row flex-wrap gap-6 flex-1">
+  {SIP_ACCOUNT_FORM_FIELDS.map((field) => (
+    <div
+      key={field.name}
+      className={`flex flex-col gap-1 ${
+        field.flex ? "flex-1 min-w-[200px]" : ""
+      }`}
+    >
+      <label
+        htmlFor={field.name}
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.labelText,
+        }}
+      >
+        <Tooltip title={field.tooltip} {...tooltipProps}>
+          <span style={{ color: C.labelText }}>
+            {field.label}
+          </span>
+        </Tooltip>
+      </label>
 
-                  {/* Registration Validity Period(s) */}
-                  <div className="flex flex-col gap-1">
-                    <label
-                      htmlFor="registrationPeriod"
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      <Tooltip title={tooltips.registrationPeriod} {...tooltipProps}>
-                        <span style={{ color: C.labelText }}>Registration Validity Period(s)</span>
-                      </Tooltip>
-                    </label>
-                    <input
-                      id="registrationPeriod"
-                      name="registrationPeriod"
-                      type="text"
-                      value={form.registrationPeriod}
-                      onChange={handleInputChange}
-                      placeholder="1800"
-                      style={{ ...inputStyle, minWidth: 120 }}
-                      {...inputInteraction}
-                    />
-                  </div>
-
-                  {/* Registration Address */}
-                  <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-                    <label
-                      htmlFor="registrationAddress"
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      <Tooltip title={tooltips.registrationAddress} {...tooltipProps}>
-                        <span style={{ color: C.labelText }}>Registration Address</span>
-                      </Tooltip>
-                    </label>
-                    <input
-                      id="registrationAddress"
-                      name="registrationAddress"
-                      type="text"
-                      value={form.registrationAddress}
-                      onChange={handleInputChange}
-                      style={inputStyle}
-                      {...inputInteraction}
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="flex flex-col gap-1">
-                    <label
-                      htmlFor="description"
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      <Tooltip title={tooltips.description} {...tooltipProps}>
-                        <span style={{ color: C.labelText }}>Description</span>
-                      </Tooltip>
-                    </label>
-                    <input
-                      id="description"
-                      name="description"
-                      type="text"
-                      value={form.description}
-                      onChange={handleInputChange}
-                      placeholder="default"
-                      style={{ ...inputStyle, minWidth: 100 }}
-                      {...inputInteraction}
-                    />
-                  </div>
-                </div>
-
+      <input
+        id={field.name}
+        name={field.name}
+        type={field.type}
+        value={form[field.name]}
+        onChange={handleInputChange}
+        placeholder={field.placeholder}
+        style={{
+          ...inputStyle,
+          ...(field.minWidth && {
+            minWidth: field.minWidth,
+          }),
+        }}
+        {...inputInteraction}
+      />
+    </div>
+  ))}
+</div>  
                 {/* Save Button */}
                 <div className="mt-2 lg:mt-5">
                   <Btn

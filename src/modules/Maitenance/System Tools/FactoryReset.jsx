@@ -3,6 +3,13 @@ import {
   FR_TITLE,
   FR_INSTRUCTION,
   FR_BUTTON,
+  FR_BREADCRUMB,
+  FR_CONFIRM,
+  FR_COMMANDS,
+  FR_MESSAGES,
+  FR_STATUS,
+  FR_DEFAULT_TOAST,
+  FR_TOAST_DURATION,
 } from "../../../constants/FactoryResetConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
@@ -220,20 +227,16 @@ const blueBarStyle = {
 
 const FactoryReset = () => {
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(FR_DEFAULT_TOAST);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 5000);
+    setTimeout(() => setToast(FR_DEFAULT_TOAST), FR_TOAST_DURATION);
   };
 
   const handleReset = async () => {
-    if (
-      window.confirm(
-        "If you factory reset the PBX, everything will be erased. Do you want to continue?",
-      )
-    ) {
-      if (window.confirm("Are you absolutely sure?")) {
+    if (window.confirm(FR_CONFIRM.first)) {
+      if (window.confirm(FR_CONFIRM.second)) {
         await performReset();
       }
     }
@@ -243,28 +246,18 @@ const FactoryReset = () => {
     setLoading(true);
     try {
       // Restore astdb from the factory SQL file
-      const cmd = "mysql astdb < /root/clixxo/DB/astdb.sql 2>&1";
+      const cmd = FR_COMMANDS.reset;
       const apiResponse = await postLinuxCmd({ cmd });
 
       if (apiResponse?.response) {
-        showToast(
-          "Factory reset completed. Database astdb has been restored from astdb.sql.",
-          "success",
-        );
+        showToast(FR_MESSAGES.success, "success");
       } else {
         const output = String(apiResponse?.responseData || "").trim();
-        showToast(
-          output || "Factory reset command did not complete successfully.",
-          "error",
-        );
+        showToast(output || FR_MESSAGES.commandFailed, "error");
       }
     } catch (error) {
       console.error("Factory reset error:", error);
-      showToast(
-        error.message ||
-          "Failed to run factory reset. Please check logs on the device.",
-        "error",
-      );
+      showToast(error.message || FR_MESSAGES.resetFailed, "error");
     } finally {
       setLoading(false);
     }
@@ -285,12 +278,12 @@ const FactoryReset = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{FR_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{FR_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Factory Reset
+            {FR_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -298,7 +291,7 @@ const FactoryReset = () => {
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(FR_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 20,
@@ -342,7 +335,7 @@ const FactoryReset = () => {
               disabled={loading}
               style={{ minWidth: 140, height: 38, fontSize: 13 }}
             >
-              {loading ? "Resetting..." : FR_BUTTON}
+              {loading ? FR_STATUS.resetting : FR_BUTTON}
             </Btn>
           </div>
         </div>
@@ -354,7 +347,7 @@ const FactoryReset = () => {
           <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
             <CircularProgress />
             <div className="text-gray-700 text-sm whitespace-pre-line font-medium">
-              Resetting database to factory settings...
+              {FR_STATUS.overlayMessage}
             </div>
           </div>
         </div>

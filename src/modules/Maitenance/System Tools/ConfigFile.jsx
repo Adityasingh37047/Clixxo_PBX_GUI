@@ -2,9 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   CONFIG_FILE_TITLE,
   CONFIG_FILE_OPTIONS,
-  CONFIG_FILE_EDIT_BUTTON,
-  CONFIG_FILE_SAVE_BUTTON,
-  CONFIG_FILE_CONTENT_MAP,
+  CONFIG_FILE_CONTENT_MAP, 
+  CONFIG_FILE_MESSAGES,
+  CONFIG_FILE_STATUS_MESSAGES,
+  CONFIG_FILE_BREADCRUMB,
+  CONFIG_FILE_HOSTS_VALUE,
+  CONFIG_FILE_TEXTAREA_PLACEHOLDER,
+  CONFIG_FILE_MESSAGE_DEFAULT,
+  CONFIG_FILE_MESSAGE_TIMEOUT_MS,
+  CONFIG_FILE_NETWORK_ERROR,
 } from "../../../constants/ConfigFileConstants";
 import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import { Alert, CircularProgress } from "@mui/material";
@@ -374,15 +380,16 @@ const ConfigFile = () => {
     fetch: false,
     save: false,
   });
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const textareaRef = useRef(null);
-  const hasInitialLoadRef = useRef(false);
+  const [message, setMessage] = useState(CONFIG_FILE_MESSAGE_DEFAULT);
 
   // Message handling
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+    setTimeout(() => setMessage(CONFIG_FILE_MESSAGE_DEFAULT), CONFIG_FILE_MESSAGE_TIMEOUT_MS);
   };
+
+  const textareaRef = useRef(null);
+  const hasInitialLoadRef = useRef(false);
 
   // Load hosts file from API
   const loadHostsFile = async () => {
@@ -395,15 +402,15 @@ const ConfigFile = () => {
       const response = await fetchHostsFile();
       if (response.response && response.responseData) {
         setContent(response.responseData);
-        showMessage("success", "Hosts file loaded successfully");
+        showMessage("success", CONFIG_FILE_MESSAGES.LOAD_SUCCESS);
       } else {
-        showMessage("error", "Failed to load hosts file");
+        showMessage("error", CONFIG_FILE_MESSAGES.LOAD_FAILED);
       }
     } catch (error) {
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+      if (error.message === CONFIG_FILE_NETWORK_ERROR) {
+        showMessage("error", CONFIG_FILE_MESSAGES.NETWORK_ERROR);
       } else {
-        showMessage("error", error.message || "Failed to load hosts file");
+        showMessage("error", error.message || CONFIG_FILE_MESSAGES.LOAD_FAILED);
       }
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
@@ -422,17 +429,17 @@ const ConfigFile = () => {
       if (response.message) {
         showMessage(
           "success",
-          response.message || "Hosts file saved successfully",
+          response.message || CONFIG_FILE_MESSAGES.SAVE_SUCCESS,
         );
         setIsEditing(true);
       } else {
-        showMessage("error", "Failed to save hosts file");
+        showMessage("error", CONFIG_FILE_MESSAGES.SAVE_FAILED);
       }
     } catch (error) {
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+      if (error.message === CONFIG_FILE_NETWORK_ERROR) {
+        showMessage("error", CONFIG_FILE_MESSAGES.NETWORK_ERROR);
       } else {
-        showMessage("error", error.message || "Failed to save hosts file");
+        showMessage("error", error.message || CONFIG_FILE_MESSAGES.SAVE_FAILED);
       }
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
@@ -441,7 +448,7 @@ const ConfigFile = () => {
 
   // Load hosts file on component mount when hosts is selected
   useEffect(() => {
-    if (selectedFile === "hosts" && !hasInitialLoadRef.current) {
+    if (selectedFile === CONFIG_FILE_HOSTS_VALUE && !hasInitialLoadRef.current) {
       hasInitialLoadRef.current = true;
       loadHostsFile();
     }
@@ -451,7 +458,7 @@ const ConfigFile = () => {
     const value = e.target.value;
     setSelectedFile(value);
 
-    if (value === "hosts") {
+    if (value === CONFIG_FILE_HOSTS_VALUE) {
       loadHostsFile();
     } else {
       setContent(CONFIG_FILE_CONTENT_MAP[value] || "");
@@ -466,7 +473,7 @@ const ConfigFile = () => {
   };
 
   const handleSave = () => {
-    if (selectedFile === "hosts") {
+    if (selectedFile === CONFIG_FILE_HOSTS_VALUE) {
       saveHostsFile();
     } else {
       setIsEditing(true);
@@ -474,7 +481,7 @@ const ConfigFile = () => {
   };
 
   const handleReset = () => {
-    if (selectedFile === "hosts") {
+    if (selectedFile === CONFIG_FILE_HOSTS_VALUE) {
       loadHostsFile();
     } else {
       setContent(CONFIG_FILE_CONTENT_MAP[selectedFile] || "");
@@ -489,7 +496,7 @@ const ConfigFile = () => {
       {message.text && (
         <Alert
           severity={message.type}
-          onClose={() => setMessage({ type: "", text: "" })}
+          onClose={() => setMessage(CONFIG_FILE_MESSAGE_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -515,12 +522,12 @@ const ConfigFile = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{CONFIG_FILE_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{CONFIG_FILE_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Config File
+            {CONFIG_FILE_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -555,7 +562,7 @@ const ConfigFile = () => {
           </div>
 
           <div className="relative">
-              {loading.fetch && selectedFile === "hosts" && (
+              {loading.fetch && selectedFile === CONFIG_FILE_HOSTS_VALUE && (
                 <div
                   className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
                   style={{ backdropFilter: "blur(2px)" }}
@@ -566,7 +573,7 @@ const ConfigFile = () => {
                   >
                     <CircularProgress size={24} style={{ color: C.primary }} />
                     <span className="text-gray-700 font-medium">
-                      Loading config file...
+                      {CONFIG_FILE_STATUS_MESSAGES.LOADING_FILE}
                     </span>
                   </div>
                 </div>
@@ -588,7 +595,7 @@ const ConfigFile = () => {
                   color: C.valueText,
                   lineHeight: "1.6",
                 }}
-                placeholder="Click to edit configuration content..."
+                placeholder={CONFIG_FILE_TEXTAREA_PLACEHOLDER}
               />
           </div>
 
@@ -609,7 +616,7 @@ const ConfigFile = () => {
               }
               style={footerBtnStyle}
             >
-              {loading.save ? "Saving..." : "Save Changes"}
+              {loading.save ? CONFIG_FILE_STATUS_MESSAGES.SAVING : CONFIG_FILE_STATUS_MESSAGES.SAVE_CHANGES}
             </Btn>
             <Btn
               variant="cancel"
@@ -617,7 +624,7 @@ const ConfigFile = () => {
               disabled={loading.fetch || loading.save}
               style={footerBtnStyle}
             >
-              Reset
+              {CONFIG_FILE_STATUS_MESSAGES.RESET}
             </Btn>
           </div>
         </div>

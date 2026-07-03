@@ -4,6 +4,17 @@ import { Alert } from "@mui/material";
 import {
   RESTART_SECTIONS,
   RESTART_BUTTON_LABEL,
+  RESTART_BREADCRUMB,
+  RESTART_CONFIRM,
+  RESTART_MESSAGES,
+  RESTART_DEFAULT_TOAST,
+  RESTART_TOAST_DURATION,
+  RESTART_ERROR_HIDE_MS,
+  RESTART_TIMINGS,
+  RESTART_API,
+  RESTART_ROUTES,
+  RESTART_NETWORK_ERRORS,
+  RESTART_CONNECTION_CODES,
 } from "../../../constants/RestartConstants";
 import {
   systemRestart,
@@ -211,19 +222,19 @@ const blueBarStyle = {
 const Restart = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(RESTART_DEFAULT_TOAST);
   const [loadingType, setLoadingType] = useState(""); // 'system' or 'service'
   const [progressMessage, setProgressMessage] = useState("");
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(RESTART_DEFAULT_TOAST), RESTART_TOAST_DURATION);
   };
 
   // Auto-hide error after 5 seconds
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => setError(""), 5000);
+      const timer = setTimeout(() => setError(""), RESTART_ERROR_HIDE_MS);
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -311,9 +322,9 @@ const Restart = () => {
       : protocol === "https:"
         ? ":443"
         : ":80";
-    const url = `${protocol}//${ip}${port}/api/service-ping`;
+    const url = `${protocol}//${ip}${port}${RESTART_API.servicePingPath}`;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const timeoutId = setTimeout(() => controller.abort(), RESTART_TIMINGS.pingTimeoutMs);
     try {
       const res = await fetch(url, {
         method: "GET",
@@ -353,21 +364,17 @@ const Restart = () => {
 
   const handleRestart = async (sectionKey) => {
     if (sectionKey === "system") {
-      const confirmed = window.confirm(
-        "Are you sure you want to restart the System?",
-      );
+      const confirmed = window.confirm(RESTART_CONFIRM.system);
       if (!confirmed) return;
     } else if (sectionKey === "service") {
-      const confirmed = window.confirm(
-        "Are you sure you want to restart this Service?",
-      );
+      const confirmed = window.confirm(RESTART_CONFIRM.service);
       if (!confirmed) return;
     }
     setError("");
     if (sectionKey === "system") {
       setLoading(true);
       setLoadingType("system");
-      setProgressMessage("System is restarting...");
+      setProgressMessage(RESTART_MESSAGES.systemRestarting);
       let pingTargets = [];
       try {
         const ips = await getDeviceIPs();
@@ -380,21 +387,21 @@ const Restart = () => {
           const msg = apiError.message || "";
           const is500 = status >= 500;
           const isConnectionError =
-            code === "ECONNRESET" ||
-            code === "ETIMEDOUT" ||
-            code === "ECONNABORTED" ||
-            msg.includes("Network Error") ||
-            msg.includes("Failed to fetch") ||
-            msg.includes("timeout");
+            code === RESTART_CONNECTION_CODES.ECONNRESET ||
+            code === RESTART_CONNECTION_CODES.ETIMEDOUT ||
+            code === RESTART_CONNECTION_CODES.ECONNABORTED ||
+            msg.includes(RESTART_NETWORK_ERRORS.networkError) ||
+            msg.includes(RESTART_NETWORK_ERRORS.failedToFetch) ||
+            msg.includes(RESTART_NETWORK_ERRORS.timeout);
           if (is500 || isConnectionError) {
             // Assume reboot was initiated
           } else {
             console.error("System restart API error:", apiError);
-            let errorMessage = "Failed to initiate system restart.";
+            let errorMessage = RESTART_MESSAGES.systemRestartFailed;
             if (status === 401 || status === 403)
-              errorMessage = "Permission denied.";
+              errorMessage = RESTART_MESSAGES.permissionDenied;
             else if (status === 404)
-              errorMessage = "Restart endpoint not found.";
+              errorMessage = RESTART_MESSAGES.endpointNotFound;
             else if (apiError.message) errorMessage = apiError.message;
             setError(errorMessage);
             setLoading(false);
@@ -403,22 +410,20 @@ const Restart = () => {
             return;
           }
         }
-        setProgressMessage("Waiting for device to come back online...");
+        setProgressMessage(RESTART_MESSAGES.waitingOnline);
         setTimeout(async () => {
           let result = { success: false, respondedIp: null };
-          for (let i = 0; i < 48; i++) {
+          for (let i = 0; i < RESTART_TIMINGS.maxPollAttempts; i++) {
             try {
               result = await pingAllTargets(pingTargets);
               if (result.success) break;
             } catch (e) {
               // continue
             }
-            await new Promise((res) => setTimeout(res, 5000));
+            await new Promise((res) => setTimeout(res, RESTART_TIMINGS.pollIntervalMs));
           }
           if (result.success) {
-            setProgressMessage(
-              "Device is back online. Redirecting to login...",
-            );
+            setProgressMessage(RESTART_MESSAGES.backOnline);
             const protocol = window.location.protocol;
             const isSameHost =
               (result.respondedIp || "") === window.location.hostname;
@@ -429,24 +434,20 @@ const Restart = () => {
               : protocol === "https:"
                 ? ":443"
                 : ":80";
-            const loginUrl = `${protocol}//${result.respondedIp}${portPart}/login`;
+            const loginUrl = `${protocol}//${result.respondedIp}${portPart}${RESTART_ROUTES.login}`;
             setTimeout(() => {
               window.location.href = loginUrl;
-            }, 3000);
+            }, RESTART_TIMINGS.redirectDelayMs);
           } else {
             setLoading(false);
             setLoadingType("");
             setProgressMessage("");
-            setError(
-              "Device did not come back online. Please check your network or try again later.",
-            );
+            setError(RESTART_MESSAGES.deviceOffline);
           }
-        }, 5000);
+        }, RESTART_TIMINGS.pollInitialDelayMs);
       } catch (error) {
         console.error("System restart error:", error);
-        setError(
-          "Failed to get device info or start restart. Please try again.",
-        );
+        setError(RESTART_MESSAGES.deviceInfoFailed);
         setLoading(false);
         setLoadingType("");
         setProgressMessage("");
@@ -454,30 +455,28 @@ const Restart = () => {
     } else if (sectionKey === "service") {
       setLoading(true);
       setLoadingType("service");
-      setProgressMessage("Restarting service...");
+      setProgressMessage(RESTART_MESSAGES.restartingService);
       try {
         await serviceRestart();
         setLoading(false);
         setLoadingType("");
         setProgressMessage("");
-        showToast("Service restart successful");
+        showToast(RESTART_MESSAGES.serviceRestartSuccess);
       } catch (error) {
         console.error("Service restart error:", error);
-        let errorMessage = "Failed to restart service.";
+        let errorMessage = RESTART_MESSAGES.serviceRestartFailed;
         if (
-          error.code === "ECONNABORTED" ||
-          error.message?.includes("timeout")
+          error.code === RESTART_CONNECTION_CODES.ECONNABORTED ||
+          error.message?.includes(RESTART_NETWORK_ERRORS.timeout)
         ) {
-          errorMessage = "Service restart timed out. Please try again.";
+          errorMessage = RESTART_MESSAGES.serviceRestartTimeout;
         } else if (error.response?.status >= 500) {
-          errorMessage =
-            "Server error during service restart. Please try again later.";
+          errorMessage = RESTART_MESSAGES.serviceRestartServerError;
         } else if (
-          error.message?.includes("Network Error") ||
-          error.message?.includes("Failed to fetch")
+          error.message?.includes(RESTART_NETWORK_ERRORS.networkError) ||
+          error.message?.includes(RESTART_NETWORK_ERRORS.failedToFetch)
         ) {
-          errorMessage =
-            "Server is not connected. Please check your connection.";
+          errorMessage = RESTART_MESSAGES.serverNotConnected;
         } else if (error.message) {
           errorMessage = error.message;
         }
@@ -505,18 +504,20 @@ const Restart = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{RESTART_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{RESTART_BREADCRUMB[1]}</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Restart</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {RESTART_BREADCRUMB[2]}
+          </span>
         </div>
 
         {/* Global Toast */}
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(RESTART_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 16,
@@ -613,8 +614,8 @@ const Restart = () => {
             >
               {progressMessage ||
                 (loadingType === "system"
-                  ? "System is restarting..."
-                  : "Service is restarting...")}
+                  ? RESTART_MESSAGES.systemRestarting
+                  : RESTART_MESSAGES.serviceRestartingOverlay)}
             </div>
             <div
               className="loader"

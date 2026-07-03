@@ -2,12 +2,20 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material";
 import {
-  SCTRACK_TITLE,
   SCTRACK_RADIO_OPTIONS,
   SCTRACK_LABELS,
   SCTRACK_BUTTONS,
   SCTRACK_LOG_CANDIDATES,
   SCTRACK_POLL_MS,
+  SCTRACK_MESSAGES,
+  SCTRACK_ASTERISK_COMMANDS,
+  SCTRACK_LINUX_COMMANDS,
+  SCTRACK_CMD_RESULTS,
+  SCTRACK_DEFAULT_TOAST,
+  SCTRACK_TOAST_DURATION,
+  SCTRACK_BREADCRUMB,
+  SCTRACK_TRACE_HEADERS,
+  SCTRACK_TOOLTIPS,
 } from "../../../constants/SignalingCallTrackConstants";
 import { postAsteriskCLI, postLinuxCmd } from "../../../api/apiService";
 import Radio from "@mui/material/Radio";
@@ -167,12 +175,6 @@ const inputStyle = systemToolsFieldInputStyleWhite;
         },
       },
     },
-  };
-
-  const tooltips = {
-    filterType: "Specifies the filter type.",
-    filterValue: "Specifies the filter value.",
-    trackMessage: "Specifies the track message.",
   };
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
@@ -388,9 +390,9 @@ const applyTrackFilter = (text, type, value) => {
 const resolveAsteriskLogPath = async () => {
   for (const path of SCTRACK_LOG_CANDIDATES) {
     const res = await postLinuxCmd({
-      cmd: `test -r '${path}' && echo OK || echo NO`,
+      cmd: SCTRACK_LINUX_COMMANDS.CHECK_READABLE(path),
     });
-    if (extractCmdOutput(res) === "OK") return path;
+    if (extractCmdOutput(res) === SCTRACK_CMD_RESULTS.OK) return path;
   }
   return SCTRACK_LOG_CANDIDATES[0];
 };
@@ -419,11 +421,11 @@ const SignalingCallTrack = () => {
   const [trackMessage, setTrackMessage] = useState("");
   const [isTracking, setIsTracking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(SCTRACK_DEFAULT_TOAST);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(SCTRACK_DEFAULT_TOAST), SCTRACK_TOAST_DURATION);
   };
 
   const rawMessageRef = useRef("");
@@ -455,7 +457,7 @@ const SignalingCallTrack = () => {
 
     try {
       const wcRes = await postLinuxCmd({
-        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+        cmd: SCTRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPath),
       });
       const lineCount =
         parseInt(extractCmdOutput(wcRes), 10) || 0;
@@ -463,7 +465,7 @@ const SignalingCallTrack = () => {
 
       const newLines = lineCount - lineCountRef.current;
       const tailRes = await postLinuxCmd({
-        cmd: `tail -n ${newLines} '${logPath}' 2>/dev/null`,
+        cmd: SCTRACK_LINUX_COMMANDS.TAIL_LINES(newLines, logPath),
       });
       const chunk = extractCmdOutput(tailRes);
       lineCountRef.current = lineCount;
@@ -495,11 +497,11 @@ const SignalingCallTrack = () => {
       logPathRef.current = logPath;
 
       const wcRes = await postLinuxCmd({
-        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+        cmd: SCTRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPath),
       });
       lineCountRef.current = parseInt(extractCmdOutput(wcRes), 10) || 0;
 
-      await runAsteriskCmd("pjsip set logger on");
+      await runAsteriskCmd(SCTRACK_ASTERISK_COMMANDS.LOGGER_ON);
 
       stopPolling();
       pollRef.current = setInterval(() => {
@@ -508,12 +510,12 @@ const SignalingCallTrack = () => {
 
       await pollLogChunk();
       setIsTracking(true);
-      showToast("Call track started.", "success");
+      showToast(SCTRACK_MESSAGES.START_SUCCESS, "success");
     } catch (error) {
       console.error("Start call track error:", error);
       stopPolling();
       setIsTracking(false);
-      showToast(error.message || "Failed to start call track.", "error");
+      showToast(error.message || SCTRACK_MESSAGES.START_FAILED, "error");
     } finally {
       setBusy(false);
     }
@@ -525,15 +527,15 @@ const SignalingCallTrack = () => {
     try {
       stopPolling();
       try {
-        await runAsteriskCmd("pjsip set logger off");
+        await runAsteriskCmd(SCTRACK_ASTERISK_COMMANDS.LOGGER_OFF);
       } catch (error) {
         console.warn("pjsip set logger off:", error);
       }
       setIsTracking(false);
-      showToast("Call track stopped.", "success");
+      showToast(SCTRACK_MESSAGES.STOP_SUCCESS, "success");
     } catch (error) {
       console.error("Stop call track error:", error);
-      showToast(error.message || "Failed to stop call track.", "error");
+      showToast(error.message || SCTRACK_MESSAGES.STOP_FAILED, "error");
     } finally {
       setBusy(false);
     }
@@ -546,9 +548,9 @@ const SignalingCallTrack = () => {
     };
     refreshDisplay();
     if (filterType === "none" || !filterValue.trim()) {
-      showToast("Filter cleared. Showing all messages.", "info");
+      showToast(SCTRACK_MESSAGES.FILTER_CLEARED, "info");
     } else {
-      showToast(`Filter applied (${filterType}: ${filterValue.trim()}).`, "success");
+      showToast(SCTRACK_MESSAGES.FILTER_APPLIED(filterType, filterValue.trim()), "success");
     }
   };
 
@@ -557,20 +559,20 @@ const SignalingCallTrack = () => {
     setTrackMessage("");
     if (isTracking) {
       postLinuxCmd({
-        cmd: `wc -l < '${logPathRef.current}' 2>/dev/null || echo 0`,
+        cmd: SCTRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPathRef.current),
       })
         .then((res) => {
           lineCountRef.current = parseInt(extractCmdOutput(res), 10) || 0;
         })
         .catch(() => {});
     }
-    showToast("Track message cleared.", "info");
+    showToast(SCTRACK_MESSAGES.CLEAR_SUCCESS, "info");
   };
 
   const handleDownload = () => {
     const content = trackMessage || rawMessageRef.current;
     if (!content.trim()) {
-      showToast("No track message to download.", "warning");
+      showToast(SCTRACK_MESSAGES.DOWNLOAD_EMPTY, "warning");
       return;
     }
     const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
@@ -583,14 +585,14 @@ const SignalingCallTrack = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    showToast("Track message downloaded.", "success");
+    showToast(SCTRACK_MESSAGES.DOWNLOAD_SUCCESS, "success");
   };
 
   useEffect(() => {
     return () => {
       stopPolling();
       if (isTrackingRef.current) {
-        postAsteriskCLI({ command: "pjsip set logger off" }).catch(() => {});
+        postAsteriskCLI({ command: SCTRACK_ASTERISK_COMMANDS.LOGGER_OFF }).catch(() => {});
       }
     };
   }, [stopPolling]);
@@ -601,7 +603,7 @@ const SignalingCallTrack = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(SCTRACK_DEFAULT_TOAST)}
           sx={{
             position: "fixed",
             top: 20,
@@ -628,18 +630,18 @@ const SignalingCallTrack = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{SCTRACK_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{SCTRACK_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Signaling Call Track
+            {SCTRACK_BREADCRUMB[2]}
           </span>
         </div>
 
         <div style={tableContainerStyle}>
           <div style={{ ...blueBarStyle, justifyContent: "left" }}>
-            <span>{SCTRACK_TITLE}</span>
+            <span>{SCTRACK_TRACE_HEADERS.title}</span>
           </div>
 
           <div style={{ padding: "24px 20px" }}>
@@ -683,7 +685,7 @@ const SignalingCallTrack = () => {
                           fontWeight: 500,
                         }}
                       >
-                        <Tooltip title={tooltips.filterType} {...tooltipProps}>
+                        <Tooltip title={SCTRACK_TOOLTIPS.FILTER_TYPE} {...tooltipProps}>
                           <span style={{ color: C.labelText }}>{opt.label}</span>
                         </Tooltip>
                       </span>
@@ -768,7 +770,7 @@ const SignalingCallTrack = () => {
               <label
                 style={{ fontSize: 14, color: C.labelText, fontWeight: 600 }}
               >
-                <Tooltip title={tooltips.trackMessage} {...tooltipProps}>
+                <Tooltip title={SCTRACK_TOOLTIPS.TRACK_MESSAGE} {...tooltipProps}>
                   <span style={{ color: C.labelText }}>{SCTRACK_LABELS.trackMessage}</span>
                 </Tooltip>
               </label>

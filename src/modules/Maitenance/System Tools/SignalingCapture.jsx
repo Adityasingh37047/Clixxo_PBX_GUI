@@ -13,6 +13,12 @@ import {
   SC_E1_RECORD_PREFIX,
   SC_CAPTURE_LOG_PATH,
   SC_DATA_DIR,
+  SC_DEFAULT_TOAST,
+  SC_TOAST_DURATION,
+  SC_DEFAULTS,
+  SC_FALLBACK_NETWORK_OPTIONS,
+  SC_BREADCRUMB,
+  SC_TOOLTIPS,
 } from "../../../constants/SignalingCaptureConstants";
 import { Checkbox, Alert } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
@@ -167,18 +173,7 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  networkInterface:
-    "Select the network interface to capture packet data on. Choose All LAN to monitor every interface, or a specific LAN port to limit capture to that network.",
-  captureSyslog:
-    "Limit packet capture to syslog traffic only. When enabled, only packets sent to or from the configured syslog destination are recorded.",
-  syslogDest:
-    "IP address of the syslog server used to filter captured traffic. Capture includes UDP and TCP traffic on port 514 to or from this address.",
-  pcmTs:
-    "Select the PCM trunk and E1 time slot to record signaling data from. PCM identifies the physical trunk; the time slot specifies which channel on that trunk to monitor.",
-  e1PcmTs:
-    "Select the PCM trunk and E1 time slot for two-way E1 signaling capture. PCM identifies the physical trunk; the time slot specifies which channel to record in both directions.",
-};
+
 
 const FieldLabel = ({ tooltipKey, className, style, children }) => {
   const label = (
@@ -187,10 +182,10 @@ const FieldLabel = ({ tooltipKey, className, style, children }) => {
     </label>
   );
 
-  if (!tooltips[tooltipKey]) return label;
+  if (!SC_TOOLTIPS[tooltipKey]) return label;
 
   return (
-    <Tooltip title={tooltips[tooltipKey]} {...tooltipProps}>
+    <Tooltip title={SC_TOOLTIPS[tooltipKey]} {...tooltipProps}>
       {label}
     </Tooltip>
   );
@@ -436,9 +431,9 @@ const emptySlotSessions = () => ({ ts: [null, null], e1: [null, null] });
 
 const SignalingCapture = () => {
   // Data Capture state
-  const [network, setNetwork] = useState("all");
+  const [network, setNetwork] = useState(SC_DEFAULTS.NETWORK);
   const [syslogEnabled, setSyslogEnabled] = useState(false);
-  const [syslogDest, setSyslogDest] = useState("192.168.0.254");
+  const [syslogDest, setSyslogDest] = useState(SC_DEFAULTS.SYSLOG_DESTINATION);
 
   // Network interfaces state
   const [networkOptions, setNetworkOptions] = useState([]);
@@ -450,7 +445,7 @@ const SignalingCapture = () => {
   const [captureProcessId, setCaptureProcessId] = useState(null);
   const [captureFileName, setCaptureFileName] = useState("");
   const [captureStatus, setCaptureStatus] = useState("");
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(SC_DEFAULT_TOAST);
 
   const slotSessionRef = useRef(emptySlotSessions());
   const [slotRecording, setSlotRecording] = useState({
@@ -464,7 +459,7 @@ const SignalingCapture = () => {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(SC_DEFAULT_TOAST), SC_TOAST_DURATION);
   };
 
   const isAnySlotRecording = () =>
@@ -769,9 +764,8 @@ const SignalingCapture = () => {
               return aOrder - bOrder;
             });
 
-          // Add "All LAN" option at the beginning
           const options = [
-            { value: "all", label: "All LAN", ip: "" },
+            SC_FALLBACK_NETWORK_OPTIONS[0],
             ...filteredInterfaces,
           ];
 
@@ -780,11 +774,7 @@ const SignalingCapture = () => {
       } catch (error) {
         console.error("Error fetching network interfaces:", error);
         // Fallback to default options
-        setNetworkOptions([
-          { value: "all", label: "All LAN", ip: "" },
-          { value: "eth0", label: "LAN 1", ip: "" },
-          { value: "eth1", label: "LAN 2", ip: "" },
-        ]);
+        setNetworkOptions(SC_FALLBACK_NETWORK_OPTIONS);
       } finally {
         setLoading(false);
       }
@@ -799,7 +789,7 @@ const SignalingCapture = () => {
 
     try {
       let interfaceName = "";
-      if (network === "all") {
+      if (network === SC_DEFAULTS.NETWORK) {
         interfaceName = "any";
       } else if (network === "eth0") {
         interfaceName = "eth0";
@@ -861,8 +851,8 @@ const SignalingCapture = () => {
         setCaptureProcessId(pid);
         setIsCapturing(true);
         const lanDisplay =
-          network === "all"
-            ? "All LAN"
+          network === SC_DEFAULTS.NETWORK
+            ? SC_FALLBACK_NETWORK_OPTIONS[0].label
             : network === "eth0"
               ? "LAN 1"
               : network === "eth1"
@@ -996,7 +986,7 @@ const SignalingCapture = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(SC_DEFAULT_TOAST)}
           sx={{
             position: "fixed",
             top: 20,
@@ -1021,12 +1011,12 @@ const SignalingCapture = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{SC_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{SC_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Signaling Capture
+            {SC_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -1084,7 +1074,7 @@ const SignalingCapture = () => {
                       disabled={!isCapturing || isStopping}
                       style={{ minWidth: 100, height: 33, fontSize: 13 }}
                     >
-                      {isStopping ? "Please wait…" : SC_BUTTONS.stop}
+                      {isStopping ? SC_BUTTONS.pleaseWait : SC_BUTTONS.stop}
                     </Btn>
                   </div>
                   {captureStatus && (
@@ -1306,7 +1296,7 @@ const SignalingCapture = () => {
                     disabled={!slotRecording.ts[i] || slotStopping.ts[i]}
                     style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
-                    {slotStopping.ts[i] ? "Please wait…" : SC_BUTTONS.stop}
+                    {slotStopping.ts[i] ? SC_BUTTONS.pleaseWait : SC_BUTTONS.stop}
                   </Btn>
                 </div>
               </div>
@@ -1408,7 +1398,7 @@ const SignalingCapture = () => {
                     disabled={!slotRecording.e1[i] || slotStopping.e1[i]}
                     style={{ minWidth: 100, height: 33, fontSize: 13 }}
                   >
-                    {slotStopping.e1[i] ? "Please wait…" : SC_BUTTONS.stop}
+                    {slotStopping.e1[i] ? SC_BUTTONS.pleaseWait : SC_BUTTONS.stop}
                   </Btn>
                 </div>
               </div>

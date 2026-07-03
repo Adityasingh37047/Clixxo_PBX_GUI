@@ -36,3 +36,69 @@ export const SCT_BUTTONS = {
 
 // Trace label
 export const SCT_TRACE_LABEL = 'Signaling Trace';
+
+export const SCT_MESSAGES = {
+  calledIdRequired: 'CalledID is required to start the test.',
+  signalingFinished: 'Signaling call test finished.',
+  signalingStarted: 'Signaling call test started.',
+  startFailed: 'Failed to start signaling call test.',
+  originateFailed: 'Originate failed.',
+  originateRequestSent: 'Originate request sent.',
+  formCleared: 'Form and trace cleared.',
+  sendingOriginate: 'Sending test originate request...',
+  captureEnded: '=== Test capture ended ===',
+  unknownError: 'Unknown error',
+  failedToStartTest: 'Failed to start test.',
+  starting: 'Starting...',
+};
+export const SCT_TOOLTIPS = {
+  testType: 'Specifies the test type.',
+  trunkGroup: 'Specifies the SIP trunk group.',
+  callerId: 'Specifies the caller ID.',
+  calledId: 'Specifies the called ID.',
+  originalCallee: 'Specifies the original callee ID.',
+  trace: 'Displays signaling trace information.',
+};
+export const SCT_BREADCRUMBS = [
+  'Maintenance',
+  'System Tool',
+  SCT_TITLE,
+];
+export const SCT_DEFAULTS = {
+  toast: {
+    msg: '',
+    type: 'success',
+  },
+
+  toastTimeout: 3500,
+};
+export const SCT_COMMANDS = {
+  loggerOn: 'pjsip set logger on',
+  loggerOff: 'pjsip set logger off',
+
+  checkReadable: (path) =>
+    `test -r '${path}' && echo OK || echo NO`,
+
+  countLines: (path) =>
+    `wc -l < '${path}' 2>/dev/null || echo 0`,
+
+  tailLines: (count, path) =>
+    `tail -n ${count} '${path}' 2>/dev/null`,
+};
+
+export const SCT_LOG_MESSAGES = {
+  pollError: 'Signaling call test poll error:',
+  trunkLoadError: 'Failed to load SIP trunk groups:',
+  signalingError: 'Signaling call test error:',
+};
+
+export const SCT_TRACE_HEADERS = {
+  title: SCT_TITLE,
+  time: 'Time',
+  testType: 'Test Type',
+  trunkGroup: 'SIP Trunk Group',
+  callerId: 'CallerID',
+  calledId: 'CalledID',
+  originalCallee: 'Original CalleeID',
+  empty: '(empty)',
+};

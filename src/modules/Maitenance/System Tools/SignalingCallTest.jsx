@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material";
 import {
-  SCT_TITLE,
   SCT_LABELS,
   SCT_TEST_TYPE_OPTIONS,
   SCT_TRUNK_GROUP_OPTIONS,
@@ -11,6 +10,13 @@ import {
   SCT_LOG_CANDIDATES,
   SCT_POLL_MS,
   SCT_POLL_DURATION_MS,
+  SCT_MESSAGES,
+  SCT_TOOLTIPS,
+  SCT_BREADCRUMBS,
+  SCT_DEFAULTS,
+  SCT_COMMANDS,
+  SCT_LOG_MESSAGES,
+  SCT_TRACE_HEADERS,
 } from "../../../constants/SignalingCallTestConstants";
 import {
   postAsteriskCLI,
@@ -175,14 +181,6 @@ const selectStyle = systemToolsFieldSelectStyleWhite;
         },
       },
     },
-  };
-
-  const tooltips = {
-    testType: "Specifies the test type.",
-    trunkGroup: "Specifies the SIP trunk group.",
-    callerId: "Specifies the caller ID.",
-    calledId: "Specifies the called ID.",
-    originalCallee: "Specifies the original callee ID.",
   };
 
 const Btn = ({
@@ -371,7 +369,7 @@ const extractCmdOutput = (res) =>
 const resolveAsteriskLogPath = async () => {
   for (const path of SCT_LOG_CANDIDATES) {
     const res = await postLinuxCmd({
-      cmd: `test -r '${path}' && echo OK || echo NO`,
+      cmd: SCT_COMMANDS.checkReadable(path),
     });
     if (extractCmdOutput(res) === "OK") return path;
   }
@@ -398,7 +396,7 @@ const SignalingCallTest = () => {
   const [trace, setTrace] = useState("");
   const [busy, setBusy] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(SCT_DEFAULTS.toast);
 
   const logPathRef = useRef("");
   const lineCountRef = useRef(0);
@@ -408,7 +406,7 @@ const SignalingCallTest = () => {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(() => setToast(SCT_DEFAULTS.toast), SCT_DEFAULTS.toastTimeout);
   };
 
   const appendTrace = useCallback((chunk) => {
@@ -427,7 +425,7 @@ const SignalingCallTest = () => {
     }
     if (isRunningRef.current) {
       try {
-        await postAsteriskCLI({ command: "pjsip set logger off" });
+        await postAsteriskCLI({ command: SCT_COMMANDS.loggerOff });
       } catch (_) {}
     }
     isRunningRef.current = false;
@@ -440,20 +438,20 @@ const SignalingCallTest = () => {
 
     try {
       const wcRes = await postLinuxCmd({
-        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+        cmd: SCT_COMMANDS.countLines(logPath),
       });
       const lineCount = parseInt(extractCmdOutput(wcRes), 10) || 0;
       if (lineCount <= lineCountRef.current) return;
 
       const newLines = lineCount - lineCountRef.current;
       const tailRes = await postLinuxCmd({
-        cmd: `tail -n ${newLines} '${logPath}' 2>/dev/null`,
+        cmd: SCT_COMMANDS.tailLines(newLines, logPath),
       });
       const chunk = extractCmdOutput(tailRes);
       lineCountRef.current = lineCount;
       appendTrace(chunk);
     } catch (error) {
-      console.error("Signaling call test poll error:", error);
+      console.error(SCT_LOG_MESSAGES.pollError, error);
     }
   }, [appendTrace]);
 
@@ -489,7 +487,7 @@ const SignalingCallTest = () => {
           );
         }
       } catch (error) {
-        console.warn("Failed to load SIP trunk groups:", error);
+        console.warn(SCT_LOG_MESSAGES.trunkLoadError, error);
       }
     };
 
@@ -501,7 +499,7 @@ const SignalingCallTest = () => {
       if (pollRef.current) clearInterval(pollRef.current);
       if (pollStopRef.current) clearTimeout(pollStopRef.current);
       if (isRunningRef.current) {
-        postAsteriskCLI({ command: "pjsip set logger off" }).catch(() => {});
+        postAsteriskCLI({ command: SCT_COMMANDS.loggerOff }).catch(() => {});
       }
     };
   }, []);
@@ -514,7 +512,7 @@ const SignalingCallTest = () => {
     const original = originalCallee.trim();
 
     if (!called) {
-      showToast("CalledID is required to start the test.", "error");
+      showToast(SCT_MESSAGES.calledIdRequired, "error");
       return;
     }
 
@@ -522,13 +520,13 @@ const SignalingCallTest = () => {
     await stopTestSession();
 
     const header = [
-      "=== Signaling Call Test ===",
-      `Time: ${new Date().toLocaleString()}`,
-      `Test Type: ${getTestTypeLabel(testType)}`,
-      `SIP Trunk Group: ${getTrunkGroupLabel(trunkGroup, trunkGroupOptions)}`,
-      `CallerID: ${caller || "(empty)"}`,
-      `CalledID: ${called}`,
-      `Original CalleeID: ${original || "(empty)"}`,
+      `=== ${SCT_TRACE_HEADERS.title} ===`,
+      `${SCT_TRACE_HEADERS.time}: ${new Date().toLocaleString()}`,
+      `${SCT_TRACE_HEADERS.testType}: ${getTestTypeLabel(testType)}`,
+      `${SCT_TRACE_HEADERS.trunkGroup}: ${getTrunkGroupLabel(trunkGroup, trunkGroupOptions)}`,
+      `${SCT_TRACE_HEADERS.callerId}: ${caller || SCT_TRACE_HEADERS.empty}`,
+      `${SCT_TRACE_HEADERS.calledId}: ${called}`,
+      `${SCT_TRACE_HEADERS.originalCallee}: ${original || SCT_TRACE_HEADERS.empty}`,
       "",
     ].join("\n");
 
@@ -539,11 +537,11 @@ const SignalingCallTest = () => {
       logPathRef.current = logPath;
 
       const wcRes = await postLinuxCmd({
-        cmd: `wc -l < '${logPath}' 2>/dev/null || echo 0`,
+        cmd: SCT_COMMANDS.countLines(logPath),
       });
       lineCountRef.current = parseInt(extractCmdOutput(wcRes), 10) || 0;
 
-      await runAsteriskCmd("pjsip set logger on");
+      await runAsteriskCmd(SCT_COMMANDS.loggerOn);
       isRunningRef.current = true;
       setIsRunning(true);
 
@@ -553,11 +551,11 @@ const SignalingCallTest = () => {
 
       pollStopRef.current = setTimeout(async () => {
         await stopTestSession();
-        appendTrace("\n=== Test capture ended ===");
-        showToast("Signaling call test finished.", "info");
+        appendTrace(`\n${SCT_TRACE_HEADERS.title}`);
+        showToast(SCT_MESSAGES.signalingFinished, "info");
       }, SCT_POLL_DURATION_MS);
 
-      appendTrace("Sending test originate request...");
+      appendTrace(SCT_MESSAGES.sendingOriginate);
       const originatePayload = { extension: called };
       if (caller) {
         originatePayload.callerid = `"${caller}" <${caller}>`;
@@ -566,24 +564,24 @@ const SignalingCallTest = () => {
       const origRes = await amiOriginate(originatePayload);
       if (origRes?.response === false) {
         appendTrace(
-          `Originate failed: ${origRes?.message || "Unknown error"}`,
+          `Originate failed: ${origRes?.message || SCT_MESSAGES.unknownError}`,
         );
-        showToast(origRes?.message || "Originate failed.", "error");
+        showToast(origRes?.message || SCT_MESSAGES.originateFailed, "error");
       } else {
         appendTrace(
           origRes?.message ||
             origRes?.responseData ||
-            "Originate request sent.",
+            SCT_MESSAGES.originateRequestSent,
         );
-        showToast("Signaling call test started.", "success");
+        showToast(SCT_MESSAGES.signalingStarted, "success");
       }
 
       await pollLogChunk();
     } catch (error) {
-      console.error("Signaling call test error:", error);
+      console.error(SCT_LOG_MESSAGES.signalingError, error);
       await stopTestSession();
-      appendTrace(`Error: ${error.message || "Failed to start test."}`);
-      showToast(error.message || "Failed to start signaling call test.", "error");
+      appendTrace(`${SCT_LOG_MESSAGES.signalingError}: ${error.message || SCT_MESSAGES.failedToStartTest}`);
+      showToast(error.message || SCT_MESSAGES.failedToStartTest, "error");
     } finally {
       setBusy(false);
     }
@@ -595,7 +593,7 @@ const SignalingCallTest = () => {
     setCalledId("");
     setOriginalCallee("");
     setTrace("");
-    showToast("Form and trace cleared.", "info");
+    showToast(SCT_MESSAGES.formCleared, "success");
   };
 
   const inputProps = inputInteraction;
@@ -608,7 +606,7 @@ const SignalingCallTest = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+          onClose={() => setToast(SCT_DEFAULTS.toast)}
           sx={{
             position: "fixed",
             top: 20,
@@ -635,18 +633,18 @@ const SignalingCallTest = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{SCT_BREADCRUMBS[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{SCT_BREADCRUMBS[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Signaling Call Test
+            {SCT_BREADCRUMBS[2]}
           </span>
         </div>
 
         <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
-            <span>{SCT_TITLE}</span>
+            <span>{SCT_TRACE_HEADERS.title}</span>
           </div>
 
           <div className="w-full px-5 pt-3 pb-2 flex flex-col items-center">
@@ -659,7 +657,7 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                <Tooltip title={tooltips.testType} {...tooltipProps}>
+                <Tooltip title={SCT_TOOLTIPS.testType} {...tooltipProps}>
                   <span style={{ color: C.labelText }}>{SCT_LABELS.testType}</span>
                 </Tooltip>
               </label>
@@ -684,8 +682,8 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                <Tooltip title={tooltips.trunkGroup} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCT_LABELS.trunkGroup}</span>
+                <Tooltip title={SCT_TOOLTIPS.trunkGroup} {...tooltipProps}>
+                    <span style={{ color: C.labelText }}>{SCT_LABELS.trunkGroup}</span>
                 </Tooltip>
               </label>
               <select
@@ -709,7 +707,7 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                <Tooltip title={tooltips.callerId} {...tooltipProps}>
+                <Tooltip title={SCT_TOOLTIPS.callerId} {...tooltipProps}>
                   <span style={{ color: C.labelText }}>{SCT_LABELS.callerId}</span>
                 </Tooltip>
               </label>
@@ -729,7 +727,7 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                <Tooltip title={tooltips.calledId} {...tooltipProps}>
+                <Tooltip title={SCT_TOOLTIPS.calledId} {...tooltipProps}>
                   <span style={{ color: C.labelText }}>{SCT_LABELS.calledId}</span>
                 </Tooltip>
               </label>
@@ -749,7 +747,7 @@ const SignalingCallTest = () => {
                   textAlign: "left",
                 }}
               >
-                <Tooltip title={tooltips.originalCallee} {...tooltipProps}>
+                <Tooltip title={SCT_TOOLTIPS.originalCallee} {...tooltipProps}>
                   <span style={{ color: C.labelText }}>{SCT_LABELS.originalCallee}</span>
                 </Tooltip>
               </label>
@@ -775,7 +773,7 @@ const SignalingCallTest = () => {
                   disabled={busy || isRunning}
                   style={{ minWidth: 100, height: 33, fontSize: 13 }}
                 >
-                  {busy ? "Starting…" : SCT_BUTTONS.start}
+                  {busy ? SCT_MESSAGES.starting : SCT_BUTTONS.start}
                 </Btn>
                 <Btn
                   variant="cancel"
@@ -815,7 +813,7 @@ const SignalingCallTest = () => {
                   fontWeight: 600,
                 }}
               >
-                <Tooltip title={tooltips.trace} {...tooltipProps}>
+                <Tooltip title={SCT_TOOLTIPS.trace} {...tooltipProps}>
                   <span style={{ color: C.labelText }}>{SCT_TRACE_LABEL}</span>
                 </Tooltip>
               </label>

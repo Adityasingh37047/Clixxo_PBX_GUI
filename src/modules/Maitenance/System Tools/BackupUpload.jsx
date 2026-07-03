@@ -3,6 +3,13 @@ import {
   BU_TITLES,
   BU_LABELS,
   BU_BUTTONS,
+  BU_BREADCRUMB,
+  BU_MESSAGES,
+  BU_STATUS,
+  BU_FILE,
+  BU_TAR_FILE_REGEX,
+  BU_MESSAGE_TIMEOUT_MS,
+  BU_DEFAULT_MESSAGE,
 } from "../../../constants/BackupUploadConstants";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -226,11 +233,11 @@ const BackupUpload = () => {
 
   const [loadingBackup, setLoadingBackup] = useState(false);
   const [loadingRestore, setLoadingRestore] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState(BU_DEFAULT_MESSAGE);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+    setTimeout(() => setMessage(BU_DEFAULT_MESSAGE), BU_MESSAGE_TIMEOUT_MS);
   };
 
   const handleFileChange = (e) => {
@@ -242,19 +249,19 @@ const BackupUpload = () => {
   const handleDownloadBackup = async () => {
     try {
       setLoadingBackup(true);
-      setMessage({ type: "", text: "" });
+      setMessage(BU_DEFAULT_MESSAGE);
       const { blob, fileName } = await downloadBackup();
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", fileName || "backup.tar");
+      link.setAttribute("download", fileName || BU_FILE.defaultFileName);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showMessage("success", "Backup downloaded successfully");
+      showMessage("success", BU_MESSAGES.backupDownloadSuccess);
     } catch (e) {
-      showMessage("error", e.message || "Backup download failed");
+      showMessage("error", e.message || BU_MESSAGES.backupDownloadFailed);
     } finally {
       setLoadingBackup(false);
     }
@@ -262,22 +269,19 @@ const BackupUpload = () => {
 
   const handleRestoreUpload = async () => {
     try {
-      setMessage({ type: "", text: "" });
-      if (!selectedFile) throw new Error("Please select a .tar backup file");
-      if (!/\.tar$/i.test(selectedFile.name))
-        throw new Error("Only .tar files are supported");
+      setMessage(BU_DEFAULT_MESSAGE);
+      if (!selectedFile) throw new Error(BU_MESSAGES.selectTarFile);
+      if (!BU_TAR_FILE_REGEX.test(selectedFile.name))
+        throw new Error(BU_MESSAGES.onlyTarSupported);
       setLoadingRestore(true);
       const res = await restoreBackup(selectedFile);
       if (res?.response) {
-        showMessage(
-          "success",
-          "Restore completed. Please restart the system to apply changes.",
-        );
+        showMessage("success", BU_MESSAGES.restoreSuccess);
       } else {
-        throw new Error(res?.message || "Restore failed");
+        throw new Error(res?.message || BU_MESSAGES.restoreFailed);
       }
     } catch (e) {
-      showMessage("error", e.message || "Restore failed");
+      showMessage("error", e.message || BU_MESSAGES.restoreFailed);
     } finally {
       setLoadingRestore(false);
     }
@@ -299,12 +303,12 @@ const BackupUpload = () => {
             gap: 4,
           }}
         >
-          <span>Maintenance</span>
+          <span>{BU_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{BU_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Backup & Upload
+            {BU_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -312,7 +316,7 @@ const BackupUpload = () => {
         {message.text && (
           <Alert
             severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
+            onClose={() => setMessage(BU_DEFAULT_MESSAGE)}
             sx={{
               position: "fixed",
               top: 20,
@@ -360,7 +364,7 @@ const BackupUpload = () => {
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
                     <CircularProgress size={16} sx={{ color: "inherit" }} />
-                    Backing up...
+                    {BU_STATUS.backingUp}
                   </div>
                 ) : (
                   BU_BUTTONS.backup
@@ -399,10 +403,10 @@ const BackupUpload = () => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".tar"
+                accept={BU_FILE.acceptExtension}
                 onChange={handleFileChange}
                 className="hidden"
-                id="backup-file-input"
+                id={BU_FILE.inputId}
                 disabled={loadingBackup || loadingRestore}
               />
               <Btn
@@ -445,7 +449,7 @@ const BackupUpload = () => {
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
                     <CircularProgress size={16} sx={{ color: "inherit" }} />
-                    Restoring...
+                    {BU_STATUS.restoring}
                   </div>
                 ) : (
                   BU_BUTTONS.upload
