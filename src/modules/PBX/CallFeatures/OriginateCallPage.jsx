@@ -525,7 +525,9 @@ const OriginateCallFieldRow = ({
     <div style={originateCallValueColStyle}>
       <div
         style={
-          wide ? originateCallControlSlotWideStyle : originateCallControlSlotStyle
+          wide
+            ? originateCallControlSlotWideStyle
+            : originateCallControlSlotStyle
         }
       >
         {children}
@@ -544,7 +546,9 @@ const OriginateCallPage = () => {
   const [callerIdNumber, setCallerIdNumber] = useState("");
 
   const [useFixedApp, setUseFixedApp] = useState(true);
-  const [application, setApplication] = useState(ORIGINATE_CALL_DEFAULT_APPLICATION);
+  const [application, setApplication] = useState(
+    ORIGINATE_CALL_DEFAULT_APPLICATION,
+  );
   const [appData, setAppData] = useState(ORIGINATE_CALL_DEFAULT_APP_DATA);
 
   const [context, setContext] = useState(ORIGINATE_CALL_DEFAULT_CONTEXT);
@@ -728,7 +732,9 @@ const OriginateCallPage = () => {
                       <FormControlLabel
                         key={opt.value}
                         value={opt.value}
-                        control={<Radio size="small" sx={originateCallRadioSx} />}
+                        control={
+                          <Radio size="small" sx={originateCallRadioSx} />
+                        }
                         label={
                           <span style={{ fontSize: 13 }}>{opt.label}</span>
                         }
@@ -809,7 +815,11 @@ const OriginateCallPage = () => {
                           sx={originateCallFormSelectSx}
                         >
                           {ORIGINATE_CALL_CONTEXT_OPTIONS.map((ctx) => (
-                            <MenuItem key={ctx} value={ctx} sx={{ fontSize: 13 }}>
+                            <MenuItem
+                              key={ctx}
+                              value={ctx}
+                              sx={{ fontSize: 13 }}
+                            >
                               {ctx}
                             </MenuItem>
                           ))}

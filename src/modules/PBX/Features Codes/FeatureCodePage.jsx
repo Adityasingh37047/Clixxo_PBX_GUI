@@ -298,7 +298,7 @@ const FeatureCodeSectionHeading = ({ title, isFirst = false, isCompact = false }
       margin: isFirst
         ? tightenSpacing
           ? "20px 0 24px 0"
-          : "0 0 24px 0"
+          : "16px 0 24px 0"
         : "28px 0 24px 0",
       position: "relative",
       width: "100%",
