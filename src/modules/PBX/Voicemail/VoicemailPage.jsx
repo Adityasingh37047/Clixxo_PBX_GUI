@@ -26,6 +26,7 @@ import {
 } from "../../../constants/VoicemailConstants";
 
 const VOICEMAIL_COMPACT_MQ = "(max-width: 768px)";
+const VOICEMAIL_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const VOICEMAIL_MAIN_SECTION_HEADING_LEFT = -20;
 
 const C = {
@@ -268,10 +269,17 @@ const TableListLoading = () => (
   </div>
 );
 
-const VoicemailSectionHeading = ({ title, isFirst = false }) => (
+const VoicemailSectionHeading = ({ title, isFirst = false, isCompact = false }) => {
+  const isLaptopNarrow = useMediaQuery(VOICEMAIL_LAPTOP_NARROW_MQ);
+  const tightenSpacing = isLaptopNarrow || isCompact;
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? tightenSpacing
+          ? "20px 0 24px 0"
+          : "16px 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -281,7 +289,7 @@ const VoicemailSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: VOICEMAIL_MAIN_SECTION_HEADING_LEFT,
+        left: tightenSpacing ? 0 : VOICEMAIL_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -292,7 +300,8 @@ const VoicemailSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const VOICEMAIL_TOOLTIP_PROPS = {
   arrow: true,
@@ -584,6 +593,7 @@ const VoicemailPage = () => {
                 <VoicemailSectionHeading
                   title={VOICEMAIL_SECTIONS.message_options}
                   isFirst
+                  isCompact={isCompact}
                 />
 
                 <VoicemailFieldRow

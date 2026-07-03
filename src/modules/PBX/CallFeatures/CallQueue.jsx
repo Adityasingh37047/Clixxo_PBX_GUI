@@ -698,10 +698,16 @@ const CallQueueSectionHeading = ({
   title,
   isFirst = false,
   required = false,
-}) => (
+}) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "16px 0 24px 0"
+          : "0 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -711,7 +717,7 @@ const CallQueueSectionHeading = ({
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
+        left: isLaptopNarrow ? 0 : -6,
         background: CALL_QUEUE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -723,7 +729,8 @@ const CallQueueSectionHeading = ({
       {required ? <span style={{ color: C.errorRed }}> *</span> : null}
     </span>
   </div>
-);
+  );
+};
 
 const CALL_QUEUE_AGENT_CODEC_LIST_BOX_HEIGHT = 188;
 const CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH = 40;

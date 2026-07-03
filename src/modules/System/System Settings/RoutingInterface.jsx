@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Alert, CircularProgress } from "@mui/material";
-import { Tooltip } from "@mui/material";
+import { Alert, CircularProgress, Tooltip, useMediaQuery } from "@mui/material";
 import axiosInstance from "../../../api/axiosInstance";
 import {
   ROUTING_INTERFACE_PAGE_BREADCRUMB_ROOT,
@@ -323,10 +322,16 @@ const Btn = ({
   );
 };
 
-const SectionHeading = ({ title, isFirst = false }) => (
+const SectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "16px 0 24px 0"
+          : "0 0 24px 0"
+        : "16px 0 24px 0",
       position: "relative",
     }}
   >
@@ -347,7 +352,8 @@ const SectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const routingPageWrapStyle = {
   backgroundColor: C.pageBg,

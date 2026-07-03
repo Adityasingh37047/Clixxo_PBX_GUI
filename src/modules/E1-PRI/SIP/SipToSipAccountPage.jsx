@@ -703,10 +703,16 @@ const sipToSipTableCheckboxSx = {
 const SIP_TO_SIP_MODAL_SECTION_BG = "#f8fafc";
 const SIP_TO_SIP_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const SipToSipModalSectionHeading = ({ title, isFirst = false }) => (
+const SipToSipModalSectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "16px 0 24px 0"
+          : "0 0 24px 0"
+        : "16px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -727,7 +733,8 @@ const SipToSipModalSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const SipToSipAllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
   <div

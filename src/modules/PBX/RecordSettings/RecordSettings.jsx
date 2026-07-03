@@ -22,6 +22,7 @@ import {
 } from "../../../constants/RecordSettingsConstants";
 
 const RECORD_SETTINGS_COMPACT_MQ = "(max-width: 768px)";
+const RECORD_SETTINGS_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const RECORD_SETTINGS_MAIN_SECTION_HEADING_LEFT = -20;
 
 const C = {
@@ -427,10 +428,15 @@ const RecordSettingsSectionHeading = ({
   onClick,
   expanded,
 }) => {
+  const isLaptopNarrow = useMediaQuery(RECORD_SETTINGS_LAPTOP_NARROW_MQ);
   const inner = (
     <div
       style={{
-        margin: isFirst ? "20px 0 24px 0" : "28px 0 24px 0",
+        margin: isFirst
+          ? isLaptopNarrow
+            ? "24px 0 24px 0"
+            : "20px 0 24px 0"
+          : "28px 0 24px 0",
         position: "relative",
         width: "100%",
       }}
@@ -440,7 +446,7 @@ const RecordSettingsSectionHeading = ({
         style={{
           position: "absolute",
           top: -10,
-          left: RECORD_SETTINGS_MAIN_SECTION_HEADING_LEFT,
+          left: isLaptopNarrow ? 0 : RECORD_SETTINGS_MAIN_SECTION_HEADING_LEFT,
           background: C.cardBg,
           paddingRight: 8,
           fontSize: 14,

@@ -300,7 +300,7 @@ const FIELD_CONTROL_HEIGHT = 36;
 
 const nativeFieldInputStyle = {
   width: "100%",
-  minWidth: FIELD_CONTROL_WIDTH,
+  minWidth: 0,
   maxWidth: FIELD_CONTROL_WIDTH,
   height: FIELD_CONTROL_HEIGHT,
   minHeight: FIELD_CONTROL_HEIGHT,
@@ -484,6 +484,8 @@ const DtmfFieldRow = ({ label, tooltipKey, children, isLongLabel = false }) => (
       style={{
         flex: "0 0 auto",
         width: FIELD_CONTROL_WIDTH,
+        maxWidth: "100%",
+        minWidth: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
@@ -852,7 +854,7 @@ const DtmfPage = () => {
   );
 
   return (
-    <div style={dtmfPageWrapStyle}>
+    <div style={dtmfPageWrapStyle} data-native-scroll>
       <div style={dtmfPageInnerStyle}>
         {toast.msg && (
           <Alert

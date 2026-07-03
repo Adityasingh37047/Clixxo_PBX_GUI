@@ -30,6 +30,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 
 const DHCP_SERVER_SCROLL_CLASS = "dhcp-server-scroll";
 const DHCP_SERVER_COMPACT_MQ = "(max-width: 768px)";
+const DHCP_SERVER_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const DHCP_SERVER_LABEL_COL_WIDTH = 200;
 const DHCP_SERVER_CONTROL_COL_WIDTH = 220;
 const DHCP_SERVER_FIELD_COL_GAP = 8;
@@ -393,11 +394,15 @@ const disabledInputStyle = {
   borderColor: "#e2e8f0",
 };
 
-const SectionHeading = ({ title, isFirst = false }) => (
+const SectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery(DHCP_SERVER_LAPTOP_NARROW_MQ);
+  return (
   <div
     style={{
       margin: isFirst
-        ? DHCP_SETTINGS_SECTION_HEADING_FIRST_MARGIN
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : DHCP_SETTINGS_SECTION_HEADING_FIRST_MARGIN
         : DHCP_SETTINGS_SECTION_HEADING_NEXT_MARGIN,
       position: "relative",
       width: "100%",
@@ -408,7 +413,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: DHCP_SERVER_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : DHCP_SERVER_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -419,7 +424,8 @@ const SectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const dhcpPageWrapStyle = {
   backgroundColor: C.pageBg,

@@ -35,6 +35,7 @@ import {
 } from "@mui/material";
 
 const MANAGEMENT_COMPACT_MQ = "(max-width: 768px)";
+const MANAGEMENT_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const MANAGEMENT_SCROLL_CLASS = "management-scroll";
 const MANAGEMENT_LABEL_COL_WIDTH = 200;
 const MANAGEMENT_CONTROL_COL_WIDTH = 220;
@@ -346,11 +347,15 @@ const SETTINGS_FIELDS_STACK_GAP = 12;
 const SETTINGS_COLUMN_GAP = 12;
 const SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
 
-const SectionHeading = ({ title, isFirst = false }) => (
+const SectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery(MANAGEMENT_LAPTOP_NARROW_MQ);
+  return (
   <div
     style={{
       margin: isFirst
-        ? SETTINGS_SECTION_HEADING_FIRST_MARGIN
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : SETTINGS_SECTION_HEADING_FIRST_MARGIN
         : SETTINGS_SECTION_HEADING_NEXT_MARGIN,
       position: "relative",
       width: "100%",
@@ -361,7 +366,7 @@ const SectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: MANAGEMENT_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : MANAGEMENT_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -372,7 +377,8 @@ const SectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const managementPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -464,17 +470,6 @@ const managementDashboardDividerLineStyle = {
   background: C.divider,
   margin: "0 auto",
 };
-
-const managementDashboardResponsiveCss = `
-  @media (max-width: 768px) {
-    .management-dashboard-grid {
-      grid-template-columns: minmax(0, 1fr) !important;
-    }
-    .management-dashboard-divider {
-      display: none !important;
-    }
-  }
-`;
 
 const managementDashboardFieldsStackStyle = {
   display: "flex",
@@ -2077,8 +2072,6 @@ const Management = () => {
 
       <ManagementBreadcrumb />
 
-      <style>{managementDashboardResponsiveCss}</style>
-
       <div style={managementTableContainerStyle}>
           <div style={managementHeaderStyle}>
             <span>{MANAGEMENT_CARD_TITLE}</span>
@@ -2113,7 +2106,7 @@ const Management = () => {
                 className="flex flex-col gap-2"
               >
                 <div
-                  className="management-dashboard-grid"
+                  className="settings-dashboard-grid"
                   style={managementDashboardGridStyle(isCompact)}
                 >
                   <div style={managementDashboardColumnStyle(isCompact)}>
@@ -2126,7 +2119,7 @@ const Management = () => {
 
                   {!isCompact && (
                     <div
-                      className="management-dashboard-divider"
+                      className="settings-dashboard-divider"
                       style={managementDashboardDividerCellStyle}
                       aria-hidden="true"
                     >

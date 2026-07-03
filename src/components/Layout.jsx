@@ -36,6 +36,7 @@ const Layout = () => {
   }, [location.pathname]);
 
   const NAVBAR_HEIGHT = isMobile ? 140 : 48;
+  const outletPadding = isMobile ? 8 : 16;
 
   // Content margin follows sidebar width (right panel always open on desktop)
   const contentMarginLeft = isMobile ? 0 : sidebarWidth;
@@ -68,16 +69,21 @@ const Layout = () => {
           overflowY: "auto",
           backgroundColor: "#eef2f7",
           width: contentWidth,
+          minWidth: 0,
+          maxWidth: "100%",
           boxSizing: "border-box",
           transition: "margin-left 0.2s ease, width 0.2s ease",
         }}
       >
         <div
-          className="w-full"
+          className="w-full app-page-outlet"
           style={{
             backgroundColor: "#eef2f7",
-            padding: isMobile ? "8px" : "16px",
+            padding: outletPadding,
             boxSizing: "border-box",
+            width: "100%",
+            minWidth: 0,
+            maxWidth: "100%",
           }}
         >
           <Outlet key={refreshKey} />

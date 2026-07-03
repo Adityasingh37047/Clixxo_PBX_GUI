@@ -1,0 +1,133 @@
+﻿{
+  "issueCount": 14,
+  "grouped": {
+    "Asterisk CLI @ 1920px": [
+      "cli-missing: no terminal"
+    ],
+    "Asterisk CLI @ 1600px": [
+      "cli-missing: no terminal"
+    ],
+    "Asterisk CLI @ 1440px": [
+      "cli-missing: no terminal"
+    ],
+    "Asterisk CLI @ 1366px": [
+      "cli-missing: no terminal"
+    ],
+    "Asterisk CLI @ 1280px": [
+      "cli-missing: no terminal"
+    ],
+    "Asterisk CLI @ 1113px": [
+      "cli-missing: no terminal"
+    ],
+    "Asterisk CLI @ 1024px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1920px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1600px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1440px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1366px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1280px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1113px": [
+      "cli-missing: no terminal"
+    ],
+    "Linux CLI @ 1024px": [
+      "cli-missing: no terminal"
+    ]
+  },
+  "allIssues": [
+    {
+      "page": "Asterisk CLI",
+      "width": 1920,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Asterisk CLI",
+      "width": 1600,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Asterisk CLI",
+      "width": 1440,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Asterisk CLI",
+      "width": 1366,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Asterisk CLI",
+      "width": 1280,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Asterisk CLI",
+      "width": 1113,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Asterisk CLI",
+      "width": 1024,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1920,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1600,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1440,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1366,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1280,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1113,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    },
+    {
+      "page": "Linux CLI",
+      "width": 1024,
+      "check": "cli-missing",
+      "detail": "no terminal"
+    }
+  ]
+}

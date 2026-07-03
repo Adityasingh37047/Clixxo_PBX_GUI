@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
-import { Alert, Tooltip } from "@mui/material";
+import { Alert, Tooltip, useMediaQuery } from "@mui/material";
 import {
   MEDIA_PARAMETERS_NOTE,
   FXS_MEDIA_FIELD_TOOLTIPS,
@@ -479,6 +479,7 @@ const dashboardColumnStyle = {
   gap: 12,
   minWidth: 0,
   padding: "16px 36px 20px",
+  boxSizing: "border-box",
 };
 
 const dashboardColumnLeftStyle = {
@@ -518,6 +519,7 @@ const FxsVoipMediaSectionHeading = ({
   tooltipKey,
   isFirst = false,
 }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
   const titleStyle = {
     fontSize: 14,
     fontWeight: 600,
@@ -534,7 +536,11 @@ const FxsVoipMediaSectionHeading = ({
   return (
     <div
       style={{
-        margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+        margin: isFirst
+          ? isLaptopNarrow
+            ? "20px 0 24px 0"
+            : "12px 0 24px 0"
+          : "28px 0 24px 0",
         position: "relative",
         width: "100%",
       }}
@@ -544,7 +550,7 @@ const FxsVoipMediaSectionHeading = ({
         style={{
           position: "absolute",
           top: -10,
-          left: FXS_VOIP_MEDIA_SECTION_HEADING_LEFT,
+          left: isLaptopNarrow ? 0 : FXS_VOIP_MEDIA_SECTION_HEADING_LEFT,
           background: C.cardBg,
           paddingRight: 8,
           display: "inline-flex",
@@ -582,7 +588,7 @@ const FxsVoipMediaBreadcrumb = () => (
 );
 
 const FxsVoipMediaPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle}>
+  <div style={advancedPageWrapStyle} data-native-scroll>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
@@ -1311,7 +1317,7 @@ const FxsVoipMediaPage = () => {
         <div style={advancedCardTitleBarStyle}>
           <span>{FXS_VOIP_MEDIA_CARD_TITLE}</span>
         </div>
-        <div style={dashboardGridStyle}>
+        <div className="settings-dashboard-grid" style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
             <FxsVoipMediaSectionHeading
               title={FXS_VOIP_MEDIA_LEFT_SECTION_TITLE}
@@ -1361,7 +1367,7 @@ const FxsVoipMediaPage = () => {
             </div>
           </div>
 
-          <div style={dashboardDividerCellStyle} aria-hidden="true">
+          <div className="settings-dashboard-divider" style={dashboardDividerCellStyle} aria-hidden="true">
             <div style={dashboardDividerLineStyle} />
           </div>
 

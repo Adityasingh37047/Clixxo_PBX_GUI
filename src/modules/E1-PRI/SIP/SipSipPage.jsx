@@ -460,6 +460,8 @@ const SIP_SIP_LABEL_COL_WIDTH = 200;
 const SIP_SIP_CONTROL_COL_WIDTH = 220;
 const SIP_SIP_FIELD_COL_GAP = 8;
 
+const SIP_SIP_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
+
 const sipSipDashboardGridStyle = (isCompact) => ({
   display: "grid",
   gridTemplateColumns: isCompact
@@ -521,10 +523,16 @@ const formBodyStyle = {
   boxSizing: "border-box",
 };
 
-const SipSipSectionHeading = ({ title, isFirst = false }) => (
+const SipSipSectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery(SIP_SIP_LAPTOP_NARROW_MQ);
+  return (
   <div
     style={{
-      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : "12px 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -534,7 +542,7 @@ const SipSipSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: SIP_SIP_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : SIP_SIP_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -545,7 +553,8 @@ const SipSipSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const dashboardFieldsStackStyle = {
   display: "flex",
@@ -1109,7 +1118,7 @@ const SipSipPage = () => {
               </div>
             ) : (
               <div style={formBodyStyle}>
-                <div style={sipSipDashboardGridStyle(isCompact)}>
+                <div className="settings-dashboard-grid" style={sipSipDashboardGridStyle(isCompact)}>
                   <div style={sipSipColumnStyle(isCompact)}>
                     <SipSipSectionHeading
                       title={SIP_SIP_SECTION_NETWORK}
@@ -1123,7 +1132,7 @@ const SipSipPage = () => {
                   </div>
 
                   {!isCompact && (
-                    <div style={sipSipDividerCellStyle} aria-hidden="true">
+                    <div className="settings-dashboard-divider" style={sipSipDividerCellStyle} aria-hidden="true">
                       <div style={sipSipDividerLineStyle} />
                     </div>
                   )}

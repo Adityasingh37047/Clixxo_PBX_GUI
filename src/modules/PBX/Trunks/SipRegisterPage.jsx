@@ -604,10 +604,16 @@ const TrunkModalSectionHeading = ({
   isFirst = false,
   labelBackground = SIP_REGISTER_MODAL_SECTION_BG,
   titleLeft = -6,
-}) => (
+}) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "16px 0 24px 0"
+          : "0 0 24px 0"
+        : "16px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -617,7 +623,7 @@ const TrunkModalSectionHeading = ({
       style={{
         position: "absolute",
         top: -10,
-        left: titleLeft,
+        left: isLaptopNarrow ? 0 : titleLeft,
         background: labelBackground,
         paddingRight: 8,
         fontSize: 14,
@@ -628,7 +634,8 @@ const TrunkModalSectionHeading = ({
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const SIP_REGISTER_CODEC_LIST_BOX_HEIGHT = 188;
 const SIP_REGISTER_CODEC_BTN_COL_WIDTH = 40;

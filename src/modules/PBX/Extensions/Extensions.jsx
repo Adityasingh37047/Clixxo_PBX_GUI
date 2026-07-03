@@ -475,10 +475,16 @@ const ExtensionModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
 const EXTENSION_MODAL_SECTION_BG = "#f8fafc";
 const EXTENSION_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const ExtensionModalSectionHeading = ({ title, isFirst = false }) => (
+const ExtensionModalSectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "16px 0 24px 0"
+          : "0 0 24px 0"
+        : "16px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -488,7 +494,7 @@ const ExtensionModalSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
+        left: isLaptopNarrow ? 0 : -6,
         background: EXTENSION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -499,16 +505,19 @@ const ExtensionModalSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
-const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
+const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div style={{ margin: "16px 0 24px 0", position: "relative", width: "100%" }}>
     <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
     <span
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
+        left: isLaptopNarrow ? 0 : -6,
         background: EXTENSION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -528,7 +537,8 @@ const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
       {required && <span style={{ color: C.errorRed }}> *</span>}
     </span>
   </div>
-);
+  );
+};
 
 const EXTENSION_TABLE_CARD_RADIUS = 10;
 

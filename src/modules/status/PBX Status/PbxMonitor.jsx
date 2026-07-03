@@ -5,7 +5,7 @@ import React, {
   useRef,
   useLayoutEffect,
 } from "react";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, useMediaQuery } from "@mui/material";
 import { monitorBoth } from "../../../api/apiService";
 import {
   PBX_MONITOR_BREADCRUMB_SEGMENTS,
@@ -275,6 +275,9 @@ const TableListEmptyState = ({
   </div>
 );
 
+const PBX_MONITOR_COMPACT_MQ = "(max-width: 768px)";
+const PBX_MONITOR_EXTENSION_TABLE_MIN_WIDTH = 640;
+const PBX_MONITOR_TRUNK_TABLE_MIN_WIDTH = 520;
 const PBX_MONITOR_TABLE_CARD_RADIUS = 10;
 const PBX_MONITOR_FORM_HEADER_RADIUS = 20;
 
@@ -333,6 +336,7 @@ const PbxMonitorToolbarSearchBar = ({
   placeholder = "Search...",
   width = PBX_MONITOR_TOOLBAR_SEARCH_WIDTH,
   fitPlaceholder = false,
+  fullWidth = false,
 }) => {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -346,9 +350,11 @@ const PbxMonitorToolbarSearchBar = ({
   }, [fitPlaceholder, placeholder]);
 
   const resolvedWidth =
-    fitPlaceholder && placeholderWidth != null
-      ? placeholderWidth + PBX_MONITOR_SEARCH_BAR_PADDING_FIT + PBX_MONITOR_SEARCH_ICON_SLOT
-      : width;
+    fullWidth
+      ? "100%"
+      : fitPlaceholder && placeholderWidth != null
+        ? placeholderWidth + PBX_MONITOR_SEARCH_BAR_PADDING_FIT + PBX_MONITOR_SEARCH_ICON_SLOT
+        : width;
 
   const horizontalPadding = fitPlaceholder
     ? PBX_MONITOR_SEARCH_BAR_PADDING_FIT / 2
@@ -396,9 +402,10 @@ const PbxMonitorToolbarSearchBar = ({
         padding: `0 ${horizontalPadding}px`,
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
         width: resolvedWidth,
-        minWidth: resolvedWidth,
-        maxWidth: resolvedWidth,
-        flexShrink: 0,
+        minWidth: fullWidth ? 0 : resolvedWidth,
+        maxWidth: fullWidth ? "100%" : resolvedWidth,
+        flex: fullWidth ? 1 : undefined,
+        flexShrink: fullWidth ? 1 : 0,
         position: "relative",
       }}
       onMouseEnter={setHover}
@@ -629,7 +636,8 @@ const TypePill = ({ text }) => (
 
 const tableWrapStyle = {
   width: "100%",
-  overflowX: "hidden",
+  overflowX: "auto",
+  WebkitOverflowScrolling: "touch",
 };
 
 const tableStyle = {
@@ -689,6 +697,7 @@ const TD = ({ children, align = "center", mono, style: extra, bg }) => (
 );
 
 const PbxMonitor = () => {
+  const isCompact = useMediaQuery(PBX_MONITOR_COMPACT_MQ);
   const [activeTab, setActiveTab] = useState(PBX_MONITOR_TAB_VALUES.extension);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [extensionRows, setExtensionRows] = useState([]);
@@ -803,7 +812,7 @@ const PbxMonitor = () => {
       : `trunk${tableRows.length !== 1 ? "s" : ""}`;
 
   return (
-    <div style={pbxPageWrapStyle}>
+    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={pbxPageInnerStyle}>
         <div
           style={{
@@ -813,6 +822,9 @@ const PbxMonitor = () => {
             gap: 12,
             marginBottom: 16,
             flexWrap: "wrap",
+            ...(isCompact
+              ? { flexDirection: "column", alignItems: "flex-start", gap: 6 }
+              : {}),
           }}
         >
           <PageBreadcrumb
@@ -825,7 +837,7 @@ const PbxMonitor = () => {
                 fontSize: 11,
                 color: C.mutedText,
                 flexShrink: 0,
-                marginLeft: "auto",
+                ...(isCompact ? { marginLeft: 0 } : { marginLeft: "auto" }),
               }}
             >
               Updated {lastUpdated.toLocaleTimeString()}
@@ -835,14 +847,16 @@ const PbxMonitor = () => {
 
         {/* Stats */}
         <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 200px)",
-    gap: 16,
-    marginBottom: 12,
-    justifyContent: "start",
-  }}
->
+          style={{
+            display: "grid",
+            gridTemplateColumns: isCompact
+              ? "repeat(2, minmax(0, 1fr))"
+              : "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: isCompact ? 10 : 16,
+            marginBottom: 12,
+            width: "100%",
+          }}
+        >
           <StatCard
             label={PBX_MONITOR_STAT_LABELS.totalExtensions}
             value={extensionRows.length}
@@ -873,8 +887,24 @@ const PbxMonitor = () => {
         </div>
 
         <div style={pbxMonitorCardStyle}>
-          <div style={pbxMonitorCardHeaderStyle}>
-            <div style={pbxMonitorHeaderLeftStyle}>
+          <div
+            style={{
+              ...pbxMonitorCardHeaderStyle,
+              ...(isCompact
+                ? {
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                    padding: "10px 12px",
+                  }
+                : {}),
+            }}
+          >
+            <div
+              style={{
+                ...pbxMonitorHeaderLeftStyle,
+                ...(isCompact ? { width: "100%" } : {}),
+              }}
+            >
               <Btn
                 type="button"
                 variant={
@@ -901,12 +931,24 @@ const PbxMonitor = () => {
               </Btn>
             </div>
 
-            <div style={pbxMonitorHeaderToolbarStyle}>
+            <div
+              style={{
+                ...pbxMonitorHeaderToolbarStyle,
+                ...(isCompact
+                  ? {
+                      width: "100%",
+                      marginLeft: 0,
+                      justifyContent: "stretch",
+                    }
+                  : {}),
+              }}
+            >
               <PbxMonitorToolbarSearchBar
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                fitPlaceholder
+                fitPlaceholder={!isCompact}
+                fullWidth={isCompact}
               />
 
               <Btn
@@ -934,7 +976,14 @@ const PbxMonitor = () => {
           ) : (
           <div style={tableWrapStyle}>
             {activeTab === PBX_MONITOR_TAB_VALUES.extension ? (
-              <table style={tableStyle}>
+              <table
+                style={{
+                  ...tableStyle,
+                  ...(isCompact
+                    ? { minWidth: PBX_MONITOR_EXTENSION_TABLE_MIN_WIDTH }
+                    : {}),
+                }}
+              >
                 <thead>
                   <tr>
                     <TH>Status</TH>
@@ -1004,7 +1053,14 @@ const PbxMonitor = () => {
                 </tbody>
               </table>
             ) : (
-              <table style={tableStyle}>
+              <table
+                style={{
+                  ...tableStyle,
+                  ...(isCompact
+                    ? { minWidth: PBX_MONITOR_TRUNK_TABLE_MIN_WIDTH }
+                    : {}),
+                }}
+              >
                 <thead>
                   <tr>
                     <TH>Status</TH>

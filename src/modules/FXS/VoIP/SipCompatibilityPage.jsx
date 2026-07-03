@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, Checkbox, Tooltip } from "@mui/material";
+import { Alert, Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import {
   SIP_COMPATIBILITY_FIELDS,
   SIP_COMPATIBILITY_FIELD_TOOLTIPS,
@@ -442,6 +442,7 @@ const dashboardColumnStyle = {
   gap: 12,
   minWidth: 0,
   padding: "16px 36px 20px",
+  boxSizing: "border-box",
 };
 
 const dashboardColumnLeftStyle = {
@@ -483,10 +484,16 @@ const fxsSipCompatibilityCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const FxsSipCompatibilitySectionHeading = ({ title, isFirst = false }) => (
+const FxsSipCompatibilitySectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : "12px 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -496,7 +503,7 @@ const FxsSipCompatibilitySectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -507,7 +514,8 @@ const FxsSipCompatibilitySectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const FxsSipCompatibilityBreadcrumb = () => (
   <div
@@ -534,7 +542,7 @@ const FxsSipCompatibilityBreadcrumb = () => (
 );
 
 const FxsSipCompatibilityPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle}>
+  <div style={advancedPageWrapStyle} data-native-scroll>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
@@ -832,7 +840,7 @@ const SipCompatibilityPage = () => {
         <div style={advancedCardTitleBarStyle}>
           <span>{FXS_SIP_COMPATIBILITY_CARD_TITLE}</span>
         </div>
-        <div style={dashboardGridStyle}>
+        <div className="settings-dashboard-grid" style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
             <FxsSipCompatibilitySectionHeading
               title={FXS_SIP_COMPATIBILITY_LEFT_SECTION_TITLE}
@@ -843,7 +851,7 @@ const SipCompatibilityPage = () => {
             </div>
           </div>
 
-          <div style={dashboardDividerCellStyle} aria-hidden="true">
+          <div className="settings-dashboard-divider" style={dashboardDividerCellStyle} aria-hidden="true">
             <div style={dashboardDividerLineStyle} />
           </div>
 

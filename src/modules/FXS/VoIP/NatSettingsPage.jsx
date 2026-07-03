@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, Checkbox, Tooltip } from "@mui/material";
+import { Alert, Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import {
   NAT_SETTINGS_FIELDS,
   NAT_SETTINGS_NOTE,
@@ -440,6 +440,7 @@ const dashboardColumnStyle = {
   gap: 12,
   minWidth: 0,
   padding: "16px 36px 20px",
+  boxSizing: "border-box",
 };
 
 const dashboardColumnLeftStyle = {
@@ -509,10 +510,16 @@ const fxsNatSettingsCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const FxsNatSettingsSectionHeading = ({ title, isFirst = false }) => (
+const FxsNatSettingsSectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : "12px 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -522,7 +529,7 @@ const FxsNatSettingsSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: FXS_NAT_SETTINGS_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : FXS_NAT_SETTINGS_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -533,7 +540,8 @@ const FxsNatSettingsSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const FxsNatSettingsBreadcrumb = () => (
   <div
@@ -560,7 +568,7 @@ const FxsNatSettingsBreadcrumb = () => (
 );
 
 const FxsNatSettingsPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle}>
+  <div style={advancedPageWrapStyle} data-native-scroll>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
@@ -779,7 +787,7 @@ const NatSettingsPage = () => {
         <div style={advancedCardTitleBarStyle}>
           <span>{FXS_NAT_SETTINGS_CARD_TITLE}</span>
         </div>
-        <div style={dashboardGridStyle}>
+        <div className="settings-dashboard-grid" style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
             <FxsNatSettingsSectionHeading
               title={FXS_NAT_SETTINGS_LEFT_SECTION_TITLE}
@@ -790,7 +798,7 @@ const NatSettingsPage = () => {
             </div>
           </div>
 
-          <div style={dashboardDividerCellStyle} aria-hidden="true">
+          <div className="settings-dashboard-divider" style={dashboardDividerCellStyle} aria-hidden="true">
             <div style={dashboardDividerLineStyle} />
           </div>
 

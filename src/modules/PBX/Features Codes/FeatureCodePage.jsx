@@ -26,6 +26,8 @@ import {
 } from "../../../constants/FeatureCodeConstants";
 
 const FEATURE_CODE_COMPACT_MQ = "(max-width: 768px)";
+const FEATURE_CODE_PAIR_STACK_MQ = "(max-width: 1280px)";
+const FEATURE_CODE_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const FEATURE_CODE_MAIN_SECTION_HEADING_LEFT = -20;
 
 const C = {
@@ -287,10 +289,17 @@ const TableListLoading = () => (
   </div>
 );
 
-const FeatureCodeSectionHeading = ({ title, isFirst = false }) => (
+const FeatureCodeSectionHeading = ({ title, isFirst = false, isCompact = false }) => {
+  const isLaptopNarrow = useMediaQuery(FEATURE_CODE_LAPTOP_NARROW_MQ);
+  const tightenSpacing = isLaptopNarrow || isCompact;
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? tightenSpacing
+          ? "20px 0 24px 0"
+          : "0 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -300,7 +309,7 @@ const FeatureCodeSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: FEATURE_CODE_MAIN_SECTION_HEADING_LEFT,
+        left: tightenSpacing ? 0 : FEATURE_CODE_MAIN_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -311,7 +320,8 @@ const FeatureCodeSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const FEATURE_CODE_TOOLTIP_PROPS = {
   arrow: true,
@@ -509,6 +519,7 @@ const formToApi = (form) => {
 
 const FeatureCodePage = () => {
   const isCompact = useMediaQuery(FEATURE_CODE_COMPACT_MQ);
+  const stackFieldPairs = isCompact || useMediaQuery(FEATURE_CODE_PAIR_STACK_MQ);
   const [form, setForm] = useState({ ...FEATURE_CODE_INITIAL_FORM });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
@@ -634,13 +645,26 @@ const FeatureCodePage = () => {
         ...featureCodePageWrapStyle,
         ...(isCompact ? { padding: 8 } : {}),
       }}
+      data-native-scroll
     >
       <div style={featureCodePageInnerStyle}>
         {message.text && (
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={featureCodeFixedAlertSx}
+            sx={{
+              ...featureCodeFixedAlertSx,
+              ...(isCompact
+                ? {
+                    left: 8,
+                    right: 8,
+                    top: 12,
+                    minWidth: 0,
+                    maxWidth: "none",
+                    width: "calc(100% - 16px)",
+                  }
+                : {}),
+            }}
           >
             {message.text}
           </Alert>
@@ -652,7 +676,12 @@ const FeatureCodePage = () => {
         />
 
         <div style={featureCodeCardStyle}>
-          <div style={featureCodeHeaderStyle}>
+          <div
+            style={{
+              ...featureCodeHeaderStyle,
+              ...(isCompact ? { padding: "7px 12px" } : {}),
+            }}
+          >
             <span>{FEATURE_CODE_TITLE}</span>
           </div>
 
@@ -666,6 +695,7 @@ const FeatureCodePage = () => {
                     <FeatureCodeSectionHeading
                       title={section.title}
                       isFirst={sectionIdx === 0}
+                      isCompact={isCompact}
                     />
                     <div>
                       {section.fields.map((row, rowIdx) => {
@@ -678,17 +708,17 @@ const FeatureCodePage = () => {
                               style={{
                                 display: "grid",
                                 gridTemplateColumns: "1fr 1fr",
-                                gap: isCompact ? 0 : `0 ${FEATURE_CODE_GRID_COLUMN_GAP}px`,
-                                ...(isCompact
+                                gap: stackFieldPairs ? 0 : `0 ${FEATURE_CODE_GRID_COLUMN_GAP}px`,
+                                ...(stackFieldPairs
                                   ? { gridTemplateColumns: "1fr" }
                                   : {}),
                               }}
                             >
-                              {isRight && !isCompact && <div />}
+                              {isRight && !stackFieldPairs && <div />}
                               <div style={{ padding: "0 0 0 0" }}>
                                 {renderFieldCell(field)}
                               </div>
-                              {!isRight && !isCompact && <div />}
+                              {!isRight && !stackFieldPairs && <div />}
                             </div>
                           );
                         }
@@ -698,11 +728,11 @@ const FeatureCodePage = () => {
                             style={{
                               display: "flex",
                               flexWrap: "wrap",
-                              alignItems: isCompact ? "stretch" : "flex-start",
-                              gap: isCompact
+                              alignItems: stackFieldPairs ? "stretch" : "flex-start",
+                              gap: stackFieldPairs
                                 ? "0"
                                 : `${FEATURE_CODE_GRID_COLUMN_GAP}px`,
-                              ...(isCompact
+                              ...(stackFieldPairs
                                 ? { flexDirection: "column" }
                                 : {}),
                             }}
@@ -710,7 +740,7 @@ const FeatureCodePage = () => {
                             {row.map((field) => (
                               <div
                                 key={field.key}
-                                style={isCompact ? { width: "100%" } : undefined}
+                                style={stackFieldPairs ? { width: "100%" } : undefined}
                               >
                                 {renderFieldCell(field)}
                               </div>
@@ -726,7 +756,12 @@ const FeatureCodePage = () => {
           </div>
 
           {!loading && (
-            <div style={featureCodeFooterStyle}>
+            <div
+              style={{
+                ...featureCodeFooterStyle,
+                ...(isCompact ? { padding: "10px 12px" } : {}),
+              }}
+            >
               <Btn
                 variant="primary"
                 onClick={handleSave}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, Checkbox, CircularProgress, Tooltip } from "@mui/material";
+import { Alert, Checkbox, CircularProgress, Tooltip, useMediaQuery } from "@mui/material";
 import {
   SIP_SETTINGS_FIELDS,
   SIP_SETTINGS_NOTE,
@@ -450,6 +450,7 @@ const dashboardColumnStyle = {
   gap: 12,
   minWidth: 0,
   padding: "16px 36px 20px",
+  boxSizing: "border-box",
 };
 
 const dashboardColumnLeftStyle = {
@@ -491,10 +492,18 @@ const fxsVoipSipCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const FxsVoipSipSectionHeading = ({ title, isFirst = false }) => (
+const FXS_VOIP_SIP_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
+
+const FxsVoipSipSectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery(FXS_VOIP_SIP_LAPTOP_NARROW_MQ);
+  return (
   <div
     style={{
-      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : "12px 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -504,7 +513,7 @@ const FxsVoipSipSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: FXS_VOIP_SIP_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : FXS_VOIP_SIP_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -515,7 +524,8 @@ const FxsVoipSipSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const FxsVoipSipBreadcrumb = () => (
   <div
@@ -542,7 +552,7 @@ const FxsVoipSipBreadcrumb = () => (
 );
 
 const FxsVoipSipPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle}>
+  <div style={advancedPageWrapStyle} data-native-scroll>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
@@ -932,7 +942,7 @@ const FxsVoipSipPage = () => {
             <CircularProgress size={32} sx={{ color: C.accent }} />
           </div>
         ) : (
-          <div style={dashboardGridStyle}>
+          <div className="settings-dashboard-grid" style={dashboardGridStyle}>
             <div style={dashboardColumnLeftStyle}>
               <FxsVoipSipSectionHeading
                 title={FXS_VOIP_SIP_LEFT_SECTION_TITLE}
@@ -943,7 +953,7 @@ const FxsVoipSipPage = () => {
               </div>
             </div>
 
-            <div style={dashboardDividerCellStyle} aria-hidden="true">
+            <div className="settings-dashboard-divider" style={dashboardDividerCellStyle} aria-hidden="true">
               <div style={dashboardDividerLineStyle} />
             </div>
 

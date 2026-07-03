@@ -452,12 +452,13 @@ const InboundFieldLabel = ({ tooltipKey, children, style = {} }) => {
 };
 
 const InboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
   const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
+        left: isLaptopNarrow ? 0 : -6,
         background: INBOUND_ROUTE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -473,7 +474,11 @@ const InboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false })
   return (
     <div
       style={{
-        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+        margin: isFirst
+          ? isLaptopNarrow
+            ? "16px 0 24px 0"
+            : "0 0 24px 0"
+          : "16px 0 24px 0",
         position: "relative",
         width: "100%",
       }}

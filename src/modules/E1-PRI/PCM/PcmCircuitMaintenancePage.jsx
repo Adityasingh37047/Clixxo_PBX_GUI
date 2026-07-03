@@ -140,6 +140,7 @@ const C = {
 
 const PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS = 10;
 const PCM_CIRCUIT_MAINTENANCE_COMPACT_MQ = "(max-width: 768px)";
+const PCM_CIRCUIT_MAINTENANCE_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER = 14;
 const PCM_CIRCUIT_MAINTENANCE_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
@@ -380,6 +381,12 @@ const topConfigActionBarStyle = {
 
 const topConfigCellStyle = {
   padding: "5px 12px",
+  boxSizing: "border-box",
+};
+
+const topConfigCellStyleLaptop = {
+  ...topConfigCellStyle,
+  padding: "8px 12px",
 };
 
 const tableCellStyle = {
@@ -728,6 +735,8 @@ const PAGE_CHROME_OFFSET = 80;
 const PcmCircuitMaintenancePage = () => {
   const highZoom = useBrowserZoom110();
   const isCompact = useMediaQuery(PCM_CIRCUIT_MAINTENANCE_COMPACT_MQ);
+  const isLaptopNarrow = useMediaQuery(PCM_CIRCUIT_MAINTENANCE_LAPTOP_NARROW_MQ);
+  const tightenActionBar = isCompact || isLaptopNarrow;
   const channelScroll = highZoom || isCompact;
 
   // State for checkboxes and table data
@@ -1004,7 +1013,9 @@ const PcmCircuitMaintenancePage = () => {
   }, []);
 
   // PCM Maintenance section
-  const renderPcmMaintenance = () => (
+  const renderPcmMaintenance = () => {
+    const configCell = isLaptopNarrow ? topConfigCellStyleLaptop : topConfigCellStyle;
+    return (
     <div
       style={{
         ...pcmCircuitMaintenanceShadowWrapStyle,
@@ -1019,13 +1030,13 @@ const PcmCircuitMaintenancePage = () => {
         <table style={tableStyle}>
           <tbody>
             <tr>
-              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+              <td style={{ ...labelCellStyle, ...configCell }}>
                 {PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_NO}
               </td>
               <td
                 style={{
                   ...valueCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   borderRight: "none",
                 }}
               >
@@ -1033,13 +1044,13 @@ const PcmCircuitMaintenancePage = () => {
               </td>
             </tr>
             <tr>
-              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+              <td style={{ ...labelCellStyle, ...configCell }}>
                 {PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_STATUS}
               </td>
               <td
                 style={{
                   ...valueCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   borderRight: "none",
                 }}
               >
@@ -1058,7 +1069,7 @@ const PcmCircuitMaintenancePage = () => {
               <td
                 style={{
                   ...labelCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   ...lastTableRowCellStyle,
                 }}
               >
@@ -1067,7 +1078,7 @@ const PcmCircuitMaintenancePage = () => {
               <td
                 style={{
                   ...valueCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   borderRight: "none",
                   ...lastTableRowCellStyle,
                 }}
@@ -1086,7 +1097,7 @@ const PcmCircuitMaintenancePage = () => {
       <div
         style={{
           ...topConfigActionBarStyle,
-          ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+          ...(tightenActionBar ? { justifyContent: "center", gap: 8 } : {}),
         }}
       >
         <Btn
@@ -1115,23 +1126,26 @@ const PcmCircuitMaintenancePage = () => {
         </Btn>
         <Btn
           disabled={!maintenanceChecked}
-          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 180 }}
+          style={tightenActionBar ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 180 }}
         >
           {PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_CONNECT}
         </Btn>
         <Btn
           disabled={!maintenanceChecked}
-          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 180 }}
+          style={tightenActionBar ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 180 }}
         >
           {PCM_CIRCUIT_MAINTENANCE_BTN_PHYSICAL_DISCONNECT}
         </Btn>
       </div>
       </div>
     </div>
-  );
+    );
+  };
 
   // PCM LoopBack Config section
-  const renderPcmLoopback = () => (
+  const renderPcmLoopback = () => {
+    const configCell = isLaptopNarrow ? topConfigCellStyleLaptop : topConfigCellStyle;
+    return (
     <div
       style={{
         ...pcmCircuitMaintenanceShadowWrapStyle,
@@ -1146,13 +1160,13 @@ const PcmCircuitMaintenancePage = () => {
         <table style={tableStyle}>
           <tbody>
             <tr>
-              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+              <td style={{ ...labelCellStyle, ...configCell }}>
                 {PCM_CIRCUIT_MAINTENANCE_LABEL_PCM_NO}
               </td>
               <td
                 style={{
                   ...valueCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   borderRight: "none",
                 }}
               >
@@ -1160,13 +1174,13 @@ const PcmCircuitMaintenancePage = () => {
               </td>
             </tr>
             <tr>
-              <td style={{ ...labelCellStyle, ...topConfigCellStyle }}>
+              <td style={{ ...labelCellStyle, ...configCell }}>
                 {PCM_CIRCUIT_MAINTENANCE_LABEL_LOOPBACK_STATUS}
               </td>
               <td
                 style={{
                   ...valueCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   borderRight: "none",
                 }}
               >
@@ -1185,7 +1199,7 @@ const PcmCircuitMaintenancePage = () => {
               <td
                 style={{
                   ...labelCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   ...lastTableRowCellStyle,
                 }}
               >
@@ -1194,7 +1208,7 @@ const PcmCircuitMaintenancePage = () => {
               <td
                 style={{
                   ...valueCellStyle,
-                  ...topConfigCellStyle,
+                  ...configCell,
                   borderRight: "none",
                   ...lastTableRowCellStyle,
                 }}
@@ -1213,7 +1227,7 @@ const PcmCircuitMaintenancePage = () => {
       <div
         style={{
           ...topConfigActionBarStyle,
-          ...(isCompact ? { justifyContent: "center", gap: 8 } : {}),
+          ...(tightenActionBar ? { justifyContent: "center", gap: 8 } : {}),
         }}
       >
         <Btn
@@ -1236,26 +1250,27 @@ const PcmCircuitMaintenancePage = () => {
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 160 }}
+          style={tightenActionBar ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 160 }}
         >
           {PCM_CIRCUIT_MAINTENANCE_BTN_LOCAL_LOOPBACK}
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 160 }}
+          style={tightenActionBar ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 160 }}
         >
           {PCM_CIRCUIT_MAINTENANCE_BTN_REMOTE_LOOPBACK}
         </Btn>
         <Btn
           disabled={!loopbackChecked}
-          style={isCompact ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 120 }}
+          style={tightenActionBar ? pcmCircuitMaintenanceCancelBtnStyle : { ...pcmCircuitMaintenanceCancelBtnStyle, minWidth: 120 }}
         >
           {PCM_CIRCUIT_MAINTENANCE_BTN_UNLOOPBACK}
         </Btn>
       </div>
       </div>
     </div>
-  );
+    );
+  };
 
   // PCM0 section
   const handlePcm0Check = (idx) => {

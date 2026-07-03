@@ -457,6 +457,8 @@ const advancedFormBtnStyle = {
   minWidth: 100,
 };
 
+const SIP_MEDIA_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
+
 const sipMediaDashboardGridStyle = (isCompact) => ({
   display: "grid",
   gridTemplateColumns: isCompact
@@ -517,10 +519,16 @@ const dashboardFieldsStackStyle = {
   gap: 12,
 };
 
-const SipMediaSectionHeading = ({ title, isFirst = false }) => (
+const SipMediaSectionHeading = ({ title, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery(SIP_MEDIA_LAPTOP_NARROW_MQ);
+  return (
   <div
     style={{
-      margin: isFirst ? "12px 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "20px 0 24px 0"
+          : "12px 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -530,7 +538,7 @@ const SipMediaSectionHeading = ({ title, isFirst = false }) => (
       style={{
         position: "absolute",
         top: -10,
-        left: SIP_MEDIA_SECTION_HEADING_LEFT,
+        left: isLaptopNarrow ? 0 : SIP_MEDIA_SECTION_HEADING_LEFT,
         background: C.cardBg,
         paddingRight: 8,
         fontSize: 14,
@@ -541,7 +549,8 @@ const SipMediaSectionHeading = ({ title, isFirst = false }) => (
       {title}
     </span>
   </div>
-);
+  );
+};
 
 const sipMediaFixedAlertSx = {
   position: "fixed",
@@ -856,7 +865,7 @@ const SipMediaPage = () => {
                   className={SIP_MEDIA_SCROLL_CLASS}
                   style={{ boxSizing: "border-box" }}
                 >
-                  <div style={sipMediaDashboardGridStyle(isCompact)}>
+                  <div className="settings-dashboard-grid" style={sipMediaDashboardGridStyle(isCompact)}>
                     <div style={sipMediaColumnStyle(isCompact)}>
                       <SipMediaSectionHeading
                         title={SIP_MEDIA_SECTION_RTP_DTMF}
@@ -870,7 +879,7 @@ const SipMediaPage = () => {
                     </div>
 
                     {!isCompact && (
-                      <div style={sipMediaDividerCellStyle} aria-hidden="true">
+                      <div className="settings-dashboard-divider" style={sipMediaDividerCellStyle} aria-hidden="true">
                         <div style={sipMediaDividerLineStyle} />
                       </div>
                     )}

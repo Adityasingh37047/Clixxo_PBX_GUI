@@ -53,6 +53,39 @@ body,
   -webkit-overflow-scrolling: touch;
 }
 
+/* Main content chain — allow grid/flex children to shrink within sidebar-offset width */
+.app-main-scroll {
+  min-width: 0;
+}
+
+.app-main-scroll > .app-page-outlet {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Page shells (data-native-scroll): drop duplicate 16px padding when Layout already pads.
+   Desktop (>1366px): inline 16px shell padding is unchanged. */
+@media (max-width: 1366px) {
+  [data-native-scroll] {
+    padding: 8px !important;
+    min-width: 0;
+    max-width: 100%;
+    min-height: calc(100vh - 64px);
+    box-sizing: border-box;
+  }
+}
+
+/* Two-column settings form dashboards only — not tables, monitors, or charts */
+@media (max-width: 1280px) {
+  .settings-dashboard-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .settings-dashboard-divider {
+    display: none !important;
+  }
+}
+
 /* VoIP settings pages — outer layout #eef2f7 + inner page shell #f8fafc (matches Media Parameters) */
 .fxs-voip-media-page {
   background: #f8fafc;

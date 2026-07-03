@@ -451,6 +451,7 @@ const dashboardColumnStyle = {
   gap: 12,
   minWidth: 0,
   padding: "20px 36px 20px",
+  boxSizing: "border-box",
 };
 
 const dashboardColumnLeftStyle = {
@@ -509,7 +510,7 @@ const FxsAdvancedBreadcrumb = () => (
 );
 
 const FxsAdvancedPageShell = ({ children }) => (
-  <div style={advancedPageWrapStyle}>
+  <div style={advancedPageWrapStyle} data-native-scroll>
     <div style={advancedPageInnerStyle}>{children}</div>
   </div>
 );
@@ -839,12 +840,12 @@ const FxsPage = () => {
         <div style={advancedCardTitleBarStyle}>
           <span>{FXS_PAGE_CARD_TITLE}</span>
         </div>
-        <div style={dashboardGridStyle}>
+        <div className="settings-dashboard-grid" style={dashboardGridStyle}>
           <div style={dashboardColumnLeftStyle}>
             <div style={fxsPageFieldsColStyle}>{leftColumnFields}</div>
           </div>
 
-          <div style={dashboardDividerCellStyle} aria-hidden="true">
+          <div className="settings-dashboard-divider" style={dashboardDividerCellStyle} aria-hidden="true">
             <div style={dashboardDividerLineStyle} />
           </div>
 

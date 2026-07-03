@@ -460,12 +460,13 @@ const RestrictionFieldLabel = ({ tooltipKey, children, style = {} }) => {
 };
 
 const OutboundRestrictionModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
   const heading = (
     <span
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
+        left: isLaptopNarrow ? 0 : -6,
         background: OUTBOUND_RESTRICTION_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -483,7 +484,11 @@ const OutboundRestrictionModalSectionHeading = ({ title, tooltipKey, isFirst = f
   return (
     <div
       style={{
-        margin: isFirst ? "0 0 24px 0" : "16px 0 24px 0",
+        margin: isFirst
+          ? isLaptopNarrow
+            ? "16px 0 24px 0"
+            : "0 0 24px 0"
+          : "16px 0 24px 0",
         position: "relative",
         width: "100%",
       }}

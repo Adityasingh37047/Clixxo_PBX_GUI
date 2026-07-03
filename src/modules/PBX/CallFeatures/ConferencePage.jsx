@@ -702,10 +702,16 @@ const ConferenceSectionHeading = ({
   title,
   isFirst = false,
   required = false,
-}) => (
+}) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
   <div
     style={{
-      margin: isFirst ? "0 0 24px 0" : "28px 0 24px 0",
+      margin: isFirst
+        ? isLaptopNarrow
+          ? "16px 0 24px 0"
+          : "0 0 24px 0"
+        : "28px 0 24px 0",
       position: "relative",
       width: "100%",
     }}
@@ -715,7 +721,7 @@ const ConferenceSectionHeading = ({
       style={{
         position: "absolute",
         top: -10,
-        left: -6,
+        left: isLaptopNarrow ? 0 : -6,
         background: CONFERENCE_MODAL_SECTION_BG,
         paddingRight: 8,
         fontSize: 14,
@@ -727,7 +733,8 @@ const ConferenceSectionHeading = ({
       {required ? <span style={{ color: C.errorRed }}> *</span> : null}
     </span>
   </div>
-);
+  );
+};
 
 const CONFERENCE_MEMBER_LIST_HEIGHT = 188;
 
