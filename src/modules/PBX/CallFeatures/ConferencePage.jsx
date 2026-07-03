@@ -596,7 +596,7 @@ const formatConferenceTooltipTitle = (text) => {
 };
 
 const conferenceModalTabBarStyle = {
-  borderBottom: `1px solid ${C.divider}`,
+  
   background: "#ffffff",
 };
 
@@ -2033,7 +2033,7 @@ const ConferencePage = () => {
                       <div
                         style={{
                           fontSize: 11,
-                          color: C.errorRed,
+                          color: C.accent,
                           marginTop: 8,
                           fontWeight: 400,
                           textAlign: "center",

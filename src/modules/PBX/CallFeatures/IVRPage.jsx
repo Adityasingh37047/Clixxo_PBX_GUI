@@ -885,7 +885,7 @@ const formatIvrTooltipTitle = (text) => {
 };
 
 const ivrModalTabBarStyle = {
-  borderBottom: `1px solid ${C.divider}`,
+
   background: "#ffffff",
 };
 

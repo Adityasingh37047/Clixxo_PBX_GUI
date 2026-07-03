@@ -1387,6 +1387,12 @@ const CallBackPage = () => {
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         PaperProps={{ sx: callBackModalPaperSx }}
+         sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            paddingTop: "120px",
+          },
+        }}
       >
         <DialogTitle style={callBackModalTitleStyle}>
           {editId != null ? "Edit CallBack Rule" : "Add CallBack"}

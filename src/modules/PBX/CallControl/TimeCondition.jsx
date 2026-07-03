@@ -1546,6 +1546,13 @@ const TimeCondition = () => {
         }}
         maxWidth={false}
         PaperProps={{ sx: timeConditionModalPaperSx }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            paddingTop: "120px",
+          },
+        }}
+      
         disableRestoreFocus
       >
         <DialogTitle style={timeConditionModalTitleStyle}>
