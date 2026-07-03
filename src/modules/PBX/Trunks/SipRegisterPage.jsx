@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import {
   sipRegisterFields,
   SIP_REGISTER_INITIAL_FORM,
@@ -719,8 +719,12 @@ const sipRegisterCodecDualListBtnStyle = {
 const sipRegisterCodecDualListReorderBtnStyle = {
   ...sipRegisterCodecDualListBtnStyle,
   fontSize: 11,
-  fontWeight: 500,
-  color: C.mutedText,
+  fontWeight: 500
+};
+
+const sipRegisterCodecDualListReorderDownBtnStyle = {
+  ...sipRegisterCodecDualListReorderBtnStyle,
+  fontWeight: 400,
 };
 
 const sipRegisterCodecBtnColumnStyle = {
@@ -732,15 +736,18 @@ const sipRegisterCodecBtnColumnStyle = {
   width: SIP_REGISTER_CODEC_BTN_COL_WIDTH,
 };
 
-const SipRegisterCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const SipRegisterCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
   <button
     type="button"
+    data-codec-action-btn
     title={title}
     onClick={onClick}
-    style={
-      reorder
-        ? sipRegisterCodecDualListReorderBtnStyle
-        : sipRegisterCodecDualListBtnStyle
+        style={
+      down
+        ? sipRegisterCodecDualListReorderDownBtnStyle
+        : reorder
+          ? sipRegisterCodecDualListReorderBtnStyle
+          : sipRegisterCodecDualListBtnStyle
     }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -770,25 +777,158 @@ const SipRegisterCodecListBox = ({
   items,
   selectedIds,
   onToggle,
+  onDragSelect,
+  onClearHighlight,
   emptyText,
   getLabel,
 }) => {
   const isEmpty = items.length === 0;
+  const listRef = useRef(null);
+  const isDragSelectingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragAnchorIndexRef = useRef(null);
+  const lastClickIndexRef = useRef(null);
+
+  const getItemId = (item) => typeof item === "string" ? item : item.value;
+  const itemIds = useMemo(() => items.map(getItemId), [items]);
+
+  const applyRangeToIndex = (currIdx) => {
+    if (currIdx < 0) return;
+    if (dragAnchorIndexRef.current === null) {
+      dragAnchorIndexRef.current = currIdx;
+    }
+    const anchor = dragAnchorIndexRef.current;
+    const from = Math.min(anchor, currIdx);
+    const to = Math.max(anchor, currIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeBetween = (fromIdx, toIdx) => {
+    if (fromIdx < 0 || toIdx < 0) return;
+    const from = Math.min(fromIdx, toIdx);
+    const to = Math.max(fromIdx, toIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeAtPoint = (clientX, clientY) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const strip = el?.closest?.("[data-codec-strip-id]");
+    if (!strip || !listRef.current?.contains(strip)) return;
+    const id = strip.getAttribute("data-codec-strip-id");
+    if (!id) return;
+    applyRangeToIndex(itemIds.indexOf(id));
+  };
+
+  const autoScrollList = (clientY) => {
+    const container = listRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const edge = 28;
+    const speed = 10;
+    if (clientY < rect.top + edge) {
+      container.scrollTop -= speed;
+    } else if (clientY > rect.bottom - edge) {
+      container.scrollTop += speed;
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
+      didDragRef.current = true;
+      autoScrollList(e.clientY);
+      applyRangeAtPoint(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      isDragSelectingRef.current = false;
+      dragAnchorIndexRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [itemIds, onDragSelect]);
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    isDragSelectingRef.current = true;
+    didDragRef.current = false;
+    dragAnchorIndexRef.current = null;
+
+    const strip = e.target.closest?.("[data-codec-strip-id]");
+    if (strip && listRef.current?.contains(strip)) {
+      const id = strip.getAttribute("data-codec-strip-id");
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) {
+        dragAnchorIndexRef.current = idx;
+        applyRangeToIndex(idx);
+        lastClickIndexRef.current = idx;
+      }
+    }
+  };
+
+  const handleClick = (id, e) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      didDragRef.current = false;
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) lastClickIndexRef.current = idx;
+      return;
+    }
+
+    const idx = itemIds.indexOf(id);
+    if (idx === -1) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      onToggle(id);
+      lastClickIndexRef.current = idx;
+      return;
+    }
+
+    if (e.shiftKey && lastClickIndexRef.current !== null) {
+      applyRangeBetween(lastClickIndexRef.current, idx);
+      return;
+    }
+
+    onDragSelect?.([id]);
+    lastClickIndexRef.current = idx;
+  };
+
+  const handleContainerClick = (e) => {
+    if (didDragRef.current) return;
+    if (e.target.closest?.("[data-codec-strip-id]")) return;
+    onClearHighlight?.();
+    lastClickIndexRef.current = null;
+  };
+
   return (
-    <div style={getSipRegisterCodecListBoxStyle(isEmpty)}>
+    <div
+      ref={listRef}
+      data-codec-list-box
+      style={getSipRegisterCodecListBoxStyle(isEmpty)}
+      onMouseDown={handleMouseDown}
+      onClick={handleContainerClick}
+    >
       {isEmpty ? (
         <div style={sipRegisterCodecListEmptyStyle}>{emptyText}</div>
       ) : (
         items.map((item) => {
-          const id = typeof item === "string" ? item : item.value;
+          const id = getItemId(item);
           const label = getLabel ? getLabel(id) : item.label || id;
           const isSelected = selectedIds.includes(id);
           return (
             <div
               key={id}
+              data-codec-strip-id={id}
               role="option"
               aria-selected={isSelected}
-              onClick={() => onToggle(id)}
+              onClick={(e) => handleClick(id, e)}
               style={sipRegisterCodecStripStyle(isSelected)}
             >
               {label}
@@ -834,6 +974,10 @@ const trunkModalPaperSx = {
   width: 900,
   maxWidth: "95vw",
   mx: "auto",
+  my: 0,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: "8px",
   overflow: "hidden",
@@ -1429,6 +1573,7 @@ const SipRegisterPage = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [message, setMessage] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
+  const modalScrollRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [modalTab, setModalTab] = useState("basic");
@@ -1510,6 +1655,10 @@ const SipRegisterPage = () => {
     setCodecChosenSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+
+  const selectCodecAvailable = (ids) => setCodecAvailableSelected(ids);
+
+  const selectCodecChosen = (ids) => setCodecChosenSelected(ids);
 
   const updateCodecList = (newList) => {
     const newCodecsString = newList.join(",");
@@ -1745,6 +1894,45 @@ const SipRegisterPage = () => {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
+  const selectDodAvailable = (ids) => setDodAvailableSelected(ids);
+
+  const selectDodChosen = (ids) => setDodChosenSelected(ids);
+
+  const clearDualListHighlight = () => {
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
+    setDodAvailableSelected([]);
+    setDodChosenSelected([]);
+  };
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    const handleOutsideClear = (e) => {
+      if (
+        !codecAvailableSelected.length &&
+        !codecChosenSelected.length &&
+        !dodAvailableSelected.length &&
+        !dodChosenSelected.length
+      ) {
+        return;
+      }
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearDualListHighlight();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [
+    showModal,
+    codecAvailableSelected,
+    codecChosenSelected,
+    dodAvailableSelected,
+    dodChosenSelected,
+  ]);
+
   const handleConfirmDodAdd = () => {
     const name = dodAddName.trim();
     const number = dodAddNumber.trim();
@@ -1785,6 +1973,11 @@ const SipRegisterPage = () => {
       loadTrunks();
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (!showModal || !modalScrollRef.current) return;
+    modalScrollRef.current.scrollTop = 0;
+  }, [showModal, modalTab]);
 
   // Load ETH port dropdown options when SIP Register modal opens.
   // This keeps the menu consistent and shows VPN options only when VPN interfaces are detected.
@@ -2892,10 +3085,22 @@ const SipRegisterPage = () => {
   };
 
   const sipRegisterCodecTransferActions = [
-    { onClick: addSelectedCodecs, title: "Add selected", label: ">" },
-    { onClick: addAllCodecs, title: "Add all", label: ">>" },
-    { onClick: removeSelectedCodecs, title: "Remove selected", label: "<" },
-    { onClick: removeAllCodecs, title: "Remove all", label: "<<" },
+    {
+      onClick: addSelectedCodecs,
+      title: "Move selected to Selected",
+      label: ">",
+    },
+    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
+    {
+      onClick: removeSelectedCodecs,
+      title: "Move selected to Available",
+      label: "<",
+    },
+    {
+      onClick: removeAllCodecs,
+      title: "Move all to Available",
+      label: "<<",
+    },
   ];
 
   const sipRegisterCodecReorderActions = [
@@ -2906,10 +3111,22 @@ const SipRegisterPage = () => {
   ];
 
   const sipRegisterDodTransferActions = [
-    { onClick: dodAddSelectedMembers, title: "Add selected", label: ">" },
-    { onClick: dodAddAllMembers, title: "Add all", label: ">>" },
-    { onClick: dodRemoveSelectedMembers, title: "Remove selected", label: "<" },
-    { onClick: dodRemoveAllMembers, title: "Remove all", label: "<<" },
+    {
+      onClick: dodAddSelectedMembers,
+      title: "Move selected to Selected",
+      label: ">",
+    },
+    { onClick: dodAddAllMembers, title: "Move all to Selected", label: ">>" },
+    {
+      onClick: dodRemoveSelectedMembers,
+      title: "Move selected to Available",
+      label: "<",
+    },
+    {
+      onClick: dodRemoveAllMembers,
+      title: "Move all to Available",
+      label: "<<",
+    },
   ];
 
   const dodAvailableEmptyText =
@@ -3366,7 +3583,13 @@ const SipRegisterPage = () => {
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
         className="z-50"
-        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            justifyContent: "center",
+            pt: 8,
+          },
+        }}
         PaperProps={{ sx: trunkModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
@@ -3388,6 +3611,7 @@ const SipRegisterPage = () => {
         />
 
         <DialogContent
+          ref={modalScrollRef}
           className="app-main-scroll"
           style={{
             padding: "24px",
@@ -4036,6 +4260,8 @@ const SipRegisterPage = () => {
                       items={availableCodecList}
                       selectedIds={codecAvailableSelected}
                       onToggle={toggleCodecAvailableSelect}
+                      onDragSelect={selectCodecAvailable}
+                      onClearHighlight={clearDualListHighlight}
                       emptyText="Available codecs"
                       getLabel={(id) => getCodecLabel(id)}
                     />
@@ -4065,6 +4291,8 @@ const SipRegisterPage = () => {
                       items={selectedCodecList}
                       selectedIds={codecChosenSelected}
                       onToggle={toggleCodecChosenSelect}
+                      onDragSelect={selectCodecChosen}
+                      onClearHighlight={clearDualListHighlight}
                       emptyText="No selected codecs"
                       getLabel={(id) => getCodecLabel(id)}
                     />
@@ -4822,8 +5050,12 @@ const SipRegisterPage = () => {
                             items={dodAvailableList}
                             selectedIds={dodAvailableSelectedInList}
                             onToggle={toggleDodAvailableSelect}
+                            onDragSelect={selectDodAvailable}
+                            onClearHighlight={clearDualListHighlight}
                             emptyText={dodAvailableEmptyText}
-                            getLabel={(id) => getDodExtLabel(id)}
+                            getLabel={(id, item) =>
+                              item?.label || getDodExtLabel(id)
+                            }
                           />
                         </div>
                         <div>
@@ -4855,6 +5087,8 @@ const SipRegisterPage = () => {
                             items={dodMemberExtensions}
                             selectedIds={dodChosenSelected}
                             onToggle={toggleDodChosenSelect}
+                            onDragSelect={selectDodChosen}
+                            onClearHighlight={clearDualListHighlight}
                             emptyText="No selected extensions"
                             getLabel={(id) => getDodExtLabel(id)}
                           />

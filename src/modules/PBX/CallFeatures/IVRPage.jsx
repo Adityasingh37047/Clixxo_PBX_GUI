@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -163,7 +163,7 @@ const C = {
   codecStripBorder: "#ced4de",
   codecStripSelectedBg: "#f1f5f9",
   codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#6b7280",
+  codecBtnBorder: "#c9d0d9",
   codecBtnBg: "#d9dde3",
 };
 
@@ -255,8 +255,12 @@ const ivrOutboundCodecDualListBtnStyle = {
 const ivrOutboundCodecDualListReorderBtnStyle = {
   ...ivrOutboundCodecDualListBtnStyle,
   fontSize: 11,
-  fontWeight: 500,
-  color: C.mutedText,
+  fontWeight: 500
+};
+
+const ivrOutboundCodecDualListReorderDownBtnStyle = {
+  ...ivrOutboundCodecDualListReorderBtnStyle,
+  fontWeight: 400,
 };
 
 const ivrOutboundCodecBtnColumnStyle = {
@@ -268,15 +272,18 @@ const ivrOutboundCodecBtnColumnStyle = {
   width: IVR_OUTBOUND_CODEC_BTN_COL_WIDTH,
 };
 
-const IvrOutboundCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const IvrOutboundCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
   <button
     type="button"
+    data-codec-action-btn
     title={title}
     onClick={onClick}
-    style={
-      reorder
-        ? ivrOutboundCodecDualListReorderBtnStyle
-        : ivrOutboundCodecDualListBtnStyle
+        style={
+      down
+        ? ivrOutboundCodecDualListReorderDownBtnStyle
+        : reorder
+          ? ivrOutboundCodecDualListReorderBtnStyle
+          : ivrOutboundCodecDualListBtnStyle
     }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -290,7 +297,7 @@ const IvrOutboundCodecDualListBtn = ({ onClick, title, children, reorder }) => (
       e.currentTarget.style.background = "#b3bac4";
       e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
       e.currentTarget.style.boxShadow =
-        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
     }}
     onMouseUp={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -306,29 +313,158 @@ const IvrOutboundCodecListBox = ({
   items,
   selectedIds,
   onToggle,
+  onDragSelect,
+  onClearHighlight,
   emptyText,
   getLabel,
 }) => {
   const isEmpty = items.length === 0;
+  const listRef = useRef(null);
+  const isDragSelectingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragAnchorIndexRef = useRef(null);
+  const lastClickIndexRef = useRef(null);
+
+  const getItemId = (item) => typeof item === "object" ? item.id : item;
+  const itemIds = useMemo(() => items.map(getItemId), [items]);
+
+  const applyRangeToIndex = (currIdx) => {
+    if (currIdx < 0) return;
+    if (dragAnchorIndexRef.current === null) {
+      dragAnchorIndexRef.current = currIdx;
+    }
+    const anchor = dragAnchorIndexRef.current;
+    const from = Math.min(anchor, currIdx);
+    const to = Math.max(anchor, currIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeBetween = (fromIdx, toIdx) => {
+    if (fromIdx < 0 || toIdx < 0) return;
+    const from = Math.min(fromIdx, toIdx);
+    const to = Math.max(fromIdx, toIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeAtPoint = (clientX, clientY) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const strip = el?.closest?.("[data-codec-strip-id]");
+    if (!strip || !listRef.current?.contains(strip)) return;
+    const id = strip.getAttribute("data-codec-strip-id");
+    if (!id) return;
+    applyRangeToIndex(itemIds.indexOf(id));
+  };
+
+  const autoScrollList = (clientY) => {
+    const container = listRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const edge = 28;
+    const speed = 10;
+    if (clientY < rect.top + edge) {
+      container.scrollTop -= speed;
+    } else if (clientY > rect.bottom - edge) {
+      container.scrollTop += speed;
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
+      didDragRef.current = true;
+      autoScrollList(e.clientY);
+      applyRangeAtPoint(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      isDragSelectingRef.current = false;
+      dragAnchorIndexRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [itemIds, onDragSelect]);
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    isDragSelectingRef.current = true;
+    didDragRef.current = false;
+    dragAnchorIndexRef.current = null;
+
+    const strip = e.target.closest?.("[data-codec-strip-id]");
+    if (strip && listRef.current?.contains(strip)) {
+      const id = strip.getAttribute("data-codec-strip-id");
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) {
+        dragAnchorIndexRef.current = idx;
+        applyRangeToIndex(idx);
+        lastClickIndexRef.current = idx;
+      }
+    }
+  };
+
+  const handleClick = (id, e) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      didDragRef.current = false;
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) lastClickIndexRef.current = idx;
+      return;
+    }
+
+    const idx = itemIds.indexOf(id);
+    if (idx === -1) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      onToggle(id);
+      lastClickIndexRef.current = idx;
+      return;
+    }
+
+    if (e.shiftKey && lastClickIndexRef.current !== null) {
+      applyRangeBetween(lastClickIndexRef.current, idx);
+      return;
+    }
+
+    onDragSelect?.([id]);
+    lastClickIndexRef.current = idx;
+  };
+
+  const handleContainerClick = (e) => {
+    if (didDragRef.current) return;
+    if (e.target.closest?.("[data-codec-strip-id]")) return;
+    onClearHighlight?.();
+    lastClickIndexRef.current = null;
+  };
+
   return (
-    <div style={getIvrOutboundCodecListBoxStyle(isEmpty)}>
+    <div
+      ref={listRef}
+      data-codec-list-box
+      style={getIvrOutboundCodecListBoxStyle(isEmpty)}
+      onMouseDown={handleMouseDown}
+      onClick={handleContainerClick}
+    >
       {isEmpty ? (
         <div style={ivrOutboundCodecListEmptyStyle}>{emptyText}</div>
       ) : (
         items.map((item) => {
-          const id = typeof item === "object" ? item.id : item;
-          const label = getLabel
-            ? getLabel(id)
-            : typeof item === "object"
-              ? item.name || String(id)
-              : String(item);
+          const id = getItemId(item);
+          const label = getLabel ? getLabel(id) : item.label || id;
           const isSelected = selectedIds.includes(id);
           return (
             <div
               key={id}
+              data-codec-strip-id={id}
               role="option"
               aria-selected={isSelected}
-              onClick={() => onToggle(id)}
+              onClick={(e) => handleClick(id, e)}
               style={ivrOutboundCodecStripStyle(isSelected)}
             >
               {label}
@@ -770,7 +906,10 @@ const ivrModalSelectSx = {
 const ivrModalPaperSx = {
   width: 900,
   maxWidth: "96vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -997,6 +1136,7 @@ const IVRPage = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasLoadedOutboundRoutesRef = useRef(false);
+  const modalScrollRef = useRef(null);
 
   // Search & Pagination
   const itemsPerPage = 20;
@@ -1257,6 +1397,11 @@ const IVRPage = () => {
     if (allOutboundRoutes.length > 0) return;
     loadOutboundRoutes();
   }, [showModal, directOutbound]);
+
+  useLayoutEffect(() => {
+    if (!showModal || !modalScrollRef.current) return;
+    modalScrollRef.current.scrollTop = 0;
+  }, [showModal, activeTab]);
 
   // ── Search & Pagination ──
   const filteredRows = searchQuery.trim()
@@ -1660,6 +1805,30 @@ const IVRPage = () => {
     );
   };
 
+  const selectAvailableOutboundRoutes = (ids) => setAvailableSelected(ids);
+
+  const selectChosenOutboundRoutes = (ids) => setChosenSelected(ids);
+
+  const clearOutboundRouteHighlight = () => {
+    setAvailableSelected([]);
+    setChosenSelected([]);
+  };
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    const handleOutsideClear = (e) => {
+      if (!availableSelected.length && !chosenSelected.length) return;
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearOutboundRouteHighlight();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [showModal, availableSelected, chosenSelected]);
+
   const moveOutboundUp = () => {
     if (!chosenSelected.length) return;
     const ids = [...selectedOutboundRouteIds];
@@ -1971,8 +2140,7 @@ const IVRPage = () => {
                   <span
                     onClick={() => setSearchQuery("")}
                     style={{
-                      fontSize: 11,
-                      color: C.mutedText,
+                      fontSize: 11
                       cursor: "pointer",
                     }}
                   >
@@ -2318,7 +2486,12 @@ const IVRPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
         PaperProps={{ sx: ivrModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
@@ -2328,6 +2501,7 @@ const IVRPage = () => {
         </DialogTitle>
 
         <DialogContent
+          ref={modalScrollRef}
           className="app-main-scroll"
           style={{
             padding: "0px 24px 20px",
@@ -2726,17 +2900,16 @@ const IVRPage = () => {
                               }
                               selectedIds={availableSelected}
                               onToggle={toggleAvailableRouteSelect}
+                              onDragSelect={selectAvailableOutboundRoutes}
+                              onClearHighlight={clearOutboundRouteHighlight}
                               emptyText={
                                 loading.outboundRoutes
                                   ? "Loading routes..."
                                   : "No routes available"
                               }
-                              getLabel={(id) => {
-                                const item = availableOutboundList.find(
-                                  (r) => r.id === id,
-                                );
-                                return item?.name || getOutboundRouteLabel(id);
-                              }}
+                              getLabel={(id, item) =>
+                                item?.name || getOutboundRouteLabel(id)
+                              }
                             />
                           </div>
                           <div>
@@ -2749,21 +2922,25 @@ const IVRPage = () => {
                             <div style={ivrOutboundCodecBtnColumnStyle}>
                               <IvrOutboundCodecDualListBtn
                                 onClick={addSelectedOutboundRoutes}
+                                title="Move selected to Selected"
                               >
                                 &gt;
                               </IvrOutboundCodecDualListBtn>
                               <IvrOutboundCodecDualListBtn
                                 onClick={addAllOutboundRoutes}
+                                title="Move all to Selected"
                               >
                                 &gt;&gt;
                               </IvrOutboundCodecDualListBtn>
                               <IvrOutboundCodecDualListBtn
                                 onClick={removeSelectedOutboundRoutes}
+                                title="Move selected to Available"
                               >
                                 &lt;
                               </IvrOutboundCodecDualListBtn>
                               <IvrOutboundCodecDualListBtn
                                 onClick={removeAllOutboundRoutes}
+                                title="Move all to Available"
                               >
                                 &lt;&lt;
                               </IvrOutboundCodecDualListBtn>
@@ -2777,8 +2954,10 @@ const IVRPage = () => {
                               items={selectedOutboundRouteIds}
                               selectedIds={chosenSelected}
                               onToggle={toggleChosenRouteSelect}
+                              onDragSelect={selectChosenOutboundRoutes}
+                              onClearHighlight={clearOutboundRouteHighlight}
                               emptyText="No selected routes"
-                              getLabel={getOutboundRouteLabel}
+                              getLabel={(id) => getOutboundRouteLabel(id)}
                             />
                           </div>
                           <div>
@@ -2792,6 +2971,7 @@ const IVRPage = () => {
                               <IvrOutboundCodecDualListBtn
                                 reorder
                                 title="Move to bottom"
+                      down
                                 onClick={moveOutboundBottom}
                               >
                                 vv
@@ -2806,6 +2986,7 @@ const IVRPage = () => {
                               <IvrOutboundCodecDualListBtn
                                 reorder
                                 title="Move down"
+                      down
                                 onClick={moveOutboundDown}
                               >
                                 v

@@ -273,6 +273,36 @@ const Btn = ({
   );
 };
 
+const SIP_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN = 24;
+const SIP_TRUNK_GROUP_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const SIP_TRUNK_GROUP_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const SIP_TRUNK_GROUP_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: SIP_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${SIP_TRUNK_GROUP_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${SIP_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
+  width: 520,
+  maxWidth: "96vw",
+  p: 0,
+  borderRadius: "8px",
+  overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+};
+
+const addNewModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
 const addNewModalFooterStyle = {
   display: "flex",
   alignItems: "center",
@@ -1438,16 +1468,12 @@ const SipTrunkGroup = () => {
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
+        sx={SIP_TRUNK_GROUP_ADD_NEW_DIALOG_SX}
         PaperProps={{
-          sx: {
-            width: 520,
-            maxWidth: "96vw",
-            mx: "auto",
-            p: 0,
-            borderRadius: "8px",
-            overflow: "hidden",
-          },
+          sx: SIP_TRUNK_GROUP_ADD_NEW_DIALOG_PAPER_SX,
         }}
+        disableRestoreFocus
+        disableEnforceFocus
       >
         <DialogTitle
           style={{
@@ -1459,13 +1485,21 @@ const SipTrunkGroup = () => {
             textAlign: "center",
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,
+            flexShrink: 0,
           }}
         >
           {editingRecordId != null
             ? SIP_TRUNK_GROUP_MODAL_EDIT_TITLE
             : SIP_TRUNK_GROUP_MODAL_ADD_TITLE}
         </DialogTitle>
-        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            flex: "1 1 auto",
+          }}
+          sx={addNewModalDialogContentSx}
+        >
           <div
             style={{
               display: "flex",

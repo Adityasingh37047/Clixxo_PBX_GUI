@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Alert, Tooltip } from "@mui/material";
 import {
   MEDIA_PARAMETERS_NOTE,
@@ -678,7 +678,11 @@ const codecDualListReorderBtnStyle = {
   ...codecDualListBtnStyle,
   fontSize: 11,
   fontWeight: 500,
-  color: C.mutedText,
+};
+
+const codecDualListReorderDownBtnStyle = {
+  ...codecDualListReorderBtnStyle,
+  fontWeight: 400,
 };
 
 const codecBtnColumnStyle = {
@@ -690,12 +694,19 @@ const codecBtnColumnStyle = {
   width: CODEC_BTN_COL_WIDTH,
 };
 
-const CodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const CodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
   <button
     type="button"
+    data-codec-action-btn
     title={title}
     onClick={onClick}
-    style={reorder ? codecDualListReorderBtnStyle : codecDualListBtnStyle}
+    style={
+      down
+        ? codecDualListReorderDownBtnStyle
+        : reorder
+          ? codecDualListReorderBtnStyle
+          : codecDualListBtnStyle
+    }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
     }}
@@ -723,26 +734,160 @@ const CodecListBox = ({
   items,
   selectedIds,
   onToggle,
+  onDragSelect,
+  onClearHighlight,
   emptyText,
   getLabel,
   variant = "available",
 }) => {
   const isEmpty = items.length === 0;
+  const listRef = useRef(null);
+  const isDragSelectingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragAnchorIndexRef = useRef(null);
+  const lastClickIndexRef = useRef(null);
+
+  const getItemId = (item) => (typeof item === "string" ? item : item.id);
+  const itemIds = useMemo(() => items.map(getItemId), [items]);
+
+  const applyRangeToIndex = (currIdx) => {
+    if (currIdx < 0) return;
+    if (dragAnchorIndexRef.current === null) {
+      dragAnchorIndexRef.current = currIdx;
+    }
+    const anchor = dragAnchorIndexRef.current;
+    const from = Math.min(anchor, currIdx);
+    const to = Math.max(anchor, currIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeBetween = (fromIdx, toIdx) => {
+    if (fromIdx < 0 || toIdx < 0) return;
+    const from = Math.min(fromIdx, toIdx);
+    const to = Math.max(fromIdx, toIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeAtPoint = (clientX, clientY) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const strip = el?.closest?.("[data-codec-strip-id]");
+    if (!strip || !listRef.current?.contains(strip)) return;
+    const id = strip.getAttribute("data-codec-strip-id");
+    if (!id) return;
+    applyRangeToIndex(itemIds.indexOf(id));
+  };
+
+  const autoScrollList = (clientY) => {
+    const container = listRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const edge = 28;
+    const speed = 10;
+    if (clientY < rect.top + edge) {
+      container.scrollTop -= speed;
+    } else if (clientY > rect.bottom - edge) {
+      container.scrollTop += speed;
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
+      didDragRef.current = true;
+      autoScrollList(e.clientY);
+      applyRangeAtPoint(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      isDragSelectingRef.current = false;
+      dragAnchorIndexRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [itemIds, onDragSelect]);
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    isDragSelectingRef.current = true;
+    didDragRef.current = false;
+    dragAnchorIndexRef.current = null;
+
+    const strip = e.target.closest?.("[data-codec-strip-id]");
+    if (strip && listRef.current?.contains(strip)) {
+      const id = strip.getAttribute("data-codec-strip-id");
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) {
+        dragAnchorIndexRef.current = idx;
+        applyRangeToIndex(idx);
+        lastClickIndexRef.current = idx;
+      }
+    }
+  };
+
+  const handleClick = (id, e) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      didDragRef.current = false;
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) lastClickIndexRef.current = idx;
+      return;
+    }
+
+    const idx = itemIds.indexOf(id);
+    if (idx === -1) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      onToggle(id);
+      lastClickIndexRef.current = idx;
+      return;
+    }
+
+    if (e.shiftKey && lastClickIndexRef.current !== null) {
+      applyRangeBetween(lastClickIndexRef.current, idx);
+      return;
+    }
+
+    onDragSelect?.([id]);
+    lastClickIndexRef.current = idx;
+  };
+
+  const handleContainerClick = (e) => {
+    if (didDragRef.current) return;
+    if (e.target.closest?.("[data-codec-strip-id]")) return;
+    onClearHighlight?.();
+    lastClickIndexRef.current = null;
+  };
+
   return (
-    <div style={getCodecListBoxStyle(variant, isEmpty)}>
+    <div
+      ref={listRef}
+      data-codec-list-box
+      data-codec-list-variant={variant}
+      style={getCodecListBoxStyle(variant, isEmpty)}
+      onMouseDown={handleMouseDown}
+      onClick={handleContainerClick}
+    >
       {isEmpty ? (
         <div style={codecListEmptyStyle}>{emptyText}</div>
       ) : (
         items.map((item) => {
-          const id = typeof item === "string" ? item : item.id;
+          const id = getItemId(item);
           const label = getLabel ? getLabel(id) : item.label || id;
           const isSelected = selectedIds.includes(id);
           return (
             <div
               key={id}
+              data-codec-strip-id={id}
               role="option"
               aria-selected={isSelected}
-              onClick={() => onToggle(id)}
+              onClick={(e) => handleClick(id, e)}
               style={codecStripStyle(isSelected)}
             >
               {label}
@@ -1009,6 +1154,59 @@ const FxsVoipMediaPage = () => {
     );
   };
 
+  const selectAvailableCodecs = (ids) => setAvailableSelected(ids);
+
+  const selectChosenCodecs = (ids) => setChosenSelected(ids);
+
+  const clearCodecHighlightSelection = () => {
+    setAvailableSelected([]);
+    setChosenSelected([]);
+  };
+
+  useEffect(() => {
+    const handleOutsideClear = (e) => {
+      if (!availableSelected.length && !chosenSelected.length) return;
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearCodecHighlightSelection();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [availableSelected, chosenSelected]);
+
+  const codecTransferActions = [
+    {
+      onClick: addSelectedCodecs,
+      title: "Move selected to Selected",
+      label: ">",
+    },
+    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
+    {
+      onClick: removeSelectedCodecs,
+      title: "Move selected to Available",
+      label: "<",
+    },
+    {
+      onClick: removeAllCodecs,
+      title: "Move all to Available",
+      label: "<<",
+    },
+  ];
+
+  const codecReorderActions = [
+    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
+    { onClick: moveCodecUp, title: "Move up", label: "^" },
+    { onClick: moveCodecDown, title: "Move down", label: "v", down: true },
+    {
+      onClick: moveCodecToBottom,
+      title: "Move to bottom",
+      label: "vv",
+      down: true,
+    },
+  ];
+
   const fieldStyle = {
     ...nativeFieldInputStyle,
     width: "100%",
@@ -1199,6 +1397,8 @@ const FxsVoipMediaPage = () => {
                   items={availableCodecList}
                   selectedIds={availableSelected}
                   onToggle={toggleAvailableSelect}
+                  onDragSelect={selectAvailableCodecs}
+                  onClearHighlight={clearCodecHighlightSelection}
                   emptyText="Available codecs"
                   getLabel={(id) => getCodecLabel(id)}
                 />
@@ -1209,27 +1409,15 @@ const FxsVoipMediaPage = () => {
                   aria-hidden="true"
                 />
                 <div style={codecBtnColumnStyle}>
-                  <CodecDualListBtn
-                    onClick={addSelectedCodecs}
-                    title="Add selected"
-                  >
-                    &gt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn onClick={addAllCodecs} title="Add all">
-                    &gt;&gt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    onClick={removeSelectedCodecs}
-                    title="Remove selected"
-                  >
-                    &lt;
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    onClick={removeAllCodecs}
-                    title="Remove all"
-                  >
-                    &lt;&lt;
-                  </CodecDualListBtn>
+                  {codecTransferActions.map(({ onClick, title, label }) => (
+                    <CodecDualListBtn
+                      key={title}
+                      onClick={onClick}
+                      title={title}
+                    >
+                      {label}
+                    </CodecDualListBtn>
+                  ))}
                 </div>
               </div>
               <div>
@@ -1249,6 +1437,8 @@ const FxsVoipMediaPage = () => {
                   items={selectedCodecs}
                   selectedIds={chosenSelected}
                   onToggle={toggleChosenSelect}
+                  onDragSelect={selectChosenCodecs}
+                  onClearHighlight={clearCodecHighlightSelection}
                   emptyText="No selected codecs"
                   getLabel={(id) => getCodecLabel(id)}
                 />
@@ -1259,34 +1449,19 @@ const FxsVoipMediaPage = () => {
                   aria-hidden="true"
                 />
                 <div style={codecBtnColumnStyle}>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move to top"
-                    onClick={moveCodecToTop}
-                  >
-                    ^^
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move up"
-                    onClick={moveCodecUp}
-                  >
-                    ^
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move down"
-                    onClick={moveCodecDown}
-                  >
-                    v
-                  </CodecDualListBtn>
-                  <CodecDualListBtn
-                    reorder
-                    title="Move to bottom"
-                    onClick={moveCodecToBottom}
-                  >
-                    vv
-                  </CodecDualListBtn>
+                  {codecReorderActions.map(
+                    ({ onClick, title, label, down }) => (
+                      <CodecDualListBtn
+                        key={title}
+                        reorder
+                        down={down}
+                        title={title}
+                        onClick={onClick}
+                      >
+                        {label}
+                      </CodecDualListBtn>
+                    ),
+                  )}
                 </div>
               </div>
             </div>

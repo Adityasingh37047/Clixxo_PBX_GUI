@@ -601,7 +601,10 @@ const extGroupModalFormStyle = {
 const extGroupDialogPaperSx = {
   width: 500,
   maxWidth: "95vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: "8px",
   overflow: "hidden",
@@ -1186,6 +1189,12 @@ const ExtensionGroupsPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}

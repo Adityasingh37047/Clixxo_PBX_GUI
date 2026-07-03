@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {  useState, useEffect, useLayoutEffect, useRef , useMemo } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -60,7 +60,7 @@ const C = {
   codecStripBorder: "#ced4de",
   codecStripSelectedBg: "#f1f5f9",
   codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#9ca3af",
+  codecBtnBorder: "#c9d0d9",
   codecBtnBg: "#d9dde3",
 };
 
@@ -521,7 +521,10 @@ const callQueueModalSelectSx = {
 const callQueueModalPaperSx = {
   width: 900,
   maxWidth: "96vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -812,8 +815,12 @@ const callQueueAgentCodecDualListBtnStyle = {
 const callQueueAgentCodecDualListReorderBtnStyle = {
   ...callQueueAgentCodecDualListBtnStyle,
   fontSize: 11,
-  fontWeight: 500,
-  color: C.mutedText,
+  fontWeight: 500
+};
+
+const callQueueAgentCodecDualListReorderDownBtnStyle = {
+  ...callQueueAgentCodecDualListReorderBtnStyle,
+  fontWeight: 400,
 };
 
 const callQueueAgentCodecBtnColumnStyle = {
@@ -825,15 +832,18 @@ const callQueueAgentCodecBtnColumnStyle = {
   width: CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH,
 };
 
-const CallQueueAgentCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const CallQueueAgentCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
   <button
     type="button"
+    data-codec-action-btn
     title={title}
     onClick={onClick}
-    style={
-      reorder
-        ? callQueueAgentCodecDualListReorderBtnStyle
-        : callQueueAgentCodecDualListBtnStyle
+        style={
+      down
+        ? callQueueAgentCodecDualListReorderDownBtnStyle
+        : reorder
+          ? callQueueAgentCodecDualListReorderBtnStyle
+          : callQueueAgentCodecDualListBtnStyle
     }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -847,7 +857,7 @@ const CallQueueAgentCodecDualListBtn = ({ onClick, title, children, reorder }) =
       e.currentTarget.style.background = "#b3bac4";
       e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
       e.currentTarget.style.boxShadow =
-        "inset 0 1px 2px rgba(15, 23, 42, 0.15)";
+        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
     }}
     onMouseUp={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -863,26 +873,158 @@ const CallQueueAgentCodecListBox = ({
   items,
   selectedIds,
   onToggle,
+  onDragSelect,
+  onClearHighlight,
   emptyText,
   getLabel,
 }) => {
   const isEmpty = items.length === 0;
+  const listRef = useRef(null);
+  const isDragSelectingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragAnchorIndexRef = useRef(null);
+  const lastClickIndexRef = useRef(null);
+
+  const getItemId = (item) => typeof item === "string" ? item : (item.value ?? item.extension);
+  const itemIds = useMemo(() => items.map(getItemId), [items]);
+
+  const applyRangeToIndex = (currIdx) => {
+    if (currIdx < 0) return;
+    if (dragAnchorIndexRef.current === null) {
+      dragAnchorIndexRef.current = currIdx;
+    }
+    const anchor = dragAnchorIndexRef.current;
+    const from = Math.min(anchor, currIdx);
+    const to = Math.max(anchor, currIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeBetween = (fromIdx, toIdx) => {
+    if (fromIdx < 0 || toIdx < 0) return;
+    const from = Math.min(fromIdx, toIdx);
+    const to = Math.max(fromIdx, toIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeAtPoint = (clientX, clientY) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const strip = el?.closest?.("[data-codec-strip-id]");
+    if (!strip || !listRef.current?.contains(strip)) return;
+    const id = strip.getAttribute("data-codec-strip-id");
+    if (!id) return;
+    applyRangeToIndex(itemIds.indexOf(id));
+  };
+
+  const autoScrollList = (clientY) => {
+    const container = listRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const edge = 28;
+    const speed = 10;
+    if (clientY < rect.top + edge) {
+      container.scrollTop -= speed;
+    } else if (clientY > rect.bottom - edge) {
+      container.scrollTop += speed;
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
+      didDragRef.current = true;
+      autoScrollList(e.clientY);
+      applyRangeAtPoint(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      isDragSelectingRef.current = false;
+      dragAnchorIndexRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [itemIds, onDragSelect]);
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    isDragSelectingRef.current = true;
+    didDragRef.current = false;
+    dragAnchorIndexRef.current = null;
+
+    const strip = e.target.closest?.("[data-codec-strip-id]");
+    if (strip && listRef.current?.contains(strip)) {
+      const id = strip.getAttribute("data-codec-strip-id");
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) {
+        dragAnchorIndexRef.current = idx;
+        applyRangeToIndex(idx);
+        lastClickIndexRef.current = idx;
+      }
+    }
+  };
+
+  const handleClick = (id, e) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      didDragRef.current = false;
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) lastClickIndexRef.current = idx;
+      return;
+    }
+
+    const idx = itemIds.indexOf(id);
+    if (idx === -1) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      onToggle(id);
+      lastClickIndexRef.current = idx;
+      return;
+    }
+
+    if (e.shiftKey && lastClickIndexRef.current !== null) {
+      applyRangeBetween(lastClickIndexRef.current, idx);
+      return;
+    }
+
+    onDragSelect?.([id]);
+    lastClickIndexRef.current = idx;
+  };
+
+  const handleContainerClick = (e) => {
+    if (didDragRef.current) return;
+    if (e.target.closest?.("[data-codec-strip-id]")) return;
+    onClearHighlight?.();
+    lastClickIndexRef.current = null;
+  };
+
   return (
-    <div style={getCallQueueAgentCodecListBoxStyle(isEmpty)}>
+    <div
+      ref={listRef}
+      data-codec-list-box
+      style={getCallQueueAgentCodecListBoxStyle(isEmpty)}
+      onMouseDown={handleMouseDown}
+      onClick={handleContainerClick}
+    >
       {isEmpty ? (
         <div style={callQueueAgentCodecListEmptyStyle}>{emptyText}</div>
       ) : (
         items.map((item) => {
-          const id =
-            typeof item === "string" ? item : (item.value ?? item.extension);
+          const id = getItemId(item);
           const label = getLabel ? getLabel(id) : item.label || id;
           const isSelected = selectedIds.includes(id);
           return (
             <div
               key={id}
+              data-codec-strip-id={id}
               role="option"
               aria-selected={isSelected}
-              onClick={() => onToggle(id)}
+              onClick={(e) => handleClick(id, e)}
               style={callQueueAgentCodecStripStyle(isSelected)}
             >
               {label}
@@ -922,6 +1064,7 @@ const CallQueue = () => {
   const [highlightAvail, setHighlightAvail] = useState([]);
   const [highlightSel, setHighlightSel] = useState([]);
   const hasInitialLoadRef = useRef(false);
+  const modalScrollRef = useRef(null);
 
   const itemsPerPage = 20;
   const totalPages = Math.max(1, Math.ceil(queues.length / itemsPerPage));
@@ -1038,6 +1181,11 @@ const CallQueue = () => {
       loadRingBackOpts();
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (!showModal || !modalScrollRef.current) return;
+    modalScrollRef.current.scrollTop = 0;
+  }, [showModal, activeTab]);
 
   const apiToForm = (q) => ({
     ...CALL_QUEUE_INITIAL_FORM,
@@ -1318,6 +1466,30 @@ const CallQueue = () => {
     );
   };
 
+  const selectAvailableAgents = (ids) => setHighlightAvail(ids);
+
+  const selectChosenAgents = (ids) => setHighlightSel(ids);
+
+  const clearAgentHighlight = () => {
+    setHighlightAvail([]);
+    setHighlightSel([]);
+  };
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    const handleOutsideClear = (e) => {
+      if (!highlightAvail.length && !highlightSel.length) return;
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearAgentHighlight();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [showModal, highlightAvail, highlightSel]);
+
   const ringStrategyLabel = (v) =>
     RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
 
@@ -1334,8 +1506,8 @@ const CallQueue = () => {
         className="z-50"
         sx={{
           "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 5,
+            alignItems: "center",
+            justifyContent: "center",
           },
         }}
         slotProps={{
@@ -1353,6 +1525,7 @@ const CallQueue = () => {
           tabs={CALL_QUEUE_MODAL_TABS}
         />
         <DialogContent
+          ref={modalScrollRef}
           className="app-main-scroll"
           sx={{
             p: "24px",
@@ -1767,6 +1940,8 @@ const CallQueue = () => {
                         items={computedAvailable}
                         selectedIds={highlightAvail}
                         onToggle={toggleAvailableAgentSelect}
+                        onDragSelect={selectAvailableAgents}
+                        onClearHighlight={clearAgentHighlight}
                         emptyText="No extension"
                         getLabel={(id) => {
                           const ext = computedAvailable.find((e) => e.value === id);
@@ -1782,21 +1957,25 @@ const CallQueue = () => {
                       <div style={callQueueAgentCodecBtnColumnStyle}>
                         <CallQueueAgentCodecDualListBtn
                           onClick={() => moveToSelected(false)}
+                          title="Move selected to Selected"
                         >
                           &gt;
                         </CallQueueAgentCodecDualListBtn>
                         <CallQueueAgentCodecDualListBtn
                           onClick={() => moveToSelected(true)}
+                          title="Move all to Selected"
                         >
                           &gt;&gt;
                         </CallQueueAgentCodecDualListBtn>
                         <CallQueueAgentCodecDualListBtn
                           onClick={() => moveToAvailable(false)}
+                          title="Move selected to Available"
                         >
                           &lt;
                         </CallQueueAgentCodecDualListBtn>
                         <CallQueueAgentCodecDualListBtn
                           onClick={() => moveToAvailable(true)}
+                          title="Move all to Available"
                         >
                           &lt;&lt;
                         </CallQueueAgentCodecDualListBtn>
@@ -1808,6 +1987,8 @@ const CallQueue = () => {
                         items={form.selected_agents || []}
                         selectedIds={highlightSel}
                         onToggle={toggleSelectedAgentSelect}
+                        onDragSelect={selectChosenAgents}
+                        onClearHighlight={clearAgentHighlight}
                         emptyText="No agent selected"
                         getLabel={(id) => {
                           const ext = extensionsList.find((e) => e.value === id);
@@ -1824,6 +2005,7 @@ const CallQueue = () => {
                         <CallQueueAgentCodecDualListBtn
                           reorder
                           title="Move to bottom"
+                      down
                           onClick={moveToBottom}
                         >
                           vv
@@ -1838,6 +2020,7 @@ const CallQueue = () => {
                         <CallQueueAgentCodecDualListBtn
                           reorder
                           title="Move down"
+                      down
                           onClick={moveDown}
                         >
                           v

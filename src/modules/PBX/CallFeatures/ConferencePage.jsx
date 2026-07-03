@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -489,6 +489,10 @@ const conferenceModalPaperSx = {
   width: 880,
   maxWidth: "96vw",
   mx: "auto",
+  my: 0,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -796,6 +800,7 @@ const ConferencePage = () => {
   });
   const [message, setMessage] = useState({ type: "", text: "" });
   const hasInitialLoadRef = useRef(false);
+  const modalScrollRef = useRef(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Pagination
@@ -1007,6 +1012,11 @@ const ConferencePage = () => {
       loadInitialData();
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (!showModal || !modalScrollRef.current) return;
+    modalScrollRef.current.scrollTop = 0;
+  }, [showModal, activeTab]);
 
   // ── Search & Pagination Logic ──
   const filteredRows = searchQuery.trim()
@@ -1663,7 +1673,13 @@ const ConferencePage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        sx={{ "& .MuiDialog-container": { alignItems: "flex-start", pt: 5 } }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "flex-start",
+            justifyContent: "center",
+            pt: 8,
+          },
+        }}
         PaperProps={{ sx: conferenceModalPaperSx }}
         disableRestoreFocus
         disableEnforceFocus
@@ -1672,6 +1688,7 @@ const ConferencePage = () => {
           {editId != null ? "Edit Conference" : "Add Conference"}
         </DialogTitle>
         <DialogContent
+          ref={modalScrollRef}
           className="app-main-scroll"
           sx={{
             ...conferenceModalDialogContentSx,

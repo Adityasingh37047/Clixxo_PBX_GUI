@@ -38,19 +38,20 @@ import {
 } from "@mui/material";
 const PCM_PSTN_COMPACT_MQ = "(max-width: 768px)";
 
-const PCM_PSTN_ADD_NEW_DIALOG_MARGIN = 24;
 const PCM_PSTN_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
 
 const PCM_PSTN_ADD_NEW_DIALOG_SX = {
   "& .MuiDialog-container": {
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
+    pt: 8,
   },
 };
 
 const PCM_PSTN_ADD_NEW_DIALOG_PAPER_SX = {
-  margin: PCM_PSTN_ADD_NEW_DIALOG_MARGIN,
-  maxHeight: `calc(100vh - ${PCM_PSTN_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${PCM_PSTN_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  mx: "auto",
+  my: 0,
+  maxHeight: `calc(100vh - ${PCM_PSTN_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - 48px)`,
   display: "flex",
   flexDirection: "column",
   width: 600,

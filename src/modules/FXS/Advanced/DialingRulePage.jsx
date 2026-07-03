@@ -525,9 +525,24 @@ const FieldRow = ({
   </div>
 );
 
-const advancedModalPaperSx = {
+const DIALING_RULE_ADD_NEW_DIALOG_MARGIN = 24;
+const DIALING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
+const DIALING_RULE_ADD_NEW_DIALOG_SX = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
+const DIALING_RULE_ADD_NEW_DIALOG_PAPER_SX = {
+  margin: DIALING_RULE_ADD_NEW_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${DIALING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${DIALING_RULE_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
   width: 500,
   maxWidth: "95vw",
+  p: 0,
   borderRadius: "8px",
   overflow: "hidden",
   boxShadow:
@@ -541,12 +556,19 @@ const advancedModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+  flexShrink: 0,
 };
 
-const addHostModalContentStyle = {
-  padding: "20px 24px",
-  paddingBottom: "16px",
-  backgroundColor: "#ffffff",
+const addNewModalBackdropSlotProps = {
+  backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+};
+
+const addNewModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
 };
 
 const addHostFormPanelStyle = {
@@ -1122,7 +1144,9 @@ const DialingRulePage = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: advancedModalPaperSx }}
+        slotProps={addNewModalBackdropSlotProps}
+        sx={DIALING_RULE_ADD_NEW_DIALOG_SX}
+        PaperProps={{ sx: DIALING_RULE_ADD_NEW_DIALOG_PAPER_SX }}
         disableRestoreFocus
         disableEnforceFocus
       >
@@ -1131,7 +1155,14 @@ const DialingRulePage = () => {
             ? DIALING_RULE_MODAL_TITLE_EDIT
             : DIALING_RULE_MODAL_TITLE_ADD}
         </DialogTitle>
-        <DialogContent style={addHostModalContentStyle}>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            flex: "1 1 auto",
+          }}
+          sx={addNewModalDialogContentSx}
+        >
           <div style={addHostFormPanelStyle}>
             <FieldRow label="Index:" tooltipKey="index">
               <FormControl size="small" fullWidth>

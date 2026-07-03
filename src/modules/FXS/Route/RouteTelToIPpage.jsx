@@ -427,6 +427,16 @@ const addNewModalFooterCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const addNewModalBackdropSlotProps = {
+  backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+};
+
+const addNewModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
 const TelToIpBreadcrumb = () => (
   <div
     style={{
@@ -1204,6 +1214,7 @@ const RoutePstnToIPPage = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
+        slotProps={addNewModalBackdropSlotProps}
         sx={FXS_ROUTE_TEL_TO_IP_ADD_NEW_DIALOG_SX}
         PaperProps={{
           sx: FXS_ROUTE_TEL_TO_IP_ADD_NEW_DIALOG_PAPER_SX,
@@ -1232,9 +1243,9 @@ const RoutePstnToIPPage = () => {
           style={{
             padding: "24px",
             backgroundColor: "#ffffff",
-            overflowY: "auto",
             flex: "1 1 auto",
           }}
+          sx={addNewModalDialogContentSx}
         >
           <div style={telToIpFormPanelStyle}>
             <FieldRow label="Index:" tooltipKey="index" tooltips={ROUTE_PSTN_IP_FIELD_TOOLTIPS}>

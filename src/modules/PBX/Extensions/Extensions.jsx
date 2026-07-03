@@ -1150,24 +1150,26 @@ const extensionCodecDualListReorderBtnStyle = {
   ...extensionCodecDualListBtnStyle,
   fontSize: 11,
   fontWeight: 500,
-  color: C.mutedText,
 };
 
-const extensionCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: EXTENSION_CODEC_BTN_GAP,
-  height: EXTENSION_CODEC_LIST_BOX_HEIGHT,
-  width: EXTENSION_CODEC_BTN_COL_WIDTH,
+const extensionCodecDualListReorderDownBtnStyle = {
+  ...extensionCodecDualListReorderBtnStyle,
+  fontWeight: 400,
 };
 
-const ExtensionCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const ExtensionCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
   <button
     type="button"
+    data-codec-action-btn
     title={title}
     onClick={onClick}
-    style={reorder ? extensionCodecDualListReorderBtnStyle : extensionCodecDualListBtnStyle}
+    style={
+      down
+        ? extensionCodecDualListReorderDownBtnStyle
+        : reorder
+          ? extensionCodecDualListReorderBtnStyle
+          : extensionCodecDualListBtnStyle
+    }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
     }}
@@ -1191,17 +1193,159 @@ const ExtensionCodecDualListBtn = ({ onClick, title, children, reorder }) => (
   </button>
 );
 
+const extensionCodecBtnColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: EXTENSION_CODEC_BTN_GAP,
+  height: EXTENSION_CODEC_LIST_BOX_HEIGHT,
+  width: EXTENSION_CODEC_BTN_COL_WIDTH,
+};
+
 const ExtensionCodecListBox = ({
   items,
   selectedIds,
   onToggle,
+  onDragSelect,
+  onClearHighlight,
   emptyText,
   getLabel,
   variant = "available",
 }) => {
   const isEmpty = items.length === 0;
+  const listRef = useRef(null);
+  const isDragSelectingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragAnchorIndexRef = useRef(null);
+  const lastClickIndexRef = useRef(null);
+
+  const getItemId = (item) => (typeof item === "string" ? item : item.value);
+  const itemIds = useMemo(() => items.map(getItemId), [items]);
+
+  const applyRangeToIndex = (currIdx) => {
+    if (currIdx < 0) return;
+    if (dragAnchorIndexRef.current === null) {
+      dragAnchorIndexRef.current = currIdx;
+    }
+    const anchor = dragAnchorIndexRef.current;
+    const from = Math.min(anchor, currIdx);
+    const to = Math.max(anchor, currIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeBetween = (fromIdx, toIdx) => {
+    if (fromIdx < 0 || toIdx < 0) return;
+    const from = Math.min(fromIdx, toIdx);
+    const to = Math.max(fromIdx, toIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeAtPoint = (clientX, clientY) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const strip = el?.closest?.("[data-codec-strip-id]");
+    if (!strip || !listRef.current?.contains(strip)) return;
+    const id = strip.getAttribute("data-codec-strip-id");
+    if (!id) return;
+    applyRangeToIndex(itemIds.indexOf(id));
+  };
+
+  const autoScrollList = (clientY) => {
+    const container = listRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const edge = 28;
+    const speed = 10;
+    if (clientY < rect.top + edge) {
+      container.scrollTop -= speed;
+    } else if (clientY > rect.bottom - edge) {
+      container.scrollTop += speed;
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
+      didDragRef.current = true;
+      autoScrollList(e.clientY);
+      applyRangeAtPoint(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      isDragSelectingRef.current = false;
+      dragAnchorIndexRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [itemIds, onDragSelect]);
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    isDragSelectingRef.current = true;
+    didDragRef.current = false;
+    dragAnchorIndexRef.current = null;
+
+    const strip = e.target.closest?.("[data-codec-strip-id]");
+    if (strip && listRef.current?.contains(strip)) {
+      const id = strip.getAttribute("data-codec-strip-id");
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) {
+        dragAnchorIndexRef.current = idx;
+        applyRangeToIndex(idx);
+        lastClickIndexRef.current = idx;
+      }
+    }
+  };
+
+  const handleClick = (id, e) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      didDragRef.current = false;
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) lastClickIndexRef.current = idx;
+      return;
+    }
+
+    const idx = itemIds.indexOf(id);
+    if (idx === -1) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      onToggle(id);
+      lastClickIndexRef.current = idx;
+      return;
+    }
+
+    if (e.shiftKey && lastClickIndexRef.current !== null) {
+      applyRangeBetween(lastClickIndexRef.current, idx);
+      return;
+    }
+
+    onDragSelect?.([id]);
+    lastClickIndexRef.current = idx;
+  };
+
+  const handleContainerClick = (e) => {
+    if (didDragRef.current) return;
+    if (e.target.closest?.("[data-codec-strip-id]")) return;
+    onClearHighlight?.();
+    lastClickIndexRef.current = null;
+  };
+
   return (
-    <div style={getExtensionCodecListBoxStyle(variant, isEmpty)}>
+    <div
+      ref={listRef}
+      data-codec-list-box
+      data-codec-list-variant={variant}
+      style={getExtensionCodecListBoxStyle(variant, isEmpty)}
+      onMouseDown={handleMouseDown}
+      onClick={handleContainerClick}
+    >
       {isEmpty ? (
         <div style={extensionCodecListEmptyStyle}>{emptyText}</div>
       ) : (
@@ -1212,9 +1356,10 @@ const ExtensionCodecListBox = ({
           return (
             <div
               key={id}
+              data-codec-strip-id={id}
               role="option"
               aria-selected={isSelected}
-              onClick={() => onToggle(id)}
+              onClick={(e) => handleClick(id, e)}
               style={extensionCodecStripStyle(isSelected)}
             >
               {label}
@@ -1340,6 +1485,7 @@ const ExtensionsPage = () => {
   const [importFile, setImportFile] = useState(null);
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = React.useRef(null);
+  const modalScrollRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [bulkForm, setBulkForm] = useState({
     startExtension: "",
@@ -1361,6 +1507,11 @@ const ExtensionsPage = () => {
       loadAccounts();
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (!showModal || !modalScrollRef.current) return;
+    modalScrollRef.current.scrollTop = 0;
+  }, [showModal, activeTab]);
 
   // ── Filter rows by search ──────────────────────────────────────────────────
   const filteredAccounts = searchQuery.trim()
@@ -1874,6 +2025,30 @@ const ExtensionsPage = () => {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
+  const selectCodecAvailable = (ids) => setCodecAvailableSelected(ids);
+
+  const selectCodecChosen = (ids) => setCodecChosenSelected(ids);
+
+  const clearCodecHighlightSelection = () => {
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
+  };
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    const handleOutsideClear = (e) => {
+      if (!codecAvailableSelected.length && !codecChosenSelected.length) return;
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearCodecHighlightSelection();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [showModal, codecAvailableSelected, codecChosenSelected]);
+
   const updateCodecList = (newList) => {
     const str = newList.join(",");
     if (validationErrors.allow_codecs) {
@@ -2364,17 +2539,29 @@ const ExtensionsPage = () => {
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
   const codecTransferActions = [
-    { onClick: addSelectedCodecs, title: "Add selected", label: ">" },
-    { onClick: addAllCodecs, title: "Add all", label: ">>" },
-    { onClick: removeSelectedCodecs, title: "Remove selected", label: "<" },
-    { onClick: removeAllCodecs, title: "Remove all", label: "<<" },
+    {
+      onClick: addSelectedCodecs,
+      title: "Move selected to Selected",
+      label: ">",
+    },
+    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
+    {
+      onClick: removeSelectedCodecs,
+      title: "Move selected to Available",
+      label: "<",
+    },
+    {
+      onClick: removeAllCodecs,
+      title: "Move all to Available",
+      label: "<<",
+    },
   ];
 
   const codecReorderActions = [
     { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
     { onClick: moveCodecUp, title: "Move up", label: "^" },
-    { onClick: moveCodecDown, title: "Move down", label: "v" },
-    { onClick: moveCodecToBottom, title: "Move to bottom", label: "vv" },
+    { onClick: moveCodecDown, title: "Move down", label: "v", down: true },
+    { onClick: moveCodecToBottom, title: "Move to bottom", label: "vv", down: true },
   ];
 
   return (
@@ -2711,11 +2898,20 @@ const ExtensionsPage = () => {
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
         PaperProps={{
           sx: {
             width: 420,
             maxWidth: "96vw",
-            mx: "auto",
+            margin: 24,
+            maxHeight: "calc(100vh - 80px - 48px)",
+            display: "flex",
+            flexDirection: "column",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
@@ -2830,15 +3026,18 @@ const ExtensionsPage = () => {
         }}
         sx={{
           "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            pt: 8,
+            alignItems: "center",
+            justifyContent: "center",
           },
         }}
         PaperProps={{
           sx: {
             width: 760,
             maxWidth: "96vw",
-            mx: "auto",
+            margin: 24,
+            maxHeight: "calc(100vh - 80px - 48px)",
+            display: "flex",
+            flexDirection: "column",
             p: 0,
             borderRadius: "8px",
             overflow: "hidden",
@@ -2874,6 +3073,7 @@ const ExtensionsPage = () => {
         />
 
         <DialogContent
+          ref={modalScrollRef}
           style={{ padding: "24px", backgroundColor: "#ffffff" }}
           sx={{
             maxHeight: "calc(100vh - 180px)",
@@ -3163,6 +3363,8 @@ const ExtensionsPage = () => {
                           items={availableCodecList}
                           selectedIds={codecAvailableSelected}
                           onToggle={toggleCodecAvailableSelect}
+                          onDragSelect={selectCodecAvailable}
+                          onClearHighlight={clearCodecHighlightSelection}
                           emptyText="Available codecs"
                           getLabel={(id) => getCodecLabel(id)}
                         />
@@ -3193,6 +3395,8 @@ const ExtensionsPage = () => {
                           items={selectedCodecList}
                           selectedIds={codecChosenSelected}
                           onToggle={toggleCodecChosenSelect}
+                          onDragSelect={selectCodecChosen}
+                          onClearHighlight={clearCodecHighlightSelection}
                           emptyText="No selected codecs"
                           getLabel={(id) => getCodecLabel(id)}
                         />
@@ -3204,10 +3408,11 @@ const ExtensionsPage = () => {
                         />
                         <div style={extensionCodecBtnColumnStyle}>
                           {codecReorderActions.map(
-                            ({ onClick, title, label }) => (
+                            ({ onClick, title, label, down }) => (
                               <ExtensionCodecDualListBtn
                                 key={title}
                                 reorder
+                                down={down}
                                 title={title}
                                 onClick={onClick}
                               >

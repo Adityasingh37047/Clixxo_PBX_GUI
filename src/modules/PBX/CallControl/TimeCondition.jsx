@@ -531,7 +531,10 @@ const timeConditionModalPaperSx = {
   width: "fit-content",
   minWidth: 650,
   maxWidth: "90vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -1548,8 +1551,8 @@ const TimeCondition = () => {
         PaperProps={{ sx: timeConditionModalPaperSx }}
         sx={{
           "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            paddingTop: "120px",
+            alignItems: "center",
+            justifyContent: "center",
           },
         }}
       

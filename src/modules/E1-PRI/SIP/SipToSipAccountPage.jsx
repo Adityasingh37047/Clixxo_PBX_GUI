@@ -101,7 +101,6 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 const FIELD_LABEL_COLOR = "#3E5475";
 
 const SIP_TO_SIP_ACCOUNT_COMPACT_MQ = "(max-width: 768px)";
-const SIP_TO_SIP_ACCOUNT_SCROLL_CLASS = "sip-to-sip-account-scroll";
 
 const SIP_TO_SIP_ACCOUNT_TOOLTIP_PROPS = {
   arrow: true,
@@ -482,6 +481,7 @@ const sipToSipModalTitleStyle = {
   textAlign: "center",
   borderTopLeftRadius: 8,
   borderTopRightRadius: 8,
+  flexShrink: 0,
 };
 
 const sipToSipModalActionsStyle = {
@@ -495,50 +495,22 @@ const sipToSipModalActionsStyle = {
   borderBottomRightRadius: 8,
 };
 
+const SIP_TO_SIP_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
+
 const sipToSipDialogPaperSx = {
+  mx: "auto",
+  my: 0,
+  maxHeight: `calc(100vh - ${SIP_TO_SIP_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - 48px)`,
+  display: "flex",
+  flexDirection: "column",
   width: 760,
   maxWidth: "96vw",
-  mx: "auto",
   p: 0,
   borderRadius: "8px",
   overflow: "hidden",
+  boxShadow:
+    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
 };
-
-const SipToSipAccountScrollbarStyles = () => (
-  <style>{`
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS} {
-      scroll-behavior: smooth;
-      scrollbar-gutter: stable;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(100, 116, 139, 0.45) transparent;
-    }
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-      transition: width 0.2s ease, height 0.2s ease;
-    }
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar:hover {
-      width: 11px;
-      height: 11px;
-    }
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-corner {
-      background: transparent;
-    }
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-thumb {
-      background-color: rgba(100, 116, 139, 0.45);
-      border-radius: 6px;
-      border: 2px solid transparent;
-      background-clip: padding-box;
-      transition: background-color 0.2s ease;
-    }
-    .${SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(71, 85, 105, 0.65);
-    }
-  `}</style>
-);
 
 const SipToSipBreadcrumb = ({ style }) => (
   <div
@@ -938,7 +910,11 @@ const sipToSipCodecDualListReorderBtnStyle = {
   ...sipToSipCodecDualListBtnStyle,
   fontSize: 11,
   fontWeight: 500,
-  color: C.mutedText,
+};
+
+const sipToSipCodecDualListReorderDownBtnStyle = {
+  ...sipToSipCodecDualListReorderBtnStyle,
+  fontWeight: 400,
 };
 
 const sipToSipCodecBtnColumnStyle = {
@@ -950,13 +926,18 @@ const sipToSipCodecBtnColumnStyle = {
   width: SIP_TO_SIP_CODEC_BTN_COL_WIDTH,
 };
 
-const SipToSipCodecDualListBtn = ({ onClick, title, children, reorder }) => (
+const SipToSipCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
   <button
     type="button"
+    data-codec-action-btn
     title={title}
     onClick={onClick}
     style={
-      reorder ? sipToSipCodecDualListReorderBtnStyle : sipToSipCodecDualListBtnStyle
+      down
+        ? sipToSipCodecDualListReorderDownBtnStyle
+        : reorder
+          ? sipToSipCodecDualListReorderBtnStyle
+          : sipToSipCodecDualListBtnStyle
     }
     onMouseEnter={(e) => {
       e.currentTarget.style.background = "#c5cbd3";
@@ -986,29 +967,160 @@ const SipToSipCodecListBox = ({
   items,
   selectedIds,
   onToggle,
+  onDragSelect,
+  onClearHighlight,
   emptyText,
   getLabel,
   variant = "available",
 }) => {
   const isEmpty = items.length === 0;
+  const listRef = useRef(null);
+  const isDragSelectingRef = useRef(false);
+  const didDragRef = useRef(false);
+  const dragAnchorIndexRef = useRef(null);
+  const lastClickIndexRef = useRef(null);
+
+  const getItemId = (item) => (typeof item === "string" ? item : item.value);
+  const itemIds = useMemo(() => items.map(getItemId), [items]);
+
+  const applyRangeToIndex = (currIdx) => {
+    if (currIdx < 0) return;
+    if (dragAnchorIndexRef.current === null) {
+      dragAnchorIndexRef.current = currIdx;
+    }
+    const anchor = dragAnchorIndexRef.current;
+    const from = Math.min(anchor, currIdx);
+    const to = Math.max(anchor, currIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeBetween = (fromIdx, toIdx) => {
+    if (fromIdx < 0 || toIdx < 0) return;
+    const from = Math.min(fromIdx, toIdx);
+    const to = Math.max(fromIdx, toIdx);
+    onDragSelect?.(itemIds.slice(from, to + 1));
+  };
+
+  const applyRangeAtPoint = (clientX, clientY) => {
+    const el = document.elementFromPoint(clientX, clientY);
+    const strip = el?.closest?.("[data-codec-strip-id]");
+    if (!strip || !listRef.current?.contains(strip)) return;
+    const id = strip.getAttribute("data-codec-strip-id");
+    if (!id) return;
+    applyRangeToIndex(itemIds.indexOf(id));
+  };
+
+  const autoScrollList = (clientY) => {
+    const container = listRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const edge = 28;
+    const speed = 10;
+    if (clientY < rect.top + edge) {
+      container.scrollTop -= speed;
+    } else if (clientY > rect.bottom - edge) {
+      container.scrollTop += speed;
+    }
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
+      didDragRef.current = true;
+      autoScrollList(e.clientY);
+      applyRangeAtPoint(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      isDragSelectingRef.current = false;
+      dragAnchorIndexRef.current = null;
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [itemIds, onDragSelect]);
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+    isDragSelectingRef.current = true;
+    didDragRef.current = false;
+    dragAnchorIndexRef.current = null;
+
+    const strip = e.target.closest?.("[data-codec-strip-id]");
+    if (strip && listRef.current?.contains(strip)) {
+      const id = strip.getAttribute("data-codec-strip-id");
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) {
+        dragAnchorIndexRef.current = idx;
+        applyRangeToIndex(idx);
+        lastClickIndexRef.current = idx;
+      }
+    }
+  };
+
+  const handleClick = (id, e) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      didDragRef.current = false;
+      const idx = itemIds.indexOf(id);
+      if (idx !== -1) lastClickIndexRef.current = idx;
+      return;
+    }
+
+    const idx = itemIds.indexOf(id);
+    if (idx === -1) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      onToggle(id);
+      lastClickIndexRef.current = idx;
+      return;
+    }
+
+    if (e.shiftKey && lastClickIndexRef.current !== null) {
+      applyRangeBetween(lastClickIndexRef.current, idx);
+      return;
+    }
+
+    onDragSelect?.([id]);
+    lastClickIndexRef.current = idx;
+  };
+
+  const handleContainerClick = (e) => {
+    if (didDragRef.current) return;
+    if (e.target.closest?.("[data-codec-strip-id]")) return;
+    onClearHighlight?.();
+    lastClickIndexRef.current = null;
+  };
+
   return (
     <div
-      className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
+      ref={listRef}
+      data-codec-list-box
+      data-codec-list-variant={variant}
       style={getSipToSipCodecListBoxStyle(variant, isEmpty)}
+      onMouseDown={handleMouseDown}
+      onClick={handleContainerClick}
     >
       {isEmpty ? (
         <div style={sipToSipCodecListEmptyStyle}>{emptyText}</div>
       ) : (
         items.map((item) => {
-          const id = typeof item === "string" ? item : item.value;
+          const id = getItemId(item);
           const label = getLabel ? getLabel(id) : item.label || id;
           const isSelected = selectedIds.includes(id);
           return (
             <div
               key={id}
+              data-codec-strip-id={id}
               role="option"
               aria-selected={isSelected}
-              onClick={() => onToggle(id)}
+              onClick={(e) => handleClick(id, e)}
               style={sipToSipCodecStripStyle(isSelected)}
             >
               {label}
@@ -1083,6 +1195,7 @@ const SipToSipAccountPage = () => {
   const [pjsipExtensions, setPjsipExtensions] = useState(new Set());
   const [selected, setSelected] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const modalScrollRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState({
@@ -1132,6 +1245,35 @@ const SipToSipAccountPage = () => {
     setCodecChosenSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+
+  const selectCodecAvailable = (ids) => setCodecAvailableSelected(ids);
+
+  const selectCodecChosen = (ids) => setCodecChosenSelected(ids);
+
+  const clearCodecHighlightSelection = () => {
+    setCodecAvailableSelected([]);
+    setCodecChosenSelected([]);
+  };
+
+  useEffect(() => {
+    if (!showModal || !modalScrollRef.current) return;
+    modalScrollRef.current.scrollTop = 0;
+  }, [showModal]);
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    const handleOutsideClear = (e) => {
+      if (!codecAvailableSelected.length && !codecChosenSelected.length) return;
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearCodecHighlightSelection();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [showModal, codecAvailableSelected, codecChosenSelected]);
 
   const updateCodecList = (newList) => {
     const newCodecsString = newList.join(",");
@@ -1608,6 +1750,37 @@ const SipToSipAccountPage = () => {
 
   const formFieldLabel = (field) => `${field.label}:`;
 
+  const codecTransferActions = [
+    {
+      onClick: addSelectedCodecs,
+      title: "Move selected to Selected",
+      label: ">",
+    },
+    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
+    {
+      onClick: removeSelectedCodecs,
+      title: "Move selected to Available",
+      label: "<",
+    },
+    {
+      onClick: removeAllCodecs,
+      title: "Move all to Available",
+      label: "<<",
+    },
+  ];
+
+  const codecReorderActions = [
+    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
+    { onClick: moveCodecUp, title: "Move up", label: "^" },
+    { onClick: moveCodecDown, title: "Move down", label: "v", down: true },
+    {
+      onClick: moveCodecToBottom,
+      title: "Move to bottom",
+      label: "vv",
+      down: true,
+    },
+  ];
+
   const renderAllowCodecsSection = () => (
     <div style={{ width: "100%" }}>
       <SipToSipAllowCodecsSectionHeading
@@ -1630,6 +1803,8 @@ const SipToSipAccountPage = () => {
             items={availableCodecList}
             selectedIds={codecAvailableSelected}
             onToggle={toggleCodecAvailableSelect}
+            onDragSelect={selectCodecAvailable}
+            onClearHighlight={clearCodecHighlightSelection}
             emptyText={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_AVAILABLE}
             getLabel={(id) => getCodecLabel(id)}
           />
@@ -1640,30 +1815,15 @@ const SipToSipAccountPage = () => {
             aria-hidden="true"
           />
           <div style={sipToSipCodecBtnColumnStyle}>
-            <SipToSipCodecDualListBtn
-              onClick={addSelectedCodecs}
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_SELECTED}
-            >
-              &gt;
-            </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn
-              onClick={addAllCodecs}
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_ALL}
-            >
-              &gt;&gt;
-            </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn
-              onClick={removeSelectedCodecs}
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_SELECTED}
-            >
-              &lt;
-            </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn
-              onClick={removeAllCodecs}
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_ALL}
-            >
-              &lt;&lt;
-            </SipToSipCodecDualListBtn>
+            {codecTransferActions.map(({ onClick, title, label }) => (
+              <SipToSipCodecDualListBtn
+                key={title}
+                onClick={onClick}
+                title={title}
+              >
+                {label}
+              </SipToSipCodecDualListBtn>
+            ))}
           </div>
         </div>
         <div>
@@ -1673,6 +1833,8 @@ const SipToSipAccountPage = () => {
             items={selectedCodecList}
             selectedIds={codecChosenSelected}
             onToggle={toggleCodecChosenSelect}
+            onDragSelect={selectCodecChosen}
+            onClearHighlight={clearCodecHighlightSelection}
             emptyText={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_SELECTED}
             getLabel={(id) => getCodecLabel(id)}
           />
@@ -1683,34 +1845,17 @@ const SipToSipAccountPage = () => {
             aria-hidden="true"
           />
           <div style={sipToSipCodecBtnColumnStyle}>
-            <SipToSipCodecDualListBtn
-              reorder
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_TOP}
-              onClick={moveCodecToTop}
-            >
-              ^^
-            </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn
-              reorder
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_UP}
-              onClick={moveCodecUp}
-            >
-              ^
-            </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn
-              reorder
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_DOWN}
-              onClick={moveCodecDown}
-            >
-              v
-            </SipToSipCodecDualListBtn>
-            <SipToSipCodecDualListBtn
-              reorder
-              title={SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_BOTTOM}
-              onClick={moveCodecToBottom}
-            >
-              vv
-            </SipToSipCodecDualListBtn>
+            {codecReorderActions.map(({ onClick, title, label, down }) => (
+              <SipToSipCodecDualListBtn
+                key={title}
+                reorder
+                down={down}
+                title={title}
+                onClick={onClick}
+              >
+                {label}
+              </SipToSipCodecDualListBtn>
+            ))}
           </div>
         </div>
       </div>
@@ -1866,9 +2011,7 @@ const SipToSipAccountPage = () => {
 
   return (
     <>
-      <SipToSipAccountScrollbarStyles />
       <div
-        className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
         style={{
           ...sipToSipPageWrapStyle,
           ...(isCompact ? { padding: 8 } : {}),
@@ -1947,7 +2090,7 @@ const SipToSipAccountPage = () => {
               </Btn>
               <Btn
                 onClick={handleClearAll}
-                disabled={loading.delete}
+                disabled={loading.delete || accounts.length === 0}
                 variant="cancel"
                 style={sipToSipCancelBtnStyle}
               >
@@ -1975,7 +2118,6 @@ const SipToSipAccountPage = () => {
           ) : (
             <>
               <div
-                className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
                 style={{
                   overflowX: isCompact ? "auto" : "hidden",
                   overflowY: "auto",
@@ -2155,6 +2297,7 @@ const SipToSipAccountPage = () => {
         sx={{
           "& .MuiDialog-container": {
             alignItems: "flex-start",
+            justifyContent: "center",
             pt: 8,
           },
         }}
@@ -2166,11 +2309,14 @@ const SipToSipAccountPage = () => {
             : SIP_TO_SIP_ACCOUNT_MODAL_ADD_TITLE}
         </DialogTitle>
         <DialogContent
-          className={SIP_TO_SIP_ACCOUNT_SCROLL_CLASS}
-          style={{ padding: "24px", backgroundColor: "#ffffff" }}
-          sx={{
-            maxHeight: "calc(100vh - 180px)",
+          ref={modalScrollRef}
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
             overflowY: "auto",
+            flex: "1 1 auto",
+          }}
+          sx={{
             WebkitOverflowScrolling: "touch",
           }}
         >

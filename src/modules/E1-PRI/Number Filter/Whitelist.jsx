@@ -347,6 +347,14 @@ const addNewModalFooterBtnStyle = {
   minWidth: 100,
 };
 
+const whitelistModalCancelBtnStyle = {
+  ...addNewModalFooterBtnStyle,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
 const WhitelistBreadcrumb = () => (
   <div
     style={{

@@ -37,19 +37,20 @@ import {
 // Modify column disabled — uncomment when enabling modify column:
 // import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_MARGIN = 24;
 const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
 
 const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_SX = {
   "& .MuiDialog-container": {
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
+    pt: 8,
   },
 };
 
 const NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_PAPER_SX = {
-  margin: NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_MARGIN,
-  maxHeight: `calc(100vh - ${NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - ${NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_MARGIN * 2}px)`,
+  mx: "auto",
+  my: 0,
+  maxHeight: `calc(100vh - ${NUMBER_FILTER_FILTERING_RULE_ADD_NEW_DIALOG_LAYOUT_OFFSET}px - 48px)`,
   display: "flex",
   flexDirection: "column",
   width: 600,

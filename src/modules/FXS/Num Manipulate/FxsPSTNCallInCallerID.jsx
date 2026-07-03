@@ -391,6 +391,16 @@ const addNewModalFooterCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const addNewModalBackdropSlotProps = {
+  backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+};
+
+const addNewModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
 const PstnCallInCallerIdBreadcrumb = () => (
   <div
     style={{
@@ -1302,6 +1312,7 @@ const PSTNCallInCallerID = () => {
         open={isModalOpen}
         onClose={handleCloseModal}
         maxWidth={false}
+        slotProps={addNewModalBackdropSlotProps}
         sx={FXS_PSTN_CALL_IN_CALLER_ID_ADD_NEW_DIALOG_SX}
         PaperProps={{
           sx: FXS_PSTN_CALL_IN_CALLER_ID_ADD_NEW_DIALOG_PAPER_SX,
@@ -1330,9 +1341,9 @@ const PSTNCallInCallerID = () => {
           style={{
             padding: "24px",
             backgroundColor: "#ffffff",
-            overflowY: "auto",
             flex: "1 1 auto",
           }}
+          sx={addNewModalDialogContentSx}
         >
           <div
             style={{

@@ -379,6 +379,26 @@ const addNewModalFooterCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const addNewModalBackdropSlotProps = {
+  backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+};
+
+const addNewModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const PORT_FXS_DIALOG_MARGIN = 24;
+const PORT_FXS_DIALOG_LAYOUT_OFFSET = 80;
+
+const fxsDialogSx = {
+  "& .MuiDialog-container": {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+};
+
 const PortFxsBreadcrumb = () => (
   <div
     style={{
@@ -474,6 +494,10 @@ const FWD_TYPE_TO_UI = {
 const tableSectionBorder = `1px solid ${C.divider}`;
 
 const fxsDialogPaperSx = {
+  margin: PORT_FXS_DIALOG_MARGIN,
+  maxHeight: `calc(100vh - ${PORT_FXS_DIALOG_LAYOUT_OFFSET}px - ${PORT_FXS_DIALOG_MARGIN * 2}px)`,
+  display: "flex",
+  flexDirection: "column",
   width: PORT_FXS_MODIFY_DIALOG_WIDTH,
   maxWidth: "95vw",
   p: 0,
@@ -907,15 +931,8 @@ const PortFxsPage = () => {
   open={showBatchModify}
   onClose={() => setShowBatchModify(false)}
   maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiDialog-paper": {
-      mt: "50px",
-      mb: "20px",
-    },
-  }}
+  slotProps={addNewModalBackdropSlotProps}
+  sx={fxsDialogSx}
   PaperProps={{ sx: fxsDialogPaperSx }}
   disableRestoreFocus
   disableEnforceFocus
@@ -927,9 +944,9 @@ const PortFxsPage = () => {
             style={{
               padding: "24px",
               backgroundColor: "#ffffff",
-              maxHeight: "75vh",
-              overflowY: "auto",
+              flex: "1 1 auto",
             }}
+            sx={addNewModalDialogContentSx}
           >
             <PortFxsBatchModifyPage
               key={`batch-${batchInitialPorts?.startingPort ?? "0"}-${batchInitialPorts?.endingPort ?? "0"}`}
@@ -972,15 +989,8 @@ const PortFxsPage = () => {
     setModifySaving(false);
   }}
   maxWidth={false}
-  sx={{
-    "& .MuiDialog-container": {
-      alignItems: "flex-start",
-    },
-    "& .MuiDialog-paper": {
-      mt: "50px",
-      mb: "20px",
-    },
-  }}
+  slotProps={addNewModalBackdropSlotProps}
+  sx={fxsDialogSx}
   PaperProps={{ sx: fxsDialogPaperSx }}
   disableRestoreFocus
   disableEnforceFocus
@@ -990,9 +1000,9 @@ const PortFxsPage = () => {
             style={{
               padding: "24px",
               backgroundColor: "#ffffff",
-              maxHeight: "75vh",
-              overflowY: "auto",
+              flex: "1 1 auto",
             }}
+            sx={addNewModalDialogContentSx}
           >
             {selectedPort && (
               <PortFxsModifyPage

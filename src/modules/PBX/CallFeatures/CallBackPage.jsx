@@ -523,7 +523,10 @@ const callBackModalSelectSx = {
 const callBackModalPaperSx = {
   width: 560,
   maxWidth: "95vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -1389,8 +1392,8 @@ const CallBackPage = () => {
         PaperProps={{ sx: callBackModalPaperSx }}
          sx={{
           "& .MuiDialog-container": {
-            alignItems: "flex-start",
-            paddingTop: "120px",
+            alignItems: "center",
+            justifyContent: "center",
           },
         }}
       >

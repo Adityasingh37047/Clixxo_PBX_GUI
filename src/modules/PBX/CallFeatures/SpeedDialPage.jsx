@@ -448,7 +448,10 @@ const speedDialModalTextFieldFullSx = {
 const speedDialModalPaperSx = {
   width: 560,
   maxWidth: "96vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -1235,6 +1238,12 @@ const SpeedDialPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
         PaperProps={{ sx: speedDialModalPaperSx }}
       >
         <DialogTitle style={speedDialModalTitleStyle}>
@@ -1323,6 +1332,12 @@ const SpeedDialPage = () => {
           }
         }}
         maxWidth={false}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
         PaperProps={{ sx: speedDialModalPaperSx }}
       >
         <DialogTitle style={speedDialModalTitleStyle}>

@@ -393,24 +393,18 @@ const voicePromptsCardStyle = {
 };
 
 const voicePromptsPrimaryBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-const voicePromptsCancelBtnStyle = {
-  ...voicePromptsModalCancelBtnStyle,
-  boxShadow: "none",
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
 };
 
 const voicePromptsChooseFileBtnStyle = {
-  ...voicePromptsPrimaryBtnStyle,
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
   minWidth: "auto",
-  boxShadow: "none",
 };
 
 const voicePromptsPanelStyle = {
@@ -595,7 +589,10 @@ const voicePromptsSelectSx = {
 const voicePromptsModalPaperSx = {
   width: 560,
   maxWidth: "96vw",
-  mx: "auto",
+  margin: 24,
+  maxHeight: "calc(100vh - 80px - 48px)",
+  display: "flex",
+  flexDirection: "column",
   p: 0,
   borderRadius: 2,
   overflow: "hidden",
@@ -1878,6 +1875,12 @@ const VoicePromptsPage = () => {
         open={recordModalOpen}
         onClose={() => setRecordModalOpen(false)}
         maxWidth={false}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
         PaperProps={{ sx: voicePromptsModalPaperSx }}
       >
         <DialogTitle style={voicePromptsModalTitleStyle}>
@@ -1924,14 +1927,14 @@ const VoicePromptsPage = () => {
           <Btn
             onClick={handleSaveRecordedPrompt}
             variant="primary"
-            style={voicePromptsPrimaryBtnStyle}
+            style={addNewModalFooterBtnStyle}
           >
             RECORD
           </Btn>
           <Btn
             onClick={() => setRecordModalOpen(false)}
             variant="cancel"
-            style={voicePromptsCancelBtnStyle}
+            style={addNewModalFooterCancelBtnStyle}
           >
             CANCEL
           </Btn>

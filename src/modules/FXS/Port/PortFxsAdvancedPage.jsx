@@ -482,6 +482,16 @@ const addNewModalFooterCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
+const addNewModalBackdropSlotProps = {
+  backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+};
+
+const addNewModalDialogContentSx = {
+  maxHeight: "calc(100vh - 220px)",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
 const PortFxsAdvancedBreadcrumb = () => (
   <div
     style={{
@@ -1202,6 +1212,7 @@ const PortFxsAdvancedPage = () => {
           open={isModalOpen}
           onClose={handleCloseModal}
           maxWidth={false}
+          slotProps={addNewModalBackdropSlotProps}
           sx={PORT_FXS_ADVANCED_ADD_NEW_DIALOG_SX}
           PaperProps={{
             sx: PORT_FXS_ADVANCED_ADD_NEW_DIALOG_PAPER_SX,
@@ -1228,9 +1239,9 @@ const PortFxsAdvancedPage = () => {
             style={{
               padding: "24px",
               backgroundColor: "#ffffff",
-              overflowY: "auto",
               flex: "1 1 auto",
             }}
+            sx={addNewModalDialogContentSx}
           >
             <div style={advancedFormPanelStyle}>{renderModalForm()}</div>
           </DialogContent>
