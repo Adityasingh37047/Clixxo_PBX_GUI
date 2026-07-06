@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material";
 import {
   CERTIFICATE_FIELDS,
-  CERTIFICATE_BUTTONS,
+  CERTIFICATE_BUTTON_CONFIG,
+  CERTIFICATE_BUTTON_VARIANTS,
+  CERTIFICATE_BUTTON_STYLE,
+  CERTIFICATE_CANCEL_BUTTON_STYLE,
   CERTIFICATE_NOTE,
   CERTIFICATE_BREADCRUMB,
   CERTIFICATE_CARD_TITLE,
   CERTIFICATE_TOAST_DEFAULT,
-  CERTIFICATE_TOAST_DURATION,
+  CERTIFICATE_TOAST_DURATION_MS,
   CERTIFICATE_MESSAGES,
   CERTIFICATE_TOOLTIPS,
-  PRIMARY_CERTIFICATE_ACTIONS,
 } from "../../../constants/CertificateManageConstants";
 import { Alert } from "@mui/material";
 // ── Color palette (same as AccountManage) ────────────────────────────────────
@@ -24,7 +25,7 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
+  mutedText: "#94a3b8",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
   accent: "#4A5D75",
@@ -160,17 +161,6 @@ const advancedFormInlineFooterStyle = {
   boxSizing: "border-box",
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-
 // ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
@@ -196,9 +186,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -373,12 +360,14 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
@@ -389,6 +378,30 @@ const tooltipProps = {
   },
 };
 
+const CertificateFieldLabel = ({ tooltipKey, children }) => {
+  const tooltip = CERTIFICATE_TOOLTIPS[tooltipKey];
+  const labelNode = (
+    <span
+      style={{
+        ...labelStyle,
+        display: "inline-flex",
+        width: "fit-content",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
+      {children}
+    </span>
+  );
+
+  if (!tooltip) return labelNode;
+
+  return (
+    <Tooltip title={tooltip} {...tooltipProps}>
+      {labelNode}
+    </Tooltip>
+  );
+};
+
 
 const CertificateManage = () => {
   const [form, setForm] = useState({});
@@ -396,7 +409,7 @@ const CertificateManage = () => {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(CERTIFICATE_TOAST_DEFAULT), CERTIFICATE_TOAST_DURATION);
+    setTimeout(() => setToast(CERTIFICATE_TOAST_DEFAULT), CERTIFICATE_TOAST_DURATION_MS);
   };
 
   const handleChange = (e) => {
@@ -444,11 +457,20 @@ const CertificateManage = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           {CERTIFICATE_BREADCRUMB.map((crumb, index) => (
             <React.Fragment key={index}>
-              <span>{crumb}</span>
+              <span
+                style={
+                  index === CERTIFICATE_BREADCRUMB.length - 1
+                    ? { color: "#1e293b", fontWeight: 600 }
+                    : undefined
+                }
+              >
+                {crumb}
+              </span>
               {index < CERTIFICATE_BREADCRUMB.length - 1 && <span>&gt;</span>}
             </React.Fragment>
           ))}
@@ -469,9 +491,11 @@ const CertificateManage = () => {
             >
               {CERTIFICATE_FIELDS.map((field) => (
                 <React.Fragment key={field.name}>
-                  <Tooltip title={CERTIFICATE_TOOLTIPS[field.name]} {...tooltipProps}>
-                    <span style={labelStyle}>{field.label}:</span>
-                  </Tooltip>
+                  <div style={{ justifySelf: "start", width: "fit-content" }}>
+                    <CertificateFieldLabel tooltipKey={field.name}>
+                      {field.label}:
+                    </CertificateFieldLabel>
+                  </div>
                   <div className="flex items-center min-w-0 w-full">
                     <input
                       type="text"
@@ -495,19 +519,17 @@ const CertificateManage = () => {
               marginRight: 0,
             }}
           >
-            {CERTIFICATE_BUTTONS.map((btn) => (
+            {CERTIFICATE_BUTTON_CONFIG.map((btn) => (
               <Btn
                 key={btn.name}
                 type="button"
-                variant={
-                  PRIMARY_CERTIFICATE_ACTIONS.includes(
-                    btn.name.toLowerCase()
-                  )
-                    ? "primary"
-                    : "cancel"
-                }
+                variant={btn.variant}
                 onClick={() => handleAction(btn.label)}
-                style={advancedFormBtnStyle}
+                style={
+                  btn.variant === CERTIFICATE_BUTTON_VARIANTS.PRIMARY
+                    ? CERTIFICATE_BUTTON_STYLE
+                    : CERTIFICATE_CANCEL_BUTTON_STYLE
+                }
               >
                 {btn.label}
               </Btn>

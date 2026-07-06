@@ -35,20 +35,26 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  placeholderText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-};
+// ── Shared PBX UI library (only the byte-identical primitives). CallCount keeps
+//    its own Btn, CallCountPagination, Pill, and PageBreadcrumb — those differ. ──
+import {
+  C,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  FOCUS_RING_SHADOW,
+} from "../../theme/pbxTokens";
+import {
+  TH,
+  ExtensionTableListLoading as TableListLoading,
+  ExtensionTableListEmptyState as TableListEmptyState,
+  extensionPageWrapStyle as pbxPageWrapStyle,
+  extensionPageInnerStyle as pbxPageInnerStyle,
+  extensionCardStyle as callCountCardStyle,
+  extensionToolbarStyle as callCountToolbarStyle,
+  extensionSelectedBadgeStyle as callCountSelectedBadgeStyle,
+  extensionCancelBtnStyle as callCountCancelBtnStyle,
+} from "../../components/common";
 
 // ── Local page UI (inlined from cdrSharedUi) ────────────────────────────────
 const Btn = ({
@@ -180,30 +186,6 @@ const Btn = ({
   );
 };
 
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
 const PageBreadcrumb = ({ segments, style }) => (
   <div
     style={{
@@ -234,112 +216,8 @@ const PageBreadcrumb = ({ segments, style }) => (
     ))}
   </div>
 );
-const pbxPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pbxPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
 
 const CALL_COUNT_TABLE_CARD_RADIUS = 10;
-
-const callCountCardStyle = {
-  background: "#ffffff",
-  borderRadius: CALL_COUNT_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const callCountToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: CALL_COUNT_TABLE_CARD_RADIUS,
-  borderTopRightRadius: CALL_COUNT_TABLE_CARD_RADIUS,
-};
-
-const callCountSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const callCountCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
 
 const callCountToolbarFilterRefreshBtnStyle = {
   ...callCountCancelBtnStyle,
@@ -440,11 +318,6 @@ const CallCountPagination = ({
 
 /** Separator line left of vertical scrollbar only — see index.css `.trunk-table-scroll` */
 const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;

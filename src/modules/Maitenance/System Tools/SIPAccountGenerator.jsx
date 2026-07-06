@@ -1,12 +1,14 @@
 import React, { useState, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material";
 import {
   SIP_ACCOUNT_FORM_FIELDS,
   SIP_ACCOUNT_NOTE,
   SIP_ACCOUNT_UPLOAD,
   SIP_ACCOUNT_DOWNLOAD,
-  SIP_ACCOUNT_SAVE_BUTTON,
+  SIP_ACCOUNT_BUTTON_LABELS,
+  SIP_ACCOUNT_BUTTON_VARIANTS,
+  SIP_ACCOUNT_BUTTON_STYLE,
+  SIP_ACCOUNT_CARD_TITLE,
   SIP_ACCOUNT_MESSAGES,
   SIP_ACCOUNT_DEFAULT_FORM,
   SIP_ACCOUNT_TOAST_DEFAULT,
@@ -24,7 +26,7 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
+  mutedText: "#94a3b8",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
   accent: "#4A5D75",
@@ -190,15 +192,12 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
     danger: {
       background: "#fef2f2",
@@ -220,7 +219,7 @@ const Btn = ({
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
+      cancel: "#d4dce6",
       danger: "#fca5a5",
       outline: "#e2e8f0",
       error: "#b91c1c",
@@ -229,7 +228,7 @@ const Btn = ({
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
+      cancel: "#c5ced9",
       danger: "#f87171",
       outline: "#d1d9e6",
       error: "#991b1b",
@@ -272,9 +271,10 @@ const Btn = ({
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -429,13 +429,14 @@ const SIPAccountGenerator = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>{SIP_ACCOUNT_BREADCRUMB[0]}</span>
           <span>&gt;</span>
           <span>{SIP_ACCOUNT_BREADCRUMB[1]}</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
             {SIP_ACCOUNT_BREADCRUMB[2]}
           </span>
         </div>
@@ -444,7 +445,7 @@ const SIPAccountGenerator = () => {
           {/* SIP Account Generator Section */}
           <div style={tableContainerStyle}>
             <div style={blueBarStyle}>
-            <span>{SIP_ACCOUNT_BREADCRUMB[2]}</span>
+            <span>{SIP_ACCOUNT_CARD_TITLE}</span>
             </div>
             <div className="p-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
@@ -495,10 +496,10 @@ const SIPAccountGenerator = () => {
                 <div className="mt-2 lg:mt-5">
                   <Btn
                     type="submit"
-                    variant="primary"
-                    style={{ minWidth: 100, height: 34 }}
+                    variant={SIP_ACCOUNT_BUTTON_VARIANTS.SAVE}
+                    style={SIP_ACCOUNT_BUTTON_STYLE}
                   >
-                    {SIP_ACCOUNT_SAVE_BUTTON}
+                    {SIP_ACCOUNT_BUTTON_LABELS.SAVE}
                   </Btn>
                 </div>
               </div>
@@ -548,11 +549,11 @@ const SIPAccountGenerator = () => {
                 onChange={handleFileChange}
               />
               <Btn
-                variant="cancel"
+                variant={SIP_ACCOUNT_BUTTON_VARIANTS.CHOOSE_FILE}
                 onClick={() => fileInputRef.current.click()}
-                style={{ minWidth: 110, height: 34, fontSize: 13 }}
+                style={SIP_ACCOUNT_BUTTON_STYLE}
               >
-                {SIP_ACCOUNT_UPLOAD.chooseFile}
+                {SIP_ACCOUNT_BUTTON_LABELS.CHOOSE_FILE}
               </Btn>
               <span
                 style={{
@@ -570,11 +571,11 @@ const SIPAccountGenerator = () => {
 
             <div className="flex md:justify-end flex-1">
               <Btn
-                variant="primary"
+                variant={SIP_ACCOUNT_BUTTON_VARIANTS.UPLOAD}
                 onClick={handleUpload}
-                style={{ minWidth: 110, height: 34 }}
+                style={SIP_ACCOUNT_BUTTON_STYLE}
               >
-                {SIP_ACCOUNT_UPLOAD.button}
+                {SIP_ACCOUNT_BUTTON_LABELS.UPLOAD}
               </Btn>
             </div>
           </div>
@@ -615,11 +616,11 @@ const SIPAccountGenerator = () => {
 
             <div className="flex md:justify-end flex-1">
               <Btn
-                variant="primary"
+                variant={SIP_ACCOUNT_BUTTON_VARIANTS.DOWNLOAD}
                 onClick={handleDownload}
-                style={{ minWidth: 110, height: 34 }}
+                style={SIP_ACCOUNT_BUTTON_STYLE}
               >
-                {SIP_ACCOUNT_DOWNLOAD.button}
+                {SIP_ACCOUNT_BUTTON_LABELS.DOWNLOAD}
               </Btn>
             </div>
           </div>

@@ -4,7 +4,9 @@ import { InfoOutlined } from "@mui/icons-material";
 import {
   UPGRADE_TABLE_HEADERS,
   UPGRADE_LABELS,
-  UPGRADE_BUTTONS,
+  UPGRADE_BUTTON_LABELS,
+  UPGRADE_BUTTON_VARIANTS,
+  UPGRADE_BUTTON_STYLE,
   UPGRADE_BREADCRUMB,
   UPGRADE_STATUS,
   UPGRADE_BUTTON_STATUS,
@@ -34,9 +36,8 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -267,33 +268,6 @@ const valueBoxStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-};
-
-/** Upgrade page — standalone action footer (not attached to any table/card) */
-const upgradeFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  marginTop: 24,
-  padding: "10px 20px",
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
-  boxSizing: "border-box",
-  background: C.cardBg,
-  boxShadow: C.cardShadow,
-};
-
-const upgradeFooterBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
 };
 
 const formatVersionValue = (raw) => {
@@ -615,6 +589,7 @@ const Upgrade = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>{UPGRADE_BREADCRUMB[0]}</span>
@@ -661,9 +636,7 @@ const Upgrade = () => {
         )}
 
         {/* Current Version */}
-        <div style={{ ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
             <span>{UPGRADE_LABELS.currentVersion}</span>
             {versionLoading && (
@@ -706,84 +679,81 @@ const Upgrade = () => {
           </div>
         </div>
 
-        {/* File Input Row */}
-        <div
-          style={{
-            ...tableContainerStyle,
-            marginTop: 20,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            padding: "16px 20px",
-            gap: 16,
-            flexWrap: "wrap",
-          }}
-        >
-          <span
-            style={{
-              fontWeight: 600,
-              color: C.labelText,
-              minWidth: 140,
-              fontSize: 13,
-            }}
+        {/* Select Update File + actions */}
+        <div style={{ ...tableContainerStyle, marginTop: 20 }}>
+          <div style={{ ...blueBarStyle, justifyContent: "left" }}>
+            <span>{UPGRADE_LABELS.selectFile}</span>
+          </div>
+          <div
+            className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+            style={{ padding: "24px 20px" }}
           >
-            {UPGRADE_LABELS.selectFile}
-          </span>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploading || rebooting}
-          />
-          <Btn
-            variant="cancel"
-            type="button"
-            onClick={() =>
-              !uploading && !rebooting && fileInputRef.current?.click()
-            }
-            disabled={uploading || rebooting}
-            style={{ minWidth: 120, height: 32 }}
-          >
-            {UPGRADE_LABELS.chooseFile}
-          </Btn>
-          <span
-            style={{
-              fontSize: 13,
-              color:
-                fileName === UPGRADE_LABELS.noFile ? C.mutedText : C.valueText,
-              flex: 1,
-              minWidth: 0,
-            }}
-          >
-            {fileName}
-          </span>
-        </div>
-
-        {/* Personal action footer — separate from tables/cards above */}
-        <div style={upgradeFooterStyle}>
-          <Btn
-            variant="primary"
-            type="button"
-            onClick={handleUpdate}
-            disabled={uploading || rebooting}
-            style={upgradeFooterBtnStyle}
-          >
-            {uploading
-              ? UPGRADE_BUTTON_STATUS.uploading
-              : rebooting
-                ? UPGRADE_BUTTON_STATUS.rebooting
-                : UPGRADE_BUTTONS.update}
-          </Btn>
-          <Btn
-            variant="cancel"
-            type="button"
-            onClick={handleReset}
-            disabled={uploading || rebooting}
-            style={upgradeFooterBtnStyle}
-          >
-            {UPGRADE_BUTTONS.reset}
-          </Btn>
+            <div
+              className="flex flex-col sm:flex-row sm:items-center gap-4"
+              style={{ flex: 1, minWidth: 0 }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={uploading || rebooting}
+              />
+              <Btn
+                variant={UPGRADE_BUTTON_VARIANTS.CHOOSE_FILE}
+                type="button"
+                onClick={() =>
+                  !uploading && !rebooting && fileInputRef.current?.click()
+                }
+                disabled={uploading || rebooting}
+                style={UPGRADE_BUTTON_STYLE}
+              >
+                {UPGRADE_BUTTON_LABELS.CHOOSE_FILE}
+              </Btn>
+              <span
+                style={{
+                  fontSize: 13,
+                  color:
+                    fileName === UPGRADE_LABELS.noFile
+                      ? C.mutedText
+                      : C.valueText,
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {fileName}
+              </span>
+            </div>
+            <div
+              className="flex flex-row items-center gap-3"
+              style={{ flexShrink: 0 }}
+            >
+              <Btn
+                variant={UPGRADE_BUTTON_VARIANTS.UPDATE}
+                type="button"
+                onClick={handleUpdate}
+                disabled={uploading || rebooting}
+                style={UPGRADE_BUTTON_STYLE}
+              >
+                {uploading
+                  ? UPGRADE_BUTTON_STATUS.uploading
+                  : rebooting
+                    ? UPGRADE_BUTTON_STATUS.rebooting
+                    : UPGRADE_BUTTON_LABELS.UPDATE}
+              </Btn>
+              <Btn
+                variant={UPGRADE_BUTTON_VARIANTS.RESET}
+                type="button"
+                onClick={handleReset}
+                disabled={uploading || rebooting}
+                style={UPGRADE_BUTTON_STYLE}
+              >
+                {UPGRADE_BUTTON_LABELS.RESET}
+              </Btn>
+            </div>
+          </div>
         </div>
       </div>
     </div>

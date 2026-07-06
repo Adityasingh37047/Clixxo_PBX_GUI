@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  CONFIG_FILE_TITLE,
+  CONFIG_FILE_CARD_TITLE,
   CONFIG_FILE_OPTIONS,
-  CONFIG_FILE_CONTENT_MAP, 
+  CONFIG_FILE_CONTENT_MAP,
   CONFIG_FILE_MESSAGES,
-  CONFIG_FILE_STATUS_MESSAGES,
+  CONFIG_FILE_BUTTON_LABELS,
+  CONFIG_FILE_BUTTON_VARIANTS,
+  CONFIG_FILE_BUTTON_STYLE,
   CONFIG_FILE_BREADCRUMB,
   CONFIG_FILE_HOSTS_VALUE,
   CONFIG_FILE_TEXTAREA_PLACEHOLDER,
@@ -13,29 +15,25 @@ import {
   CONFIG_FILE_NETWORK_ERROR,
 } from "../../../constants/ConfigFileConstants";
 import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
-import { Alert, CircularProgress } from "@mui/material";
-// ── Color palette (same as AccountManage) ────────────────────────────────────
+import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
+
+const CONFIG_FILE_COMPACT_MQ = "(max-width: 768px)";
+const CONFIG_FILE_FORM_PAD_X = 28;
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
 };
-
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
 
 // ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
@@ -121,57 +119,35 @@ const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
   };
 };
 
-const systemToolsFieldInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
+const systemToolsFieldSelectStyle = {
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
   border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 14,
-  width: "100%",
-  backgroundColor: "#f8fafc",
+  fontSize: 13,
+  appearance: "auto",
+  backgroundColor: "#ffffff",
   outline: "none",
-  color: "#3E5475",
+  color: C.valueText,
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   boxSizing: "border-box",
-  boxShadow: "none",
+  cursor: "pointer",
 };
 
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
-
-const systemToolsFieldSelectStyle = {
-  ...systemToolsFieldInputStyle,
-  appearance: "auto",
-};
-const selectStyle = systemToolsFieldSelectStyle;
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
+const configFileHeaderSelectStyle = {
+  ...systemToolsFieldSelectStyle,
+  width: "auto",
+  minWidth: 180,
+  maxWidth: 220,
+  height: 30,
+  flexShrink: 0,
+  marginLeft: "auto",
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const configFileHeaderTitleStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  lineHeight: 1.35,
 };
-
-
-// ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -196,51 +172,27 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    error: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `1px solid ${C.errorRed}`,
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
   };
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
@@ -278,9 +230,10 @@ const Btn = ({
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -313,62 +266,158 @@ const Btn = ({
   );
 };
 
-const tableContainerStyle = {
+const configFileCardStyle = {
   width: "100%",
-  maxWidth: "100%",
-  margin: 0,
   display: "flex",
   flexDirection: "column",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   boxSizing: "border-box",
 };
 
-const ConfigFilePageWrapStyle = {
+const configFilePageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const ConfigFilePageInnerStyle = {
+const configFilePageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-
-const footerBtnStyle = {
-  ...advancedFormBtnStyle,
-  width: 110,
-  minWidth: 110,
-  maxWidth: 110,
-  padding: "0 10px",
-};
-
-const blueBarStyle = {
+const configFileHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  marginBottom: 0,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
-  flexWrap: "wrap",
   gap: 12,
+  flexWrap: "wrap",
+  padding: `10px ${CONFIG_FILE_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
+const configFileBodyWrapStyle = {
+  position: "relative",
+  width: "100%",
+  background: C.cardBg,
+};
+
+const configFileTextareaBodyStyle = {
+  backgroundColor: C.cardBg,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+  overflow: "hidden",
+};
+
+const configFileTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 450,
+  margin: 0,
+  padding: "24px",
+  border: "none",
+  borderRadius: 0,
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 13,
+  lineHeight: 1.6,
+  fontFamily: "monospace",
+  color: C.valueText,
+  backgroundColor: C.cardBg,
+  whiteSpace: "pre-wrap",
+  cursor: "text",
+};
+
+const configFileLoadingOverlayStyle = {
+  position: "absolute",
+  inset: 0,
+  backgroundColor: "rgba(255, 255, 255, 0.72)",
+  backdropFilter: "blur(2px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 10,
+};
+
+const configFileLoadingBoxStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  background: C.cardBg,
+  padding: "14px 20px",
+  borderRadius: 8,
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 4px 12px rgba(15, 23, 42, 0.08)",
+  fontSize: 13,
+  fontWeight: 500,
+  color: C.valueText,
+};
+
+const configFileFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  padding: "10px 18px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  minHeight: 50,
+  boxSizing: "border-box",
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
+};
+
+const configFileFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const ConfigFileBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{CONFIG_FILE_BREADCRUMB[0]}</span>
+    <span>&gt;</span>
+    <span>{CONFIG_FILE_BREADCRUMB[1]}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {CONFIG_FILE_BREADCRUMB[2]}
+    </span>
+  </div>
+);
+
 const ConfigFile = () => {
+  const isCompact = useMediaQuery(CONFIG_FILE_COMPACT_MQ);
   const [selectedFile, setSelectedFile] = useState(
     CONFIG_FILE_OPTIONS[0].value,
   );
@@ -489,142 +538,93 @@ const ConfigFile = () => {
   };
 
   return (
-    <div style={ConfigFilePageWrapStyle} data-native-scroll>
-      <div style={ConfigFilePageInnerStyle}>
-    
-      {/* Message Display */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage(CONFIG_FILE_MESSAGE_DEFAULT)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
+    <div
+      style={{
+        ...configFilePageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+      data-native-scroll
+    >
+      <div style={configFilePageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage(CONFIG_FILE_MESSAGE_DEFAULT)}
+            sx={{
+              ...configFileFixedAlertSx,
+              ...(isCompact
+                ? { left: 8, right: 8, top: 12, minWidth: 0, maxWidth: "none" }
+                : {}),
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
 
-      {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>{CONFIG_FILE_BREADCRUMB[0]}</span>
-          <span>&gt;</span>
-          <span>{CONFIG_FILE_BREADCRUMB[1]}</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {CONFIG_FILE_BREADCRUMB[2]}
-          </span>
-        </div>
+        <ConfigFileBreadcrumb />
 
-        <div style={tableContainerStyle}>
-          {/* Top Blue Bar */}
-          <div style={blueBarStyle}>
-            <span style={{ flex: 1, textAlign: "left" }}>
-              {CONFIG_FILE_TITLE}
-            </span>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <select
-                className="px-3 py-1 border rounded text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-                value={selectedFile}
-                onChange={handleFileChange}
-                disabled={loading.fetch}
-                style={{
-                  ...selectStyle,
-                  minWidth: "180px",
-                  height: 30,
-                  fontSize: 13,
-                  fontWeight: 500,
-                }}
-                {...inputInteraction}
-              >
-                {CONFIG_FILE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div style={configFileCardStyle}>
+          <div style={configFileHeaderStyle}>
+            <span style={configFileHeaderTitleStyle}>{CONFIG_FILE_CARD_TITLE}</span>
+            <select
+              value={selectedFile}
+              onChange={handleFileChange}
+              disabled={loading.fetch}
+              style={configFileHeaderSelectStyle}
+              {...inputInteraction}
+            >
+              {CONFIG_FILE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="relative">
-              {loading.fetch && selectedFile === CONFIG_FILE_HOSTS_VALUE && (
-                <div
-                  className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10"
-                  style={{ backdropFilter: "blur(2px)" }}
-                >
-                  <div
-                    className="flex items-center gap-3 bg-white px-6 py-4 rounded-lg shadow-lg"
-                    style={{ border: `1px solid ${C.cardBorder}` }}
-                  >
-                    <CircularProgress size={24} style={{ color: C.primary }} />
-                    <span className="text-gray-700 font-medium">
-                      {CONFIG_FILE_STATUS_MESSAGES.LOADING_FILE}
-                    </span>
-                  </div>
+          <div style={configFileBodyWrapStyle}>
+            {loading.fetch && selectedFile === CONFIG_FILE_HOSTS_VALUE && (
+              <div style={configFileLoadingOverlayStyle}>
+                <div style={configFileLoadingBoxStyle}>
+                  <CircularProgress size={22} sx={{ color: C.accent }} />
+                  <span>{CONFIG_FILE_BUTTON_LABELS.LOADING_FILE}</span>
                 </div>
-              )}
+              </div>
+            )}
+            <div style={configFileTextareaBodyStyle}>
               <textarea
                 ref={textareaRef}
-                className="w-full min-h-[450px] resize-vertical text-sm box-border outline-none cursor-text"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onClick={handleTextareaClick}
                 readOnly={loading.fetch}
                 spellCheck={false}
-                style={{
-                  border: "none",
-                  margin: "0",
-                  padding: "24px",
-                  fontFamily: "monospace",
-                  backgroundColor: C.cardBg,
-                  color: C.valueText,
-                  lineHeight: "1.6",
-                }}
+                style={configFileTextareaStyle}
                 placeholder={CONFIG_FILE_TEXTAREA_PLACEHOLDER}
               />
+            </div>
           </div>
 
-          <div
-            style={{
-              ...advancedFormInlineFooterStyle,
-              width: "100%",
-              marginLeft: 0,
-              marginRight: 0,
-            }}
-          >
+          <div style={configFileFooterStyle}>
             <Btn
-              variant="primary"
+              variant={CONFIG_FILE_BUTTON_VARIANTS.SAVE}
               onClick={handleSave}
               disabled={loading.fetch || loading.save}
               startIcon={
-                loading.save && <CircularProgress size={16} color="inherit" />
+                loading.save ? <CircularProgress size={14} color="inherit" /> : null
               }
-              style={footerBtnStyle}
+              style={CONFIG_FILE_BUTTON_STYLE}
             >
-              {loading.save ? CONFIG_FILE_STATUS_MESSAGES.SAVING : CONFIG_FILE_STATUS_MESSAGES.SAVE_CHANGES}
+              {loading.save
+                ? CONFIG_FILE_BUTTON_LABELS.SAVING
+                : CONFIG_FILE_BUTTON_LABELS.SAVE}
             </Btn>
             <Btn
-              variant="cancel"
+              variant={CONFIG_FILE_BUTTON_VARIANTS.RESET}
               onClick={handleReset}
               disabled={loading.fetch || loading.save}
-              style={footerBtnStyle}
+              style={CONFIG_FILE_BUTTON_STYLE}
             >
-              {CONFIG_FILE_STATUS_MESSAGES.RESET}
+              {CONFIG_FILE_BUTTON_LABELS.RESET}
             </Btn>
           </div>
         </div>

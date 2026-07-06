@@ -76,7 +76,36 @@ export const SIP_ACCOUNT_DOWNLOAD = {
 // Buttons
 // ================================
 
-export const SIP_ACCOUNT_SAVE_BUTTON = "Save";
+export const SIP_ACCOUNT_PAGE_TITLE = "SIP Account Generator";
+export const SIP_ACCOUNT_CARD_TITLE = SIP_ACCOUNT_PAGE_TITLE;
+
+export const SIP_ACCOUNT_BREADCRUMB = [
+  "Maintenance",
+  "System Tools",
+  SIP_ACCOUNT_PAGE_TITLE,
+];
+
+export const SIP_ACCOUNT_BUTTON_LABELS = {
+  SAVE: "Save",
+  UPLOAD: "Upload",
+  DOWNLOAD: "Download",
+  CHOOSE_FILE: "Choose File",
+};
+
+export const SIP_ACCOUNT_BUTTON_VARIANTS = {
+  SAVE: "primary",
+  UPLOAD: "primary",
+  DOWNLOAD: "primary",
+  CHOOSE_FILE: "cancel",
+};
+
+export const SIP_ACCOUNT_BUTTON_STYLE = {
+  height: 30,
+  minWidth: 100,
+  fontSize: 12,
+  borderRadius: 10,
+  padding: "6px 14px",
+};
 
 // ================================
 // Toast Messages
@@ -106,15 +135,3 @@ export const SIP_ACCOUNT_TOAST_DEFAULT = {
 };
 
 export const SIP_ACCOUNT_TOAST_DURATION = 3500;
-
-// ================================
-// Breadcrumb
-// ================================
-
-export const SIP_ACCOUNT_PAGE_TITLE = "SIP Account Generator";
-
-export const SIP_ACCOUNT_BREADCRUMB = [
-  "Maintenance",
-  "System Tool",
-  SIP_ACCOUNT_PAGE_TITLE,
-];

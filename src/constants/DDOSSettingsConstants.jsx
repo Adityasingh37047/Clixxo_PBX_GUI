@@ -27,13 +27,15 @@ export const DDOS_INITIAL_FORM = {
 
 export const DDOS_INFO_LOG = ``;
 
-
-export const DDOS_CARD_TITLE = "DDOS Settings";
+export const DDOS_BREADCRUMB_ROOT = "Maintenance";
+export const DDOS_BREADCRUMB_SECTION = "System Tools";
+export const DDOS_PAGE_TITLE = "DDOS Settings";
+export const DDOS_CARD_TITLE = DDOS_PAGE_TITLE;
 
 export const DDOS_SETTINGS_BREADCRUMB = [
-  "Maintenance",
-  "System Tool",
-  DDOS_CARD_TITLE,
+  DDOS_BREADCRUMB_ROOT,
+  DDOS_BREADCRUMB_SECTION,
+  DDOS_PAGE_TITLE,
 ];
 
 export const DDOS_MESSAGE_DEFAULT = { type: "", text: "" };
@@ -48,6 +50,22 @@ export const DDOS_MESSAGES = {
   simulateTriggered: "Attack simulation triggered",
   logsCleared: "Logs cleared",
 };
+
+export const DDOS_LABEL_ENABLE = "Enable";
+export const DDOS_LABEL_WEB_PORT = "WEB Port Attack Protection";
+export const DDOS_LABEL_WEB_LIMIT = "WEB Limit";
+export const DDOS_LABEL_FTP_PORT = "FTP Port Attack Protection";
+export const DDOS_LABEL_FTP_LIMIT = "FTP Limit";
+export const DDOS_LABEL_SSH_PORT = "SSH Port Attack Protection";
+export const DDOS_LABEL_SSH_LIMIT = "SSH Limit";
+export const DDOS_LABEL_TELNET_PORT = "TELNET Port Attack Protection";
+export const DDOS_LABEL_TELNET_LIMIT = "TELNET Limit";
+export const DDOS_LABEL_BLACKLIST_VALIDITY = "Set Validity of Attacker IP Blacklist";
+export const DDOS_LABEL_BLACKLIST_TIME = "Time (Min)";
+export const DDOS_CARD_TITLE_INFO_LOG = "Info Log";
+
+export const DDOS_BLACKLIST_OPTION_FOREVER = "Forever";
+export const DDOS_BLACKLIST_OPTION_IN_SET_TIME = "In The Set Time";
 
 export const DDOS_TOOLTIPS = {
   webPortAttack:
@@ -86,6 +104,3 @@ export const DDOS_BUTTON_LABELS = {
   SIMULATE_ATTACK: "Simulate Attack",
   CLEAR_LOGS: "Clear Logs",
 };
-
-
-  

@@ -1,6 +1,12 @@
 import React, { useState } from "react";
-import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material";
+import {
+  Alert,
+  Checkbox,
+  MenuItem,
+  Select,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   RADIUS_FIELDS,
   LOCAL_IP_OPTIONS,
@@ -16,42 +22,30 @@ import {
   RADIUS_MESSAGES,
   RADIUS_SELECT_LOCAL_IP_PLACEHOLDER,
 } from "../../../constants/RadiusConstants";
-import {
-  Checkbox,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Alert,
-} from "@mui/material";
-// ── Color palette (same as AccountManage) ────────────────────────────────────
+
+const RADIUS_COMPACT_MQ = "(max-width: 768px)";
+const RADIUS_GRID_TWO_COL_MQ = "(min-width: 900px)";
+const RADIUS_FORM_MAX_WIDTH = 960;
+const RADIUS_FORM_PAD_X = 28;
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
 };
 
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
-
-// ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
-
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -68,19 +62,20 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
-const nativeFieldInteraction = {
+const inputInteraction = {
   onFocus: (e) => {
-    if (e.target.disabled) return;
+    if (e.target.disabled || e.target.readOnly) return;
     setFieldFocus(e.target);
   },
   onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
     setFieldDefault(e.target);
   },
   onMouseEnter: (e) => {
-    if (e.target.disabled) return;
+    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -88,6 +83,7 @@ const nativeFieldInteraction = {
     }
   },
   onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -96,77 +92,25 @@ const nativeFieldInteraction = {
   },
 };
 
-const inputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
-  if (!hasError) return inputInteraction;
-  const ring = (el, focused) => {
-    el.style.borderColor = errorColor;
-    el.style.borderWidth = "1px";
-    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
-  };
-  return {
-    onFocus: (e) => ring(e.target, true),
-    onBlur: (e) => ring(e.target, false),
-    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
-    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
-  };
-};
-
-const systemToolsFieldInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 14,
+const radiusFieldInputStyle = {
   width: "100%",
-  backgroundColor: "#f8fafc",
-  outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  minWidth: 0,
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
   boxSizing: "border-box",
-  boxShadow: "none",
+  background: "#ffffff",
+  lineHeight: 1.35,
+  minHeight: 36,
+  height: 36,
+  fontSize: 13,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  outline: "none",
+  color: C.valueText,
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
-
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectSx = {
+const radiusMuiSelectSx = {
+  width: "100%",
   fontSize: 13,
   backgroundColor: "#fff",
   "& .MuiOutlinedInput-root": {
@@ -174,66 +118,26 @@ const muiSelectSx = {
     backgroundColor: "#fff",
   },
   "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
     padding: "7px 32px 7px 10px !important",
     lineHeight: 1.35,
-    boxSizing: "border-box",
   },
   "& .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
   },
   "&:hover .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_HOVER,
   },
   "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
     borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
+    borderWidth: "1px",
   },
 };
 
-const systemToolsEditableFieldInputStyle = {
-  ...systemToolsFieldInputStyle,
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-};
-const systemToolsEditableMuiSelectSx = {
-  ...muiSelectSx,
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-  borderRadius: "6px",
-  fontSize: 14,
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-  },
-};
-const inputStyle = systemToolsEditableFieldInputStyle;
-const systemToolsMuiSelectSx = systemToolsEditableMuiSelectSx;
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
+const radiusCheckboxSx = {
+  padding: 0,
   margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
 };
 
 const tooltipProps = {
@@ -242,24 +146,20 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
-
-// ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -267,10 +167,6 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  startIcon,
-  form,
-  component,
-  title,
 }) => {
   const styles = {
     default: {
@@ -284,74 +180,32 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    error: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `1px solid ${C.errorRed}`,
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
     },
   };
+
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  const Component = component || "button";
   return (
-    <Component
-      type={type}
+    <button
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -360,124 +214,250 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        transition: "background 0.15s ease, transform 0.1s ease",
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
       onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
+        if (!disabled) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
+        if (!disabled) e.currentTarget.style.background = baseBg;
+        e.currentTarget.style.transform = "";
       }}
       onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
+        if (!disabled) {
+          e.currentTarget.style.background = activeBg;
+          e.currentTarget.style.transform = "translateY(1px) scale(0.98)";
+        }
       }}
       onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
+        if (!disabled) {
+          e.currentTarget.style.background = hoverBg;
+          e.currentTarget.style.transform = "";
+        }
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
       {children}
-    </Component>
+    </button>
   );
 };
 
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  boxSizing: "border-box",
-};
-
-const RadiusPageWrapStyle = {
+const radiusPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const RadiusPageInnerStyle = {
+const radiusPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-
-const blueBarStyle = {
+const radiusCardStyle = {
   width: "100%",
-  minHeight: 44,
+  display: "flex",
+  flexDirection: "column",
   background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  marginBottom: 0,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const radiusHeaderStyle = {
+  minHeight: 44,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: `10px ${RADIUS_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
 };
 
-const callTypeCheckboxSx = {
-  padding: "6px 8px",
-  "& .MuiSvgIcon-root": { fontSize: 20 },
-  color: "#64748b",
-  "&.Mui-checked": { color: C.accent },
+const radiusFormBodyStyle = {
+  width: "100%",
+  maxWidth: RADIUS_FORM_MAX_WIDTH,
+  margin: "0 auto",
+  padding: `20px ${RADIUS_FORM_PAD_X}px`,
+  boxSizing: "border-box",
 };
 
-const CallTypeCheckbox = ({ checked, onChange, name, value, label }) => (
-  <FormControlLabel
-    control={
-      <Checkbox
-        checked={checked}
-        onChange={onChange}
-        name={name}
-        value={value}
-        sx={callTypeCheckboxSx}
-      />
-    }
-    label={<span style={{ fontSize: 14, color: C.valueText }}>{label}</span>}
-    sx={{ margin: 0, marginLeft: 0 }}
-    className="m-0 min-w-[140px] sm:min-w-[160px]"
+const radiusFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  padding: "10px 18px",
+  borderTop: `1px solid ${C.divider}`,
+  minHeight: 50,
+};
+
+const radiusFooterBtnStyle = {
+  height: 30,
+  minWidth: 100,
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+const radiusFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+};
+
+const radiusFormGridStyle = (isGridTwoCol) => ({
+  display: "grid",
+  gridTemplateColumns: isGridTwoCol ? "1fr 1fr" : "1fr",
+  gap: isGridTwoCol ? "18px 32px" : 14,
+  width: "100%",
+  alignItems: "start",
+});
+
+const radiusGridFieldStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  minWidth: 0,
+  width: "100%",
+};
+
+const radiusGridLabelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  lineHeight: 1.4,
+  wordBreak: "break-word",
+  cursor: "help",
+  display: "inline-flex",
+  width: "fit-content",
+};
+
+const radiusCallTypeGridStyle = (isGridTwoCol) => ({
+  display: "grid",
+  gridTemplateColumns: isGridTwoCol ? "1fr 1fr" : "1fr",
+  gap: isGridTwoCol ? "10px 32px" : 8,
+  width: "100%",
+});
+
+const radiusFullWidthGridCellStyle = {
+  gridColumn: "1 / -1",
+};
+
+const radiusEnableRowStyle = (isCompact) => ({
+  ...radiusFullWidthGridCellStyle,
+  display: "flex",
+  flexDirection: isCompact ? "column" : "row",
+  alignItems: isCompact ? "stretch" : "center",
+  flexWrap: isCompact ? "nowrap" : "wrap",
+  gap: isCompact ? 12 : "10px 28px",
+  width: "100%",
+});
+
+const radiusEnableItemStyle = (isCompact) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  minHeight: 36,
+  flex: isCompact ? "none" : "1 1 0",
+  minWidth: isCompact ? "100%" : 180,
+});
+
+const radiusEnableLabelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  lineHeight: 1.35,
+  whiteSpace: "nowrap",
+  flexShrink: 0,
+  cursor: "help",
+  display: "inline-flex",
+  width: "fit-content",
+};
+
+const RadiusGridField = ({ label, tooltip, children }) => (
+  <div style={radiusGridFieldStyle}>
+    <div style={{ width: "fit-content" }}>
+      <Tooltip title={tooltip || ""} {...tooltipProps}>
+        <span style={radiusGridLabelStyle}>{label}</span>
+      </Tooltip>
+    </div>
+    {children}
+  </div>
+);
+
+const RadiusBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{RADIUS_BREADCRUMB[0]}</span>
+    <span>&gt;</span>
+    <span>{RADIUS_BREADCRUMB[1]}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {RADIUS_BREADCRUMB[2]}
+    </span>
+  </div>
+);
+
+const EnableCheckbox = ({ checked, onChange, name }) => (
+  <Checkbox
+    size="small"
+    checked={checked}
+    onChange={onChange}
+    name={name}
+    sx={radiusCheckboxSx}
   />
 );
 
-const ENABLE_CHECKBOX_FIELDS = RADIUS_FIELDS.filter(
-  (f) => f.type === "checkbox",
+const CallTypeRow = ({ checked, value, label, onChange }) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 32 }}>
+    <Checkbox
+      size="small"
+      checked={checked}
+      onChange={onChange}
+      name="callType"
+      value={value}
+      sx={radiusCheckboxSx}
+    />
+    <span style={{ fontSize: 13, color: C.valueText }}>{label}</span>
+  </div>
 );
-const RADIUS_FORM_FIELDS = RADIUS_FIELDS.filter((f) => f.type !== "checkbox");
+
+const ENABLE_FIELDS = RADIUS_FIELDS.filter((f) => f.type === "checkbox");
+const INPUT_FIELDS = RADIUS_FIELDS.filter(
+  (f) => f.type !== "checkbox" && f.type !== "checkboxGroup",
+);
+const CALL_TYPE_FIELD = RADIUS_FIELDS.find((f) => f.type === "checkboxGroup");
 
 const Radius = () => {
+  const isCompact = useMediaQuery(RADIUS_COMPACT_MQ);
+  const isGridTwoCol = useMediaQuery(RADIUS_GRID_TWO_COL_MQ);
   const [form, setForm] = useState(RADIUS_INITIAL_FORM);
   const [toast, setToast] = useState(RADIUS_TOAST_DEFAULT);
 
@@ -498,11 +478,8 @@ const Radius = () => {
     const { value, checked } = e.target;
     setForm((prev) => {
       const arr = prev.callType || [];
-      if (checked) {
-        return { ...prev, callType: [...arr, value] };
-      } else {
-        return { ...prev, callType: arr.filter((v) => v !== value) };
-      }
+      if (checked) return { ...prev, callType: [...arr, value] };
+      return { ...prev, callType: arr.filter((v) => v !== value) };
     });
   };
 
@@ -516,183 +493,147 @@ const Radius = () => {
     showToast(RADIUS_MESSAGES.saveSuccess, "success");
   };
 
-  return (
-    <div style={RadiusPageWrapStyle} data-native-scroll>
-      <div style={RadiusPageInnerStyle}>
-    
-      {/* ── Alerts ── */}
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast(RADIUS_TOAST_DEFAULT)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
+  const renderControl = (field) => {
+    if (field.type === "select") {
+      return (
+        <Select
+          value={form[field.name] || ""}
+          onChange={handleChange}
+          name={field.name}
+          size="small"
+          variant="outlined"
+          displayEmpty
+          sx={radiusMuiSelectSx}
         >
-          {toast.msg}
-        </Alert>
-      )}
+          <MenuItem value="">
+            <em>{RADIUS_SELECT_LOCAL_IP_PLACEHOLDER}</em>
+          </MenuItem>
+          {LOCAL_IP_OPTIONS.map((opt) => (
+            <MenuItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </MenuItem>
+          ))}
+        </Select>
+      );
+    }
 
-      {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>{RADIUS_BREADCRUMB[0]}</span>
-          <span>&gt;</span>
-          <span>{RADIUS_BREADCRUMB[1]}</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {RADIUS_BREADCRUMB[2]}
-          </span>
-        </div>
+    return (
+      <input
+        type={field.type === "password" ? "password" : "text"}
+        name={field.name}
+        value={form[field.name] || ""}
+        onChange={handleChange}
+        style={radiusFieldInputStyle}
+        {...inputInteraction}
+      />
+    );
+  };
+
+  return (
+    <div
+      style={{
+        ...radiusPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+      data-native-scroll
+    >
+      <div style={radiusPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast(RADIUS_TOAST_DEFAULT)}
+            sx={{
+              ...radiusFixedAlertSx,
+              ...(isCompact
+                ? { left: 8, right: 8, top: 12, minWidth: 0, maxWidth: "none" }
+                : {}),
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+
+        <RadiusBreadcrumb />
 
         <form onSubmit={handleSave} autoComplete="off">
-          <div style={tableContainerStyle}>
-            {/* Header */}
-            <div style={blueBarStyle}>
+          <div style={radiusCardStyle}>
+            <div style={radiusHeaderStyle}>
               <span>{RADIUS_CARD_TITLE}</span>
             </div>
 
-            <div className="px-5 pt-3 pb-0">
-              <div
-                className="w-full max-w-[640px] mx-auto"
-                style={{ marginBottom: 12 }}
-              >
-                {/* Form Fields Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                  {/* Enable checkboxes */}
-                  <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 mb-2">
-                    {ENABLE_CHECKBOX_FIELDS.map((field) => (
-                      <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
-                          <Tooltip title={RADIUS_TOOLTIPS[field.name]} {...tooltipProps}>
-                            <span style={{ color: C.labelText }}>
-                            {field.label}
-                            </span>
-                          </Tooltip>
-                        </div>
-                        <div className="flex items-center pl-2 sm:pl-0">
-                          <CallTypeCheckbox
-                            checked={!!form[field.name]}
-                            onChange={handleChange}
-                            name={field.name}
-                            label={field.enableLabel}
-                          />
-                        </div>
-                      </React.Fragment>
-                    ))}
-                  </div>
-
-                  {RADIUS_FORM_FIELDS.map((field) =>
-                    field.type === "checkboxGroup" ? (
-                      <React.Fragment key={field.name || "callTypeGroup"}>
-                        <div className="flex items-start min-h-[34px] pt-2 text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words">
-                          <Tooltip title={RADIUS_TOOLTIPS[field.name]} {...tooltipProps}>
-                            <span style={{ color: C.labelText }}>
-                            {field.label}
-                            </span>
-                          </Tooltip>
-                        </div>
-                        <div className="flex flex-col min-h-[34px] pl-2 sm:pl-0 gap-0 pt-0.5">
-                          {CALL_TYPE_OPTIONS.map((opt) => (
-                            <CallTypeCheckbox
-                              key={opt.value}
-                              checked={form.callType.includes(opt.value)}
-                              onChange={handleCallTypeChange}
-                              name="callType"
-                              value={opt.value}
-                              label={opt.label}
-                            />
-                          ))}
-                        </div>
-                      </React.Fragment>
-                    ) : (
-                      <React.Fragment key={field.name}>
-                        <div className="flex items-center text-[13px] font-semibold text-slate-500 text-left pl-2 sm:pl-4 break-words min-h-[34px]">
-                          <Tooltip title={RADIUS_TOOLTIPS[field.name]} {...tooltipProps}>
-                            <span style={{ color: C.labelText }}>
-                            {field.label}
-                            </span>
-                          </Tooltip>
-                        </div>
-                        <div className="flex items-center min-h-[34px] pl-2 sm:pl-0">
-                          {field.type === "select" ? (
-                            <Select
-                              value={form[field.name] || ""}
-                              onChange={handleChange}
-                              name={field.name}
-                              size="small"
-                              variant="outlined"
-                              className="w-full"
-                              displayEmpty
-                              sx={{
-                                ...systemToolsMuiSelectSx,
-                                width: "100%",
-                              }}
-                            >
-                              <MenuItem value="">
-                                <em>{RADIUS_SELECT_LOCAL_IP_PLACEHOLDER}</em>
-                              </MenuItem>
-                              {LOCAL_IP_OPTIONS.map((opt) => (
-                                <MenuItem key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          ) : (
-                            <input
-                              type={
-                                field.type === "password" ? "password" : "text"
-                              }
-                              name={field.name}
-                              value={form[field.name] || ""}
-                              onChange={handleChange}
-                              style={inputStyle}
-                              {...inputInteraction}
-                            />
-                          )}
-                        </div>
-                      </React.Fragment>
-                    ),
-                  )}
+            <div style={radiusFormBodyStyle}>
+              <div style={radiusFormGridStyle(isGridTwoCol)}>
+                <div style={radiusEnableRowStyle(isCompact)}>
+                  {ENABLE_FIELDS.map((field) => (
+                    <div
+                      key={field.name}
+                      style={radiusEnableItemStyle(isCompact)}
+                    >
+                      <Tooltip
+                        title={RADIUS_TOOLTIPS[field.name] || ""}
+                        {...tooltipProps}
+                      >
+                        <span style={radiusEnableLabelStyle}>{field.label}</span>
+                      </Tooltip>
+                      <EnableCheckbox
+                        checked={!!form[field.name]}
+                        onChange={handleChange}
+                        name={field.name}
+                      />
+                    </div>
+                  ))}
                 </div>
+
+                {CALL_TYPE_FIELD ? (
+                  <div
+                    style={
+                      isGridTwoCol ? radiusFullWidthGridCellStyle : undefined
+                    }
+                  >
+                    <RadiusGridField
+                      label={CALL_TYPE_FIELD.label}
+                      tooltip={RADIUS_TOOLTIPS.callType}
+                    >
+                      <div style={radiusCallTypeGridStyle(isGridTwoCol)}>
+                        {CALL_TYPE_OPTIONS.map((opt) => (
+                          <CallTypeRow
+                            key={opt.value}
+                            value={opt.value}
+                            label={opt.label}
+                            checked={form.callType.includes(opt.value)}
+                            onChange={handleCallTypeChange}
+                          />
+                        ))}
+                      </div>
+                    </RadiusGridField>
+                  </div>
+                ) : null}
+
+                {INPUT_FIELDS.map((field) => (
+                  <RadiusGridField
+                    key={field.name}
+                    label={field.label}
+                    tooltip={RADIUS_TOOLTIPS[field.name]}
+                  >
+                    {renderControl(field)}
+                  </RadiusGridField>
+                ))}
               </div>
             </div>
 
-            <div
-              style={{
-                ...advancedFormInlineFooterStyle,
-                width: "100%",
-                marginLeft: 0,
-                marginRight: 0,
-              }}
-            >
+            <div style={radiusFooterStyle}>
               <Btn
                 type="button"
                 variant={RADIUS_BUTTON_VARIANTS.RESET}
                 onClick={handleReset}
-                style={advancedFormBtnStyle}
+                style={radiusFooterBtnStyle}
               >
                 {RADIUS_BUTTON_LABELS.RESET}
               </Btn>
               <Btn
                 type="submit"
                 variant={RADIUS_BUTTON_VARIANTS.SAVE}
-                onClick={handleSave}
-                style={advancedFormBtnStyle}
+                style={radiusFooterBtnStyle}
               >
                 {RADIUS_BUTTON_LABELS.SAVE}
               </Btn>

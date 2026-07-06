@@ -22,7 +22,7 @@ export const IDS_INITIAL_FORM = {
 
 
 export const IDS_BREADCRUMB_ROOT = "Maintenance";
-export const IDS_BREADCRUMB_SECTION = "System Tool";
+export const IDS_BREADCRUMB_SECTION = "System Tools";
 export const IDS_PAGE_TITLE = "IDS Settings";
 export const IDS_BREADCRUMB_SEPARATOR = ">";
 export const IDS_CARD_TITLE = IDS_PAGE_TITLE;

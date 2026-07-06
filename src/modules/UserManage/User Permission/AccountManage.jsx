@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material"; 
 import {
   ACCOUNT_MANAGE_TABLE_COLUMNS,
   ACCOUNT_MANAGE_MODAL_FIELDS,
   ACCOUNT_MANAGE_INITIAL_FORM,
-  ACCOUNT_MANAGE_BUTTONS,
+  ACCOUNT_MANAGE_BREADCRUMB,
+  ACCOUNT_MANAGE_CARD_TITLE,
+  ACCOUNT_MANAGE_BUTTON_LABELS,
+  ACCOUNT_MANAGE_BUTTON_VARIANTS,
+  ACCOUNT_MANAGE_BUTTON_STYLE,
+  ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE,
+  ACCOUNT_MANAGE_TOOLTIPS,
+  ACCOUNT_MANAGE_MODAL_TITLE,
+  ACCOUNT_MANAGE_MESSAGES,
+  ACCOUNT_MANAGE_DEFAULT_TOAST,
+  ACCOUNT_MANAGE_TOAST_DURATION_MS,
+  ACCOUNT_MANAGE_ERROR_HIDE_MS,
+  ACCOUNT_MANAGE_ICON_COLORS,
 } from "../../../constants/AccountManageConstants";
 import {
   fetchAccountManageGetAll,
@@ -15,9 +26,7 @@ import {
 } from "../../../api/apiService";
 import useAuth from "../../../context/useAuth";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import Button from "@mui/material/Button";
 import Alert from "@mui/material/Alert";
 import Checkbox from "@mui/material/Checkbox";
 // ── Color palette (same as UserManage) ────────────────────────────────────────
@@ -25,14 +34,13 @@ const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
+  mutedText: "#94a3b8",
   placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -47,7 +55,7 @@ const FIELD_RADIUS = 6;
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -160,13 +168,6 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
- index: "The index of the user.",
- userName: "The username of the user.",
- password: "The password of the user.",
- authority: "The authority of the user.",
-};
-
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
   children,
@@ -190,9 +191,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -267,15 +265,16 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        boxSizing: "border-box",
         ...s,
         ...extraStyle,
       }}
@@ -298,15 +297,11 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
       {children}
     </Component>
   );
-};  
+};
 
 const modalOverlayStyle = {
   position: "fixed",
@@ -417,7 +412,7 @@ const blueBarStyle = {
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
-  borderBottom: `1px solid ${C.cardBorder}`,
+  borderBottom: `1px solid ${C.divider}`,
 };
 const TH = ({ children, style: extra }) => (
   <th
@@ -496,17 +491,23 @@ const AccountManage = () => {
   const [editIdx, setEditIdx] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(ACCOUNT_MANAGE_DEFAULT_TOAST);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(
+      () => setToast(ACCOUNT_MANAGE_DEFAULT_TOAST),
+      ACCOUNT_MANAGE_TOAST_DURATION_MS,
+    );
   };
 
   // Auto-hide error after 5 seconds
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => setError(null), 5000);
+      const timer = setTimeout(
+        () => setError(null),
+        ACCOUNT_MANAGE_ERROR_HIDE_MS,
+      );
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -539,25 +540,18 @@ const AccountManage = () => {
 
       // Handle different types of errors
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        setError(
-          "Request timeout. Please check your connection and try again.",
-        );
+        setError(ACCOUNT_MANAGE_MESSAGES.loadTimeout);
       } else if (error.response?.status === 404) {
-        setError("User data not found. Please contact administrator.");
+        setError(ACCOUNT_MANAGE_MESSAGES.loadNotFound);
       } else if (error.response?.status >= 500) {
-        setError("Server error. Please try again later or contact support.");
+        setError(ACCOUNT_MANAGE_MESSAGES.loadServerError);
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        setError(
-          "Network connection failed. Please check your internet connection.",
-        );
+        setError(ACCOUNT_MANAGE_MESSAGES.loadNetworkError);
       } else {
-        setError(
-          error.message ||
-            "Failed to load users. Please refresh the page and try again.",
-        );
+        setError(error.message || ACCOUNT_MANAGE_MESSAGES.loadFailed);
       }
 
       setAccounts([]);
@@ -576,7 +570,7 @@ const AccountManage = () => {
       if (response && response.response === true) {
         // Refresh the user list after successful save
         await fetchAllUsers();
-        showToast("User saved successfully!");
+        showToast(ACCOUNT_MANAGE_MESSAGES.saveSuccess);
         return true;
       } else {
         throw new Error(response?.message || "Failed to save user");
@@ -584,23 +578,19 @@ const AccountManage = () => {
     } catch (error) {
       console.error("Error saving user:", error);
 
-      let errorMessage = "Failed to save user.";
+      let errorMessage = ACCOUNT_MANAGE_MESSAGES.saveFailed;
 
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        errorMessage =
-          "Save operation timed out. Please check your connection and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.saveTimeout;
       } else if (error.response?.status === 400) {
-        errorMessage =
-          "Invalid user data. Please check your input and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.saveInvalid;
       } else if (error.response?.status >= 500) {
-        errorMessage =
-          "Server error during save. Please try again later or contact support.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.saveServerError;
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        errorMessage =
-          "Network connection failed during save. Please check your connection.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.saveNetworkError;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -622,7 +612,7 @@ const AccountManage = () => {
       if (response && response.response === true) {
         // Refresh the user list after successful update
         await fetchAllUsers();
-        showToast("User updated successfully!");
+        showToast(ACCOUNT_MANAGE_MESSAGES.updateSuccess);
         return true;
       } else {
         throw new Error(response?.message || "Failed to update user");
@@ -630,23 +620,19 @@ const AccountManage = () => {
     } catch (error) {
       console.error("Error updating user:", error);
 
-      let errorMessage = "Failed to update user.";
+      let errorMessage = ACCOUNT_MANAGE_MESSAGES.updateFailed;
 
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        errorMessage =
-          "Update operation timed out. Please check your connection and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.updateTimeout;
       } else if (error.response?.status === 400) {
-        errorMessage =
-          "Invalid user data. Please check your input and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.updateInvalid;
       } else if (error.response?.status >= 500) {
-        errorMessage =
-          "Server error during update. Please try again later or contact support.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.updateServerError;
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        errorMessage =
-          "Network connection failed during update. Please check your connection.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.updateNetworkError;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -670,11 +656,13 @@ const AccountManage = () => {
         const skipped = response.data?.skipped ?? [];
         if (skipped.length > 0) {
           showToast(
-            `Deleted successfully. Skipped: ${skipped.map((u) => u.username).join(", ")}`,
+            ACCOUNT_MANAGE_MESSAGES.deleteSkipped(
+              skipped.map((u) => u.username),
+            ),
             "warning",
           );
         } else {
-          showToast("User(s) deleted successfully!");
+          showToast(ACCOUNT_MANAGE_MESSAGES.deleteSuccess);
         }
         return true;
       } else {
@@ -683,23 +671,19 @@ const AccountManage = () => {
     } catch (error) {
       console.error("Error deleting user:", error);
 
-      let errorMessage = "Failed to delete user.";
+      let errorMessage = ACCOUNT_MANAGE_MESSAGES.deleteFailed;
 
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        errorMessage =
-          "Delete operation timed out. Please check your connection and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.deleteTimeout;
       } else if (error.response?.status === 400) {
-        errorMessage =
-          "Invalid delete request. Please check your selection and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.deleteInvalid;
       } else if (error.response?.status >= 500) {
-        errorMessage =
-          "Server error during delete. Please try again later or contact support.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.deleteServerError;
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        errorMessage =
-          "Network connection failed during delete. Please check your connection.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.deleteNetworkError;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -726,7 +710,7 @@ const AccountManage = () => {
       if (response && response.response === true) {
         setAccounts([]);
         setSelected([]);
-        showToast("All users cleared successfully!");
+        showToast(ACCOUNT_MANAGE_MESSAGES.clearAllSuccess);
         return true;
       } else {
         throw new Error(response?.message || "Failed to clear all users");
@@ -734,22 +718,19 @@ const AccountManage = () => {
     } catch (error) {
       console.error("Error clearing all users:", error);
 
-      let errorMessage = "Failed to clear all users.";
+      let errorMessage = ACCOUNT_MANAGE_MESSAGES.clearAllFailed;
 
       if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
-        errorMessage =
-          "Clear operation timed out. Please check your connection and try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.clearAllTimeout;
       } else if (error.response?.status === 400) {
-        errorMessage = "Invalid clear request. Please try again.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.clearAllInvalid;
       } else if (error.response?.status >= 500) {
-        errorMessage =
-          "Server error during clear operation. Please try again later or contact support.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.clearAllServerError;
       } else if (
         error.message?.includes("Network Error") ||
         error.message?.includes("Failed to fetch")
       ) {
-        errorMessage =
-          "Network connection failed during clear operation. Please check your connection.";
+        errorMessage = ACCOUNT_MANAGE_MESSAGES.clearAllNetworkError;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -800,7 +781,7 @@ const AccountManage = () => {
 
   const handleDelete = async () => {
     if (selected.length === 0) {
-      setError("Please select users to delete.");
+      setError(ACCOUNT_MANAGE_MESSAGES.deleteSelectRequired);
       return;
     }
 
@@ -810,12 +791,12 @@ const AccountManage = () => {
       .map((user) => ({ id: user.id, username: user.username }));
 
     if (selectedUsers.length === 0) {
-      showToast("Admin user cannot be deleted.", "error");
+      showToast(ACCOUNT_MANAGE_MESSAGES.adminCannotDelete, "error");
       return;
     }
 
     const isConfirmed = window.confirm(
-      `Are you sure you want to delete ${selectedUsers.length} selected user(s)?`,
+      ACCOUNT_MANAGE_MESSAGES.deleteConfirm(selectedUsers.length),
     );
     if (isConfirmed) {
       const success = await deleteUser({ users: selectedUsers });
@@ -827,13 +808,11 @@ const AccountManage = () => {
 
   const handleClearAll = async () => {
     if (accounts.length === 0) {
-      setError("No users to clear.");
+      setError(ACCOUNT_MANAGE_MESSAGES.clearAllEmpty);
       return;
     }
 
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete all users? This action cannot be undone. (Current user will not be deleted)",
-    );
+    const isConfirmed = window.confirm(ACCOUNT_MANAGE_MESSAGES.clearAllConfirm);
     if (isConfirmed) {
       await deleteAllUsers();
     }
@@ -844,7 +823,7 @@ const AccountManage = () => {
     if (item) {
       // Don't allow editing current user
       if (item.isCurrentUser) {
-        setError("Cannot edit current user.");
+        setError(ACCOUNT_MANAGE_MESSAGES.cannotEditCurrentUser);
         return;
       }
 
@@ -877,7 +856,7 @@ const AccountManage = () => {
   const handleSave = async () => {
     // Validate form data
     if (!formData.userName.trim() || !formData.password.trim()) {
-      setError("User name and password are required.");
+      setError(ACCOUNT_MANAGE_MESSAGES.formRequired);
       return;
     }
 
@@ -915,21 +894,22 @@ const AccountManage = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>User Manage</span>
+          <span>{ACCOUNT_MANAGE_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>User Permission</span>
+          <span>{ACCOUNT_MANAGE_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            Account Manage
+            {ACCOUNT_MANAGE_BREADCRUMB[2]}
           </span>
         </div>
 
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(ACCOUNT_MANAGE_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 20,
@@ -1003,7 +983,9 @@ const AccountManage = () => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <span style={{ fontWeight: "500" }}>Loading account data...</span>
+            <span style={{ fontWeight: "500" }}>
+              {ACCOUNT_MANAGE_MESSAGES.loading}
+            </span>
           </div>
         )}
 
@@ -1017,7 +999,15 @@ const AccountManage = () => {
           }}
         >
           <div style={blueBarStyle}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <span>{ACCOUNT_MANAGE_CARD_TITLE}</span>
               {selected.length > 0 && (
                 <span
                   style={{
@@ -1030,7 +1020,7 @@ const AccountManage = () => {
                     border: `1px solid ${C.accent}`,
                   }}
                 >
-                  {selected.length} selected
+                  {ACCOUNT_MANAGE_MESSAGES.selectedCount(selected.length)}
                 </span>
               )}
             </div>
@@ -1043,23 +1033,23 @@ const AccountManage = () => {
               }}
             >
               <Btn
-                variant="cancel"
+                variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.CANCEL}
                 onClick={handleInverse}
                 disabled={loading}
-                style={{ height: 30 }}
+                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
               >
-                Inverse
+                {ACCOUNT_MANAGE_BUTTON_LABELS.INVERSE}
               </Btn>
               <Btn
-                variant="cancel"
+                variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.CANCEL}
                 onClick={handleClearAll}
                 disabled={loading || accounts.length === 0}
-                style={{ height: 30 }}
+                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
               >
-                Clear All
+                {ACCOUNT_MANAGE_BUTTON_LABELS.CLEAR_ALL}
               </Btn>
               <Btn
-                variant="cancel"
+                variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.CANCEL}
                 onClick={() => {
                   if (!canWrite) {
                     showReadOnlyToast();
@@ -1068,13 +1058,13 @@ const AccountManage = () => {
                   handleDelete();
                 }}
                 disabled={loading || selected.length === 0}
-                style={{ height: 30 }}
+                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                Delete
+                {ACCOUNT_MANAGE_BUTTON_LABELS.DELETE}
               </Btn>
               <Btn
-                variant="primary"
+                variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.PRIMARY}
                 onClick={() => {
                   if (!canWrite) {
                     showReadOnlyToast();
@@ -1083,14 +1073,9 @@ const AccountManage = () => {
                   handleOpenModal();
                 }}
                 disabled={loading}
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 10,
-                }}
+                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
               >
-                + {ACCOUNT_MANAGE_BUTTONS.addNew}
+                {ACCOUNT_MANAGE_BUTTON_LABELS.ADD_NEW}
               </Btn>
             </div>
           </div>
@@ -1153,7 +1138,9 @@ const AccountManage = () => {
                         fontWeight: 600,
                       }}
                     >
-                      {loading ? "Loading..." : "No data"}
+                      {loading
+                        ? ACCOUNT_MANAGE_MESSAGES.loadingTable
+                        : ACCOUNT_MANAGE_MESSAGES.noData}
                     </td>
                   </tr>
                 ) : (
@@ -1258,7 +1245,7 @@ const AccountManage = () => {
                               titleAccess="Edit"
                               style={{
                                 cursor: canWrite ? "pointer" : "not-allowed",
-                                color: "#2563eb",
+                                color: ACCOUNT_MANAGE_ICON_COLORS.EDIT,
                                 fontSize: 22,
                                 opacity: canWrite ? 0.7 : 0.3,
                                 transition: "opacity 0.15s ease",
@@ -1270,7 +1257,7 @@ const AccountManage = () => {
                                 }
                                 if (item.isAdmin) {
                                   showToast(
-                                    "Admin user cannot be modified.",
+                                    ACCOUNT_MANAGE_MESSAGES.cannotModifyAdmin,
                                     "error",
                                   );
                                   return;
@@ -1278,10 +1265,14 @@ const AccountManage = () => {
                                 handleOpenModal(item, realIdx);
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.opacity = "1";
+                                if (canWrite) {
+                                  e.currentTarget.style.opacity = "1";
+                                }
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.opacity = "0.7";
+                                if (canWrite) {
+                                  e.currentTarget.style.opacity = "0.7";
+                                }
                               }}
                             />
                           </div>
@@ -1294,23 +1285,24 @@ const AccountManage = () => {
             </table>
           </div>
           {combinedAccounts.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 14px",
-              background: "#ffffff",
-              borderTop: `1px solid ${C.cardBorder}`,
-              borderBottomLeftRadius: CARD_RADIUS,
-              borderBottomRightRadius: CARD_RADIUS,
-            }}
-          >
-            <span style={{ fontSize: 11, color: C.mutedText }}>
-              Showing {combinedAccounts.length} record
-              {combinedAccounts.length !== 1 ? "s" : ""}
-            </span>
-          </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "7px 14px",
+                background: "#ffffff",
+                borderTop: `1px solid ${C.cardBorder}`,
+                borderBottomLeftRadius: CARD_RADIUS,
+                borderBottomRightRadius: CARD_RADIUS,
+              }}
+            >
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                {ACCOUNT_MANAGE_MESSAGES.showingRecords(
+                  combinedAccounts.length,
+                )}
+              </span>
+            </div>
           )}
         </div>
         {/* Table Buttons (removed as they are now in the top bar) */}
@@ -1325,12 +1317,15 @@ const AccountManage = () => {
           }}
         >
           <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-            <div style={modalHeaderStyle}>User Information</div>
+            <div style={modalHeaderStyle}>{ACCOUNT_MANAGE_MODAL_TITLE}</div>
             <div style={modalBodyStyle}>
               <div style={addHostFormPanelStyle}>
                 {ACCOUNT_MANAGE_MODAL_FIELDS.map((field) => (
                   <div key={field.name} style={modalRowStyle}>
-                    <Tooltip title={tooltips[field.name] || ""} {...tooltipProps}>
+                    <Tooltip
+                      title={ACCOUNT_MANAGE_TOOLTIPS[field.name] || ""}
+                      {...tooltipProps}
+                    >
                       <label style={modalLabelStyle}>{field.label}:</label>
                     </Tooltip>
                     {field.type === "select" ? (
@@ -1383,20 +1378,22 @@ const AccountManage = () => {
             </div>
             <div style={modalFooterStyle}>
               <Btn
-                variant="primary"
+                variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.PRIMARY}
                 onClick={handleSave}
                 disabled={loading}
-                style={{ minWidth: 100, height: 33 }}
+                style={ACCOUNT_MANAGE_BUTTON_STYLE}
               >
-                {loading ? "Saving..." : ACCOUNT_MANAGE_BUTTONS.save}
+                {loading
+                  ? ACCOUNT_MANAGE_BUTTON_LABELS.SAVING
+                  : ACCOUNT_MANAGE_BUTTON_LABELS.SAVE}
               </Btn>
               <Btn
-                variant="cancel"
+                variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.CANCEL}
                 onClick={handleCloseModal}
                 disabled={loading}
-                style={{ minWidth: 100, height: 33 }}
+                style={ACCOUNT_MANAGE_BUTTON_STYLE}
               >
-                {ACCOUNT_MANAGE_BUTTONS.close}
+                {ACCOUNT_MANAGE_BUTTON_LABELS.CLOSE}
               </Btn>
             </div>
           </div>
@@ -1404,29 +1401,6 @@ const AccountManage = () => {
       )}
     </div>
   );
-};
-
-// Add this style for plain gray buttons
-const plainBtnStyle = {
-  background: "linear-gradient(to bottom, #e3e7ef 0%, #bfc6d1 100%)",
-  color: "#222",
-  fontSize: 15,
-  padding: "4px 18px",
-  border: "1px solid #bbb",
-  borderRadius: 6,
-  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
-  fontWeight: 500,
-  textTransform: "none",
-  minWidth: 60,
-  cursor: "pointer",
-  opacity: 1,
-  marginLeft: 2,
-  marginRight: 2,
-  transition: "background 0.2s",
-  ":disabled": {
-    opacity: 0.6,
-    cursor: "not-allowed",
-  },
 };
 
 export default AccountManage;

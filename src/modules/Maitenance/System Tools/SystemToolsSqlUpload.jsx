@@ -1,7 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CircularProgress, Alert } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { uploadSqlPatch } from "../../../api/apiService";
+import {
+  SQL_UPLOAD_PAGE_TITLE,
+  SQL_UPLOAD_BREADCRUMB,
+  SQL_UPLOAD_LABELS,
+  SQL_UPLOAD_BUTTON_LABELS,
+  SQL_UPLOAD_BUTTON_VARIANTS,
+  SQL_UPLOAD_BUTTON_STYLE,
+  SQL_UPLOAD_UPLOAD_BUTTON_STYLE,
+  SQL_UPLOAD_MESSAGES,
+  SQL_UPLOAD_FILE,
+  SQL_UPLOAD_DEFAULT_TOAST,
+  SQL_UPLOAD_TOAST_DURATION_MS,
+  SQL_UPLOAD_ERROR_HIDE_MS,
+} from "../../../constants/SqlUploadConstants";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
@@ -11,9 +25,8 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -52,11 +65,12 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      borderRadius: 6,
-      textTransform: "none",
-      padding: "6px 28px",
+    },
+    cancel: {
+      background: "#cbd5e1",
+      color: "#374151",
+      border: "1px solid #cbd5e1",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
     danger: {
       background: C.errorRed,
@@ -205,19 +219,23 @@ const blueBarStyle = {
 const SystemToolsSqlUpload = () => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [fileName, setFileName] = useState("No file chosen");
+  const [fileName, setFileName] = useState(SQL_UPLOAD_LABELS.noFile);
   const [error, setError] = useState("");
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(SQL_UPLOAD_DEFAULT_TOAST);
+  const fileInputRef = useRef();
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(
+      () => setToast(SQL_UPLOAD_DEFAULT_TOAST),
+      SQL_UPLOAD_TOAST_DURATION_MS,
+    );
   };
 
   // Auto-hide error after 5 seconds
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => setError(""), 5000);
+      const timer = setTimeout(() => setError(""), SQL_UPLOAD_ERROR_HIDE_MS);
       return () => clearTimeout(timer);
     }
   }, [error]);
@@ -226,16 +244,16 @@ const SystemToolsSqlUpload = () => {
     const f = e.target.files && e.target.files[0];
     setFile(f || null);
     setError("");
-    setFileName(f ? f.name : "No file chosen");
+    setFileName(f ? f.name : SQL_UPLOAD_LABELS.noFile);
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setError("Please choose a .sql file.");
+      setError(SQL_UPLOAD_MESSAGES.chooseFileRequired);
       return;
     }
     if (!file.name.toLowerCase().endsWith(".sql")) {
-      setError("Only .sql files are allowed.");
+      setError(SQL_UPLOAD_MESSAGES.sqlOnly);
       return;
     }
     setIsUploading(true);
@@ -243,14 +261,17 @@ const SystemToolsSqlUpload = () => {
     try {
       const res = await uploadSqlPatch(file);
       if (res?.success) {
-        showToast(res.message || "Database restored successfully");
+        showToast(res.message || SQL_UPLOAD_MESSAGES.restoreSuccess);
         setFile(null);
-        setFileName("No file chosen");
+        setFileName(SQL_UPLOAD_LABELS.noFile);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       } else {
-        setError(res?.message || "Upload failed");
+        setError(res?.message || SQL_UPLOAD_MESSAGES.uploadFailed);
       }
     } catch (err) {
-      setError(err?.message || "Upload failed");
+      setError(err?.message || SQL_UPLOAD_MESSAGES.uploadFailed);
     } finally {
       setIsUploading(false);
     }
@@ -270,14 +291,15 @@ const SystemToolsSqlUpload = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>Maintenance</span>
+          <span>{SQL_UPLOAD_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{SQL_UPLOAD_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            SQL Upload
+            {SQL_UPLOAD_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -285,7 +307,7 @@ const SystemToolsSqlUpload = () => {
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(SQL_UPLOAD_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 16,
@@ -317,7 +339,7 @@ const SystemToolsSqlUpload = () => {
 
         <div style={tableContainerStyle}>
           {/* Header */}
-          <div style={blueBarStyle}>SQL Upload</div>
+          <div style={blueBarStyle}>{SQL_UPLOAD_PAGE_TITLE}</div>
 
           <div
             style={{
@@ -337,33 +359,20 @@ const SystemToolsSqlUpload = () => {
                   border: `1px dashed ${C.cardBorder}`,
                 }}
               >
-                <label
-                  htmlFor="sql-file-input"
-                  className="cursor-pointer select-none"
-                  style={{
-                    padding: "8px 16px",
-                    background: "#cbd5e1",
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 6,
-                    color: "#374151",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-                    transition: "background 0.15s ease",
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = "#b6c2d3";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = "#cbd5e1";
-                  }}
+                <Btn
+                  variant={SQL_UPLOAD_BUTTON_VARIANTS.CHOOSE_FILE}
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  style={SQL_UPLOAD_BUTTON_STYLE}
                 >
-                  Choose File
-                </label>
+                  {SQL_UPLOAD_BUTTON_LABELS.CHOOSE_FILE}
+                </Btn>
                 <input
-                  id="sql-file-input"
+                  ref={fileInputRef}
+                  id={SQL_UPLOAD_FILE.inputId}
                   type="file"
-                  accept=".sql"
+                  accept={SQL_UPLOAD_FILE.accept}
                   onChange={handleFileChange}
                   style={{ display: "none" }}
                 />
@@ -383,13 +392,10 @@ const SystemToolsSqlUpload = () => {
               </div>
 
               <Btn
-                variant="primary"
+                variant={SQL_UPLOAD_BUTTON_VARIANTS.UPLOAD}
                 onClick={handleUpload}
                 disabled={isUploading}
-                style={{
-                  width: "100%",
-                  height: 40,
-                }}
+                style={SQL_UPLOAD_UPLOAD_BUTTON_STYLE}
               >
                 {isUploading ? (
                   <CircularProgress size={16} color="inherit" />
@@ -397,7 +403,9 @@ const SystemToolsSqlUpload = () => {
                   <CloudUploadIcon fontSize="small" />
                 )}
                 <span style={{ marginLeft: "8px" }}>
-                  {isUploading ? "Uploading..." : "Upload SQL"}
+                  {isUploading
+                    ? SQL_UPLOAD_BUTTON_LABELS.UPLOADING
+                    : SQL_UPLOAD_BUTTON_LABELS.UPLOAD}
                 </span>
               </Btn>
 
@@ -408,8 +416,7 @@ const SystemToolsSqlUpload = () => {
                   textAlign: "center",
                 }}
               >
-                Upload a verified .sql update file. Only use files from trusted
-                sources.
+                {SQL_UPLOAD_LABELS.instruction}
               </div>
             </div>
           </div>

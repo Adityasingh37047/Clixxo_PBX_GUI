@@ -39,7 +39,6 @@ const TRACERT_TEST_FIELD_COL_GAP = 16;
 const TRACERT_TEST_FORM_PAD_X = 28;
 
 const C = {
-  pageBg: "#fbfcfe",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow:
@@ -380,11 +379,10 @@ const tracertBodyStyle = {
 };
 
 const tracertConfigPanelStyle = {
-  background: "#fcfdfe",
+  background: "#ffffff",
   border: `1px solid ${C.divider}`,
   borderRadius: 8,
   overflow: "hidden",
-  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
 };
 
 const tracertConfigHeaderStyle = {
@@ -395,7 +393,7 @@ const tracertConfigHeaderStyle = {
   flexWrap: "wrap",
   padding: "14px 18px",
   borderBottom: `1px solid ${C.divider}`,
-  background: "linear-gradient(to bottom, #ffffff 0%, #fbfcfe 100%)",
+  background: "#ffffff",
 };
 
 const tracertConfigActionsStyle = {
@@ -440,7 +438,16 @@ const tracertOutputHeaderStyle = {
   flexWrap: "wrap",
   padding: "12px 16px",
   borderBottom: `1px solid ${C.divider}`,
-  background: tracertConfigHeaderStyle.background,
+  background: "#ffffff",
+};
+
+const TRACERT_OUTPUT_BODY_BG = "#f1f5f9";
+
+const tracertOutputBodyStyle = {
+  backgroundColor: TRACERT_OUTPUT_BODY_BG,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  overflow: "hidden",
 };
 
 const tracertOutputTextareaStyle = {
@@ -449,22 +456,22 @@ const tracertOutputTextareaStyle = {
   minHeight: 220,
   maxHeight: 320,
   margin: 0,
-  padding: "16px 18px",
+  padding: "12px 16px 16px",
   border: "none",
+  borderRadius: 0,
   outline: "none",
   resize: "vertical",
   boxSizing: "border-box",
-  fontSize: 12,
+  fontSize: 13,
   lineHeight: 1.6,
-  fontFamily:
-    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
-  color: "#475569",
-  background: "#ffffff",
+  fontFamily: "monospace",
+  color: C.labelText,
+  backgroundColor: "transparent",
   whiteSpace: "pre-wrap",
+  cursor: "default",
 };
 
 const tracertPageWrapStyle = {
-  backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
@@ -965,14 +972,18 @@ const TRACERTTest = () => {
                   {TRACERT_TEST_BTN_CLEAR}
                 </Btn>
               </div>
-              <textarea
-                ref={outputRef}
-                className={TRACERT_TEST_SCROLL_CLASS}
-                style={tracertOutputTextareaStyle}
-                value={info}
-                readOnly
-                placeholder={TRACERT_TEST_OUTPUT_PLACEHOLDER}
-              />
+              <div style={tracertOutputBodyStyle}>
+                <textarea
+                  ref={outputRef}
+                  className={TRACERT_TEST_SCROLL_CLASS}
+                  style={tracertOutputTextareaStyle}
+                  value={info}
+                  readOnly
+                  tabIndex={-1}
+                  placeholder={TRACERT_TEST_OUTPUT_PLACEHOLDER}
+                  onFocus={(e) => e.target.blur()}
+                />
+              </div>
             </div>
           </div>
         </div>

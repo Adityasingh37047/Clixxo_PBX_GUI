@@ -2,23 +2,27 @@ import React, { useState, useEffect, useRef } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { InfoOutlined } from "@mui/icons-material";
 import {
-  SC_SECTIONS,
-  SC_LABELS,
-  SC_PCM_OPTIONS,
-  SC_TS_OPTIONS,
-  SC_BUTTONS,
-  SC_NOTE,
-  SC_DATA_CAPTURE_PATTERN,
-  SC_TS_RECORD_PREFIX,
-  SC_E1_RECORD_PREFIX,
-  SC_CAPTURE_LOG_PATH,
-  SC_DATA_DIR,
-  SC_DEFAULT_TOAST,
-  SC_TOAST_DURATION,
-  SC_DEFAULTS,
-  SC_FALLBACK_NETWORK_OPTIONS,
-  SC_BREADCRUMB,
-  SC_TOOLTIPS,
+  SIGNALING_CAPTURE_SECTIONS,
+  SIGNALING_CAPTURE_LABELS,
+  SIGNALING_CAPTURE_PCM_OPTIONS,
+  SIGNALING_CAPTURE_TS_OPTIONS,
+  SIGNALING_CAPTURE_BUTTON_LABELS,
+  SIGNALING_CAPTURE_BUTTON_VARIANTS,
+  SIGNALING_CAPTURE_PRIMARY_BUTTON_STYLE,
+  SIGNALING_CAPTURE_CANCEL_BUTTON_STYLE,
+  SIGNALING_CAPTURE_FOOTER_BUTTON_STYLE,
+  SIGNALING_CAPTURE_NOTE,
+  SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN,
+  SIGNALING_CAPTURE_TS_RECORD_PREFIX,
+  SIGNALING_CAPTURE_E1_RECORD_PREFIX,
+  SIGNALING_CAPTURE_LOG_PATH,
+  SIGNALING_CAPTURE_DATA_DIR,
+  SIGNALING_CAPTURE_TOAST_DEFAULT,
+  SIGNALING_CAPTURE_TOAST_DURATION_MS,
+  SIGNALING_CAPTURE_DEFAULTS,
+  SIGNALING_CAPTURE_FALLBACK_NETWORK_OPTIONS,
+  SIGNALING_CAPTURE_BREADCRUMB,
+  SIGNALING_CAPTURE_TOOLTIPS,
 } from "../../../constants/SignalingCaptureConstants";
 import { Checkbox, Alert } from "@mui/material";
 import { fetchSystemInfo, postLinuxCmd } from "../../../api/apiService";
@@ -31,7 +35,7 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
+  mutedText: "#94a3b8",
   placeholderText: "#9aa3b2",
   strongText: "#1f2937",
   accent: "#4A5D75",
@@ -157,12 +161,14 @@ const tooltipProps = {
   slotProps: {
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
     arrow: {
@@ -173,21 +179,31 @@ const tooltipProps = {
   },
 };
 
-
-
 const FieldLabel = ({ tooltipKey, className, style, children }) => {
-  const label = (
-    <label className={className} style={style}>
+  const tooltip = SIGNALING_CAPTURE_TOOLTIPS[tooltipKey];
+  const labelNode = (
+    <span
+      style={{
+        ...style,
+        display: "inline-flex",
+        width: "fit-content",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
       {children}
-    </label>
+    </span>
   );
 
-  if (!SC_TOOLTIPS[tooltipKey]) return label;
-
   return (
-    <Tooltip title={SC_TOOLTIPS[tooltipKey]} {...tooltipProps}>
-      {label}
-    </Tooltip>
+    <div className={className} style={{ flexShrink: 0 }}>
+      {tooltip ? (
+        <Tooltip title={tooltip} {...tooltipProps}>
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+    </div>
   );
 };
 
@@ -286,13 +302,13 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         ...s,
@@ -387,23 +403,13 @@ const signalingCaptureFooterStyle = {
   justifyContent: "center",
   gap: 12,
   width: "100%",
-  marginTop: 24,
+  marginTop: 20,
   padding: "10px 20px",
   border: `1.5px solid ${C.cardBorder}`,
   borderRadius: 10,
   boxSizing: "border-box",
   background: C.cardBg,
   boxShadow: C.cardShadow,
-};
-
-const signalingCaptureFooterBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
 };
 
 const extractCmdOutput = (res) =>
@@ -431,9 +437,9 @@ const emptySlotSessions = () => ({ ts: [null, null], e1: [null, null] });
 
 const SignalingCapture = () => {
   // Data Capture state
-  const [network, setNetwork] = useState(SC_DEFAULTS.NETWORK);
+  const [network, setNetwork] = useState(SIGNALING_CAPTURE_DEFAULTS.NETWORK);
   const [syslogEnabled, setSyslogEnabled] = useState(false);
-  const [syslogDest, setSyslogDest] = useState(SC_DEFAULTS.SYSLOG_DESTINATION);
+  const [syslogDest, setSyslogDest] = useState(SIGNALING_CAPTURE_DEFAULTS.SYSLOG_DESTINATION);
 
   // Network interfaces state
   const [networkOptions, setNetworkOptions] = useState([]);
@@ -445,7 +451,7 @@ const SignalingCapture = () => {
   const [captureProcessId, setCaptureProcessId] = useState(null);
   const [captureFileName, setCaptureFileName] = useState("");
   const [captureStatus, setCaptureStatus] = useState("");
-  const [toast, setToast] = useState(SC_DEFAULT_TOAST);
+  const [toast, setToast] = useState(SIGNALING_CAPTURE_TOAST_DEFAULT);
 
   const slotSessionRef = useRef(emptySlotSessions());
   const [slotRecording, setSlotRecording] = useState({
@@ -459,7 +465,7 @@ const SignalingCapture = () => {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(SC_DEFAULT_TOAST), SC_TOAST_DURATION);
+    setTimeout(() => setToast(SIGNALING_CAPTURE_TOAST_DEFAULT), SIGNALING_CAPTURE_TOAST_DURATION_MS);
   };
 
   const isAnySlotRecording = () =>
@@ -587,8 +593,8 @@ const SignalingCapture = () => {
 
     const channel = dahdiChannelFromPcmTs(pcm, ts);
     const dateStr = getDateStr();
-    const fileName = `${SC_DATA_DIR}/${filePrefix}_${pcm}_${ts}_${dateStr}.dat`;
-    const logPath = `${SC_DATA_DIR}/${filePrefix}.log`;
+    const fileName = `${SIGNALING_CAPTURE_DATA_DIR}/${filePrefix}_${pcm}_${ts}_${dateStr}.dat`;
+    const logPath = `${SIGNALING_CAPTURE_DATA_DIR}/${filePrefix}.log`;
 
     try {
       await postLinuxCmd({
@@ -596,7 +602,7 @@ const SignalingCapture = () => {
       });
       await delay(500);
 
-      const cmd = `sh -c "mkdir -p ${SC_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; dahdi_monitor ${channel} -f '${fileName}' > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
+      const cmd = `sh -c "mkdir -p ${SIGNALING_CAPTURE_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; dahdi_monitor ${channel} -f '${fileName}' > /dev/null 2> '${logPath}' < /dev/null & echo \\$!"`;
       const response = await postLinuxCmd({ cmd });
 
       if (response?.response === false) {
@@ -673,16 +679,16 @@ const SignalingCapture = () => {
   };
 
   // TS Recording state
-  const [ts1Pcm, setTs1Pcm] = useState(SC_PCM_OPTIONS[0].value);
-  const [ts1Slot, setTs1Slot] = useState(SC_TS_OPTIONS[0].value);
-  const [ts2Pcm, setTs2Pcm] = useState(SC_PCM_OPTIONS[0].value);
-  const [ts2Slot, setTs2Slot] = useState(SC_TS_OPTIONS[1].value);
+  const [ts1Pcm, setTs1Pcm] = useState(SIGNALING_CAPTURE_PCM_OPTIONS[0].value);
+  const [ts1Slot, setTs1Slot] = useState(SIGNALING_CAPTURE_TS_OPTIONS[0].value);
+  const [ts2Pcm, setTs2Pcm] = useState(SIGNALING_CAPTURE_PCM_OPTIONS[0].value);
+  const [ts2Slot, setTs2Slot] = useState(SIGNALING_CAPTURE_TS_OPTIONS[1].value);
 
   // E1 Two-way Recording state
-  const [e1aPcm, setE1aPcm] = useState(SC_PCM_OPTIONS[0].value);
-  const [e1aSlot, setE1aSlot] = useState(SC_TS_OPTIONS[2].value);
-  const [e1bPcm, setE1bPcm] = useState(SC_PCM_OPTIONS[0].value);
-  const [e1bSlot, setE1bSlot] = useState(SC_TS_OPTIONS[3].value);
+  const [e1aPcm, setE1aPcm] = useState(SIGNALING_CAPTURE_PCM_OPTIONS[0].value);
+  const [e1aSlot, setE1aSlot] = useState(SIGNALING_CAPTURE_TS_OPTIONS[2].value);
+  const [e1bPcm, setE1bPcm] = useState(SIGNALING_CAPTURE_PCM_OPTIONS[0].value);
+  const [e1bSlot, setE1bSlot] = useState(SIGNALING_CAPTURE_TS_OPTIONS[3].value);
 
   // Network interfaces state
   useEffect(() => {
@@ -765,7 +771,7 @@ const SignalingCapture = () => {
             });
 
           const options = [
-            SC_FALLBACK_NETWORK_OPTIONS[0],
+            SIGNALING_CAPTURE_FALLBACK_NETWORK_OPTIONS[0],
             ...filteredInterfaces,
           ];
 
@@ -774,7 +780,7 @@ const SignalingCapture = () => {
       } catch (error) {
         console.error("Error fetching network interfaces:", error);
         // Fallback to default options
-        setNetworkOptions(SC_FALLBACK_NETWORK_OPTIONS);
+        setNetworkOptions(SIGNALING_CAPTURE_FALLBACK_NETWORK_OPTIONS);
       } finally {
         setLoading(false);
       }
@@ -789,7 +795,7 @@ const SignalingCapture = () => {
 
     try {
       let interfaceName = "";
-      if (network === SC_DEFAULTS.NETWORK) {
+      if (network === SIGNALING_CAPTURE_DEFAULTS.NETWORK) {
         interfaceName = "any";
       } else if (network === "eth0") {
         interfaceName = "eth0";
@@ -800,7 +806,7 @@ const SignalingCapture = () => {
       }
 
       const dateStr = getDateStr();
-      const fileName = `${SC_DATA_DIR}/${SC_DATA_CAPTURE_PATTERN}_${dateStr}.pcap`;
+      const fileName = `${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}_${dateStr}.pcap`;
       setCaptureFileName(fileName);
 
       const dest = syslogDest.trim();
@@ -811,16 +817,16 @@ const SignalingCapture = () => {
       const tcpdumpCmd = `tcpdump -U -i ${interfaceName} -s 0 -w '${fileName}' ${filterExpr ? `'${filterExpr}'` : ""}`;
 
       await postLinuxCmd({
-        cmd: `pkill -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null || true`,
+        cmd: `pkill -f 'tcpdump.*${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}' 2>/dev/null || true`,
       });
       await delay(800);
 
-      const cmd = `sh -c "mkdir -p ${SC_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; ${tcpdumpCmd} > /dev/null 2> '${SC_CAPTURE_LOG_PATH}' < /dev/null & echo \\$!"`;
+      const cmd = `sh -c "mkdir -p ${SIGNALING_CAPTURE_DATA_DIR}; rm -f '${fileName}'; touch '${fileName}'; chmod 666 '${fileName}' || true; ${tcpdumpCmd} > /dev/null 2> '${SIGNALING_CAPTURE_LOG_PATH}' < /dev/null & echo \\$!"`;
       const response = await postLinuxCmd({ cmd });
 
       if (response?.response === false) {
         const logTailRes = await postLinuxCmd({
-          cmd: `tail -n 5 ${SC_CAPTURE_LOG_PATH} 2>/dev/null || true`,
+          cmd: `tail -n 5 ${SIGNALING_CAPTURE_LOG_PATH} 2>/dev/null || true`,
         });
         const logTail = extractCmdOutput(logTailRes);
         showToast(
@@ -838,7 +844,7 @@ const SignalingCapture = () => {
         });
         const status = extractCmdOutput(health);
         const logTailRes = await postLinuxCmd({
-          cmd: `tail -n 3 ${SC_CAPTURE_LOG_PATH} 2>/dev/null || true`,
+          cmd: `tail -n 3 ${SIGNALING_CAPTURE_LOG_PATH} 2>/dev/null || true`,
         });
         const logTail = extractCmdOutput(logTailRes);
         if (status !== "RUNNING") {
@@ -851,8 +857,8 @@ const SignalingCapture = () => {
         setCaptureProcessId(pid);
         setIsCapturing(true);
         const lanDisplay =
-          network === SC_DEFAULTS.NETWORK
-            ? SC_FALLBACK_NETWORK_OPTIONS[0].label
+          network === SIGNALING_CAPTURE_DEFAULTS.NETWORK
+            ? SIGNALING_CAPTURE_FALLBACK_NETWORK_OPTIONS[0].label
             : network === "eth0"
               ? "LAN 1"
               : network === "eth1"
@@ -885,7 +891,7 @@ const SignalingCapture = () => {
         ? `kill -KILL ${captureProcessId} 2>/dev/null; `
         : "";
       await postLinuxCmd({
-        cmd: `${pidTerm}pkill -TERM -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null; sleep 2; ${pidKill}pkill -KILL -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null; sync`,
+        cmd: `${pidTerm}pkill -TERM -f 'tcpdump.*${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}' 2>/dev/null; sleep 2; ${pidKill}pkill -KILL -f 'tcpdump.*${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}' 2>/dev/null; sync`,
       });
 
       const pktRes = await postLinuxCmd({
@@ -898,17 +904,17 @@ const SignalingCapture = () => {
           "warning",
         );
         await postLinuxCmd({
-          cmd: `rm -f '${captureFileName}' '${captureFileName}.gz' '${SC_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
+          cmd: `rm -f '${captureFileName}' '${captureFileName}.gz' '${SIGNALING_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
         });
         return;
       }
 
       await downloadGzFileFromDevice(
         captureFileName,
-        `${SC_DATA_CAPTURE_PATTERN}_${getDateStr()}.pcap.gz`,
+        `${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}_${getDateStr()}.pcap.gz`,
       );
       await postLinuxCmd({
-        cmd: `rm -f '${SC_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
+        cmd: `rm -f '${SIGNALING_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
       });
       setCaptureStatus("");
       showToast(
@@ -920,10 +926,10 @@ const SignalingCapture = () => {
       setCaptureStatus("");
       try {
         await postLinuxCmd({
-          cmd: `pkill -KILL -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null || true`,
+          cmd: `pkill -KILL -f 'tcpdump.*${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}' 2>/dev/null || true`,
         });
         await postLinuxCmd({
-          cmd: `rm -f '${captureFileName}' '${captureFileName}.gz' '${SC_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
+          cmd: `rm -f '${captureFileName}' '${captureFileName}.gz' '${SIGNALING_CAPTURE_LOG_PATH}' 2>/dev/null || true`,
         });
       } catch (_) {}
       showToast(
@@ -949,7 +955,7 @@ const SignalingCapture = () => {
 
     try {
       await postLinuxCmd({
-        cmd: `pkill -f 'tcpdump.*${SC_DATA_CAPTURE_PATTERN}' 2>/dev/null; pkill -f '${SC_TS_RECORD_PREFIX}' 2>/dev/null; pkill -f '${SC_E1_RECORD_PREFIX}' 2>/dev/null; pkill -f 'dahdi_monitor' 2>/dev/null; rm -f ${SC_DATA_DIR}/${SC_DATA_CAPTURE_PATTERN}_* ${SC_DATA_DIR}/${SC_TS_RECORD_PREFIX}_* ${SC_DATA_DIR}/${SC_E1_RECORD_PREFIX}_* ${SC_DATA_DIR}/${SC_TS_RECORD_PREFIX}.log ${SC_DATA_DIR}/${SC_E1_RECORD_PREFIX}.log ${SC_CAPTURE_LOG_PATH} 2>/dev/null; sync`,
+        cmd: `pkill -f 'tcpdump.*${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}' 2>/dev/null; pkill -f '${SIGNALING_CAPTURE_TS_RECORD_PREFIX}' 2>/dev/null; pkill -f '${SIGNALING_CAPTURE_E1_RECORD_PREFIX}' 2>/dev/null; pkill -f 'dahdi_monitor' 2>/dev/null; rm -f ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_DATA_CAPTURE_PATTERN}_* ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_TS_RECORD_PREFIX}_* ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_E1_RECORD_PREFIX}_* ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_TS_RECORD_PREFIX}.log ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_E1_RECORD_PREFIX}.log ${SIGNALING_CAPTURE_LOG_PATH} 2>/dev/null; sync`,
       });
       setIsCapturing(false);
       setCaptureProcessId(null);
@@ -967,7 +973,7 @@ const SignalingCapture = () => {
   const handleDownloadLog = async () => {
     try {
       await downloadTextFromDevice(
-        `sh -c "for f in ${SC_CAPTURE_LOG_PATH} ${SC_DATA_DIR}/${SC_TS_RECORD_PREFIX}.log ${SC_DATA_DIR}/${SC_E1_RECORD_PREFIX}.log; do if [ -f \\\"\\$f\\\" ]; then echo \\\"=== \\$f ===\\\"; cat \\\"\\$f\\\"; echo; fi; done"`,
+        `sh -c "for f in ${SIGNALING_CAPTURE_LOG_PATH} ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_TS_RECORD_PREFIX}.log ${SIGNALING_CAPTURE_DATA_DIR}/${SIGNALING_CAPTURE_E1_RECORD_PREFIX}.log; do if [ -f \\\"\\$f\\\" ]; then echo \\\"=== \\$f ===\\\"; cat \\\"\\$f\\\"; echo; fi; done"`,
         `signaling_capture_log_${getDateStr()}.txt`,
       );
       showToast("Log downloaded.", "success");
@@ -986,7 +992,7 @@ const SignalingCapture = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast(SC_DEFAULT_TOAST)}
+          onClose={() => setToast(SIGNALING_CAPTURE_TOAST_DEFAULT)}
           sx={{
             position: "fixed",
             top: 20,
@@ -1009,23 +1015,21 @@ const SignalingCapture = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>{SC_BREADCRUMB[0]}</span>
+          <span>{SIGNALING_CAPTURE_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>{SC_BREADCRUMB[1]}</span>
+          <span>{SIGNALING_CAPTURE_BREADCRUMB[1]}</span>
           <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {SC_BREADCRUMB[2]}
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+            {SIGNALING_CAPTURE_BREADCRUMB[2]}
           </span>
         </div>
 
-        <div style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
-            <span>{SC_SECTIONS[0]}</span>
+            <span>{SIGNALING_CAPTURE_SECTIONS[0]}</span>
           </div>
           <div className="flex flex-col p-6 gap-6">
             <div className="flex flex-col gap-6">
@@ -1036,7 +1040,7 @@ const SignalingCapture = () => {
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
-                    {SC_LABELS.networkInterface}
+                    {SIGNALING_CAPTURE_LABELS.networkInterface}
                   </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
@@ -1061,20 +1065,20 @@ const SignalingCapture = () => {
                 <div className="flex flex-col items-end gap-2 lg:ml-4">
                   <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end">
                     <Btn
-                      variant="primary"
+                      variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.PRIMARY}
                       onClick={handleStartCapture}
                       disabled={dataCaptureLocked}
-                      style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                      style={SIGNALING_CAPTURE_PRIMARY_BUTTON_STYLE}
                     >
-                      {SC_BUTTONS.start}
+                      {SIGNALING_CAPTURE_BUTTON_LABELS.START}
                     </Btn>
                     <Btn
-                      variant="cancel"
+                      variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.CANCEL}
                       onClick={handleStopCapture}
                       disabled={!isCapturing || isStopping}
-                      style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                      style={SIGNALING_CAPTURE_CANCEL_BUTTON_STYLE}
                     >
-                      {isStopping ? SC_BUTTONS.pleaseWait : SC_BUTTONS.stop}
+                      {isStopping ? SIGNALING_CAPTURE_BUTTON_LABELS.PLEASE_WAIT : SIGNALING_CAPTURE_BUTTON_LABELS.STOP}
                     </Btn>
                   </div>
                   {captureStatus && (
@@ -1117,7 +1121,7 @@ const SignalingCapture = () => {
                   className="sm:w-[280px] whitespace-nowrap"
                   style={labelStyle}
                 >
-                  {SC_LABELS.captureSyslog}
+                  {SIGNALING_CAPTURE_LABELS.captureSyslog}
                 </FieldLabel>
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -1147,7 +1151,7 @@ const SignalingCapture = () => {
                           : "pointer",
                     }}
                   >
-                    {SC_LABELS.enable}
+                    {SIGNALING_CAPTURE_LABELS.enable}
                   </label>
                 </div>
               </div>
@@ -1158,7 +1162,7 @@ const SignalingCapture = () => {
                   className="sm:w-[280px] whitespace-nowrap"
                   style={labelStyle}
                 >
-                  {SC_LABELS.syslogDest}
+                  {SIGNALING_CAPTURE_LABELS.syslogDest}
                 </FieldLabel>
                 <input
                   type="text"
@@ -1196,18 +1200,15 @@ const SignalingCapture = () => {
                   lineHeight: 1.45,
                 }}
               >
-                {SC_NOTE}
+                {SIGNALING_CAPTURE_NOTE}
               </p>
             </div>
           </div>
         </div>
 
-        <div style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        <div style={{ ...tableContainerStyle, marginTop: 20 }}>
           <div style={blueBarStyle}>
-            <span>{SC_SECTIONS[1]}</span>
+            <span>{SIGNALING_CAPTURE_SECTIONS[1]}</span>
           </div>
           <div className="p-6 flex flex-col gap-6">
             {[0, 1].map((i) => (
@@ -1224,7 +1225,7 @@ const SignalingCapture = () => {
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
-                    {SC_LABELS.pcmTs}
+                    {SIGNALING_CAPTURE_LABELS.pcmTs}
                   </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
@@ -1242,7 +1243,7 @@ const SignalingCapture = () => {
                       }
                       {...inputInteraction}
                     >
-                      {SC_PCM_OPTIONS.map((opt) => (
+                      {SIGNALING_CAPTURE_PCM_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
@@ -1263,7 +1264,7 @@ const SignalingCapture = () => {
                       }
                       {...inputInteraction}
                     >
-                      {SC_TS_OPTIONS.map((opt) => (
+                      {SIGNALING_CAPTURE_TS_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
@@ -1273,7 +1274,7 @@ const SignalingCapture = () => {
                 </div>
                 <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
                   <Btn
-                    variant="primary"
+                    variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.PRIMARY}
                     type="button"
                     onClick={() =>
                       startSlotRecording(
@@ -1281,22 +1282,22 @@ const SignalingCapture = () => {
                         i,
                         i === 0 ? ts1Pcm : ts2Pcm,
                         i === 0 ? ts1Slot : ts2Slot,
-                        SC_TS_RECORD_PREFIX,
+                        SIGNALING_CAPTURE_TS_RECORD_PREFIX,
                       )
                     }
                     disabled={dataCaptureLocked || isAnySlotRecording()}
-                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                    style={SIGNALING_CAPTURE_PRIMARY_BUTTON_STYLE}
                   >
-                    {SC_BUTTONS.start}
+                    {SIGNALING_CAPTURE_BUTTON_LABELS.START}
                   </Btn>
                   <Btn
-                    variant="cancel"
+                    variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.CANCEL}
                     type="button"
                     onClick={() => stopSlotRecording("ts", i)}
                     disabled={!slotRecording.ts[i] || slotStopping.ts[i]}
-                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                    style={SIGNALING_CAPTURE_CANCEL_BUTTON_STYLE}
                   >
-                    {slotStopping.ts[i] ? SC_BUTTONS.pleaseWait : SC_BUTTONS.stop}
+                    {slotStopping.ts[i] ? SIGNALING_CAPTURE_BUTTON_LABELS.PLEASE_WAIT : SIGNALING_CAPTURE_BUTTON_LABELS.STOP}
                   </Btn>
                 </div>
               </div>
@@ -1304,12 +1305,9 @@ const SignalingCapture = () => {
           </div>
         </div>
 
-        <div style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        <div style={{ ...tableContainerStyle, marginTop: 20 }}>
           <div style={blueBarStyle}>
-            <span>{SC_SECTIONS[2]}</span>
+            <span>{SIGNALING_CAPTURE_SECTIONS[2]}</span>
           </div>
           <div className="p-6 flex flex-col gap-6">
             {[0, 1].map((i) => (
@@ -1326,7 +1324,7 @@ const SignalingCapture = () => {
                     className="sm:w-[280px] whitespace-nowrap"
                     style={labelStyle}
                   >
-                    {SC_LABELS.pcmTs}
+                    {SIGNALING_CAPTURE_LABELS.pcmTs}
                   </FieldLabel>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <select
@@ -1344,7 +1342,7 @@ const SignalingCapture = () => {
                       }
                       {...inputInteraction}
                     >
-                      {SC_PCM_OPTIONS.map((opt) => (
+                      {SIGNALING_CAPTURE_PCM_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
@@ -1365,7 +1363,7 @@ const SignalingCapture = () => {
                       }
                       {...inputInteraction}
                     >
-                      {SC_TS_OPTIONS.map((opt) => (
+                      {SIGNALING_CAPTURE_TS_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
@@ -1375,7 +1373,7 @@ const SignalingCapture = () => {
                 </div>
                 <div className="flex flex-row flex-wrap gap-4 justify-start lg:justify-end mt-2 lg:mt-0">
                   <Btn
-                    variant="primary"
+                    variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.PRIMARY}
                     type="button"
                     onClick={() =>
                       startSlotRecording(
@@ -1383,22 +1381,22 @@ const SignalingCapture = () => {
                         i,
                         i === 0 ? e1aPcm : e1bPcm,
                         i === 0 ? e1aSlot : e1bSlot,
-                        SC_E1_RECORD_PREFIX,
+                        SIGNALING_CAPTURE_E1_RECORD_PREFIX,
                       )
                     }
                     disabled={dataCaptureLocked || isAnySlotRecording()}
-                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                    style={SIGNALING_CAPTURE_PRIMARY_BUTTON_STYLE}
                   >
-                    {SC_BUTTONS.start}
+                    {SIGNALING_CAPTURE_BUTTON_LABELS.START}
                   </Btn>
                   <Btn
-                    variant="cancel"
+                    variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.CANCEL}
                     type="button"
                     onClick={() => stopSlotRecording("e1", i)}
                     disabled={!slotRecording.e1[i] || slotStopping.e1[i]}
-                    style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                    style={SIGNALING_CAPTURE_CANCEL_BUTTON_STYLE}
                   >
-                    {slotStopping.e1[i] ? SC_BUTTONS.pleaseWait : SC_BUTTONS.stop}
+                    {slotStopping.e1[i] ? SIGNALING_CAPTURE_BUTTON_LABELS.PLEASE_WAIT : SIGNALING_CAPTURE_BUTTON_LABELS.STOP}
                   </Btn>
                 </div>
               </div>
@@ -1408,21 +1406,21 @@ const SignalingCapture = () => {
 
         <div style={signalingCaptureFooterStyle}>
           <Btn
-            variant="primary"
+            variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.PRIMARY}
             type="button"
             onClick={handleCleanData}
             disabled={isStopping || slotStopping.ts.some(Boolean) || slotStopping.e1.some(Boolean)}
-            style={signalingCaptureFooterBtnStyle}
+            style={SIGNALING_CAPTURE_FOOTER_BUTTON_STYLE}
           >
-            {SC_BUTTONS.clean}
+            {SIGNALING_CAPTURE_BUTTON_LABELS.CLEAN}
           </Btn>
           <Btn
-            variant="cancel"
+            variant={SIGNALING_CAPTURE_BUTTON_VARIANTS.CANCEL}
             type="button"
             onClick={handleDownloadLog}
-            style={signalingCaptureFooterBtnStyle}
+            style={SIGNALING_CAPTURE_FOOTER_BUTTON_STYLE}
           >
-            {SC_BUTTONS.download}
+            {SIGNALING_CAPTURE_BUTTON_LABELS.DOWNLOAD}
           </Btn>
         </div>
       </div>

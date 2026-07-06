@@ -30,7 +30,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
     "When Enabled, calls will be routed to voicemail after the Call Timeout(see Advanced TAB) regardless of Call Forward setting",
 
   voicemail_file:
-    "Set the way to send the voicemail. Two options are available:<br>\nDownload Link: Send the voice message via link;<br>\nAudio File Attachment: Send the voice message via email attachment (default).",
+    "Set the way to send the voicemail. Two options are available:\nDownload Link: Send the voice message via link;\nAudio File Attachment: Send the voice message via email attachment (default).",
 
   select_voice:
     "Once this feature is disabled, the call to this extension will play selected voice  if failed. By default.",
@@ -104,7 +104,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
     "Select the maximum call duration in seconds for every call of this extension. If you wish to customize, enter the value in the text box directly. This option is valid only for outbound calls. The default value is 6000(s).0 means no limit.",
 
   max_call_permission:
-    "Set the call permission of an extension: No Call, Internal Call, Local Call, Long-Distance Call, International Call.<br>\nNo Call: Block any calls from the extension;<br>\nInternal Call: Only internal calls are allowed;<br>\nLocal Call: Allow the calls without 0 as the start number;<br>\nLong-Distance Call: Allow the calls with only one 0 at the beginning;<br>\nInternational Call (default): Allow the calls with two 0 at the beginning.",
+    "Set the call permission of an extension: No Call, Internal Call, Local Call, Long-Distance Call, International Call.\nNo Call: Block any calls from the extension;\nInternal Call: Only internal calls are allowed;\nLocal Call: Allow the calls without 0 as the start number;\nLong-Distance Call: Allow the calls with only one 0 at the beginning;\nInternational Call (default): Allow the calls with two 0 at the beginning.",
 
   used_call_permission:
     "Shows the call permission level currently in effect for this extension. This read-only value reflects the dynamically applied permission and cannot exceed the configured Max Call Permission.",

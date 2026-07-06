@@ -1,50 +1,67 @@
 import React, { useState, useEffect } from "react";
-import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material";
+import {
+  Alert,
+  Checkbox,
+  CircularProgress,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import {
   DDOS_INITIAL_FORM,
   DDOS_INFO_LOG,
-  DDOS_SETTINGS_BREADCRUMB,
+  DDOS_BREADCRUMB_ROOT,
+  DDOS_BREADCRUMB_SECTION,
+  DDOS_PAGE_TITLE,
   DDOS_LOCAL_STORAGE_KEY,
   DDOS_SERVICE_PORTS,
   DDOS_SIMULATION_IPS,
-  DDOS_CARD_TITLE,
   DDOS_TOOLTIPS,
   DDOS_BUTTON_LABELS,
   DDOS_MESSAGE_DEFAULT,
   DDOS_MESSAGE_TIMEOUT_MS,
   DDOS_MESSAGES,
+  DDOS_LABEL_ENABLE,
+  DDOS_LABEL_WEB_PORT,
+  DDOS_LABEL_WEB_LIMIT,
+  DDOS_LABEL_FTP_PORT,
+  DDOS_LABEL_FTP_LIMIT,
+  DDOS_LABEL_SSH_PORT,
+  DDOS_LABEL_SSH_LIMIT,
+  DDOS_LABEL_TELNET_PORT,
+  DDOS_LABEL_TELNET_LIMIT,
+  DDOS_LABEL_BLACKLIST_VALIDITY,
+  DDOS_LABEL_BLACKLIST_TIME,
+  DDOS_CARD_TITLE_INFO_LOG,
+  DDOS_BLACKLIST_OPTION_FOREVER,
+  DDOS_BLACKLIST_OPTION_IN_SET_TIME,
 } from "../../../constants/DDOSSettingsConstants";
-import { Alert, Checkbox } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
-// ── Color palette (same as AccountManage) ────────────────────────────────────
+
+const DDOS_COMPACT_MQ = "(max-width: 768px)";
+const DDOS_GRID_TWO_COL_MQ = "(min-width: 1100px)";
+const DDOS_LABEL_COL_WIDTH = 188;
+const DDOS_FIELD_COL_GAP = 16;
+const DDOS_FORM_PAD_X = 28;
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
+  sectionHeading: "#30415A",
 };
 
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
-
-// ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -61,19 +78,20 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
-const nativeFieldInteraction = {
+const inputInteraction = {
   onFocus: (e) => {
-    if (e.target.disabled) return;
+    if (e.target.disabled || e.target.readOnly) return;
     setFieldFocus(e.target);
   },
   onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
     setFieldDefault(e.target);
   },
   onMouseEnter: (e) => {
-    if (e.target.disabled) return;
+    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -81,6 +99,7 @@ const nativeFieldInteraction = {
     }
   },
   onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -89,107 +108,108 @@ const nativeFieldInteraction = {
   },
 };
 
-const inputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
+const DDOS_FIELD_BG_EDITABLE = "#ffffff";
+const DDOS_FIELD_BG_READONLY = "#f1f5f9";
 
-const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
-  if (!hasError) return inputInteraction;
-  const ring = (el, focused) => {
-    el.style.borderColor = errorColor;
-    el.style.borderWidth = "1px";
-    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
-  };
-  return {
-    onFocus: (e) => ring(e.target, true),
-    onBlur: (e) => ring(e.target, false),
-    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
-    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
-  };
-};
-
-const systemToolsFieldInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 14,
+const systemFieldInputStyle = {
   width: "100%",
-  backgroundColor: "#f8fafc",
-  outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  minWidth: 0,
+  maxWidth: "100%",
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
   boxSizing: "border-box",
-  boxShadow: "none",
-};
-
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
-
-const systemToolsEditableFieldInputStyle = {
-  ...systemToolsFieldInputStyle,
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-};
-const systemToolsEditableFieldSelectStyle = {
-  ...systemToolsFieldInputStyle,
-  appearance: "auto",
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-};
-const systemToolsReadOnlyFieldTextAreaStyle = {
+  backgroundColor: DDOS_FIELD_BG_EDITABLE,
+  lineHeight: 1.35,
+  minHeight: 36,
+  height: 36,
   fontSize: 13,
-  padding: "12px",
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_READ_ONLY,
   border: `1px solid ${OUTLINED_BORDER}`,
-  color: "#3E5475",
   outline: "none",
-  fontFamily: "monospace",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  boxSizing: "border-box",
+  color: C.labelText,
   boxShadow: "none",
-  borderRadius: 6,
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+};
+
+const ddosNumberInputStyle = {
+  ...systemFieldInputStyle,
+  maxWidth: 200,
+};
+
+const ddosSelectStyle = {
+  ...ddosNumberInputStyle,
+  appearance: "auto",
+  paddingTop: 7,
+  paddingBottom: 7,
+  cursor: "pointer",
+  backgroundColor: DDOS_FIELD_BG_EDITABLE,
+};
+
+const ddosFieldRowStyle = (isCompact) => ({
+  display: "flex",
+  flexDirection: isCompact ? "column" : "row",
+  alignItems: isCompact ? "stretch" : "flex-start",
+  width: "100%",
+  gap: isCompact ? 8 : DDOS_FIELD_COL_GAP,
+});
+
+const ddosFieldLabelWrapStyle = (isCompact) =>
+  isCompact
+    ? { width: "100%", minWidth: 0 }
+    : {
+        flex: `0 0 ${DDOS_LABEL_COL_WIDTH}px`,
+        width: DDOS_LABEL_COL_WIDTH,
+        minWidth: DDOS_LABEL_COL_WIDTH,
+        maxWidth: DDOS_LABEL_COL_WIDTH,
+        paddingTop: 9,
+      };
+
+const ddosFieldControlWrapStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
   width: "100%",
 };
-const inputStyle = systemToolsEditableFieldInputStyle;
-const selectStyle = systemToolsEditableFieldSelectStyle;
+
+const ddosFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+const ddosCheckboxSx = {
+  padding: 0,
+  margin: 0,
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+};
+
 const tooltipProps = {
   arrow: true,
   placement: "top",
   slotProps: {
+    popper: {
+      modifiers: [
+        { name: "offset", options: { offset: [0, 8] } },
+        { name: "preventOverflow", options: { padding: 8 } },
+      ],
+    },
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
-
-
-// ── Button Component (same as AccountManage) ─────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -197,10 +217,6 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  startIcon,
-
-  component,
- 
 }) => {
   const styles = {
     default: {
@@ -214,51 +230,28 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    error: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `1px solid ${C.errorRed}`,
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
   };
+
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
@@ -278,11 +271,9 @@ const Btn = ({
           : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
   };
 
-  const Component = component || "button";
-
   return (
-    <Component
-      type={type}
+    <button
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -291,15 +282,16 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -322,77 +314,278 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
       {children}
-    </Component>
+    </button>
   );
 };
 
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  boxSizing: "border-box",
+const DDOSFieldRow = ({
+  label,
+  tooltip,
+  children,
+  alignCenter = false,
+  isCompact,
+}) => {
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        lineHeight: 1.4,
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  return (
+    <div
+      style={{
+        ...ddosFieldRowStyle(isCompact),
+        alignItems: isCompact
+          ? "stretch"
+          : alignCenter
+            ? "center"
+            : "flex-start",
+      }}
+    >
+      <div
+        style={{
+          ...ddosFieldLabelWrapStyle(isCompact),
+          paddingTop: isCompact || alignCenter ? 0 : 9,
+        }}
+      >
+        {tooltip ? (
+          <Tooltip title={tooltip} {...tooltipProps}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
+      <div style={ddosFieldControlWrapStyle}>{children}</div>
+    </div>
+  );
 };
 
-const DDOSSettingsPageWrapStyle = {
+const ddosPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const DDOSSettingsPageInnerStyle = {
+const ddosPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
+  display: "flex",
+  flexDirection: "column",
 };
 
-const blueBarStyle = {
+const ddosTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const ddosHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  marginBottom: 0,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: `10px ${DDOS_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
-  borderBottom: `1px solid ${C.divider}`,
-};
-
-const labelStyle = {
-  fontSize: 13,
-  fontWeight: 600,
   color: C.labelText,
-  textAlign: "left",
+  borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
-const checkboxSx = {
-  padding: "4px",
-  marginRight: "4px",
-  color: "#64748b",
-  "&.Mui-checked": { color: C.accent },
+const ddosBodyStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
+  padding: `20px ${DDOS_FORM_PAD_X}px 24px`,
+  background: C.cardBg,
+  boxSizing: "border-box",
 };
+
+const ddosConfigPanelStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 372,
+};
+
+const ddosConfigBodyStyle = {
+  flex: "1 1 auto",
+  padding: "18px 18px 20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  minHeight: 0,
+};
+
+const ddosConfigFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  padding: "10px 18px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+  flexShrink: 0,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  minHeight: 50,
+};
+
+const ddosConfigGridStyle = (isGridTwoCol) => ({
+  display: "grid",
+  gridTemplateColumns: isGridTwoCol ? "1fr 1fr" : "1fr",
+  gap: isGridTwoCol ? 24 : 16,
+  width: "100%",
+  minWidth: 0,
+  alignItems: "start",
+});
+
+const ddosConfigColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  minWidth: 0,
+};
+
+const ddosConfigFullWidthStyle = {
+  gridColumn: "1 / -1",
+  borderTop: `1px solid ${C.divider}`,
+  paddingTop: 16,
+};
+
+const ddosOutputPanelStyle = {
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  backgroundColor: C.cardBg,
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.02)",
+};
+
+const ddosOutputHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  padding: `10px 18px`,
+  borderBottom: `1px solid ${C.divider}`,
+  backgroundColor: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const ddosOutputHeaderTitleStyle = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: C.labelText,
+  lineHeight: 1.35,
+};
+
+const ddosOutputBodyStyle = {
+  backgroundColor: DDOS_FIELD_BG_READONLY,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  overflow: "hidden",
+};
+
+const ddosOutputTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 160,
+  maxHeight: 280,
+  margin: 0,
+  padding: "12px 16px 16px",
+  border: "none",
+  borderRadius: 0,
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 13,
+  lineHeight: 1.6,
+  fontFamily: "monospace",
+  color: C.labelText,
+  backgroundColor: "transparent",
+  whiteSpace: "pre-wrap",
+  cursor: "default",
+};
+
+const ddosFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const enableControlStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  minHeight: 36,
+};
+
+const DDOSBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>{DDOS_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{DDOS_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{DDOS_PAGE_TITLE}</span>
+  </div>
+);
 
 const DDOSSettings = () => {
+  const isCompact = useMediaQuery(DDOS_COMPACT_MQ);
+  const isGridTwoCol = useMediaQuery(DDOS_GRID_TWO_COL_MQ);
   const [form, setForm] = useState(DDOS_INITIAL_FORM);
   const [log, setLog] = useState(DDOS_INFO_LOG);
   const [loading, setLoading] = useState(false);
@@ -405,7 +598,6 @@ const DDOSSettings = () => {
     setTimeout(() => setMessage(DDOS_MESSAGE_DEFAULT), DDOS_MESSAGE_TIMEOUT_MS);
   };
 
-  // Load saved form state from localStorage on component mount
   useEffect(() => {
     const savedForm = localStorage.getItem(DDOS_LOCAL_STORAGE_KEY);
     if (savedForm) {
@@ -418,22 +610,19 @@ const DDOSSettings = () => {
         setForm(DDOS_INITIAL_FORM);
       }
     } else {
-      // If no saved state, fetch current iptables rules
       fetchCurrentProtectionStatus();
     }
     setInitialized(true);
   }, []);
 
-  // Save form state to localStorage whenever form changes
   useEffect(() => {
     if (initialized) {
-        localStorage.setItem(DDOS_LOCAL_STORAGE_KEY, JSON.stringify(form));
+      localStorage.setItem(DDOS_LOCAL_STORAGE_KEY, JSON.stringify(form));
     }
   }, [form, initialized]);
 
   const fetchCurrentProtectionStatus = async () => {
     try {
-      // Check current iptables rules to determine which protections are active
       const response = await postLinuxCmd({
         cmd: "iptables -L INPUT -n --line-numbers",
       });
@@ -442,7 +631,6 @@ const DDOSSettings = () => {
         const rules = response.responseData;
         const currentForm = { ...DDOS_INITIAL_FORM };
 
-        // Check for WEB protection (ports 80, 443)
         if (rules.includes("dpt:80") || rules.includes("dpt:443")) {
           currentForm.webPortAttack = true;
           const webLimitMatch = rules.match(/limit (\d+)\/minute/);
@@ -451,7 +639,6 @@ const DDOSSettings = () => {
           }
         }
 
-        // Check for FTP protection (port 21)
         if (rules.includes("dpt:21")) {
           currentForm.ftpPortAttack = true;
           const ftpLimitMatch = rules.match(/limit (\d+)\/minute/);
@@ -460,7 +647,6 @@ const DDOSSettings = () => {
           }
         }
 
-        // Check for SSH protection (port 22)
         if (rules.includes("dpt:22")) {
           currentForm.sshPortAttack = true;
           const sshLimitMatch = rules.match(/limit (\d+)\/minute/);
@@ -469,7 +655,6 @@ const DDOSSettings = () => {
           }
         }
 
-        // Check for TELNET protection (port 23)
         if (rules.includes("dpt:23")) {
           currentForm.telnetPortAttack = true;
           const telnetLimitMatch = rules.match(/limit (\d+)\/minute/);
@@ -478,7 +663,6 @@ const DDOSSettings = () => {
           }
         }
 
-        // Check for blacklist validity
         if (rules.includes("ddos_blacklist")) {
           if (rules.includes("seconds 999999999")) {
             currentForm.blacklistValidityType = "forever";
@@ -486,7 +670,7 @@ const DDOSSettings = () => {
             currentForm.blacklistValidityType = "inSetTime";
             const timeMatch = rules.match(/seconds (\d+)/);
             if (timeMatch) {
-              currentForm.blacklistTime = parseInt(timeMatch[1]) / 60; // Convert seconds to minutes
+              currentForm.blacklistTime = parseInt(timeMatch[1]) / 60;
             }
           }
         }
@@ -518,8 +702,6 @@ const DDOSSettings = () => {
   };
 
   const simulateAttackDetection = async () => {
-    // Simulate detecting attacks and managing blacklist
-   
     const serviceLimits = {
       web: form.webPortAttack ? form.webLimit : 0,
       ftp: form.ftpPortAttack ? form.ftpLimit : 0,
@@ -527,24 +709,20 @@ const DDOSSettings = () => {
       telnet: form.telnetPortAttack ? form.telnetLimit : 0,
     };
 
-    // Simulate random IP attacks
-  
-
     for (const [service, limit] of Object.entries(serviceLimits)) {
       if (limit > 0) {
         const servicePorts = DDOS_SERVICE_PORTS[service];
         const randomIP =
-          DDOS_SIMULATION_IPS[Math.floor(Math.random() * DDOS_SIMULATION_IPS.length)];
+          DDOS_SIMULATION_IPS[
+            Math.floor(Math.random() * DDOS_SIMULATION_IPS.length)
+          ];
         const randomPort =
           servicePorts[Math.floor(Math.random() * servicePorts.length)];
 
-        // Simulate attack exceeding limit
         if (Math.random() > 0.3) {
-          // 70% chance of attack
           addLogEntry("Forbid", randomIP, randomPort);
           setBlacklistedIPs((prev) => new Set([...prev, randomIP]));
 
-          // Schedule release based on blacklist validity
           if (
             form.blacklistValidityType === "inSetTime" &&
             form.blacklistTime
@@ -559,7 +737,7 @@ const DDOSSettings = () => {
                 });
               },
               form.blacklistTime * 60 * 1000,
-            ); // Convert minutes to milliseconds
+            );
           }
         }
       }
@@ -585,12 +763,10 @@ const DDOSSettings = () => {
   const configureDDOSProtection = async () => {
     setLoading(true);
     try {
-      // First, remove all existing DDOS protection rules
       await removeAllDDOSProtection();
 
-      let commands = [];
+      const commands = [];
 
-      // Configure WEB Port Attack Protection
       if (form.webPortAttack && form.webLimit) {
         commands.push(
           `iptables -A INPUT -p tcp --dport 80 -m limit --limit ${form.webLimit}/minute -j ACCEPT`,
@@ -609,7 +785,6 @@ const DDOSSettings = () => {
         addLogEntry("Configure", "WEB Port Protection disabled");
       }
 
-      // Configure FTP Port Attack Protection
       if (form.ftpPortAttack && form.ftpLimit) {
         commands.push(
           `iptables -A INPUT -p tcp --dport 21 -m limit --limit ${form.ftpLimit}/minute -j ACCEPT`,
@@ -624,7 +799,6 @@ const DDOSSettings = () => {
         addLogEntry("Configure", "FTP Port Protection disabled");
       }
 
-      // Configure SSH Port Attack Protection
       if (form.sshPortAttack && form.sshLimit) {
         commands.push(
           `iptables -A INPUT -p tcp --dport 22 -m limit --limit ${form.sshLimit}/minute -j ACCEPT`,
@@ -639,7 +813,6 @@ const DDOSSettings = () => {
         addLogEntry("Configure", "SSH Port Protection disabled");
       }
 
-      // Configure TELNET Port Attack Protection
       if (form.telnetPortAttack && form.telnetLimit) {
         commands.push(
           `iptables -A INPUT -p tcp --dport 23 -m limit --limit ${form.telnetLimit}/minute -j ACCEPT`,
@@ -654,7 +827,6 @@ const DDOSSettings = () => {
         addLogEntry("Configure", "TELNET Port Protection disabled");
       }
 
-      // Configure Blacklist Validity
       if (form.blacklistValidityType === "forever") {
         commands.push(
           `iptables -A INPUT -m recent --name ddos_blacklist --set`,
@@ -680,15 +852,13 @@ const DDOSSettings = () => {
         );
       }
 
-      // Execute all commands
       for (const cmd of commands) {
         await executeLinuxCommand(cmd);
       }
 
-      // Start monitoring for attacks after configuration
       setTimeout(() => {
         simulateAttackDetection();
-      }, 2000); // Wait 2 seconds after configuration
+      }, 2000);
 
       showMessage("success", DDOS_MESSAGES.configureSuccess);
     } catch (error) {
@@ -701,10 +871,8 @@ const DDOSSettings = () => {
 
   const removeAllDDOSProtection = async () => {
     try {
-      // Remove all possible DDOS protection rules (using -F to flush INPUT chain)
       const commands = ["iptables -F INPUT", "iptables -X ddos_blacklist"];
 
-      // Execute removal commands
       for (const cmd of commands) {
         await executeLinuxCommand(cmd);
       }
@@ -715,27 +883,14 @@ const DDOSSettings = () => {
     }
   };
 
-  const removeDDOSProtection = async () => {
-    setLoading(true);
-    try {
-      await removeAllDDOSProtection();
-      showMessage("success", DDOS_MESSAGES.removeSuccess);
-    } catch (error) {
-      console.error("Error removing DDOS protection:", error);
-      showMessage("error", DDOS_MESSAGES.removeFailed);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     await configureDDOSProtection();
   };
 
   const handleReset = () => {
     setForm(DDOS_INITIAL_FORM);
-    localStorage.removeItem(DDOS_LOCAL_STORAGE_KEY); // Clear saved state
+    localStorage.removeItem(DDOS_LOCAL_STORAGE_KEY);
     showMessage("info", DDOS_MESSAGES.resetSuccess);
   };
 
@@ -750,352 +905,231 @@ const DDOSSettings = () => {
     showMessage("info", DDOS_MESSAGES.logsCleared);
   };
 
+  const renderEnableRow = (label, tooltipKey, fieldKey) => (
+    <DDOSFieldRow
+      label={label}
+      tooltip={DDOS_TOOLTIPS[tooltipKey]}
+      alignCenter
+      isCompact={isCompact}
+    >
+      <div style={enableControlStyle}>
+        <Checkbox
+          size="small"
+          checked={!!form[fieldKey]}
+          onChange={() => handleChange(fieldKey, !form[fieldKey], "checkbox")}
+          sx={ddosCheckboxSx}
+        />
+        <span style={{ fontSize: 13, color: C.valueText }}>
+          {DDOS_LABEL_ENABLE}
+        </span>
+      </div>
+    </DDOSFieldRow>
+  );
+
+  const renderLimitRow = (label, tooltipKey, fieldKey) => (
+    <DDOSFieldRow
+      label={label}
+      tooltip={DDOS_TOOLTIPS[tooltipKey]}
+      isCompact={isCompact}
+    >
+      <input
+        type="number"
+        value={form[fieldKey] || ""}
+        onChange={(e) =>
+          handleChange(fieldKey, Number(e.target.value), "number")
+        }
+        style={ddosNumberInputStyle}
+        {...inputInteraction}
+      />
+    </DDOSFieldRow>
+  );
+
   return (
-    <div style={DDOSSettingsPageWrapStyle} data-native-scroll>
-      <div style={DDOSSettingsPageInnerStyle}>
-    
-      {/* ── Alerts ── */}
-      {message.text && (
-        <Alert
-          severity={message.type}
-          onClose={() => setMessage(DDOS_MESSAGE_DEFAULT)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {message.text}
-        </Alert>
-      )}
+    <div
+      style={{
+        ...ddosPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+      data-native-scroll
+    >
+      <div style={ddosPageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage(DDOS_MESSAGE_DEFAULT)}
+            sx={{
+              ...ddosFixedAlertSx,
+              ...(isCompact
+                ? { left: 8, right: 8, top: 12, minWidth: 0, maxWidth: "none" }
+                : {}),
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
 
-      {/* ── Breadcrumb ── */}
-    
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>{DDOS_SETTINGS_BREADCRUMB[0]}</span>
-<span>&gt;</span>
-<span>{DDOS_SETTINGS_BREADCRUMB[1]}</span>
-<span>&gt;</span>
-<span style={{ color: C.strongText, fontWeight: 600 }}>
-  {DDOS_SETTINGS_BREADCRUMB[2]}
-</span>
-        </div>
+        <DDOSBreadcrumb />
 
-        <div style={tableContainerStyle}>
-          {/* Header */}
-          <div style={blueBarStyle}>
-            <span>{DDOS_CARD_TITLE}</span>
+        <div style={ddosTableContainerStyle}>
+          <div style={ddosHeaderStyle}>
+            <span>{DDOS_PAGE_TITLE}</span>
           </div>
 
-          <div className="w-full px-5 pt-3 pb-2 flex flex-col items-center">
-            <form
-              onSubmit={handleSave}
-              className="w-full flex flex-col items-center"
-            >
-              {/* Form Fields Grid — centered like Signaling Call Test */}
-              <div className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center">
-                <Tooltip title={DDOS_TOOLTIPS.webPortAttack} {...tooltipProps}>
-                  <span style={labelStyle}>WEB Port Attack Protection</span>
-                </Tooltip>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    size="small"
-                    checked={!!form.webPortAttack}
-                    onChange={() =>
-                      handleChange(
-                        "webPortAttack",
-                        !form.webPortAttack,
-                        "checkbox",
-                      )
-                    }
-                    sx={checkboxSx}
-                  />
-                  <span style={{ fontSize: 14, color: C.valueText }}>
-                    Enable
-                  </span>
-                </div>
+          <div style={ddosBodyStyle}>
+            <div style={ddosConfigPanelStyle}>
+              <div style={ddosConfigBodyStyle}>
+                <div style={ddosConfigGridStyle(isGridTwoCol)}>
+                  <div style={ddosConfigColumnStyle}>
+                    {renderEnableRow(
+                      DDOS_LABEL_WEB_PORT,
+                      "webPortAttack",
+                      "webPortAttack",
+                    )}
+                    {form.webPortAttack &&
+                      renderLimitRow(
+                        DDOS_LABEL_WEB_LIMIT,
+                        "webLimit",
+                        "webLimit",
+                      )}
 
-                {form.webPortAttack && (
-                  <>
-                    <Tooltip title={DDOS_TOOLTIPS.webLimit} {...tooltipProps}>
-                      <span style={labelStyle}>WEB Limit</span>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      value={form.webLimit || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          "webLimit",
-                          Number(e.target.value),
-                          "number",
-                        )
-                      }
-                      style={inputStyle}
-                      {...inputInteraction}
-                    />
-                  </>
-                )}
+                    {renderEnableRow(
+                      DDOS_LABEL_FTP_PORT,
+                      "ftpPortAttack",
+                      "ftpPortAttack",
+                    )}
+                    {form.ftpPortAttack &&
+                      renderLimitRow(
+                        DDOS_LABEL_FTP_LIMIT,
+                        "ftpLimit",
+                        "ftpLimit",
+                      )}
+                  </div>
 
-                <Tooltip title={DDOS_TOOLTIPS.ftpPortAttack} {...tooltipProps}>
-                  <span style={labelStyle}>FTP Port Attack Protection</span>
-                </Tooltip>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    size="small"
-                    checked={!!form.ftpPortAttack}
-                    onChange={() =>
-                      handleChange(
-                        "ftpPortAttack",
-                        !form.ftpPortAttack,
-                        "checkbox",
-                      )
-                    }
-                    sx={checkboxSx}
-                  />
-                  <span style={{ fontSize: 14, color: C.valueText }}>
-                    Enable
-                  </span>
-                </div>
+                  <div style={ddosConfigColumnStyle}>
+                    {renderEnableRow(
+                      DDOS_LABEL_SSH_PORT,
+                      "sshPortAttack",
+                      "sshPortAttack",
+                    )}
+                    {form.sshPortAttack &&
+                      renderLimitRow(
+                        DDOS_LABEL_SSH_LIMIT,
+                        "sshLimit",
+                        "sshLimit",
+                      )}
 
-                {form.ftpPortAttack && (
-                  <>
-                        <Tooltip title={DDOS_TOOLTIPS.ftpLimit} {...tooltipProps}>
-                      <span style={labelStyle}>FTP Limit</span>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      value={form.ftpLimit || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          "ftpLimit",
-                          Number(e.target.value),
-                          "number",
-                        )
-                      }
-                      style={inputStyle}
-                      {...inputInteraction}
-                    />
-                  </>
-                )}
+                    {renderEnableRow(
+                      DDOS_LABEL_TELNET_PORT,
+                      "telnetPortAttack",
+                      "telnetPortAttack",
+                    )}
+                    {form.telnetPortAttack &&
+                      renderLimitRow(
+                        DDOS_LABEL_TELNET_LIMIT,
+                        "telnetLimit",
+                        "telnetLimit",
+                      )}
+                  </div>
 
-                <Tooltip title={DDOS_TOOLTIPS.sshPortAttack} {...tooltipProps}>
-                  <span style={labelStyle}>SSH Port Attack Protection</span>
-                </Tooltip>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    size="small"
-                    checked={!!form.sshPortAttack}
-                    onChange={() =>
-                      handleChange(
-                        "sshPortAttack",
-                        !form.sshPortAttack,
-                        "checkbox",
-                      )
-                    }
-                    sx={checkboxSx}
-                  />
-                  <span style={{ fontSize: 14, color: C.valueText }}>
-                    Enable
-                  </span>
-                </div>
-
-                {form.sshPortAttack && (
-                  <>
-                    <Tooltip title={DDOS_TOOLTIPS.sshLimit} {...tooltipProps}>
-                      <span style={labelStyle}>SSH Limit</span>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      value={form.sshLimit || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          "sshLimit",
-                          Number(e.target.value),
-                          "number",
-                        )
-                      }
-                      style={inputStyle}
-                      {...inputInteraction}
-                    />
-                  </>
-                )}
-
-                <Tooltip title={DDOS_TOOLTIPS.telnetPortAttack} {...tooltipProps}>
-                  <span style={labelStyle}>TELNET Port Attack Protection</span>
-                </Tooltip>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    size="small"
-                    checked={!!form.telnetPortAttack}
-                    onChange={() =>
-                      handleChange(
-                        "telnetPortAttack",
-                        !form.telnetPortAttack,
-                        "checkbox",
-                      )
-                    }
-                    sx={checkboxSx}
-                  />
-                  <span style={{ fontSize: 14, color: C.valueText }}>
-                    Enable
-                  </span>
-                </div>
-
-                {form.telnetPortAttack && (
-                  <>
-                    <Tooltip title={DDOS_TOOLTIPS.telnetLimit} {...tooltipProps}>
-                      <span style={labelStyle}>TELNET Limit</span>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      value={form.telnetLimit || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          "telnetLimit",
-                          Number(e.target.value),
-                          "number",
-                        )
-                      }
-                      style={inputStyle}
-                      {...inputInteraction}
-                    />
-                  </>
-                )}
-
-                      <Tooltip title={DDOS_TOOLTIPS.blacklistValidity} {...tooltipProps}>
-                  <span style={labelStyle}>
-                  Set Validity of Attacker IP Blacklist
-                </span>
-                </Tooltip>
-                <select
-                  value={form.blacklistValidityType}
-                  onChange={(e) =>
-                    handleChange(
-                      "blacklistValidityType",
-                      e.target.value,
-                      "select",
-                    )
-                  }
-                  style={selectStyle}
-                  {...inputInteraction}
-                >
-                  <option value="forever">Forever</option>
-                  <option value="inSetTime">In The Set Time</option>
-                </select>
-
-                {form.blacklistValidityType === "inSetTime" && (
-                  <>
-                    <Tooltip title={DDOS_TOOLTIPS.blacklistTime} {...tooltipProps}>
-                      <span style={labelStyle}>Time (Min)</span>
-                    </Tooltip>
-                    <input
-                      type="number"
-                      value={form.blacklistTime || ""}
-                      onChange={(e) =>
-                        handleChange(
-                          "blacklistTime",
-                          Number(e.target.value),
-                          "number",
-                        )
-                      }
-                      style={inputStyle}
-                      {...inputInteraction}
-                    />
-                  </>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="w-full mt-3 flex flex-col items-center">
-                <div
-                  className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 pt-2 pb-2"
-                  style={{ borderTop: `1px solid ${C.divider}` }}
-                >
-                 <Btn
-  type="button"
-  variant="cancel"
-  onClick={handleReset}
-  disabled={loading}
-  style={{ minWidth: 110, height: 34 }}
->
-  {DDOS_BUTTON_LABELS.RESET}
-</Btn>
-
-<Btn
-  type="submit"
-  variant="primary"
-  disabled={loading}
-  style={{ minWidth: 110, height: 34 }}
->
-  {loading
-    ? DDOS_BUTTON_LABELS.CONFIGURING
-    : DDOS_BUTTON_LABELS.SAVE}
-</Btn>
-
-<Btn
-  type="button"
-  variant="cancel"
-  onClick={handleSimulateAttack}
-  disabled={loading}
-  style={{ minWidth: 110, height: 34 }}
->
-  {DDOS_BUTTON_LABELS.SIMULATE_ATTACK}
-</Btn>
-                </div>
-                <div
-                  style={{
-                    width: "calc(100% - 32px)",
-                    marginLeft: 16,
-                    marginRight: 16,
-                    borderBottom: `1px solid ${C.divider}`,
-                    boxSizing: "border-box",
-                  }}
-                />
-              </div>
-
-              {/* Info Log Section */}
-              <div className="w-full max-w-2xl mt-1 pt-2 pb-0">
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 items-center mb-1">
-                  <label style={labelStyle}>Info Log</label>
-                  <div className="flex items-center justify-start md:justify-end min-h-[34px]">
-                    <Btn
-                      type="button"
-                      variant="cancel"
-                      onClick={handleClearLogs}
-                      disabled={loading}
-                      style={{ minWidth: 100, height: 28, fontSize: 12 }}
+                  <div style={ddosConfigFullWidthStyle}>
+                    <DDOSFieldRow
+                      label={DDOS_LABEL_BLACKLIST_VALIDITY}
+                      tooltip={DDOS_TOOLTIPS.blacklistValidity}
+                      isCompact={isCompact}
                     >
-                      {DDOS_BUTTON_LABELS.CLEAR_LOGS}
-                    </Btn>
+                      <select
+                        value={form.blacklistValidityType}
+                        onChange={(e) =>
+                          handleChange(
+                            "blacklistValidityType",
+                            e.target.value,
+                            "select",
+                          )
+                        }
+                        style={ddosSelectStyle}
+                        {...inputInteraction}
+                      >
+                        <option value="forever">
+                          {DDOS_BLACKLIST_OPTION_FOREVER}
+                        </option>
+                        <option value="inSetTime">
+                          {DDOS_BLACKLIST_OPTION_IN_SET_TIME}
+                        </option>
+                      </select>
+                    </DDOSFieldRow>
+
+                    {form.blacklistValidityType === "inSetTime" &&
+                      renderLimitRow(
+                        DDOS_LABEL_BLACKLIST_TIME,
+                        "blacklistTime",
+                        "blacklistTime",
+                      )}
                   </div>
                 </div>
+              </div>
+
+              <div style={ddosConfigFooterStyle}>
+                <Btn
+                  type="button"
+                  variant="cancel"
+                  onClick={handleReset}
+                  disabled={loading}
+                  style={ddosFooterBtnStyle}
+                >
+                  {DDOS_BUTTON_LABELS.RESET}
+                </Btn>
+                <Btn
+                  type="button"
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={loading}
+                  style={ddosFooterBtnStyle}
+                >
+                  {loading ? (
+                    <>
+                      <CircularProgress size={14} color="inherit" />
+                      {DDOS_BUTTON_LABELS.CONFIGURING}
+                    </>
+                  ) : (
+                    DDOS_BUTTON_LABELS.SAVE
+                  )}
+                </Btn>
+                <Btn
+                  type="button"
+                  variant="cancel"
+                  onClick={handleSimulateAttack}
+                  disabled={loading}
+                  style={ddosFooterBtnStyle}
+                >
+                  {DDOS_BUTTON_LABELS.SIMULATE_ATTACK}
+                </Btn>
+              </div>
+            </div>
+
+            <div style={ddosOutputPanelStyle}>
+              <div style={ddosOutputHeaderStyle}>
+                <span style={ddosOutputHeaderTitleStyle}>
+                  {DDOS_CARD_TITLE_INFO_LOG}
+                </span>
+                <Btn
+                  variant="cancel"
+                  onClick={handleClearLogs}
+                  disabled={loading}
+                  style={ddosFooterBtnStyle}
+                >
+                  {DDOS_BUTTON_LABELS.CLEAR_LOGS}
+                </Btn>
+              </div>
+              <div style={ddosOutputBodyStyle}>
                 <textarea
-                  className="w-full rounded resize-y"
-                  style={{
-                    ...systemToolsReadOnlyFieldTextAreaStyle,
-                    minHeight: 120,
-                    maxHeight: 200,
-                    color: C.valueText,
-                  }}
+                  style={ddosOutputTextareaStyle}
                   value={log}
                   readOnly
-                  {...inputInteraction}
+                  tabIndex={-1}
+                  onFocus={(e) => e.target.blur()}
                 />
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>

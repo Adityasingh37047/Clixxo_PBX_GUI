@@ -11,14 +11,28 @@ export const RESTART_SECTIONS = [
   },
 ];
 
-export const RESTART_BUTTON_LABEL = 'Restart';
+export const RESTART_BUTTON_LABELS = {
+  RESTART: 'Restart',
+};
 
-export const RESTART_TITLE = 'Restart';
+export const RESTART_BUTTON_VARIANTS = {
+  RESTART: 'primary',
+};
+
+export const RESTART_BUTTON_STYLE = {
+  height: 30,
+  minWidth: 100,
+  fontSize: 12,
+  borderRadius: 10,
+  padding: '6px 14px',
+};
+
+export const RESTART_PAGE_TITLE = 'Restart';
 
 export const RESTART_BREADCRUMB = [
   "Maintenance",
-  "System Tool",
-  RESTART_TITLE,
+  "System Tools",
+  RESTART_PAGE_TITLE,
 ];
 
 export const RESTART_CONFIRM = {
@@ -52,7 +66,7 @@ export const RESTART_DEFAULT_TOAST = {
   type: "success",
 };
 
-export const RESTART_TOAST_DURATION = 3500;
+export const RESTART_TOAST_DURATION_MS = 3500;
 
 export const RESTART_ERROR_HIDE_MS = 5000;
 

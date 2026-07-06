@@ -9,6 +9,17 @@ import { IconButton, InputAdornment, TextField, Alert } from "@mui/material";
 import {
   CHANGE_PASSWORD_FIELDS,
   CHANGE_PASSWORD_INITIAL_FORM,
+  CHANGE_PASSWORD_BREADCRUMB,
+  CHANGE_PASSWORD_CARD_TITLE,
+  CHANGE_PASSWORD_BUTTON_LABELS,
+  CHANGE_PASSWORD_BUTTON_VARIANTS,
+  CHANGE_PASSWORD_BUTTON_STYLE,
+  CHANGE_PASSWORD_TOOLTIPS,
+  CHANGE_PASSWORD_MESSAGES,
+  CHANGE_PASSWORD_DEFAULT_TOAST,
+  CHANGE_PASSWORD_TOAST_DURATION_MS,
+  CHANGE_PASSWORD_ERROR_HIDE_MS,
+  CHANGE_PASSWORD_REDIRECT_DELAY_MS,
   CHANGE_PASSWORD_NOTE,
 } from "../../../constants/ChangePasswordConstants";
 
@@ -21,9 +32,9 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
+  mutedText: "#94a3b8",
   placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   errorRed: "#dc2626",
@@ -36,11 +47,11 @@ const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
 
-const advancedFormInlineFooterStyle = {
+const cardFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
-  justifyContent: "flex-end",
+  justifyContent: "center",
   gap: 12,
   width: "100%",
   margin: 0,
@@ -49,16 +60,8 @@ const advancedFormInlineFooterStyle = {
   background: C.cardBg,
   boxSizing: "border-box",
   flexShrink: 0,
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const tooltipProps = {
@@ -78,13 +81,6 @@ const tooltipProps = {
     },
     arrow: { sx: { color: "#fff" } },
   },
-};
-
-const tooltips = {
-  username: "The current username of the user.",
-  newUsername: "The new username of the user.",
-  password: "The password of the user.",
-  confirmPassword: "The confirmation password of the user.",
 };
 
 const getUserPermissionMuiTextFieldSx = ({
@@ -162,9 +158,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -214,21 +207,19 @@ const Btn = ({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding:
-          variant === "primary" || variant === "cancel"
-            ? "8px 32px"
-            : "6px 14px",
-        borderRadius: 8,
-        fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
+        padding: "6px 14px",
+        borderRadius: 10,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: variant === "primary" || variant === "cancel" ? 38 : 30,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
+        boxSizing: "border-box",
         ...s,
         ...extraStyle,
       }}
@@ -326,8 +317,8 @@ const ChangePasswordBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 12,
+      color: C.mutedText,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -336,16 +327,18 @@ const ChangePasswordBreadcrumb = () => (
       flexShrink: 0,
     }}
   >
-    <span>User Manage</span>
+    <span>{CHANGE_PASSWORD_BREADCRUMB[0]}</span>
     <span>&gt;</span>
-    <span>User Permission</span>
+    <span>{CHANGE_PASSWORD_BREADCRUMB[1]}</span>
     <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>Change Password</span>
+    <span style={{ color: C.strongText, fontWeight: 600 }}>
+      {CHANGE_PASSWORD_BREADCRUMB[2]}
+    </span>
   </div>
 );
 
 const FieldRow = ({ name, label, children }) => {
-  const tooltip = tooltips[name];
+  const tooltip = CHANGE_PASSWORD_TOOLTIPS[name];
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center w-full gap-2 sm:gap-4">
@@ -382,13 +375,16 @@ const ChangePassword = () => {
     password: false,
     confirmPassword: false,
   });
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(CHANGE_PASSWORD_DEFAULT_TOAST);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
+    setTimeout(
+      () => setToast(CHANGE_PASSWORD_DEFAULT_TOAST),
+      CHANGE_PASSWORD_TOAST_DURATION_MS,
+    );
   };
 
   useEffect(() => {
@@ -399,31 +395,32 @@ const ChangePassword = () => {
 
   useEffect(() => {
     if (error) {
-      const timer = setTimeout(() => setError(""), 5000);
+      const timer = setTimeout(() => setError(""), CHANGE_PASSWORD_ERROR_HIDE_MS);
       return () => clearTimeout(timer);
     }
   }, [error]);
 
   const validatePassword = (password) => {
-    if (!password) return "Password is required";
-    if (password.length < 5) return "Password must be at least 5 characters";
-    if (password.length > 16) return "Password must be maximum 16 characters";
+    if (!password) return CHANGE_PASSWORD_MESSAGES.passwordRequired;
+    if (password.length < 5) return CHANGE_PASSWORD_MESSAGES.passwordMinLength;
+    if (password.length > 16) return CHANGE_PASSWORD_MESSAGES.passwordMaxLength;
     return "";
   };
 
   const validateForm = () => {
     const errors = {};
 
-    if (!form.username) errors.username = "Current username is required";
+    if (!form.username)
+      errors.username = CHANGE_PASSWORD_MESSAGES.usernameRequired;
 
     if (form.newUsername && form.newUsername.length < 5)
-      errors.newUsername = "New username must be at least 5 characters";
+      errors.newUsername = CHANGE_PASSWORD_MESSAGES.newUsernameMinLength;
 
     const passwordError = validatePassword(form.password);
     if (passwordError) errors.password = passwordError;
 
     if (form.password !== form.confirmPassword)
-      errors.confirmPassword = "Passwords do not match";
+      errors.confirmPassword = CHANGE_PASSWORD_MESSAGES.passwordMismatch;
 
     return errors;
   };
@@ -453,7 +450,7 @@ const ChangePassword = () => {
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setError("Please fix the validation errors before saving.");
+      setError(CHANGE_PASSWORD_MESSAGES.validationFix);
       return;
     }
 
@@ -470,17 +467,17 @@ const ChangePassword = () => {
       });
 
       if (response.response === true) {
-        showToast("Credentials updated successfully! Redirecting...");
+        showToast(CHANGE_PASSWORD_MESSAGES.saveSuccess);
         setTimeout(() => {
           logout();
           navigate("/login");
-        }, 1500);
+        }, CHANGE_PASSWORD_REDIRECT_DELAY_MS);
       } else {
-        setError(response.message || "Failed to change password");
+        setError(response.message || CHANGE_PASSWORD_MESSAGES.saveFailed);
       }
     } catch (error) {
       console.error("Error changing password:", error);
-      setError(error.message || "Error changing password. Please try again.");
+      setError(error.message || CHANGE_PASSWORD_MESSAGES.saveError);
     } finally {
       setLoading(false);
     }
@@ -491,7 +488,7 @@ const ChangePassword = () => {
       {toast.msg && (
         <Alert
           severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(CHANGE_PASSWORD_DEFAULT_TOAST)}
           sx={fixedAlertSx}
         >
           {toast.msg}
@@ -524,7 +521,7 @@ const ChangePassword = () => {
                 letterSpacing: "0.02em",
               }}
             >
-              Change Password
+              {CHANGE_PASSWORD_CARD_TITLE}
             </span>
           </div>
 
@@ -623,14 +620,16 @@ const ChangePassword = () => {
               </div>
             </div>
 
-            <div style={advancedFormInlineFooterStyle}>
+            <div style={cardFooterStyle}>
               <Btn
-                variant="primary"
+                variant={CHANGE_PASSWORD_BUTTON_VARIANTS.PRIMARY}
                 disabled={loading}
                 type="submit"
-                style={advancedFormBtnStyle}
+                style={CHANGE_PASSWORD_BUTTON_STYLE}
               >
-                {loading ? "Changing Password..." : "Save"}
+                {loading
+                  ? CHANGE_PASSWORD_BUTTON_LABELS.SAVING
+                  : CHANGE_PASSWORD_BUTTON_LABELS.SAVE}
               </Btn>
             </div>
           </form>

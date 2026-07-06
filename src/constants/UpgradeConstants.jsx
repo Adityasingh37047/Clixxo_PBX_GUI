@@ -22,22 +22,36 @@ export const UPGRADE_VERSION_DATA = [
 export const UPGRADE_LABELS = {
   currentVersion: 'Current Version',
   selectFile: 'Select an Update File',
-  chooseFile: 'Choose File',
   noFile: 'No file chosen',
 };
 
 // Button labels
-export const UPGRADE_BUTTONS = {
-  update: 'Update',
-  reset: 'Reset',
+export const UPGRADE_BUTTON_LABELS = {
+  UPDATE: 'Update',
+  RESET: 'Reset',
+  CHOOSE_FILE: 'Choose File',
 };
 
-export const UPGRADE_TITLE = 'Upgrade';
+export const UPGRADE_BUTTON_VARIANTS = {
+  UPDATE: 'primary',
+  RESET: 'cancel',
+  CHOOSE_FILE: 'cancel',
+};
+
+export const UPGRADE_BUTTON_STYLE = {
+  height: 30,
+  minWidth: 100,
+  fontSize: 12,
+  borderRadius: 10,
+  padding: '6px 14px',
+};
+
+export const UPGRADE_PAGE_TITLE = 'Upgrade';
 
 export const UPGRADE_BREADCRUMB = [
   "Maintenance",
-  "System Tool",
-  UPGRADE_TITLE,
+  "System Tools",
+  UPGRADE_PAGE_TITLE,
 ];
 
 export const UPGRADE_STATUS = {

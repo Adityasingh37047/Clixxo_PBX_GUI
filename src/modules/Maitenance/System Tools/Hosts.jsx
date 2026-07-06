@@ -1,41 +1,45 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Alert,
-  CircularProgress,
-  Checkbox,
-} from "@mui/material";
+import { Alert, CircularProgress, Checkbox } from "@mui/material";
 import { fetchHostsFile, updateHostsFile } from "../../../api/apiService";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-// ── Color palette (same as UserManage) ────────────────────────────────────────
+import {
+  HOSTS_CARD_TITLE,
+  HOSTS_BREADCRUMB,
+  HOSTS_BUTTON_LABELS,
+  HOSTS_BUTTON_VARIANTS,
+  HOSTS_CANCEL_BTN_STYLE,
+  HOSTS_PRIMARY_BTN_STYLE,
+  HOSTS_MODAL_BTN_STYLE,
+  HOSTS_TABLE_HEADERS,
+  HOSTS_TABLE_STATUS,
+  HOSTS_MODAL_TITLES,
+  HOSTS_MODAL_LABELS,
+  HOSTS_MODAL_PLACEHOLDERS,
+  HOSTS_MESSAGE_DEFAULT,
+  HOSTS_MESSAGE_TIMEOUT_MS,
+  HOSTS_NETWORK_ERROR,
+  HOSTS_MESSAGES,
+  HOSTS_FILE_HEADER,
+} from "../../../constants/HostsConstants";
+
+const HOSTS_FORM_PAD_X = 28;
+
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
   errorRed: "#dc2626",
   gridHeaderBg: "#F8FAFC",
 };
-
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
 
 // ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
@@ -252,15 +256,16 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -399,60 +404,105 @@ const checkboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  boxSizing: "border-box",
-};
-
-const HostsPageWrapStyle = {
+const hostsPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const HostsPageInnerStyle = {
+const hostsPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const cardToolbarStyle = {
+const hostsCardStyle = {
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
+
+const hostsHeaderStyle = {
+  width: "100%",
   minHeight: 44,
   display: "flex",
   flexWrap: "wrap",
   gap: 12,
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  background: "#ffffff",
+  padding: `10px ${HOSTS_FORM_PAD_X}px`,
+  borderBottom: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  boxSizing: "border-box",
 };
 
-const cardToolbarTitleStyle = {
+const hostsHeaderTitleStyle = {
   fontSize: 13,
   fontWeight: 700,
   color: C.labelText,
-  letterSpacing: "0.02em",
+  lineHeight: 1.35,
 };
 
-const cardToolbarActionsStyle = {
+const hostsHeaderActionsStyle = {
   display: "flex",
   alignItems: "center",
   gap: 8,
   flexWrap: "wrap",
+  marginLeft: "auto",
 };
 
-const cardToolbarButtonStyle = { height: 30 };
+const hostsFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: `7px ${HOSTS_FORM_PAD_X}px`,
+  background: C.cardBg,
+  borderTop: `1px solid ${C.divider}`,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
+};
+
+const hostsFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const HostsBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{HOSTS_BREADCRUMB[0]}</span>
+    <span>&gt;</span>
+    <span>{HOSTS_BREADCRUMB[1]}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {HOSTS_BREADCRUMB[2]}
+    </span>
+  </div>
+);
 
 const Hosts = () => {
   const [hosts, setHosts] = useState([]);
@@ -464,7 +514,7 @@ const Hosts = () => {
   });
   const [showModal, setShowModal] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState(HOSTS_MESSAGE_DEFAULT);
 
   const hasInitialLoadRef = useRef(false);
   const [validationErrors, setValidationErrors] = useState({});
@@ -478,7 +528,7 @@ const Hosts = () => {
   // Show message helper
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
+    setTimeout(() => setMessage(HOSTS_MESSAGE_DEFAULT), HOSTS_MESSAGE_TIMEOUT_MS);
   };
 
   // Parse hosts file content into table rows
@@ -511,8 +561,7 @@ const Hosts = () => {
 
   // Convert table rows back to hosts file format
   const generateHostsFileContent = (hostsList) => {
-    let content = "# Hosts file - Managed by Clixxo UI\n";
-    content += "# Format: <Proxy IP>  <Domain>\n\n";
+    let content = HOSTS_FILE_HEADER;
 
     hostsList.forEach((host) => {
       if (host.proxyIp) {
@@ -538,14 +587,14 @@ const Hosts = () => {
         const parsedHosts = parseHostsFile(response.responseData);
         setHosts(parsedHosts);
       } else {
-        showMessage("error", "Failed to load hosts file");
+        showMessage("error", HOSTS_MESSAGES.LOAD_FAILED);
       }
     } catch (error) {
       console.error("Error loading hosts:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+      if (error.message === HOSTS_NETWORK_ERROR) {
+        showMessage("error", HOSTS_MESSAGES.NETWORK_ERROR);
       } else {
-        showMessage("error", error.message || "Failed to load hosts file");
+        showMessage("error", error.message || HOSTS_MESSAGES.LOAD_FAILED);
       }
     } finally {
       setLoading((prev) => ({ ...prev, fetch: false }));
@@ -563,12 +612,12 @@ const Hosts = () => {
   // Validation functions
   const validateProxyIp = (ip) => {
     if (!ip || ip.trim() === "") {
-      return "Proxy IP is required";
+      return HOSTS_MESSAGES.PROXY_IP_REQUIRED;
     }
     const ipRegex =
       /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     if (!ipRegex.test(ip)) {
-      return "Please enter a valid IP address";
+      return HOSTS_MESSAGES.PROXY_IP_INVALID;
     }
     return null;
   };
@@ -680,22 +729,22 @@ const Hosts = () => {
         showMessage(
           "success",
           editIndex !== null
-            ? "Host updated successfully"
-            : "Host added successfully",
+            ? HOSTS_MESSAGES.UPDATE_SUCCESS
+            : HOSTS_MESSAGES.ADD_SUCCESS,
         );
         setShowModal(false);
         setEditIndex(null);
         await new Promise((resolve) => setTimeout(resolve, 300));
         await loadHosts();
       } else {
-        showMessage("error", "Failed to save host");
+        showMessage("error", HOSTS_MESSAGES.SAVE_FAILED);
       }
     } catch (error) {
       console.error("Error saving host:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+      if (error.message === HOSTS_NETWORK_ERROR) {
+        showMessage("error", HOSTS_MESSAGES.NETWORK_ERROR);
       } else {
-        showMessage("error", error.message || "Failed to save host");
+        showMessage("error", error.message || HOSTS_MESSAGES.SAVE_FAILED);
       }
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
@@ -730,11 +779,11 @@ const Hosts = () => {
   // Delete selected hosts
   const handleDelete = async () => {
     if (selected.length === 0) {
-      showMessage("error", "Please select hosts to delete");
+      showMessage("error", HOSTS_MESSAGES.DELETE_NONE_SELECTED);
       return;
     }
     const confirmed = window.confirm(
-      "Are you sure you want to delete the selected host(s)?",
+      HOSTS_MESSAGES.DELETE_CONFIRM,
     );
     if (!confirmed) return;
     setLoading((prev) => ({ ...prev, delete: true }));
@@ -754,17 +803,17 @@ const Hosts = () => {
         setSelected([]);
         showMessage(
           "success",
-          `${selected.length} host(s) deleted successfully`,
+          HOSTS_MESSAGES.DELETE_SUCCESS(selected.length),
         );
       } else {
-        showMessage("error", "Failed to delete hosts");
+        showMessage("error", HOSTS_MESSAGES.DELETE_FAILED);
       }
     } catch (error) {
       console.error("Error deleting hosts:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+      if (error.message === HOSTS_NETWORK_ERROR) {
+        showMessage("error", HOSTS_MESSAGES.NETWORK_ERROR);
       } else {
-        showMessage("error", error.message || "Failed to delete hosts");
+        showMessage("error", error.message || HOSTS_MESSAGES.DELETE_FAILED);
       }
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
@@ -774,32 +823,31 @@ const Hosts = () => {
   // Clear all hosts
   const handleClearAll = async () => {
     if (hosts.length === 0) {
-      showMessage("info", "No hosts to clear");
+      showMessage("info", HOSTS_MESSAGES.CLEAR_NONE);
       return;
     }
     const confirmed = window.confirm(
-      "Are you sure you want to delete ALL hosts? This action cannot be undone.",
+      HOSTS_MESSAGES.CLEAR_CONFIRM,
     );
     if (!confirmed) return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const fileContent =
-        "# Hosts file - Managed by Clixxo UI\n# Format: <Proxy IP>  <Domain>\n\n";
+      const fileContent = HOSTS_FILE_HEADER;
       const response = await updateHostsFile(fileContent);
 
       if (response.message) {
         setHosts([]);
         setSelected([]);
-        showMessage("success", "All hosts deleted successfully");
+        showMessage("success", HOSTS_MESSAGES.CLEAR_SUCCESS);
       } else {
-        showMessage("error", "Failed to clear all hosts");
+        showMessage("error", HOSTS_MESSAGES.CLEAR_FAILED);
       }
     } catch (error) {
       console.error("Error clearing all hosts:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
+      if (error.message === HOSTS_NETWORK_ERROR) {
+        showMessage("error", HOSTS_MESSAGES.NETWORK_ERROR);
       } else {
-        showMessage("error", error.message || "Failed to clear all hosts");
+        showMessage("error", error.message || HOSTS_MESSAGES.CLEAR_FAILED);
       }
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
@@ -807,90 +855,64 @@ const Hosts = () => {
   };
 
   return (
-    <div style={HostsPageWrapStyle} data-native-scroll>
-      <div style={HostsPageInnerStyle}>
-      {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>Maintenance</span>
-          <span>&gt;</span>
-          <span>System Tool</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>Hosts</span>
-        </div>
+    <div style={hostsPageWrapStyle} data-native-scroll>
+      <div style={hostsPageInnerStyle}>
+        <HostsBreadcrumb />
 
-        {/* Alerts */}
         {message.text && (
           <Alert
             severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            onClose={() => setMessage(HOSTS_MESSAGE_DEFAULT)}
+            sx={hostsFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <div style={tableContainerStyle}>
-          <div style={cardToolbarStyle}>
-            <span style={cardToolbarTitleStyle}></span>
-            <div style={cardToolbarActionsStyle}>
+        <div style={hostsCardStyle}>
+          <div style={hostsHeaderStyle}>
+            <span style={hostsHeaderTitleStyle}>{HOSTS_CARD_TITLE}</span>
+            <div style={hostsHeaderActionsStyle}>
               <Btn
                 onClick={handleInverse}
                 disabled={loading.delete || loading.fetch}
-                variant="cancel"
-                style={cardToolbarButtonStyle}
+                variant={HOSTS_BUTTON_VARIANTS.CANCEL}
+                style={HOSTS_CANCEL_BTN_STYLE}
               >
-                Inverse
+                {HOSTS_BUTTON_LABELS.INVERSE}
               </Btn>
               <Btn
                 onClick={handleClearAll}
                 disabled={loading.delete || loading.fetch || hosts.length === 0}
-                variant="cancel"
-                style={cardToolbarButtonStyle}
+                variant={HOSTS_BUTTON_VARIANTS.CANCEL}
+                style={HOSTS_CANCEL_BTN_STYLE}
               >
-                Clear All
+                {HOSTS_BUTTON_LABELS.CLEAR_ALL}
               </Btn>
               <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                variant="cancel"
+                variant={HOSTS_BUTTON_VARIANTS.CANCEL}
                 startIcon={
                   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 }
-                style={cardToolbarButtonStyle}
+                style={HOSTS_CANCEL_BTN_STYLE}
               >
-                Delete
+                {HOSTS_BUTTON_LABELS.DELETE}
               </Btn>
               <Btn
                 onClick={() => handleOpenModal()}
                 disabled={loading.fetch || loading.save}
-                variant="primary"
-                style={cardToolbarButtonStyle}
+                variant={HOSTS_BUTTON_VARIANTS.PRIMARY}
+                style={HOSTS_PRIMARY_BTN_STYLE}
               >
-                + Add New
+                {HOSTS_BUTTON_LABELS.ADD_NEW}
               </Btn>
             </div>
           </div>
 
-          {/* Table */}
           <div style={{ overflowX: "auto" }}>
             <table
               style={{
@@ -920,12 +942,14 @@ const Hosts = () => {
                       sx={checkboxSx}
                     />
                   </TH>
-                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>ID</TH>
                   <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                    Proxy IP
+                    {HOSTS_TABLE_HEADERS.ID}
                   </TH>
                   <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                    Domain
+                    {HOSTS_TABLE_HEADERS.PROXY_IP}
+                  </TH>
+                  <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    {HOSTS_TABLE_HEADERS.DOMAIN}
                   </TH>
                   <TH
                     style={{
@@ -936,7 +960,7 @@ const Hosts = () => {
                       zIndex: 10,
                     }}
                   >
-                    Modify
+                    {HOSTS_TABLE_HEADERS.MODIFY}
                   </TH>
                 </tr>
               </thead>
@@ -964,7 +988,7 @@ const Hosts = () => {
                         }}
                       >
                         <CircularProgress size={24} />
-                        <span>Loading hosts...</span>
+                        <span>{HOSTS_TABLE_STATUS.LOADING}</span>
                       </div>
                     </td>
                   </tr>
@@ -982,7 +1006,7 @@ const Hosts = () => {
                         borderBottom: "none",
                       }}
                     >
-                      No data available
+                      {HOSTS_TABLE_STATUS.NO_DATA}
                     </td>
                   </tr>
                 ) : (
@@ -1102,29 +1126,17 @@ const Hosts = () => {
               </tbody>
             </table>
           </div>
+
           {hosts.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "7px 14px",
-              background: "#ffffff",
-              borderTop: `1px solid ${C.cardBorder}`,
-              borderBottomLeftRadius: 10,
-              borderBottomRightRadius: 10,
-            }}
-          >
-            <span style={{ fontSize: 11, color: C.mutedText }}>
-              Showing {hosts.length} record
-              {hosts.length !== 1 ? "s" : ""}
-            </span>
-          </div>
+            <div style={hostsFooterStyle}>
+              <span style={{ fontSize: 11, color: C.mutedText }}>
+                {HOSTS_TABLE_STATUS.SHOWING(hosts.length)}
+              </span>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div
           style={modalOverlayStyle}
@@ -1134,7 +1146,9 @@ const Hosts = () => {
         >
           <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
             <div style={modalHeaderStyle}>
-              {editIndex !== null ? "Edit Host" : "Add Host"}
+              {editIndex !== null
+                ? HOSTS_MODAL_TITLES.EDIT
+                : HOSTS_MODAL_TITLES.ADD}
             </div>
             <div style={modalBodyStyle}>
               <div
@@ -1149,7 +1163,9 @@ const Hosts = () => {
                 }}
               >
                 <div style={modalRowStyle}>
-                  <label style={modalLabelStyle}>Index:</label>
+                  <label style={modalLabelStyle}>
+                    {HOSTS_MODAL_LABELS.INDEX}
+                  </label>
                   <div
                     style={{
                       width: "min(100%, 320px)",
@@ -1171,7 +1187,9 @@ const Hosts = () => {
                   </div>
                 </div>
                 <div style={modalRowStyle}>
-                  <label style={modalLabelStyle}>Proxy IP:</label>
+                  <label style={modalLabelStyle}>
+                    {HOSTS_MODAL_LABELS.PROXY_IP}
+                  </label>
                   <div
                     style={{
                       width: "min(100%, 320px)",
@@ -1189,8 +1207,11 @@ const Hosts = () => {
                           ? C.errorRed
                           : undefined,
                       }}
-                      placeholder="e.g., 192.168.1.1"
-                      {...getInputInteraction(!!validationErrors.proxyIp, C.errorRed)}
+                      placeholder={HOSTS_MODAL_PLACEHOLDERS.PROXY_IP}
+                      {...getInputInteraction(
+                        !!validationErrors.proxyIp,
+                        C.errorRed,
+                      )}
                     />
                     {validationErrors.proxyIp && (
                       <span
@@ -1206,7 +1227,9 @@ const Hosts = () => {
                   </div>
                 </div>
                 <div style={modalRowStyle}>
-                  <label style={modalLabelStyle}>Domain:</label>
+                  <label style={modalLabelStyle}>
+                    {HOSTS_MODAL_LABELS.DOMAIN}
+                  </label>
                   <div
                     style={{
                       width: "min(100%, 320px)",
@@ -1224,8 +1247,11 @@ const Hosts = () => {
                           ? C.errorRed
                           : undefined,
                       }}
-                      placeholder="e.g., example.com (Optional)"
-                      {...getInputInteraction(!!validationErrors.domain, C.errorRed)}
+                      placeholder={HOSTS_MODAL_PLACEHOLDERS.DOMAIN}
+                      {...getInputInteraction(
+                        !!validationErrors.domain,
+                        C.errorRed,
+                      )}
                     />
                     {validationErrors.domain && (
                       <span
@@ -1244,20 +1270,22 @@ const Hosts = () => {
             </div>
             <div style={modalFooterStyle}>
               <Btn
-                variant="primary"
+                variant={HOSTS_BUTTON_VARIANTS.PRIMARY}
                 onClick={handleSave}
                 disabled={loading.save}
-                style={{ minWidth: 100, height: 33 }}
+                style={HOSTS_MODAL_BTN_STYLE}
               >
-                {loading.save ? "Saving..." : "Save"}
+                {loading.save
+                  ? HOSTS_BUTTON_LABELS.SAVING
+                  : HOSTS_BUTTON_LABELS.SAVE}
               </Btn>
               <Btn
-                variant="cancel"
+                variant={HOSTS_BUTTON_VARIANTS.CANCEL}
                 onClick={handleCloseModal}
                 disabled={loading.save}
-                style={{ minWidth: 100, height: 33 }}
+                style={HOSTS_MODAL_BTN_STYLE}
               >
-                Close
+                {HOSTS_BUTTON_LABELS.CLOSE}
               </Btn>
             </div>
           </div>

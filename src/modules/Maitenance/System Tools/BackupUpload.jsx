@@ -1,15 +1,18 @@
 import React, { useState, useRef } from "react";
 import {
-  BU_TITLES,
-  BU_LABELS,
-  BU_BUTTONS,
-  BU_BREADCRUMB,
-  BU_MESSAGES,
-  BU_STATUS,
-  BU_FILE,
-  BU_TAR_FILE_REGEX,
-  BU_MESSAGE_TIMEOUT_MS,
-  BU_DEFAULT_MESSAGE,
+  BACKUP_UPLOAD_TITLES,
+  BACKUP_UPLOAD_LABELS,
+  BACKUP_UPLOAD_BUTTON_LABELS,
+  BACKUP_UPLOAD_BUTTON_VARIANTS,
+  BACKUP_UPLOAD_BUTTON_STYLE,
+  BACKUP_UPLOAD_CHOOSE_FILE_BUTTON_STYLE,
+  BACKUP_UPLOAD_BREADCRUMB,
+  BACKUP_UPLOAD_MESSAGES,
+  BACKUP_UPLOAD_STATUS,
+  BACKUP_UPLOAD_FILE,
+  BACKUP_UPLOAD_TAR_FILE_REGEX,
+  BACKUP_UPLOAD_MESSAGE_TIMEOUT_MS,
+  BACKUP_UPLOAD_MESSAGE_DEFAULT,
 } from "../../../constants/BackupUploadConstants";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -20,14 +23,12 @@ const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -42,8 +43,7 @@ const FIELD_RADIUS = 6;
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
-
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
@@ -171,11 +171,7 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
       {children}
     </Component>
   );
@@ -227,41 +223,50 @@ const blueBarStyle = {
 };
 
 const BackupUpload = () => {
-  const [fileName, setFileName] = useState(BU_LABELS.noFile);
+  const [fileName, setFileName] = useState(BACKUP_UPLOAD_LABELS.NO_FILE);
   const fileInputRef = useRef();
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [loadingBackup, setLoadingBackup] = useState(false);
   const [loadingRestore, setLoadingRestore] = useState(false);
-  const [message, setMessage] = useState(BU_DEFAULT_MESSAGE);
+  const [message, setMessage] = useState(BACKUP_UPLOAD_MESSAGE_DEFAULT);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
-    setTimeout(() => setMessage(BU_DEFAULT_MESSAGE), BU_MESSAGE_TIMEOUT_MS);
+    setTimeout(
+      () => setMessage(BACKUP_UPLOAD_MESSAGE_DEFAULT),
+      BACKUP_UPLOAD_MESSAGE_TIMEOUT_MS,
+    );
   };
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
     setSelectedFile(f || null);
-    setFileName(f ? f.name : BU_LABELS.noFile);
+    setFileName(f ? f.name : BACKUP_UPLOAD_LABELS.NO_FILE);
   };
 
   const handleDownloadBackup = async () => {
     try {
       setLoadingBackup(true);
-      setMessage(BU_DEFAULT_MESSAGE);
+      setMessage(BACKUP_UPLOAD_MESSAGE_DEFAULT);
       const { blob, fileName } = await downloadBackup();
       const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", fileName || BU_FILE.defaultFileName);
+      link.setAttribute(
+        "download",
+        fileName || BACKUP_UPLOAD_FILE.DEFAULT_FILE_NAME,
+      );
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
-      showMessage("success", BU_MESSAGES.backupDownloadSuccess);
+      showMessage("success", BACKUP_UPLOAD_MESSAGES.BACKUP_DOWNLOAD_SUCCESS);
     } catch (e) {
-      showMessage("error", e.message || BU_MESSAGES.backupDownloadFailed);
+      showMessage(
+        "error",
+        e.message || BACKUP_UPLOAD_MESSAGES.BACKUP_DOWNLOAD_FAILED,
+      );
     } finally {
       setLoadingBackup(false);
     }
@@ -269,27 +274,27 @@ const BackupUpload = () => {
 
   const handleRestoreUpload = async () => {
     try {
-      setMessage(BU_DEFAULT_MESSAGE);
-      if (!selectedFile) throw new Error(BU_MESSAGES.selectTarFile);
-      if (!BU_TAR_FILE_REGEX.test(selectedFile.name))
-        throw new Error(BU_MESSAGES.onlyTarSupported);
+      setMessage(BACKUP_UPLOAD_MESSAGE_DEFAULT);
+      if (!selectedFile)
+        throw new Error(BACKUP_UPLOAD_MESSAGES.SELECT_TAR_FILE);
+      if (!BACKUP_UPLOAD_TAR_FILE_REGEX.test(selectedFile.name))
+        throw new Error(BACKUP_UPLOAD_MESSAGES.ONLY_TAR_SUPPORTED);
       setLoadingRestore(true);
       const res = await restoreBackup(selectedFile);
       if (res?.response) {
-        showMessage("success", BU_MESSAGES.restoreSuccess);
+        showMessage("success", BACKUP_UPLOAD_MESSAGES.RESTORE_SUCCESS);
       } else {
-        throw new Error(res?.message || BU_MESSAGES.restoreFailed);
+        throw new Error(res?.message || BACKUP_UPLOAD_MESSAGES.RESTORE_FAILED);
       }
     } catch (e) {
-      showMessage("error", e.message || BU_MESSAGES.restoreFailed);
+      showMessage("error", e.message || BACKUP_UPLOAD_MESSAGES.RESTORE_FAILED);
     } finally {
       setLoadingRestore(false);
     }
   };
 
   return (
-    <div
-      style={BackupUploadPageWrapStyle} data-native-scroll>
+    <div style={BackupUploadPageWrapStyle} data-native-scroll>
       <div style={BackupUploadPageInnerStyle}>
         {/* ── Breadcrumb ── */}
         <div
@@ -301,14 +306,15 @@ const BackupUpload = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>{BU_BREADCRUMB[0]}</span>
+          <span>{BACKUP_UPLOAD_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>{BU_BREADCRUMB[1]}</span>
+          <span>{BACKUP_UPLOAD_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {BU_BREADCRUMB[2]}
+            {BACKUP_UPLOAD_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -316,7 +322,7 @@ const BackupUpload = () => {
         {message.text && (
           <Alert
             severity={message.type}
-            onClose={() => setMessage(BU_DEFAULT_MESSAGE)}
+            onClose={() => setMessage(BACKUP_UPLOAD_MESSAGE_DEFAULT)}
             sx={{
               position: "fixed",
               top: 20,
@@ -331,12 +337,9 @@ const BackupUpload = () => {
         )}
 
         {/* Data Backup Section */}
-        <div style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        <div style={tableContainerStyle}>
           <div style={{ ...blueBarStyle, justifyContent: "left" }}>
-            <span>{BU_TITLES.backup}</span>
+            <span>{BACKUP_UPLOAD_TITLES.BACKUP}</span>
           </div>
           <div
             className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
@@ -350,24 +353,24 @@ const BackupUpload = () => {
                 flex: 1,
               }}
             >
-              {BU_LABELS.backupInstruction}
+              {BACKUP_UPLOAD_LABELS.BACKUP_INSTRUCTION}
             </span>
             <div style={{ flexShrink: 0 }}>
               <Btn
-                variant="primary"
+                variant={BACKUP_UPLOAD_BUTTON_VARIANTS.BACKUP}
                 onClick={handleDownloadBackup}
                 disabled={loadingBackup || loadingRestore}
-                style={{ minWidth: 90, height: 36, fontSize: 13 }}
+                style={BACKUP_UPLOAD_BUTTON_STYLE}
               >
                 {loadingBackup ? (
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
                     <CircularProgress size={16} sx={{ color: "inherit" }} />
-                    {BU_STATUS.backingUp}
+                    {BACKUP_UPLOAD_STATUS.BACKING_UP}
                   </div>
                 ) : (
-                  BU_BUTTONS.backup
+                  BACKUP_UPLOAD_BUTTON_LABELS.BACKUP
                 )}
               </Btn>
             </div>
@@ -375,12 +378,14 @@ const BackupUpload = () => {
         </div>
 
         {/* Restore Backup Section */}
-        <div style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        <div
+          style={{
+            ...tableContainerStyle,
+            marginTop: 20,
+          }}
+        >
           <div style={{ ...blueBarStyle, justifyContent: "left" }}>
-            <span>{BU_TITLES.upload}</span>
+            <span>{BACKUP_UPLOAD_TITLES.UPLOAD}</span>
           </div>
           <div
             className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4"
@@ -394,7 +399,7 @@ const BackupUpload = () => {
                 flex: 1,
               }}
             >
-              {BU_LABELS.uploadInstruction}
+              {BACKUP_UPLOAD_LABELS.UPLOAD_INSTRUCTION}
             </span>
             <div
               className="flex flex-col sm:flex-row sm:items-center gap-4"
@@ -403,32 +408,27 @@ const BackupUpload = () => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={BU_FILE.acceptExtension}
+                accept={BACKUP_UPLOAD_FILE.ACCEPT_EXTENSION}
                 onChange={handleFileChange}
                 className="hidden"
-                id={BU_FILE.inputId}
+                id={BACKUP_UPLOAD_FILE.INPUT_ID}
                 disabled={loadingBackup || loadingRestore}
               />
               <Btn
-                variant="cancel"
+                variant={BACKUP_UPLOAD_BUTTON_VARIANTS.CHOOSE_FILE}
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loadingBackup || loadingRestore}
-                style={{
-                  minWidth: 120,
-                  height: 36,
-                  minHeight: 36,
-                  fontSize: 13,
-                  padding: "6px 14px",
-                  boxSizing: "border-box",
-                }}
+                style={BACKUP_UPLOAD_CHOOSE_FILE_BUTTON_STYLE}
               >
-                {BU_LABELS.chooseFile}
+                {BACKUP_UPLOAD_BUTTON_LABELS.CHOOSE_FILE}
               </Btn>
               <span
                 style={{
                   fontSize: 13,
                   color:
-                    fileName === BU_LABELS.noFile ? C.mutedText : C.valueText,
+                    fileName === BACKUP_UPLOAD_LABELS.NO_FILE
+                      ? C.mutedText
+                      : C.valueText,
                   minWidth: 150,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -439,20 +439,20 @@ const BackupUpload = () => {
                 {fileName}
               </span>
               <Btn
-                variant="primary"
+                variant={BACKUP_UPLOAD_BUTTON_VARIANTS.RESTORE}
                 onClick={handleRestoreUpload}
                 disabled={loadingBackup || loadingRestore}
-                style={{ minWidth: 90, height: 36, fontSize: 13 }}
+                style={BACKUP_UPLOAD_BUTTON_STYLE}
               >
                 {loadingRestore ? (
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 8 }}
                   >
                     <CircularProgress size={16} sx={{ color: "inherit" }} />
-                    {BU_STATUS.restoring}
+                    {BACKUP_UPLOAD_STATUS.RESTORING}
                   </div>
                 ) : (
-                  BU_BUTTONS.upload
+                  BACKUP_UPLOAD_BUTTON_LABELS.RESTORE
                 )}
               </Btn>
             </div>

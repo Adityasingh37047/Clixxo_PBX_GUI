@@ -146,6 +146,23 @@ const PCM_CIRCUIT_MAINTENANCE_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
 const PCM_CIRCUIT_MAINTENANCE_SCROLL_CLASS = "pcm-circuit-maintenance-scroll";
 
+const pcmCircuitMaintenancePageWrapStyle = {
+  backgroundColor: C.pageBg,
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+};
+
+const pcmCircuitMaintenancePageInnerStyle = {
+  width: `calc(100% + ${PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER * 2}px)`,
+  maxWidth: `calc(100% + ${PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER * 2}px)`,
+  marginLeft: -PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
+  marginRight: -PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
+  paddingLeft: PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
+  paddingRight: PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
+  boxSizing: "border-box",
+};
+
 const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
@@ -171,14 +188,6 @@ const PCM_CIRCUIT_MAINTENANCE_TOOLTIP_PROPS = {
   },
 };
 
-const pcmCircuitMaintenancePageInnerStyle = {
-  maxWidth: "100%",
-  margin: "0 auto",
-  paddingLeft: PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
-  paddingRight: PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER,
-  boxSizing: "border-box",
-};
-
 const pcmCircuitMaintenanceCancelBtnStyle = {
   minWidth: 88,
   height: 30,
@@ -187,12 +196,12 @@ const pcmCircuitMaintenanceCancelBtnStyle = {
   fontWeight: 600,
 };
 
-const PcmCircuitMaintenanceBreadcrumb = ({ compactChannelScroll }) => (
+const PcmCircuitMaintenanceBreadcrumb = () => (
   <div
     style={{
       fontSize: 12,
       color: C.mutedText,
-      marginBottom: compactChannelScroll ? 16 : 10,
+      marginBottom: 16,
       fontWeight: 400,
       display: "flex",
       alignItems: "center",
@@ -312,6 +321,8 @@ const cardStyle = {
   borderRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
   overflow: "hidden",
   border: `1px solid ${C.cardBorder}`,
+  width: "100%",
+  boxSizing: "border-box",
   marginBottom: 24,
 };
 
@@ -355,17 +366,17 @@ const pcmCircuitMaintenanceShadowWrapStyle = {
   borderRadius: PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS,
   overflow: "visible",
   boxShadow: PCM_CIRCUIT_MAINTENANCE_CARD_SHADOW,
-  marginBottom: 25,
+  width: "100%",
+  boxSizing: "border-box",
 };
+
 const pcmCircuitMaintenanceCardInnerStyle = {
   ...cardStyle,
-  boxShadow: "none",
   marginBottom: 0,
 };
 
 const pcmCircuitMaintenanceChannelCardInnerStyle = {
   ...channelCardStyle,
-  boxShadow: "none",
   marginBottom: 0,
 };
 
@@ -1533,10 +1544,8 @@ const PcmCircuitMaintenancePage = () => {
             : undefined
         }
         style={{
-          backgroundColor: C.pageBg,
-          padding: isCompact ? 8 : 16,
-          boxSizing: "border-box",
-          width: "100%",
+          ...pcmCircuitMaintenancePageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
           ...(highZoom || isCompact || contentOverflows
             ? {
                 minHeight: "calc(100vh - 80px)",
@@ -1555,11 +1564,10 @@ const PcmCircuitMaintenancePage = () => {
           ref={contentRef}
           style={{
             ...pcmCircuitMaintenancePageInnerStyle,
-            overflowX: "visible",
-            overflowY: isCompact ? "visible" : "hidden",
+            overflow: "visible",
           }}
         >
-          <PcmCircuitMaintenanceBreadcrumb compactChannelScroll={channelScroll} />
+          <PcmCircuitMaintenanceBreadcrumb />
 
           {renderPcmMaintenance()}
           {renderPcmLoopback()}

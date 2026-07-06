@@ -63,7 +63,7 @@ export const RADIUS_CARD_TITLE = "Radius Configuration";
 
 export const RADIUS_BREADCRUMB = [
   "Maintenance",
-  "System Tool",
+  "System Tools",
   RADIUS_PAGE_TITLE,
 ];
 
@@ -86,7 +86,6 @@ export const RADIUS_BUTTON_VARIANTS = {
   SAVE: "primary",
   RESET: "cancel",
 };
-
 
 export const RADIUS_TOOLTIPS = {
   radius: "Specifies whether the Radius is enabled or disabled.",

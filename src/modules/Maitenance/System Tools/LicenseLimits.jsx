@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from "react";
 import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material"; 
 import { Alert } from "@mui/material";
+import {
+  LICENSE_LIMITS_BREADCRUMB,
+  LICENSE_LIMITS_CARD_TITLE,
+  LICENSE_LIMITS_FIELDS,
+  LICENSE_LIMITS_INITIAL_FORM,
+  LICENSE_LIMITS_TOOLTIPS,
+  LICENSE_LIMITS_BUTTON_LABELS,
+  LICENSE_LIMITS_BUTTON_VARIANTS,
+  LICENSE_LIMITS_BUTTON_STYLE,
+  LICENSE_LIMITS_NOTE,
+  LICENSE_LIMITS_MESSAGES,
+  LICENSE_LIMITS_MESSAGE_DEFAULT,
+  LICENSE_LIMITS_MESSAGE_TIMEOUT_MS,
+} from "../../../constants/LicenseLimitsConstants";
 import {
   getLicenseLimits,
   updateLicenseLimits,
@@ -16,9 +29,8 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -117,11 +129,6 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
-      fontWeight: 600,
-      fontSize: 15,
-      borderRadius: 6,
-      textTransform: "none",
-      padding: "6px 28px",
     },
   };
   const s = styles[variant] || styles.default;
@@ -236,22 +243,12 @@ const LicenseLimitsPageWrapStyle = {
   boxSizing: "border-box",
 };
 
-  const LicenseLimitsPageInnerStyle = {
+const LicenseLimitsPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
-const licenseLimitsBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-  borderRadius: 10, // ya 12
-};
 const blueBarStyle = {
   width: "100%",
   minHeight: 44,
@@ -269,18 +266,6 @@ const blueBarStyle = {
   color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
 };
-
-const INITIAL_FORM = {
-  max_extensions: "",
-  max_fxs_ports: "",
-  max_trunks: "",
-};
-
-const FIELDS = [
-  { key: "max_extensions", label: "Maximum Extensions" },
-  { key: "max_fxs_ports", label: "Maximum FXS Port" },
-  { key: "max_trunks", label: "Maximum Trunks" },
-];
 
 const tooltipProps = {
   arrow: true,
@@ -304,20 +289,17 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  max_extensions: "The maximum number of extensions allowed for this system.",
-  max_fxs_ports: "The maximum number of FXS ports allowed for this system.",
-  max_trunks: "The maximum number of trunks allowed for this system.",
-};
-
 const LicenseLimits = () => {
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [form, setForm] = useState(LICENSE_LIMITS_INITIAL_FORM);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState(LICENSE_LIMITS_MESSAGE_DEFAULT);
 
   useEffect(() => {
     if (message.text) {
-      const t = setTimeout(() => setMessage({ type: "", text: "" }), 4000);
+      const t = setTimeout(
+        () => setMessage(LICENSE_LIMITS_MESSAGE_DEFAULT),
+        LICENSE_LIMITS_MESSAGE_TIMEOUT_MS,
+      );
       return () => clearTimeout(t);
     }
   }, [message.text]);
@@ -337,7 +319,7 @@ const LicenseLimits = () => {
       } catch (err) {
         setMessage({
           type: "error",
-          text: err?.message || "Failed to load license limits.",
+          text: err?.message || LICENSE_LIMITS_MESSAGES.loadFailed,
         });
       }
     };
@@ -360,7 +342,7 @@ const LicenseLimits = () => {
       if (res?.response) {
         setMessage({
           type: "success",
-          text: "License limits saved successfully.",
+          text: LICENSE_LIMITS_MESSAGES.saveSuccess,
         });
       } else {
         setMessage({
@@ -368,13 +350,13 @@ const LicenseLimits = () => {
           text:
             typeof res?.message === "string"
               ? res.message
-              : "Failed to save license limits.",
+              : LICENSE_LIMITS_MESSAGES.saveFailed,
         });
       }
     } catch (err) {
       setMessage({
         type: "error",
-        text: err?.message || "Failed to save license limits.",
+        text: err?.message || LICENSE_LIMITS_MESSAGES.saveFailed,
       });
     } finally {
       setLoading(false);
@@ -387,7 +369,7 @@ const LicenseLimits = () => {
         {message.text && (
           <Alert
             severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
+            onClose={() => setMessage(LICENSE_LIMITS_MESSAGE_DEFAULT)}
             sx={{
               position: "fixed",
               top: 16,
@@ -409,20 +391,21 @@ const LicenseLimits = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>Maintenance</span>
+          <span>{LICENSE_LIMITS_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>System Tool</span>
+          <span>{LICENSE_LIMITS_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            License Limits
+            {LICENSE_LIMITS_BREADCRUMB[2]}
           </span>
         </div>
 
         <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
-            <span>License Limits</span>
+            <span>{LICENSE_LIMITS_CARD_TITLE}</span>
           </div>
 
           <div className="w-full pt-3 flex flex-col items-center">
@@ -430,9 +413,9 @@ const LicenseLimits = () => {
               onSubmit={handleSave}
               className="w-full max-w-2xl px-5 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center"
             >
-              {FIELDS.map(({ key, label }) => (
+              {LICENSE_LIMITS_FIELDS.map(({ key, label }) => (
                 <React.Fragment key={key}>
-                  <Tooltip title={tooltips[key]} {...tooltipProps}>
+                  <Tooltip title={LICENSE_LIMITS_TOOLTIPS[key]} {...tooltipProps}>
                     <label style={labelStyle}>{label}</label>
                   </Tooltip>
                   <input
@@ -461,34 +444,34 @@ const LicenseLimits = () => {
     padding: "9px 20px",
   }}
 >
-  <Btn
-    variant="primary"
-    type="button"
-    disabled={loading}
-    onClick={handleSave}
-    style={{
-      ...licenseLimitsBtnStyle,
-    }}
-  >
-    {loading ? "Saving..." : "Save"}
-  </Btn>
-</div>
+              <Btn
+                variant={LICENSE_LIMITS_BUTTON_VARIANTS.SAVE}
+                type="button"
+                disabled={loading}
+                onClick={handleSave}
+                style={LICENSE_LIMITS_BUTTON_STYLE}
+              >
+                {loading
+                  ? LICENSE_LIMITS_BUTTON_LABELS.SAVING
+                  : LICENSE_LIMITS_BUTTON_LABELS.SAVE}
+              </Btn>
+            </div>
             </div>
           </div>
         </div>
-        <p
-                  style={{
-                    fontSize: 12,
-                    color: C.accent,
-                    textAlign: "Center",
-                    margin: "6px 0 0",
-                    lineHeight: 1.35,
-                    maxWidth: "100%",
-                    padding: "0 20px",
-                  }}
-                >
-                 Note: Set maximum allowed extensions, FXS ports, and trunks for this system.
-                </p>
+        <div
+          style={{
+            marginTop: 16,
+            textAlign: "center",
+            fontSize: 12,
+            color: C.accent,
+            width: "100%",
+            lineHeight: 1.5,
+            boxSizing: "border-box",
+          }}
+        >
+          {LICENSE_LIMITS_NOTE}
+        </div>
       </div>
     </div>
   );

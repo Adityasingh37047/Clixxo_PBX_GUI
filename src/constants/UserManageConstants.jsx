@@ -339,3 +339,123 @@ export const INITIAL_USER_FORM = {
   username: "",
   password: "",
 };
+
+export const USER_MANAGE_PAGE_TITLE = "User Manage";
+
+export const USER_MANAGE_BREADCRUMB = [
+  "User Manage",
+  "User Permission",
+  USER_MANAGE_PAGE_TITLE,
+];
+
+export const USER_MANAGE_CARD_TITLES = {
+  USER_LIST: "User List",
+  ADD_USER: "Add User",
+  EDIT_USER_PREFIX: "Edit User — ",
+  PAGE_PERMISSIONS: "Page Permissions",
+  RESET_PASSWORD_PREFIX: "Reset Password — ",
+};
+
+export const USER_MANAGE_TABLE_HEADERS = {
+  ID: "ID",
+  USERNAME: "Username",
+  ACCESS_TYPE: "Access Type",
+  ROLE_PERMISSION: "Role Permission",
+  SECTIONS: "Sections",
+  ACTIONS: "Actions",
+};
+
+export const USER_MANAGE_LABELS = {
+  USERNAME: "Username",
+  PASSWORD: "Password",
+  ACCESS_TYPE: "Access Type",
+  ROLE_PERMISSION: "Role Permission",
+  ALL_SECTIONS: "All",
+};
+
+export const USER_MANAGE_ACCESS_TYPE_LABELS = {
+  custom: "Custom",
+  superadmin: "Super Admin",
+};
+
+export const USER_MANAGE_ACCESS_TYPE_OPTIONS = [
+  { value: "custom", label: USER_MANAGE_ACCESS_TYPE_LABELS.custom },
+  { value: "superadmin", label: USER_MANAGE_ACCESS_TYPE_LABELS.superadmin },
+];
+
+export const USER_MANAGE_ROLE_PERMISSION_OPTIONS = [
+  { value: "Read, Write", label: "Read, Write" },
+  { value: "Read", label: "Read" },
+];
+
+export const USER_MANAGE_BUTTON_LABELS = {
+  ADD_USER: "+ Add User",
+  CANCEL: "Cancel",
+  SAVE: "Save",
+  SAVING: "Saving...",
+};
+
+export const USER_MANAGE_BUTTON_VARIANTS = {
+  PRIMARY: "primary",
+  CANCEL: "cancel",
+};
+
+export const USER_MANAGE_BUTTON_STYLE = {
+  height: 30,
+  minWidth: 100,
+  fontSize: 12,
+  borderRadius: 10,
+  padding: "6px 14px",
+  boxSizing: "border-box",
+};
+
+export const USER_MANAGE_TOOLBAR_BUTTON_STYLE = {
+  ...USER_MANAGE_BUTTON_STYLE,
+  minWidth: 110,
+  width: 110,
+};
+
+export const USER_MANAGE_TOOLTIPS = {
+  username: "The username of the user.",
+  password: "The password of the user.",
+  confirmPassword: "The confirmation password of the user.",
+  accessType: "The access type of the user.",
+  rolePermission: "The role permission of the user.",
+};
+
+export const USER_MANAGE_PLACEHOLDERS = {
+  MIN_5_CHARS: "Min 5 characters",
+  NEW_PASSWORD: "New password (min 5 chars)",
+};
+
+export const USER_MANAGE_MESSAGES = {
+  loadFailed: "Failed to load users.",
+  loadingUsers: "Loading users...",
+  noUsers: "No users found.",
+  usernameMinLength: "Username must be at least 5 characters.",
+  passwordMinLength: "Password must be at least 5 characters.",
+  createSuccess: "User created successfully.",
+  createFailed: "Failed to create user.",
+  updateSuccess: "User access updated successfully.",
+  updateFailed: "Failed to update user access.",
+  deleteConfirm: (username) =>
+    `Are you sure you want to delete user "${username}"?`,
+  deleteSuccess: "User deleted successfully.",
+  deleteFailed: "Failed to delete user.",
+};
+
+export const USER_MANAGE_DEFAULT_TOAST = {
+  msg: "",
+  type: "success",
+};
+
+export const USER_MANAGE_TOAST_DURATION_MS = 5000;
+export const USER_MANAGE_FORM_ERROR_HIDE_MS = 5000;
+
+export const USER_MANAGE_DEFAULT_ACCESS_TYPE = "custom";
+export const USER_MANAGE_DEFAULT_ROLE_PERMISSION = "Read, Write";
+
+export const USER_MANAGE_ICON_COLORS = {
+  EDIT: "#2563eb",
+  DELETE: "#dc2626",
+};

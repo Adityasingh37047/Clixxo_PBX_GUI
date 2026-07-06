@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tooltip } from "@mui/material";
+import { Alert, Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 import {
   IDS_TYPES,
   IDS_INITIAL_FORM,
@@ -8,8 +8,6 @@ import {
   IDS_BREADCRUMB_ROOT,
   IDS_BREADCRUMB_SECTION,
   IDS_PAGE_TITLE,
-  IDS_BREADCRUMB_SEPARATOR,
-  IDS_CARD_TITLE,
   IDS_BTN_RESET,
   IDS_BTN_SAVE,
   IDS_BTN_DOWNLOAD,
@@ -29,35 +27,32 @@ import {
   IDS_TOAST_DEFAULT,
   IDS_TOAST_DURATION,
 } from "../../../constants/IDSSettingsConstants";
-import { Alert, Checkbox } from "@mui/material";
-// ── Color palette (same as AccountManage) ────────────────────────────────────
+
+const IDS_COMPACT_MQ = "(max-width: 768px)";
+const IDS_FIELD_BG_READONLY = "#f1f5f9";
+const IDS_LABEL_COL_WIDTH = 188;
+const IDS_FIELD_COL_GAP = 16;
+const IDS_FORM_PAD_X = 28;
+const CARD_RADIUS = 10;
+const FIELD_RADIUS = 6;
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
+  sectionHeading: "#30415A",
 };
 
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
-
-// ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -74,19 +69,20 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
-const nativeFieldInteraction = {
+const inputInteraction = {
   onFocus: (e) => {
-    if (e.target.disabled) return;
+    if (e.target.disabled || e.target.readOnly) return;
     setFieldFocus(e.target);
   },
   onBlur: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
     setFieldDefault(e.target);
   },
   onMouseEnter: (e) => {
-    if (e.target.disabled) return;
+    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -94,6 +90,7 @@ const nativeFieldInteraction = {
     }
   },
   onMouseLeave: (e) => {
+    if (e.target.disabled || e.target.readOnly) return;
     if (document.activeElement === e.target) {
       setFieldFocus(e.target);
     } else {
@@ -102,131 +99,117 @@ const nativeFieldInteraction = {
   },
 };
 
-const inputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
-  if (!hasError) return inputInteraction;
-  const ring = (el, focused) => {
-    el.style.borderColor = errorColor;
-    el.style.borderWidth = "1px";
-    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
-  };
-  return {
-    onFocus: (e) => ring(e.target, true),
-    onBlur: (e) => ring(e.target, false),
-    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
-    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
-  };
-};
-
-const systemToolsFieldInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 14,
+const systemFieldInputStyle = {
   width: "100%",
-  backgroundColor: "#f8fafc",
-  outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  minWidth: 0,
+  maxWidth: "100%",
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
   boxSizing: "border-box",
-  boxShadow: "none",
-};
-
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
-
-const systemToolsEditableFieldInputStyle = {
-  ...systemToolsFieldInputStyle,
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-};
-const systemToolsEditableFieldInputStyleCompact = {
-  ...systemToolsFieldInputStyle,
-  padding: "4px 10px",
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_EDITABLE,
-};
-const systemToolsReadOnlyFieldTextAreaStyle = {
+  background: "#fff",
+  lineHeight: 1.35,
+  minHeight: 36,
+  height: 36,
   fontSize: 13,
-  padding: "12px",
-  backgroundColor: SYSTEM_TOOLS_FILL_BG_READ_ONLY,
   border: `1px solid ${OUTLINED_BORDER}`,
-  color: "#3E5475",
   outline: "none",
-  fontFamily: "monospace",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  boxSizing: "border-box",
+  color: C.valueText,
   boxShadow: "none",
-  borderRadius: 6,
-  width: "100%",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const advancedFormInlineFooterStyle = {
+const idsNumberInputStyle = {
+  ...systemFieldInputStyle,
+  maxWidth: 140,
+};
+
+const idsFieldRowStyle = {
   display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
+  flexDirection: "row",
+  alignItems: "flex-start",
+  width: "100%",
+  gap: IDS_FIELD_COL_GAP,
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
+const idsFieldLabelWrapStyle = {
+  flex: `0 0 ${IDS_LABEL_COL_WIDTH}px`,
+  width: IDS_LABEL_COL_WIDTH,
+  minWidth: IDS_LABEL_COL_WIDTH,
+  maxWidth: IDS_LABEL_COL_WIDTH,
+  paddingTop: 9,
+};
+
+const idsFieldControlWrapStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  width: "100%",
+};
+
+const idsFooterBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
+
+const idsCheckboxSx = {
+  padding: 0,
   margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
 };
 
 const tooltipProps = {
   arrow: true,
   placement: "top",
   slotProps: {
+    popper: {
+      modifiers: [
+        {
+          name: "offset",
+          options: { offset: [0, 8] },
+        },
+        {
+          name: "preventOverflow",
+          options: { padding: 8 },
+        },
+      ],
+    },
     tooltip: {
       sx: {
-        bgcolor: "#fff",
-        color: "#334155",
+        backgroundColor: "#fff",
+        color: "#333",
         border: "1px solid #d1d5db",
-        fontSize: 12,
-        maxWidth: 500,
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
-    arrow: {
-      sx: {
-        color: "#fff",
-      },
-    },
+    arrow: { sx: { color: "#fff" } },
   },
 };
 
+const IDSTooltipLabel = ({ title, children, style }) => {
+  const labelStyle = {
+    display: "inline-block",
+    maxWidth: "100%",
+    ...style,
+  };
 
-// ── Button Component (same as AccountManage) ─────────────────────────────────
+  if (!title) {
+    return <span style={labelStyle}>{children}</span>;
+  }
+
+  return (
+    <Tooltip title={title} {...tooltipProps}>
+      <span style={{ ...labelStyle, cursor: "help" }}>{children}</span>
+    </Tooltip>
+  );
+};
+
 const Btn = ({
   children,
   onClick,
@@ -234,10 +217,6 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  startIcon,
-
-  component,
- 
 }) => {
   const styles = {
     default: {
@@ -251,51 +230,28 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    error: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `1px solid ${C.errorRed}`,
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
   };
+
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
@@ -315,11 +271,9 @@ const Btn = ({
           : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
   };
 
-  const Component = component || "button";
-
   return (
-    <Component
-      type={type}
+    <button
+      type={type || "button"}
       onClick={onClick}
       disabled={disabled}
       style={{
@@ -328,15 +282,16 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -359,64 +314,291 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
       {children}
-    </Component>
+    </button>
   );
 };
 
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  boxSizing: "border-box",
+const IDSFieldRow = ({ label, tooltip, children, alignCenter = false }) => {
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        lineHeight: 1.4,
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  return (
+    <div
+      style={{
+        ...idsFieldRowStyle,
+        alignItems: alignCenter ? "center" : "flex-start",
+      }}
+    >
+      <div
+        style={{
+          ...idsFieldLabelWrapStyle,
+          paddingTop: alignCenter ? 0 : 9,
+        }}
+      >
+        {tooltip ? (
+          <Tooltip title={tooltip} {...tooltipProps}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
+      <div style={idsFieldControlWrapStyle}>{children}</div>
+    </div>
+  );
 };
 
-const IDSSettingsPageWrapStyle = {
+const idsPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const IDSSettingsPageInnerStyle = {
+const idsPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
+  display: "flex",
+  flexDirection: "column",
 };
 
+const idsTableContainerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: 0,
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
 
-const blueBarStyle = {    
+const idsHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  marginBottom: 0,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: `10px ${IDS_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
+const idsBodyStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
+  padding: `20px ${IDS_FORM_PAD_X}px 24px`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const idsConfigPanelStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 372,
+};
+
+const idsConfigBodyStyle = {
+  flex: "1 1 auto",
+  padding: "18px 18px 20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  minHeight: 0,
+};
+
+const idsConfigFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  padding: "10px 18px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+  flexShrink: 0,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  minHeight: 50,
+};
+
+const idsTableGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr)",
+  gap: "12px 16px",
+  width: "100%",
+  alignItems: "center",
+};
+
+const idsTableHeaderStyle = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: C.labelText,
+  lineHeight: 1.35,
+};
+
+const idsTypeCellStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  minWidth: 0,
+};
+
+const idsTypeLabelStyle = {
+  fontSize: 13,
+  color: C.valueText,
+  fontWeight: 500,
+  lineHeight: 1.35,
+};
+
+const idsMobileCardStyle = {
+  padding: 14,
+  borderRadius: 8,
+  background: "#f8fafc",
+  border: `1px solid ${C.divider}`,
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+};
+
+const idsMobileFieldGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: 12,
+};
+
+const idsMobileFieldLabelStyle = {
+  fontSize: 12,
+  color: C.labelText,
+  fontWeight: 600,
+  marginBottom: 6,
+  display: "block",
+};
+
+const idsOutputPanelStyle = {
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  background: C.cardBg,
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.02)",
+};
+
+const idsOutputHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  padding: "10px 18px",
+  borderBottom: `1px solid ${C.divider}`,
+  backgroundColor: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const idsOutputHeaderTitleStyle = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: C.labelText,
+  lineHeight: 1.35,
+};
+
+const idsOutputBodyStyle = {
+  backgroundColor: IDS_FIELD_BG_READONLY,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  overflow: "hidden",
+};
+
+const idsOutputTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 160,
+  maxHeight: 280,
+  margin: 0,
+  padding: "12px 16px 16px",
+  border: "none",
+  borderRadius: 0,
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 13,
+  lineHeight: 1.6,
+  fontFamily: "monospace",
+  color: C.labelText,
+  backgroundColor: "transparent",
+  whiteSpace: "pre-wrap",
+  cursor: "default",
+};
+
+const idsFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const IDSBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>{IDS_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{IDS_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{IDS_PAGE_TITLE}</span>
+  </div>
+);
+
 const IDSSettings = () => {
+  const isCompact = useMediaQuery(IDS_COMPACT_MQ);
   const [form, setForm] = useState(IDS_INITIAL_FORM);
   const [log, setLog] = useState(IDS_WARNING_LOG);
   const [toast, setToast] = useState(IDS_TOAST_DEFAULT);
@@ -429,416 +611,297 @@ const IDSSettings = () => {
   const handleCheckbox = (key) => {
     setForm((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
   const handleEnable = () => {
     setForm((prev) => ({ ...prev, enable: !prev.enable }));
   };
+
   const handleWarningThreshold = (idx, value) => {
     const arr = [...form.warningThresholds];
     arr[idx] = value;
     setForm((prev) => ({ ...prev, warningThresholds: arr }));
   };
+
   const handleBlacklistThreshold = (idx, value) => {
     const arr = [...form.blacklistThresholds];
     arr[idx] = value;
     setForm((prev) => ({ ...prev, blacklistThresholds: arr }));
   };
+
   const handleValidity = (value) => {
     setForm((prev) => ({ ...prev, blacklistValidity: value }));
   };
+
   const handleSave = (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     showToast(IDS_MSG_SAVE_SUCCESS, "success");
   };
-  
+
   const handleReset = () => {
     setForm(IDS_INITIAL_FORM);
     showToast(IDS_MSG_RESET_SUCCESS, "info");
   };
-  
+
   const handleDownload = () => {
     showToast(IDS_MSG_DOWNLOAD_STARTED, "success");
   };
-  return (
-      <div style={IDSSettingsPageWrapStyle} data-native-scroll>
-      <div style={IDSSettingsPageInnerStyle}>
-      
-      {/* ── Alerts ── */}
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast(IDS_TOAST_DEFAULT)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
 
-      {/* ── Breadcrumb ── */}
-      
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
+  const renderThresholdTableHeader = () => (
+    <div style={idsTableGridStyle}>
+      <div style={{ minWidth: 0 }}>
+        <IDSTooltipLabel title={IDS_TOOLTIPS.type} style={idsTableHeaderStyle}>
+          {IDS_TABLE_HEADER_TYPE}
+        </IDSTooltipLabel>
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <IDSTooltipLabel
+          title={IDS_TOOLTIPS.warningThreshold}
+          style={idsTableHeaderStyle}
         >
-          <span>{IDS_BREADCRUMB_ROOT}</span>
-          <span>{IDS_BREADCRUMB_SEPARATOR}</span>
-          <span>{IDS_BREADCRUMB_SECTION}</span>
-          <span>{IDS_BREADCRUMB_SEPARATOR}</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {IDS_PAGE_TITLE}
-          </span>
+          {IDS_TABLE_HEADER_WARNING}
+        </IDSTooltipLabel>
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <IDSTooltipLabel
+          title={IDS_TOOLTIPS.blacklistThreshold}
+          style={idsTableHeaderStyle}
+        >
+          {IDS_TABLE_HEADER_BLACKLIST}
+        </IDSTooltipLabel>
+      </div>
+    </div>
+  );
+
+  const renderThresholdRow = (type, idx) => (
+    <div key={type.key} style={idsTableGridStyle}>
+      <div style={idsTypeCellStyle}>
+        <Checkbox
+          size="small"
+          checked={form[type.key]}
+          onChange={() => handleCheckbox(type.key)}
+          sx={idsCheckboxSx}
+        />
+        <IDSTooltipLabel
+          title={IDS_TOOLTIPS[type.label] || ""}
+          style={idsTypeLabelStyle}
+        >
+          {type.label}
+        </IDSTooltipLabel>
+      </div>
+      <input
+        type="number"
+        value={form.warningThresholds[idx]}
+        onChange={(e) => handleWarningThreshold(idx, Number(e.target.value))}
+        style={idsNumberInputStyle}
+        {...inputInteraction}
+      />
+      <input
+        type="number"
+        value={form.blacklistThresholds[idx]}
+        onChange={(e) =>
+          handleBlacklistThreshold(idx, Number(e.target.value))
+        }
+        style={idsNumberInputStyle}
+        {...inputInteraction}
+      />
+    </div>
+  );
+
+  const renderThresholdTable = () => {
+    if (isCompact) {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {IDS_TYPES.map((type, idx) => (
+            <div key={type.key} style={idsMobileCardStyle}>
+              <div style={idsTypeCellStyle}>
+                <Checkbox
+                  size="small"
+                  checked={form[type.key]}
+                  onChange={() => handleCheckbox(type.key)}
+                  sx={idsCheckboxSx}
+                />
+                <IDSTooltipLabel
+                  title={IDS_TOOLTIPS[type.label] || ""}
+                  style={{ ...idsTypeLabelStyle, fontWeight: 600 }}
+                >
+                  {type.label}
+                </IDSTooltipLabel>
+              </div>
+              <div style={idsMobileFieldGridStyle}>
+                <div>
+                  <span style={idsMobileFieldLabelStyle}>
+                    {IDS_LABEL_WARNING_SHORT}
+                  </span>
+                  <input
+                    type="number"
+                    value={form.warningThresholds[idx]}
+                    onChange={(e) =>
+                      handleWarningThreshold(idx, Number(e.target.value))
+                    }
+                    style={systemFieldInputStyle}
+                    {...inputInteraction}
+                  />
+                </div>
+                <div>
+                  <span style={idsMobileFieldLabelStyle}>
+                    {IDS_LABEL_BLACKLIST_SHORT}
+                  </span>
+                  <input
+                    type="number"
+                    value={form.blacklistThresholds[idx]}
+                    onChange={(e) =>
+                      handleBlacklistThreshold(idx, Number(e.target.value))
+                    }
+                    style={systemFieldInputStyle}
+                    {...inputInteraction}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+      );
+    }
 
-        {/* IDS Settings Section */}
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
-            <span>{IDS_CARD_TITLE}</span>
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {renderThresholdTableHeader()}
+        {IDS_TYPES.map((type, idx) => renderThresholdRow(type, idx))}
+      </div>
+    );
+  };
+
+  return (
+    <div
+      style={{
+        ...idsPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+      data-native-scroll
+    >
+      <div style={idsPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast(IDS_TOAST_DEFAULT)}
+            sx={{
+              ...idsFixedAlertSx,
+              ...(isCompact
+                ? { left: 8, right: 8, top: 12, minWidth: 0, maxWidth: "none" }
+                : {}),
+            }}
+          >
+            {toast.msg}
+          </Alert>
+        )}
+
+        <IDSBreadcrumb />
+
+        <div style={idsTableContainerStyle}>
+          <div style={idsHeaderStyle}>
+            <span>{IDS_PAGE_TITLE}</span>
           </div>
 
-          <form onSubmit={handleSave} className="w-full">
-            <div className="w-full px-5 pt-3 pb-0">
-            <div
-              className="w-full max-w-4xl mx-auto"
-              style={{ marginBottom: 12 }}
-            >
-              {/* Enable Checkbox */}
-              <div
-                className="flex items-center gap-4 mb-3"
-                style={{
-                  borderBottom: `1px solid ${C.divider}`,
-                  paddingBottom: 8,
-                }}
-              >
-               <Tooltip
-  title={IDS_TOOLTIPS.idsSettings}
-  {...tooltipProps}
->
-  <span
-    style={{
-      fontSize: 13,
-      fontWeight: 600,
-      color: C.labelText,
-      minWidth: 100,
-      display: "inline-block",
-    }}
-  >
-    {IDS_LABEL_SETTINGS}
-  </span>
-</Tooltip>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    size="small"
-                    checked={form.enable}
-                    onChange={handleEnable}
-                    sx={{
-                      padding: "4px",
-                      color: "#64748b",
-                      "&.Mui-checked": { color: C.accent },
-                    }}
-                  />
-  <Tooltip
-    title={IDS_TOOLTIPS.enable}
-    {...tooltipProps}
-  >
-    <span style={{ fontSize: 14, color: C.valueText }}>
-      {IDS_LABEL_ENABLE}
-    </span>
-  </Tooltip>
-                </div>
-              </div>
-
-              {/* Table Header - Hidden on mobile, shown on larger screens */}
-              <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-2 items-center w-full mb-3 px-2 py-2 rounded">
-              <Tooltip title={IDS_TOOLTIPS.type} {...tooltipProps}>
-  <span
-    style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
-  >
-    {IDS_TABLE_HEADER_TYPE}
-  </span>
-</Tooltip>
-
-<Tooltip title={IDS_TOOLTIPS.warningThreshold} {...tooltipProps}>
-  <span
-    style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
-  >
-    {IDS_TABLE_HEADER_WARNING}
-  </span>
-</Tooltip>
-
-<Tooltip title={IDS_TOOLTIPS.blacklistThreshold} {...tooltipProps}>
-  <span
-    style={{ fontSize: 12, fontWeight: 700, color: C.labelText }}
-  >
-    {IDS_TABLE_HEADER_BLACKLIST}
-  </span>
-</Tooltip>
-                </div>
-
-              {/* Desktop Layout - Grid table */}
-              <div className="hidden md:grid md:grid-cols-3 gap-x-4 gap-y-3 items-center w-full px-2">
-                {IDS_TYPES.map((type, idx) => (
-                  <React.Fragment key={type.key}>
-                    <div className="flex flex-row items-center gap-2 col-span-1">
-                      <Checkbox
-                        size="small"
-                        checked={form[type.key]}
-                        onChange={() => handleCheckbox(type.key)}
-                        sx={{
-                          padding: "4px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: C.accent },
-                        }}
-                      />
-                  <Tooltip
-  title={IDS_TOOLTIPS[type.label] || ""}
-  {...tooltipProps}
->
-  <span
-    style={{
-      fontSize: 13,
-      color: C.valueText,
-      fontWeight: 500,
-    }}
-  >
-    {type.label}
-  </span>
-</Tooltip>
-                    </div>
-                    <div className="col-span-1 flex items-center">
-                      <input
-                        type="number"
-                        value={form.warningThresholds[idx]}
-                        onChange={(e) =>
-                          handleWarningThreshold(idx, Number(e.target.value))
-                        }
-                        style={{
-                          ...systemToolsEditableFieldInputStyleCompact,
-                          maxWidth: 140,
-                        }}
-                        {...inputInteraction}
-                      />
-                    </div>
-                    <div className="col-span-1 flex items-center">
-                      <input
-                        type="number"
-                        value={form.blacklistThresholds[idx]}
-                        onChange={(e) =>
-                          handleBlacklistThreshold(idx, Number(e.target.value))
-                        }
-                        style={{
-                          ...systemToolsEditableFieldInputStyleCompact,
-                          maxWidth: 140,
-                        }}
-                        {...inputInteraction}
-                      />
-                    </div>
-                  </React.Fragment>
-                ))}
-              </div>
-
-              {/* Mobile Layout - Stacked cards */}
-              <div className="md:hidden space-y-3">
-                {IDS_TYPES.map((type, idx) => (
+          <div style={idsBodyStyle}>
+            <div style={idsConfigPanelStyle}>
+              <div style={idsConfigBodyStyle}>
+                <IDSFieldRow
+                  label={IDS_LABEL_SETTINGS}
+                  tooltip={IDS_TOOLTIPS.idsSettings}
+                  alignCenter
+                >
                   <div
-                    key={type.key}
-                    className="p-4 rounded-lg"
                     style={{
-                      backgroundColor: "#f8fafc",
-                      border: `1px solid ${C.cardBorder}`,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      minHeight: 36,
                     }}
                   >
-                    <div className="flex items-center gap-2 mb-3">
-                      <Checkbox
-                        size="small"
-                        checked={form[type.key]}
-                        onChange={() => handleCheckbox(type.key)}
-                        sx={{
-                          padding: "4px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: C.accent },
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: 13,
-                          color: C.valueText,
-                          fontWeight: 600,
-                        }}
-                      >
-                        {type.label}
+                    <Checkbox
+                      size="small"
+                      checked={form.enable}
+                      onChange={handleEnable}
+                      sx={idsCheckboxSx}
+                    />
+                    <Tooltip title={IDS_TOOLTIPS.enable} {...tooltipProps}>
+                      <span style={{ fontSize: 13, color: C.valueText }}>
+                        {IDS_LABEL_ENABLE}
                       </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col">
-                        <label
-                          style={{
-                            fontSize: 12,
-                            color: C.labelText,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {IDS_LABEL_WARNING_SHORT}
-                        </label>
-                        <input
-                          type="number"
-                          value={form.warningThresholds[idx]}
-                          onChange={(e) =>
-                            handleWarningThreshold(idx, Number(e.target.value))
-                          }
-                          style={{
-                            ...systemToolsEditableFieldInputStyleCompact,
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                      <div className="flex flex-col">
-                        <label
-                          style={{
-                            fontSize: 12,
-                            color: C.labelText,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {IDS_LABEL_BLACKLIST_SHORT}
-                        </label>
-                        <input
-                          type="number"
-                          value={form.blacklistThresholds[idx]}
-                          onChange={(e) =>
-                            handleBlacklistThreshold(
-                              idx,
-                              Number(e.target.value),
-                            )
-                          }
-                          style={{
-                            ...systemToolsEditableFieldInputStyleCompact,
-                          }}
-                          {...inputInteraction}
-                        />
-                      </div>
-                    </div>
+                    </Tooltip>
                   </div>
-                ))}
+                </IDSFieldRow>
+
+                {renderThresholdTable()}
+
+                <div
+                  style={{
+                    borderTop: `1px solid ${C.divider}`,
+                    paddingTop: 16,
+                  }}
+                >
+                  <IDSFieldRow
+                    label={IDS_LABEL_BLACKLIST_VALIDITY}
+                    tooltip={IDS_TOOLTIPS.blacklistValidity}
+                    alignCenter
+                  >
+                    <input
+                      type="number"
+                      value={form.blacklistValidity}
+                      onChange={(e) => handleValidity(Number(e.target.value))}
+                      style={idsNumberInputStyle}
+                      {...inputInteraction}
+                    />
+                  </IDSFieldRow>
+                </div>
               </div>
 
-              {/* Blacklist Validity */}
-              <div
-  className="flex items-center gap-4 mt-3 pt-3"
-  style={{
-    borderTop: `1px solid ${C.divider}`,
-  }}
->
-  <div style={{ width: 290 }}>
-    <Tooltip
-      title={IDS_TOOLTIPS.blacklistValidity}
-      {...tooltipProps}
-    >
-      <span
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          display: "inline-block",
-          width: "100%",
-          marginLeft: 42,
-
-        }}
-      >
-        {IDS_LABEL_BLACKLIST_VALIDITY}
-      </span>
-    </Tooltip>
-  </div>
-
-  <input
-    type="number"
-    value={form.blacklistValidity}
-    onChange={(e) => handleValidity(Number(e.target.value))}
-    style={{
-      ...systemToolsEditableFieldInputStyle,
-      width: 140,
-    }}
-    {...inputInteraction}
-  />
-</div>
-            </div>
-            </div>
-
-            <div
-              style={{
-                ...advancedFormInlineFooterStyle,
-                width: "100%",
-                marginLeft: 0,
-                marginRight: 0,
-              }}
-            >
-              <Btn
-                type="button"
-                variant="cancel"
-                onClick={handleReset}
-                style={advancedFormBtnStyle}
-              >
-                {IDS_BTN_RESET}
-              </Btn>
-              <Btn type="submit" variant="primary" style={advancedFormBtnStyle}>
-                {IDS_BTN_SAVE}
-              </Btn>
-            </div>
-          </form>
-        </div>
-
-        {/* IDS Warning Log Section */}
-        <div style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
-          <div style={blueBarStyle}>
-            <span>{IDS_CARD_TITLE_WARNING_LOG}</span>
-          </div>
-
-          <div className="px-5 pt-3 pb-2">
-            <div className="w-full max-w-4xl mx-auto flex flex-col gap-2">
-              {/* Log Display Area */}
-              <textarea
-                className="w-full rounded resize-y"
-                style={{
-                  ...systemToolsReadOnlyFieldTextAreaStyle,
-                  minHeight: 120,
-                  maxHeight: 200,
-                  color: C.valueText,
-                }}
-                value={log}
-                readOnly
-                {...inputInteraction}
-              />
-
-              {/* Download Button */}
-              <div className="flex justify-center">
+              <div style={idsConfigFooterStyle}>
                 <Btn
+                  type="button"
+                  variant="cancel"
+                  onClick={handleReset}
+                  style={idsFooterBtnStyle}
+                >
+                  {IDS_BTN_RESET}
+                </Btn>
+                <Btn
+                  type="button"
                   variant="primary"
+                  onClick={handleSave}
+                  style={idsFooterBtnStyle}
+                >
+                  {IDS_BTN_SAVE}
+                </Btn>
+              </div>
+            </div>
+
+            <div style={idsOutputPanelStyle}>
+              <div style={idsOutputHeaderStyle}>
+                <span style={idsOutputHeaderTitleStyle}>
+                  {IDS_CARD_TITLE_WARNING_LOG}
+                </span>
+                <Btn
+                  variant="cancel"
                   onClick={handleDownload}
-                  style={{ minWidth: 110, height: 34 }}
+                  style={idsFooterBtnStyle}
                 >
                   {IDS_BTN_DOWNLOAD}
                 </Btn>
               </div>
+              <div style={idsOutputBodyStyle}>
+                <textarea
+                  style={idsOutputTextareaStyle}
+                  value={log}
+                  readOnly
+                  tabIndex={-1}
+                  onFocus={(e) => e.target.blur()}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Note */}
         <p
           style={{
             margin: "16px 0 0",
@@ -846,9 +909,9 @@ const IDSSettings = () => {
             fontSize: 12,
             color: C.accent,
             width: "100%",
-            whiteSpace: "nowrap",
-            overflowX: "auto",
-            lineHeight: 1.45,
+            lineHeight: 1.5,
+            padding: isCompact ? "0 4px" : 0,
+            boxSizing: "border-box",
           }}
         >
           {IDS_LOG_NOTE}

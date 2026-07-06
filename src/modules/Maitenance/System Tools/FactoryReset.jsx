@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import {
-  FR_TITLE,
-  FR_INSTRUCTION,
-  FR_BUTTON,
-  FR_BREADCRUMB,
-  FR_CONFIRM,
-  FR_COMMANDS,
-  FR_MESSAGES,
-  FR_STATUS,
-  FR_DEFAULT_TOAST,
-  FR_TOAST_DURATION,
+  FACTORY_RESET_TITLE,
+  FACTORY_RESET_INSTRUCTION,
+  FACTORY_RESET_BUTTON_LABELS,
+  FACTORY_RESET_BUTTON_VARIANTS,
+  FACTORY_RESET_BUTTON_STYLE,
+  FACTORY_RESET_BREADCRUMB,
+  FACTORY_RESET_CONFIRM,
+  FACTORY_RESET_COMMANDS,
+  FACTORY_RESET_MESSAGES,
+  FACTORY_RESET_STATUS,
+  FACTORY_RESET_TOAST_DEFAULT,
+  FACTORY_RESET_TOAST_DURATION_MS,
 } from "../../../constants/FactoryResetConstants";
 import { Alert, CircularProgress } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
@@ -19,14 +21,12 @@ const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -41,8 +41,7 @@ const FIELD_RADIUS = 6;
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
-
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 // ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
@@ -170,11 +169,7 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
       {children}
     </Component>
   );
@@ -194,7 +189,7 @@ const tableContainerStyle = {
   boxSizing: "border-box",
 };
 
-const FactoryResetPageWrapStyle = {    
+const FactoryResetPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
@@ -227,16 +222,19 @@ const blueBarStyle = {
 
 const FactoryReset = () => {
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(FR_DEFAULT_TOAST);
+  const [toast, setToast] = useState(FACTORY_RESET_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(FR_DEFAULT_TOAST), FR_TOAST_DURATION);
+    setTimeout(
+      () => setToast(FACTORY_RESET_TOAST_DEFAULT),
+      FACTORY_RESET_TOAST_DURATION_MS,
+    );
   };
 
   const handleReset = async () => {
-    if (window.confirm(FR_CONFIRM.first)) {
-      if (window.confirm(FR_CONFIRM.second)) {
+    if (window.confirm(FACTORY_RESET_CONFIRM.FIRST)) {
+      if (window.confirm(FACTORY_RESET_CONFIRM.SECOND)) {
         await performReset();
       }
     }
@@ -246,25 +244,25 @@ const FactoryReset = () => {
     setLoading(true);
     try {
       // Restore astdb from the factory SQL file
-      const cmd = FR_COMMANDS.reset;
+      const cmd = FACTORY_RESET_COMMANDS.RESET;
       const apiResponse = await postLinuxCmd({ cmd });
 
       if (apiResponse?.response) {
-        showToast(FR_MESSAGES.success, "success");
+        showToast(FACTORY_RESET_MESSAGES.SUCCESS, "success");
       } else {
         const output = String(apiResponse?.responseData || "").trim();
-        showToast(output || FR_MESSAGES.commandFailed, "error");
+        showToast(output || FACTORY_RESET_MESSAGES.COMMAND_FAILED, "error");
       }
     } catch (error) {
       console.error("Factory reset error:", error);
-      showToast(error.message || FR_MESSAGES.resetFailed, "error");
+      showToast(error.message || FACTORY_RESET_MESSAGES.RESET_FAILED, "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-      <div style={FactoryResetPageWrapStyle} data-native-scroll>
+    <div style={FactoryResetPageWrapStyle} data-native-scroll>
       <div style={FactoryResetPageInnerStyle}>
         {/* ── Breadcrumb ── */}
         <div
@@ -276,14 +274,15 @@ const FactoryReset = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>{FR_BREADCRUMB[0]}</span>
+          <span>{FACTORY_RESET_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>{FR_BREADCRUMB[1]}</span>
+          <span>{FACTORY_RESET_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {FR_BREADCRUMB[2]}
+            {FACTORY_RESET_BREADCRUMB[2]}
           </span>
         </div>
 
@@ -291,7 +290,7 @@ const FactoryReset = () => {
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast(FR_DEFAULT_TOAST)}
+            onClose={() => setToast(FACTORY_RESET_TOAST_DEFAULT)}
             sx={{
               position: "fixed",
               top: 20,
@@ -308,7 +307,7 @@ const FactoryReset = () => {
         {/* Content Box */}
         <div style={tableContainerStyle}>
           <div style={{ ...blueBarStyle, justifyContent: "left" }}>
-            <span>{FR_TITLE}</span>
+            <span>{FACTORY_RESET_TITLE}</span>
           </div>
           <div
             style={{
@@ -327,15 +326,17 @@ const FactoryReset = () => {
                 fontWeight: 500,
               }}
             >
-              {FR_INSTRUCTION}
+              {FACTORY_RESET_INSTRUCTION}
             </span>
             <Btn
-              variant="primary"
+              variant={FACTORY_RESET_BUTTON_VARIANTS.RESET}
               onClick={handleReset}
               disabled={loading}
-              style={{ minWidth: 140, height: 38, fontSize: 13 }}
+              style={FACTORY_RESET_BUTTON_STYLE}
             >
-              {loading ? FR_STATUS.resetting : FR_BUTTON}
+              {loading
+                ? FACTORY_RESET_STATUS.RESETTING
+                : FACTORY_RESET_BUTTON_LABELS.RESET}
             </Btn>
           </div>
         </div>
@@ -347,7 +348,7 @@ const FactoryReset = () => {
           <div className="bg-white rounded-md shadow-xl px-10 py-6 flex flex-col items-center gap-4 max-w-sm text-center">
             <CircularProgress />
             <div className="text-gray-700 text-sm whitespace-pre-line font-medium">
-              {FR_STATUS.overlayMessage}
+              {FACTORY_RESET_STATUS.OVERLAY_MESSAGE}
             </div>
           </div>
         </div>

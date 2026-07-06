@@ -1,74 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
-  MR_TITLE,
-  MR_BUTTONS,
-  MR_NOTE,
-  MR_PLACEHOLDER,
-  MR_BREADCRUMB,
-  MR_COMMANDS,
-  MR_MESSAGES,
-  MR_DEFAULT_TOAST,
-  MR_TOAST_DURATION,
+  MODIFICATION_RECORD_CARD_TITLE,
+  MODIFICATION_RECORD_BUTTON_LABELS,
+  MODIFICATION_RECORD_BUTTON_VARIANTS,
+  MODIFICATION_RECORD_BUTTON_STYLE,
+  MODIFICATION_RECORD_NOTE,
+  MODIFICATION_RECORD_TEXTAREA_PLACEHOLDER,
+  MODIFICATION_RECORD_BREADCRUMB,
+  MODIFICATION_RECORD_COMMANDS,
+  MODIFICATION_RECORD_MESSAGES,
+  MODIFICATION_RECORD_TOAST_DEFAULT,
+  MODIFICATION_RECORD_TOAST_DURATION_MS,
 } from "../../../constants/ModificationRecordConstants";
-import { Alert, CircularProgress } from "@mui/material";
+import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
 import { postLinuxCmd } from "../../../api/apiService";
-// ── Color palette (same as UserManage) ────────────────────────────────────────
+
+const MODIFICATION_RECORD_COMPACT_MQ = "(max-width: 768px)";
+const MODIFICATION_RECORD_FORM_PAD_X = 28;
+const CARD_RADIUS = 10;
+
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
 };
 
-const CARD_RADIUS = 10;
-const FIELD_RADIUS = 6;
-
-// ── Local field UI (matches Network.jsx design language) ──
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
-
-const advancedFormInlineFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "calc(100% + 40px)",
-  marginLeft: -20,
-  marginRight: -20,
-  marginTop: 0,
-  marginBottom: 0,
-  padding: "10px 20px 10px",
-  borderTop: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
-};
-
-
-// ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -76,7 +39,6 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  component,
   startIcon,
 }) => {
   const styles = {
@@ -90,49 +52,28 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
   };
-
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
+    }[variant] || "#e2e8f0";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
 
@@ -152,9 +93,8 @@ const Btn = ({
           : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
   };
 
-  const Component = component || "button";
   return (
-    <Component
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}
@@ -170,9 +110,10 @@ const Btn = ({
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -196,107 +137,238 @@ const Btn = ({
       }}
     >
       {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
+        <span style={{ display: "inline-flex" }}>{startIcon}</span>
       )}
       {children}
-    </Component>
+    </button>
   );
 };
 
-const tableContainerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: 0,
-  display: "flex",
-  flexDirection: "column",
-  background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
-  overflow: "hidden",
-  boxSizing: "border-box",
-};
-
-const ModificationRecordPageWrapStyle = {
+const mrPageWrapStyle = {
   backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
 };
 
-const ModificationRecordPageInnerStyle = {
+const mrPageInnerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: "0 auto",
 };
 
+const mrCardStyle = {
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  boxShadow: C.cardShadow,
+  overflow: "hidden",
+  boxSizing: "border-box",
+};
 
-const blueBarStyle = {
+const mrHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "7px 14px",
-  flexWrap: "wrap",
   gap: 12,
+  flexWrap: "wrap",
+  padding: `10px ${MODIFICATION_RECORD_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
-  color: "#3E5475",
+  color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
+const mrHeaderTitleStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  lineHeight: 1.35,
+};
+
+const mrBodyWrapStyle = {
+  position: "relative",
+  width: "100%",
+  background: C.cardBg,
+};
+
+const mrTextareaBodyStyle = {
+  backgroundColor: C.cardBg,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+  overflow: "hidden",
+};
+
+const mrTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 450,
+  margin: 0,
+  padding: "24px",
+  border: "none",
+  borderRadius: 0,
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 13,
+  lineHeight: 1.6,
+  fontFamily: "monospace",
+  color: C.valueText,
+  backgroundColor: C.cardBg,
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+  cursor: "default",
+};
+
+const mrLoadingOverlayStyle = {
+  position: "absolute",
+  inset: 0,
+  backgroundColor: "rgba(255, 255, 255, 0.72)",
+  backdropFilter: "blur(2px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 10,
+};
+
+const mrLoadingBoxStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  background: C.cardBg,
+  padding: "14px 20px",
+  borderRadius: 8,
+  border: `1px solid ${C.cardBorder}`,
+  boxShadow: "0 4px 12px rgba(15, 23, 42, 0.08)",
+  fontSize: 13,
+  fontWeight: 500,
+  color: C.valueText,
+};
+
+const mrFooterStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 10,
+  padding: "10px 18px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+  minHeight: 50,
+  boxSizing: "border-box",
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
+};
+
+const mrNoteStyle = {
+  margin: "16px 0 0",
+  textAlign: "center",
+  fontSize: 12,
+  color: C.accent,
+  width: "100%",
+  lineHeight: 1.45,
+};
+
+const mrFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const ModificationRecordBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{MODIFICATION_RECORD_BREADCRUMB[0]}</span>
+    <span>&gt;</span>
+    <span>{MODIFICATION_RECORD_BREADCRUMB[1]}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {MODIFICATION_RECORD_BREADCRUMB[2]}
+    </span>
+  </div>
+);
+
 const ModificationRecord = () => {
+  const isCompact = useMediaQuery(MODIFICATION_RECORD_COMPACT_MQ);
+  const outputRef = useRef(null);
   const [record, setRecord] = useState("");
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(MR_DEFAULT_TOAST);
+  const [toast, setToast] = useState(MODIFICATION_RECORD_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(MR_DEFAULT_TOAST), MR_TOAST_DURATION);
+    setTimeout(
+      () => setToast(MODIFICATION_RECORD_TOAST_DEFAULT),
+      MODIFICATION_RECORD_TOAST_DURATION_MS,
+    );
   };
 
-  // Handle check button click - fetch latest 100 lines from /var/log/auth.log
+  useEffect(() => {
+    if (!outputRef.current || !record) return;
+    outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [record]);
+
   const handleCheck = async () => {
     try {
       setLoading(true);
-      const fetchCmd = MR_COMMANDS.fetchLatest;
-      const response = await postLinuxCmd({ cmd: fetchCmd });
+      const response = await postLinuxCmd({
+        cmd: MODIFICATION_RECORD_COMMANDS.FETCH_LATEST,
+      });
       const logData = String(response?.responseData || "").trim();
 
-      if (logData.includes(MR_MESSAGES.readError) || !logData) {
-        setRecord(MR_MESSAGES.fileUnreadableOrEmpty);
+      if (
+        logData.includes(MODIFICATION_RECORD_MESSAGES.READ_ERROR) ||
+        !logData
+      ) {
+        setRecord(MODIFICATION_RECORD_MESSAGES.FILE_UNREADABLE_OR_EMPTY);
       } else {
         setRecord(logData);
       }
     } catch (error) {
       console.error("Error fetching auth.log:", error);
-        setRecord(MR_MESSAGES.fetchFailed);
+      setRecord(MODIFICATION_RECORD_MESSAGES.FETCH_FAILED);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle download button click - download whole /var/log/auth.log file
   const handleDownload = async () => {
     try {
       setLoading(true);
-      const fetchCmd = MR_COMMANDS.fetchAll;
-      const response = await postLinuxCmd({ cmd: fetchCmd });
+      const response = await postLinuxCmd({
+        cmd: MODIFICATION_RECORD_COMMANDS.FETCH_ALL,
+      });
       const logData = String(response?.responseData || "").trim();
 
-      if (logData.includes(MR_MESSAGES.readError)) {
-        showToast(MR_MESSAGES.fileUnreadable, "error");
+      if (logData.includes(MODIFICATION_RECORD_MESSAGES.READ_ERROR)) {
+        showToast(MODIFICATION_RECORD_MESSAGES.FILE_UNREADABLE, "error");
         return;
       }
 
       if (!logData) {
-        showToast(MR_MESSAGES.fileEmpty, "error");
+        showToast(MODIFICATION_RECORD_MESSAGES.FILE_EMPTY, "error");
         return;
       }
 
@@ -311,7 +383,7 @@ const ModificationRecord = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading auth.log:", error);
-      showToast(MR_MESSAGES.downloadFailed, "error");
+      showToast(MODIFICATION_RECORD_MESSAGES.DOWNLOAD_FAILED, "error");
     } finally {
       setLoading(false);
     }
@@ -319,118 +391,88 @@ const ModificationRecord = () => {
 
   return (
     <div
-      style={ModificationRecordPageWrapStyle} data-native-scroll>
-      <div style={ModificationRecordPageInnerStyle}>
-        {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>{MR_BREADCRUMB[0]}</span>
-          <span>&gt;</span>
-          <span>{MR_BREADCRUMB[1]}</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {MR_BREADCRUMB[2]}
-          </span>
-        </div>
-
-        {/* Alerts */}
+      style={{
+        ...mrPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+      data-native-scroll
+    >
+      <div style={mrPageInnerStyle}>
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast(MR_DEFAULT_TOAST)}
+            onClose={() => setToast(MODIFICATION_RECORD_TOAST_DEFAULT)}
             sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
+              ...mrFixedAlertSx,
+              ...(isCompact
+                ? { left: 8, right: 8, top: 12, minWidth: 0, maxWidth: "none" }
+                : {}),
             }}
           >
             {toast.msg}
           </Alert>
         )}
 
-        {/* Content Box */}
-        <div style={tableContainerStyle}>
-          <div style={{ ...blueBarStyle, justifyContent: "left" }}>
-            <span>{MR_TITLE}</span>
+        <ModificationRecordBreadcrumb />
+
+        <div style={mrCardStyle}>
+          <div style={mrHeaderStyle}>
+            <span style={mrHeaderTitleStyle}>
+              {MODIFICATION_RECORD_CARD_TITLE}
+            </span>
           </div>
-          <div style={{ padding: "8px 32px 0" }}>
-            <div
-              className="w-full min-h-[400px] max-h-[60vh] text-sm p-4 font-mono overflow-auto border-0 outline-none"
-              style={{
-                backgroundColor: C.cardBg,
-                color: C.valueText,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                resize: "none",
-                marginBottom: 12,
-              }}
-            >
-              {record || MR_PLACEHOLDER}
+
+          <div style={mrBodyWrapStyle}>
+            {loading && (
+              <div style={mrLoadingOverlayStyle}>
+                <div style={mrLoadingBoxStyle}>
+                  <CircularProgress size={22} sx={{ color: C.accent }} />
+                  <span>{MODIFICATION_RECORD_BUTTON_LABELS.LOADING}</span>
+                </div>
+              </div>
+            )}
+            <div style={mrTextareaBodyStyle}>
+              <textarea
+                ref={outputRef}
+                value={record}
+                readOnly
+                spellCheck={false}
+                tabIndex={-1}
+                onFocus={(e) => e.target.blur()}
+                style={mrTextareaStyle}
+                placeholder={MODIFICATION_RECORD_TEXTAREA_PLACEHOLDER}
+              />
             </div>
           </div>
 
-          <div style={advancedFormInlineFooterStyle}>
+          <div style={mrFooterStyle}>
             <Btn
-              variant="primary"
+              variant={MODIFICATION_RECORD_BUTTON_VARIANTS.CHECK}
               type="button"
               onClick={handleCheck}
               disabled={loading}
-              style={advancedFormBtnStyle}
+              startIcon={
+                loading ? <CircularProgress size={14} color="inherit" /> : null
+              }
+              style={MODIFICATION_RECORD_BUTTON_STYLE}
             >
-              {loading ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <CircularProgress size={16} sx={{ color: "inherit" }} />
-                  Loading...
-                </div>
-              ) : (
-                MR_BUTTONS.check
-              )}
+              {loading
+                ? MODIFICATION_RECORD_BUTTON_LABELS.LOADING
+                : MODIFICATION_RECORD_BUTTON_LABELS.CHECK}
             </Btn>
             <Btn
-              variant="cancel"
+              variant={MODIFICATION_RECORD_BUTTON_VARIANTS.DOWNLOAD}
               type="button"
               onClick={handleDownload}
               disabled={loading}
-              style={advancedFormBtnStyle}
+              style={MODIFICATION_RECORD_BUTTON_STYLE}
             >
-              {loading ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <CircularProgress size={16} sx={{ color: "inherit" }} />
-                  Loading...
-                </div>
-              ) : (
-                MR_BUTTONS.download
-              )}
+              {MODIFICATION_RECORD_BUTTON_LABELS.DOWNLOAD}
             </Btn>
           </div>
         </div>
 
-        <p
-          style={{
-            margin: "16px 0 0",
-            textAlign: "center",
-            fontSize: 12,
-            color: C.accent,
-            width: "100%",
-            whiteSpace: "nowrap",
-            overflowX: "auto",
-            lineHeight: 1.45,
-          }}
-        >
-          {MR_NOTE}
-        </p>
+        <p style={mrNoteStyle}>{MODIFICATION_RECORD_NOTE}</p>
       </div>
     </div>
   );

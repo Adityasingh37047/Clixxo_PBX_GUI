@@ -41,7 +41,6 @@ const PING_TEST_FIELD_COL_GAP = 16;
 const PING_TEST_FORM_PAD_X = 28;
 
 const C = {
-  pageBg: "#fbfcfe",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
   cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
@@ -383,11 +382,10 @@ const pingBodyStyle = {
 };
 
 const pingConfigPanelStyle = {
-  background: "#fcfdfe",
+  background: "#ffffff",
   border: `1px solid ${C.divider}`,
   borderRadius: 8,
   overflow: "hidden",
-  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
 };
 
 const pingConfigHeaderStyle = {
@@ -398,7 +396,7 @@ const pingConfigHeaderStyle = {
   flexWrap: "wrap",
   padding: "14px 18px",
   borderBottom: `1px solid ${C.divider}`,
-  background: "linear-gradient(to bottom, #ffffff 0%, #fbfcfe 100%)",
+  background: "#ffffff",
 };
 
 const pingConfigActionsStyle = {
@@ -443,7 +441,16 @@ const pingOutputHeaderStyle = {
   flexWrap: "wrap",
   padding: "12px 16px",
   borderBottom: `1px solid ${C.divider}`,
-  background: pingConfigHeaderStyle.background,
+  background: "#ffffff",
+};
+
+const PING_OUTPUT_BODY_BG = "#f1f5f9";
+
+const pingOutputBodyStyle = {
+  backgroundColor: PING_OUTPUT_BODY_BG,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  overflow: "hidden",
 };
 
 const pingOutputTextareaStyle = {
@@ -452,22 +459,22 @@ const pingOutputTextareaStyle = {
   minHeight: 200,
   maxHeight: 320,
   margin: 0,
-  padding: "16px 18px",
+  padding: "12px 16px 16px",
   border: "none",
+  borderRadius: 0,
   outline: "none",
   resize: "vertical",
   boxSizing: "border-box",
-  fontSize: 12,
+  fontSize: 13,
   lineHeight: 1.6,
-  fontFamily:
-    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
-  color: "#475569",
-  background: "#ffffff",
+  fontFamily: "monospace",
+  color: C.labelText,
+  backgroundColor: "transparent",
   whiteSpace: "pre-wrap",
+  cursor: "default",
 };
 
 const pingPageWrapStyle = {
-  backgroundColor: C.pageBg,
   minHeight: "calc(100vh - 80px)",
   padding: 16,
   boxSizing: "border-box",
@@ -1082,14 +1089,18 @@ const PINGTest = () => {
                   {PING_TEST_BTN_CLEAR}
                 </Btn>
               </div>
-              <textarea
-                ref={outputRef}
-                className={PING_TEST_SCROLL_CLASS}
-                style={pingOutputTextareaStyle}
-                value={info}
-                readOnly
-                placeholder={PING_TEST_OUTPUT_PLACEHOLDER}
-              />
+              <div style={pingOutputBodyStyle}>
+                <textarea
+                  ref={outputRef}
+                  className={PING_TEST_SCROLL_CLASS}
+                  style={pingOutputTextareaStyle}
+                  value={info}
+                  readOnly
+                  tabIndex={-1}
+                  placeholder={PING_TEST_OUTPUT_PLACEHOLDER}
+                  onFocus={(e) => e.target.blur()}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
   DEVICE_LOCK_OPTIONS,
+  DEVICE_LOCK_PAGE_TITLE,
   DEVICE_LOCK_LABELS,
+  DEVICE_LOCK_BUTTON_LABELS,
+  DEVICE_LOCK_BUTTON_VARIANTS,
+  DEVICE_LOCK_BUTTON_STYLE,
   DEVICE_LOCK_BREADCRUMB,
   DEVICE_LOCK_MESSAGES,
   DEVICE_LOCK_DEFAULT_TOAST,
-  DEVICE_LOCK_TOAST_DURATION,
+  DEVICE_LOCK_TOAST_DURATION_MS,
   DEVICE_LOCK_ERROR_HIDE_MS,
 } from "../../../constants/DeviceLockConstants";
-import { Alert, TextField, Checkbox } from "@mui/material";
+import { Alert, Checkbox } from "@mui/material";
 const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -35,7 +37,7 @@ const FIELD_RADIUS = 6;
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -131,64 +133,21 @@ const systemToolsFieldInputStyle = {
 const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
 const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
 
-const muiTextFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    backgroundColor: "#fff",
-    "& fieldset": {
-      borderColor: OUTLINED_BORDER,
-      transition: "border-color 0.2s ease",
-    },
-    "&:hover fieldset": { borderColor: OUTLINED_HOVER },
-    "&.Mui-focused fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-    "&.Mui-focused:hover fieldset": {
-      borderColor: OUTLINED_FOCUS,
-      borderWidth: 2,
-    },
-  },
-};
-
-const muiSelectSx = {
+const deviceLockPasswordInputStyle = {
+  width: "100%",
+  maxWidth: 280,
+  minWidth: 0,
+  height: 32,
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
+  boxSizing: "border-box",
+  background: "#ffffff",
+  lineHeight: 1.35,
   fontSize: 13,
-  backgroundColor: "#fff",
-  "& .MuiOutlinedInput-root": {
-    minHeight: 36,
-    backgroundColor: "#fff",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: 2,
-  },
-};
-
-const systemToolsMuiTextFieldSx = {
-  ...muiTextFieldSx,
-  "& .MuiOutlinedInput-root": {
-    ...muiTextFieldSx["& .MuiOutlinedInput-root"],
-    height: 32,
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: 13,
-    padding: "4px 10px",
-  },
+  border: `1px solid ${OUTLINED_BORDER}`,
+  outline: "none",
+  color: C.valueText,
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
 const advancedFormInlineFooterStyle = {
@@ -207,16 +166,13 @@ const advancedFormInlineFooterStyle = {
   boxSizing: "border-box",
 };
 
-const advancedFormBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
-  margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
-  boxSizing: "border-box",
+const deviceLockCheckboxSx = {
+  padding: "4px",
+  marginRight: "4px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "& .MuiSvgIcon-root": { fontSize: 20 },
 };
-
 
 const Btn = ({
   children,
@@ -333,11 +289,7 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
       {children}
     </Component>
   );
@@ -370,22 +322,11 @@ const DeviceLockPageInnerStyle = {
   margin: "0 auto",
 };
 
-
 const labelBaseStyle = {
   fontSize: 12,
   fontWeight: 600,
   color: C.labelText,
   whiteSpace: "nowrap",
-};
-
-const passwordFieldSx = {
-  ...systemToolsMuiTextFieldSx,
-  width: "100%",
-  maxWidth: 280,
-  margin: 0,
-  "& .MuiFormControl-root": {
-    margin: 0,
-  },
 };
 
 const blueBarStyle = {
@@ -416,7 +357,10 @@ const DeviceLock = () => {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(DEVICE_LOCK_DEFAULT_TOAST), DEVICE_LOCK_TOAST_DURATION);
+    setTimeout(
+      () => setToast(DEVICE_LOCK_DEFAULT_TOAST),
+      DEVICE_LOCK_TOAST_DURATION_MS,
+    );
   };
 
   // Auto-hide error after 5 seconds
@@ -454,8 +398,7 @@ const DeviceLock = () => {
   };
 
   return (
-    <div
-      style={DeviceLockPageWrapStyle} data-native-scroll>
+    <div style={DeviceLockPageWrapStyle} data-native-scroll>
       <div style={DeviceLockPageInnerStyle}>
         {/* Breadcrumb */}
         <div
@@ -467,6 +410,7 @@ const DeviceLock = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>{DEVICE_LOCK_BREADCRUMB[0]}</span>
@@ -514,7 +458,7 @@ const DeviceLock = () => {
 
         <div style={tableContainerStyle}>
           {/* Header */}
-          <div style={blueBarStyle}>{DEVICE_LOCK_LABELS.title}</div>
+          <div style={blueBarStyle}>{DEVICE_LOCK_PAGE_TITLE}</div>
 
           <form onSubmit={handleLock}>
             <div
@@ -562,12 +506,7 @@ const DeviceLock = () => {
                         size="small"
                         checked={!!selectedOptions[opt.value]}
                         onChange={() => handleOptionChange(opt.value)}
-                        sx={{
-                          padding: "4px",
-                          marginRight: "4px",
-                          color: "#64748b",
-                          "&.Mui-checked": { color: C.accent },
-                        }}
+                        sx={deviceLockCheckboxSx}
                       />
                       {opt.label}
                     </label>
@@ -590,25 +529,23 @@ const DeviceLock = () => {
                   <label style={{ ...labelBaseStyle, textAlign: "left" }}>
                     {DEVICE_LOCK_LABELS.password}:
                   </label>
-                  <TextField
+                  <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    sx={passwordFieldSx}
+                    style={deviceLockPasswordInputStyle}
+                    {...inputInteraction}
                     autoComplete="new-password"
                   />
                   <label style={{ ...labelBaseStyle, textAlign: "right" }}>
                     {DEVICE_LOCK_LABELS.confirmPassword}:
                   </label>
-                  <TextField
+                  <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    variant="outlined"
-                    size="small"
-                    sx={passwordFieldSx}
+                    style={deviceLockPasswordInputStyle}
+                    {...inputInteraction}
                     autoComplete="new-password"
                   />
                 </div>
@@ -617,20 +554,20 @@ const DeviceLock = () => {
 
             <div style={advancedFormInlineFooterStyle}>
               <Btn
-                variant="primary"
+                variant={DEVICE_LOCK_BUTTON_VARIANTS.LOCK}
                 onClick={handleLock}
                 type="submit"
-                style={advancedFormBtnStyle}
+                style={DEVICE_LOCK_BUTTON_STYLE}
               >
-                {DEVICE_LOCK_LABELS.lock}
+                {DEVICE_LOCK_BUTTON_LABELS.LOCK}
               </Btn>
               <Btn
-                variant="cancel"
+                variant={DEVICE_LOCK_BUTTON_VARIANTS.RESET}
                 onClick={handleReset}
                 type="button"
-                style={advancedFormBtnStyle}
+                style={DEVICE_LOCK_BUTTON_STYLE}
               >
-                {DEVICE_LOCK_LABELS.reset}
+                {DEVICE_LOCK_BUTTON_LABELS.RESET}
               </Btn>
             </div>
           </form>

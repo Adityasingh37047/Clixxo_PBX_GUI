@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import {
   sipRegisterFields,
   SIP_REGISTER_INITIAL_FORM,
@@ -38,8 +44,6 @@ import {
   Checkbox,
   Radio,
   RadioGroup,
-  Tabs,
-  Tab,
   useMediaQuery,
 } from "@mui/material";
 import {
@@ -50,210 +54,36 @@ import {
   deleteSipTrunk,
   fetchSystemInfo,
 } from "../../../api/apiService";
+
+// ── Shared PBX UI library (byte-identical primitives; SIP-specific Pill, codec
+//    box, field labels, modal styles, and zoom logic stay local below). ──
+import {
+  C,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  FOCUS_RING_SHADOW,
+} from "../../../theme/pbxTokens";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as SipRegisterBreadcrumb,
+  ExtensionTableListLoading as SipRegisterTableListLoading,
+  ExtensionTableListEmptyState as SipRegisterTableListEmptyState,
+  ExtensionModalTabs as SipRegisterModalTabs,
+  ExtensionPagination as SipRegisterPagination,
+  extensionTableCheckboxSx as sipRegisterTableCheckboxSx,
+  extensionFixedAlertSx as sipRegisterFixedAlertSx,
+  extensionPageWrapStyle as sipRegisterPageWrapStyle,
+  extensionPageInnerStyle as sipRegisterPageInnerStyle,
+  extensionCardStyle as sipRegisterCardStyle,
+  extensionToolbarStyle as sipRegisterToolbarStyle,
+  extensionSelectedBadgeStyle as sipRegisterSelectedBadgeStyle,
+  extensionCancelBtnStyle as sipRegisterCancelBtnStyle,
+  extensionPrimaryBtnStyle as sipRegisterPrimaryBtnStyle,
+} from "../../../components/common";
 const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Local page UI (inlined from pbxSharedUi) ──
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  placeholderText: "#9aa3b2",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBg: "#d9dde3",
-  codecBtnBorder: "#c9d0d9",
-};
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-  const Component = component || "button";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary" || variant === "accent"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
-};
-
-const sipRegisterTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 
 const trunkFormCheckboxLabelSx = {
   margin: 0,
@@ -261,11 +91,6 @@ const trunkFormCheckboxLabelSx = {
   marginRight: 0,
   alignItems: "center",
 };
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const sipRegisterOutlinedInputRootSx = {
   backgroundColor: "#fff",
@@ -456,145 +281,6 @@ const nativeFieldInteraction = {
   },
 };
 
-const sipRegisterPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const sipRegisterPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const sipRegisterFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
-};
-
-const SipRegisterBreadcrumb = ({ section, current, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
-  >
-    <span>PBX</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-const SipRegisterTableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const SipRegisterTableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const SIP_REGISTER_MODAL_TAB_BAR_STYLE = {
-  borderBottom: "1px solid #e5e7eb",
-  background: "#ffffff",
-};
-
-const SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR = "#3E5475";
-const SIP_REGISTER_MODAL_TAB_INACTIVE_COLOR = "#374151";
-
-const sipRegisterModalTabsSx = {
-  minHeight: 45,
-  "& .MuiTab-root": {
-    color: SIP_REGISTER_MODAL_TAB_INACTIVE_COLOR,
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 45,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR,
-    fontWeight: 700,
-  },
-};
-
-const SipRegisterModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
-  <div style={SIP_REGISTER_MODAL_TAB_BAR_STYLE}>
-    <Tabs
-      value={value}
-      onChange={(_, next) => onChange(next)}
-      variant={fullWidth ? "fullWidth" : "standard"}
-      TabIndicatorProps={{
-        style: {
-          backgroundColor: SIP_REGISTER_MODAL_TAB_ACTIVE_COLOR,
-          height: 2,
-        },
-      }}
-      sx={sipRegisterModalTabsSx}
-    >
-      {tabs.map((t) => (
-        <Tab key={t.id} label={t.label} value={t.id} />
-      ))}
-    </Tabs>
-  </div>
-);
-
 const TRUNK_SECTION_HEADING_COLOR = "#30415A";
 const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
 const SIP_REGISTER_MODAL_SECTION_BG = "#f8fafc";
@@ -607,33 +293,33 @@ const TrunkModalSectionHeading = ({
 }) => {
   const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
   return (
-  <div
-    style={{
-      margin: isFirst
-        ? isLaptopNarrow
-          ? "16px 0 24px 0"
-          : "0 0 24px 0"
-        : "16px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
+    <div
       style={{
-        position: "absolute",
-        top: -10,
-        left: isLaptopNarrow ? 0 : titleLeft,
-        background: labelBackground,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: TRUNK_SECTION_HEADING_COLOR,
+        margin: isFirst
+          ? isLaptopNarrow
+            ? "16px 0 24px 0"
+            : "0 0 24px 0"
+          : "16px 0 24px 0",
+        position: "relative",
+        width: "100%",
       }}
     >
-      {title}
-    </span>
-  </div>
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: isLaptopNarrow ? 0 : titleLeft,
+          background: labelBackground,
+          paddingRight: 8,
+          fontSize: 14,
+          fontWeight: 600,
+          color: TRUNK_SECTION_HEADING_COLOR,
+        }}
+      >
+        {title}
+      </span>
+    </div>
   );
 };
 
@@ -726,7 +412,7 @@ const sipRegisterCodecDualListBtnStyle = {
 const sipRegisterCodecDualListReorderBtnStyle = {
   ...sipRegisterCodecDualListBtnStyle,
   fontSize: 11,
-  fontWeight: 500
+  fontWeight: 500,
 };
 
 const sipRegisterCodecDualListReorderDownBtnStyle = {
@@ -743,13 +429,19 @@ const sipRegisterCodecBtnColumnStyle = {
   width: SIP_REGISTER_CODEC_BTN_COL_WIDTH,
 };
 
-const SipRegisterCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
+const SipRegisterCodecDualListBtn = ({
+  onClick,
+  title,
+  children,
+  reorder,
+  down,
+}) => (
   <button
     type="button"
     data-codec-action-btn
     title={title}
     onClick={onClick}
-        style={
+    style={
       down
         ? sipRegisterCodecDualListReorderDownBtnStyle
         : reorder
@@ -796,7 +488,7 @@ const SipRegisterCodecListBox = ({
   const dragAnchorIndexRef = useRef(null);
   const lastClickIndexRef = useRef(null);
 
-  const getItemId = (item) => typeof item === "string" ? item : item.value;
+  const getItemId = (item) => (typeof item === "string" ? item : item.value);
   const itemIds = useMemo(() => items.map(getItemId), [items]);
 
   const applyRangeToIndex = (currIdx) => {
@@ -1022,12 +714,6 @@ const trunkModalFormPanelStyle = {
   boxSizing: "border-box",
 };
 
-const trunkModalPrimaryBtnStyle = {
-  minWidth: 100,
-  height: 33,
-  fontSize: 13,
-};
-
 const addNewModalFooterStyle = {
   display: "flex",
   alignItems: "center",
@@ -1049,14 +735,6 @@ const addNewModalFooterBtnStyle = {
   fontSize: 12,
   borderRadius: 10,
   minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 const trunkModalCancelBtnStyle = {
@@ -1110,112 +788,6 @@ const trunkDodToolbarBtnStyle = {
   padding: "6px 14px",
   borderRadius: 10,
 };
-
-const SIP_REGISTER_TABLE_CARD_RADIUS = 10;
-
-const sipRegisterCardStyle = {
-  background: "#ffffff",
-  borderRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const sipRegisterToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
-  borderTopRightRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
-};
-
-const sipRegisterPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_REGISTER_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const sipRegisterSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const sipRegisterCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const sipRegisterPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 10,
-};
-
-const sipRegisterPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const SipRegisterPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-}) => (
-  <div style={{ ...sipRegisterPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-      >
-        ← Prev
-      </Btn>
-      <span style={sipRegisterPageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
 
 const Pill = ({ text, bg, color }) => (
   <span
@@ -1431,144 +1003,11 @@ const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
         maxWidth: undefined,
       };
 
-/** Locked at ~100% browser zoom. Do NOT refresh while Ctrl+/- shrinks innerWidth. */
-const sipRegisterZoomBaselineRef = { innerWidth: 0, dpr: 1 };
-/** Ctrl+/− steps from 100% (Chrome: 100→110→125…; ≥2 ≈ 125%). */
-const sipRegisterZoomStepsRef = { current: 0 };
-
-const lockSipRegisterZoomBaseline = (force = false) => {
-  const iw = window.innerWidth;
-  if (!iw) return;
-  if (force || !sipRegisterZoomBaselineRef.innerWidth) {
-    sipRegisterZoomBaselineRef.innerWidth = iw;
-    sipRegisterZoomBaselineRef.dpr = window.devicePixelRatio || 1;
-  }
-};
-
-const syncSipRegisterZoomBaselineIfWindowWidened = () => {
-  const iw = window.innerWidth;
-  const baseW = sipRegisterZoomBaselineRef.innerWidth;
-  if (!baseW || !iw) return;
-  if (iw > baseW) {
-    sipRegisterZoomBaselineRef.innerWidth = iw;
-    sipRegisterZoomBaselineRef.dpr = window.devicePixelRatio || 1;
-  }
-};
-
-/** Scroll at ≥115% (Ctrl+ ×2 ≈ 125%). ≤100% incl. 90%/80% = no scroll. */
-const SIP_REGISTER_ZOOM_SCROLL_MIN = 1.14;
-const SIP_REGISTER_ZOOM_SCROLL_STEPS = 2;
-
-const isSipRegisterBrowserZoomedIn = () => {
-  if (sipRegisterZoomStepsRef.current >= SIP_REGISTER_ZOOM_SCROLL_STEPS) {
-    return true;
-  }
-  if (sipRegisterZoomStepsRef.current > 0) {
-    return false;
-  }
-
-  const scale = window.visualViewport?.scale ?? 1;
-  if (scale > 0 && scale < 1.05) return false;
-  if (scale >= SIP_REGISTER_ZOOM_SCROLL_MIN) return true;
-  if (Math.round(scale * 100) >= 115) return true;
-
-  const baseW = sipRegisterZoomBaselineRef.innerWidth;
-  const iw = window.innerWidth;
-  if (baseW > 0 && iw > 0) {
-    if (iw > baseW * 1.02) return false;
-    if (baseW / iw >= SIP_REGISTER_ZOOM_SCROLL_MIN) return true;
-  }
-
-  const baseDpr = sipRegisterZoomBaselineRef.dpr;
-  const dpr = window.devicePixelRatio || 1;
-  if (baseDpr > 0 && dpr / baseDpr >= SIP_REGISTER_ZOOM_SCROLL_MIN) return true;
-
-  return false;
-};
-
-const scheduleSipRegisterZoomMeasure = (measure) => {
-  requestAnimationFrame(measure);
-  [50, 150, 300, 600, 900].forEach((ms) => setTimeout(measure, ms));
-};
-
-const useSipRegisterBrowserZoom110 = () => {
-  const isCompact = useMediaQuery(SIP_REGISTER_COMPACT_MQ);
-  const [highZoom, setHighZoom] = useState(false);
-
-  useEffect(() => {
-    const measure = () => {
-      const scale = window.visualViewport?.scale ?? 1;
-      const iw = window.innerWidth;
-      const baseW = sipRegisterZoomBaselineRef.innerWidth;
-
-      if (
-        sipRegisterZoomStepsRef.current <= 0 &&
-        (scale < 1.05 || (baseW && iw > 0 && iw >= baseW * 0.98))
-      ) {
-        lockSipRegisterZoomBaseline(true);
-      } else if (iw > baseW) {
-        syncSipRegisterZoomBaselineIfWindowWidened();
-      }
-
-      setHighZoom(isSipRegisterBrowserZoomedIn());
-    };
-
-    const bumpZoomSteps = (delta) => {
-      sipRegisterZoomStepsRef.current = Math.max(
-        -5,
-        Math.min(10, sipRegisterZoomStepsRef.current + delta),
-      );
-    };
-
-    const onWheel = (e) => {
-      if (!e.ctrlKey) return;
-      if (e.deltaY < 0) bumpZoomSteps(1);
-      else if (e.deltaY > 0) bumpZoomSteps(-1);
-      scheduleSipRegisterZoomMeasure(measure);
-    };
-
-    const onKeyDown = (e) => {
-      if (!e.ctrlKey) return;
-      if (e.key === "+" || e.key === "=") {
-        bumpZoomSteps(1);
-        scheduleSipRegisterZoomMeasure(measure);
-      } else if (e.key === "-" || e.key === "_") {
-        bumpZoomSteps(-1);
-        scheduleSipRegisterZoomMeasure(measure);
-      } else if (e.key === "0") {
-        sipRegisterZoomStepsRef.current = 0;
-        lockSipRegisterZoomBaseline(true);
-        scheduleSipRegisterZoomMeasure(measure);
-      }
-    };
-
-    lockSipRegisterZoomBaseline(true);
-    sipRegisterZoomStepsRef.current = 0;
-    measure();
-
-    window.addEventListener("resize", measure);
-    window.addEventListener("wheel", onWheel, { passive: true });
-    window.addEventListener("keydown", onKeyDown);
-    window.visualViewport?.addEventListener("resize", measure);
-    window.visualViewport?.addEventListener("scroll", measure);
-
-    return () => {
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("keydown", onKeyDown);
-      window.visualViewport?.removeEventListener("resize", measure);
-      window.visualViewport?.removeEventListener("scroll", measure);
-    };
-  }, []);
-
-  return highZoom;
-};
-
 const SipRegisterPage = () => {
   // State
   const [trunks, setTrunks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const [selected] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(SIP_REGISTER_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
@@ -1589,9 +1028,7 @@ const SipRegisterPage = () => {
   const [adaptRows, setAdaptRows] = useState([
     { matchMode: "", strip: "", prepend: "" },
   ]);
-  const [dnisRows, setDnisRows] = useState([
-    { dnisNumber: "", dnisName: "" },
-  ]);
+  const [dnisRows, setDnisRows] = useState([{ dnisNumber: "", dnisName: "" }]);
   const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
   const [codecChosenSelected, setCodecChosenSelected] = useState([]);
   const [ethPortOptions, setEthPortOptions] = useState(
@@ -1600,7 +1037,7 @@ const SipRegisterPage = () => {
   const tableScrollRef = useRef(null);
   const [tableContainerWidth, setTableContainerWidth] = useState(0);
   const isCompact = useMediaQuery(SIP_REGISTER_COMPACT_MQ);
-  const allowHorizontalScroll = useSipRegisterBrowserZoom110();
+  const allowHorizontalScroll = false; // browser-zoom table mode removed
   const tableMinWidth = allowHorizontalScroll
     ? Math.max(
         SIP_REGISTER_ZOOM_TABLE_WIDTH,
@@ -2081,7 +1518,7 @@ const SipRegisterPage = () => {
             ui_eth_port: nextOptions[0]?.value || prev.ui_eth_port,
           };
         });
-      } catch (e) {
+      } catch {
         // If system info is not available, keep ETH0/ETH1 only.
         setEthPortOptions(
           SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),

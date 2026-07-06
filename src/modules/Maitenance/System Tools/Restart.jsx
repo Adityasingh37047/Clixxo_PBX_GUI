@@ -3,12 +3,14 @@ import Button from "@mui/material/Button";
 import { Alert } from "@mui/material";
 import {
   RESTART_SECTIONS,
-  RESTART_BUTTON_LABEL,
+  RESTART_BUTTON_LABELS,
+  RESTART_BUTTON_VARIANTS,
+  RESTART_BUTTON_STYLE,
   RESTART_BREADCRUMB,
   RESTART_CONFIRM,
   RESTART_MESSAGES,
   RESTART_DEFAULT_TOAST,
-  RESTART_TOAST_DURATION,
+  RESTART_TOAST_DURATION_MS,
   RESTART_ERROR_HIDE_MS,
   RESTART_TIMINGS,
   RESTART_API,
@@ -27,14 +29,12 @@ const C = {
   pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  valueText: "#30415A",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   amber: "#dc2626",
@@ -49,7 +49,7 @@ const FIELD_RADIUS = 6;
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const Btn = ({
   children,
@@ -161,18 +161,11 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
+      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
       {children}
     </Component>
   );
 };
-
-
-
 
 const tableContainerStyle = {
   width: "100%",
@@ -228,7 +221,10 @@ const Restart = () => {
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(RESTART_DEFAULT_TOAST), RESTART_TOAST_DURATION);
+    setTimeout(
+      () => setToast(RESTART_DEFAULT_TOAST),
+      RESTART_TOAST_DURATION_MS,
+    );
   };
 
   // Auto-hide error after 5 seconds
@@ -324,7 +320,10 @@ const Restart = () => {
         : ":80";
     const url = `${protocol}//${ip}${port}${RESTART_API.servicePingPath}`;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), RESTART_TIMINGS.pingTimeoutMs);
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      RESTART_TIMINGS.pingTimeoutMs,
+    );
     try {
       const res = await fetch(url, {
         method: "GET",
@@ -420,7 +419,9 @@ const Restart = () => {
             } catch (e) {
               // continue
             }
-            await new Promise((res) => setTimeout(res, RESTART_TIMINGS.pollIntervalMs));
+            await new Promise((res) =>
+              setTimeout(res, RESTART_TIMINGS.pollIntervalMs),
+            );
           }
           if (result.success) {
             setProgressMessage(RESTART_MESSAGES.backOnline);
@@ -489,8 +490,7 @@ const Restart = () => {
   };
 
   return (
-    <div
-      style={RestartPageWrapStyle} data-native-scroll>
+    <div style={RestartPageWrapStyle} data-native-scroll>
       <div style={RestartPageInnerStyle}>
         {/* Breadcrumb */}
         <div
@@ -502,6 +502,7 @@ const Restart = () => {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
           <span>{RESTART_BREADCRUMB[0]}</span>
@@ -547,11 +548,14 @@ const Restart = () => {
           </Alert>
         )}
 
-        {RESTART_SECTIONS.map((section) => (
-          <div key={section.key} style={{
-    ...tableContainerStyle,
-    marginTop: 20,
-  }}>
+        {RESTART_SECTIONS.map((section, index) => (
+          <div
+            key={section.key}
+            style={{
+              ...tableContainerStyle,
+              ...(index > 0 ? { marginTop: 20 } : {}),
+            }}
+          >
             <div style={blueBarStyle}>{section.title}</div>
             <div
               style={{
@@ -575,12 +579,12 @@ const Restart = () => {
                 {section.instruction}
               </div>
               <Btn
-                variant="primary"
+                variant={RESTART_BUTTON_VARIANTS.RESTART}
                 onClick={() => handleRestart(section.key)}
                 disabled={loading && loadingType === section.key}
-                style={{ height: 36, padding: "0 24px", fontSize: 13 }}
+                style={RESTART_BUTTON_STYLE}
               >
-                {RESTART_BUTTON_LABEL}
+                {RESTART_BUTTON_LABELS.RESTART}
               </Btn>
             </div>
           </div>

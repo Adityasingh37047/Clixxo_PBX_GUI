@@ -1,57 +1,55 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material";
 import {
-  SCTRACK_RADIO_OPTIONS,
-  SCTRACK_LABELS,
-  SCTRACK_BUTTONS,
-  SCTRACK_LOG_CANDIDATES,
-  SCTRACK_POLL_MS,
-  SCTRACK_MESSAGES,
-  SCTRACK_ASTERISK_COMMANDS,
-  SCTRACK_LINUX_COMMANDS,
-  SCTRACK_CMD_RESULTS,
-  SCTRACK_DEFAULT_TOAST,
-  SCTRACK_TOAST_DURATION,
-  SCTRACK_BREADCRUMB,
-  SCTRACK_TRACE_HEADERS,
-  SCTRACK_TOOLTIPS,
+  Alert,
+  Tooltip,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from "@mui/material";
+import {
+  SIGNALING_CALL_TRACK_RADIO_OPTIONS,
+  SIGNALING_CALL_TRACK_BUTTON_LABELS,
+  SIGNALING_CALL_TRACK_BUTTON_VARIANTS,
+  SIGNALING_CALL_TRACK_BUTTON_STYLE,
+  SIGNALING_CALL_TRACK_LOG_CANDIDATES,
+  SIGNALING_CALL_TRACK_POLL_MS,
+  SIGNALING_CALL_TRACK_MESSAGES,
+  SIGNALING_CALL_TRACK_ASTERISK_COMMANDS,
+  SIGNALING_CALL_TRACK_LINUX_COMMANDS,
+  SIGNALING_CALL_TRACK_CMD_RESULTS,
+  SIGNALING_CALL_TRACK_TOAST_DEFAULT,
+  SIGNALING_CALL_TRACK_TOAST_DURATION_MS,
+  SIGNALING_CALL_TRACK_BREADCRUMB,
+  SIGNALING_CALL_TRACK_TOOLTIPS,
+  SIGNALING_CALL_TRACK_CARD_TITLE,
+  SIGNALING_CALL_TRACK_SECTION_OUTPUT,
+  SIGNALING_CALL_TRACK_OUTPUT_PLACEHOLDER,
+  SIGNALING_CALL_TRACK_SECTION_HEADING_COLOR,
+  SIGNALING_CALL_TRACK_FORM_PAD_X,
 } from "../../../constants/SignalingCallTrackConstants";
 import { postAsteriskCLI, postLinuxCmd } from "../../../api/apiService";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import { Alert } from "@mui/material";
 
-// ── Color palette (same as UserManage) ────────────────────────────────────────
+const SIGNALING_CALL_TRACK_SCROLL_CLASS = "sctrack-scroll";
 const C = {
-  pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
+  labelText: "#5a6d87",
+  valueText: "#374151",
+  mutedText: "#94a3b8",
+  accent: "#3E5475",
   errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
+  sectionHeading: SIGNALING_CALL_TRACK_SECTION_HEADING_COLOR,
 };
 
 const CARD_RADIUS = 10;
 const FIELD_RADIUS = 6;
 
-// ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
-
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -68,10 +66,10 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
-const nativeFieldInteraction = {
+const inputInteraction = {
   onFocus: (e) => {
     if (e.target.disabled) return;
     setFieldFocus(e.target);
@@ -96,88 +94,47 @@ const nativeFieldInteraction = {
   },
 };
 
-const inputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
-  if (!hasError) return inputInteraction;
-  const ring = (el, focused) => {
-    el.style.borderColor = errorColor;
-    el.style.borderWidth = "1px";
-    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
-  };
-  return {
-    onFocus: (e) => ring(e.target, true),
-    onBlur: (e) => ring(e.target, false),
-    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
-    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
-  };
-};
-
-const systemToolsFieldInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 14,
+const systemFieldInputStyle = {
   width: "100%",
-  backgroundColor: "#f8fafc",
+  minWidth: 0,
+  maxWidth: "100%",
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
+  border: `1px solid ${OUTLINED_BORDER}`,
   outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  background: "#fff",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
+  fontSize: 13,
+  lineHeight: 1.35,
+  minHeight: 36,
+  height: 36,
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
+const inputStyle = systemFieldInputStyle;
 
-const systemToolsFieldInputStyleWhite = {
-  ...systemToolsFieldInputStyle,
-  backgroundColor: "#ffffff",
-  borderRadius: 8,
-  color: "#3E5475",
-};
-const inputStyle = systemToolsFieldInputStyleWhite;
-
-  const tooltipProps = {
-    arrow: true,
-    placement: "top",
-    slotProps: {
-      tooltip: {
-        sx: {
-          bgcolor: "#fff",
-          color: "#334155",
-          border: "1px solid #d1d5db",
-          fontSize: 12,
-          maxWidth: 500,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        },
-      },
-      arrow: {
-        sx: {
-          color: "#fff",
-        },
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
-  };
+    arrow: { sx: { color: "#fff" } },
+  },
+};
 
-// ── Button Component (same as UserManage) ────────────────────────────────────
 const Btn = ({
   children,
   onClick,
@@ -185,8 +142,6 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  component,
-  startIcon,
 }) => {
   const styles = {
     default: {
@@ -199,6 +154,7 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
     cancel: {
       background: "#cbd5e1",
@@ -206,39 +162,19 @@ const Btn = ({
       border: "1px solid #cbd5e1",
       boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
     },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
   };
+
   const s = styles[variant] || styles.default;
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
       cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
       default: "#e2e8f0",
     }[variant] || "#e2e8f0";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
       cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
       default: "#d1d5db",
     }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
@@ -260,9 +196,8 @@ const Btn = ({
           : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
   };
 
-  const Component = component || "button";
   return (
-    <Component
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}
@@ -281,6 +216,7 @@ const Btn = ({
         height: 36,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -303,43 +239,165 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
       {children}
-    </Component>
+    </button>
   );
 };
 
-const tableContainerStyle = {
+
+const sctrackBodyStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 24,
+  padding: `20px ${SIGNALING_CALL_TRACK_FORM_PAD_X}px 24px`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const sctrackFilterRowStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 32,
+  flexWrap: "wrap",
+};
+
+const sctrackToolbarRowStyle = {
+  display: "flex",
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "flex-start",
+  gap: 16,
+};
+
+const sctrackOutputPanelStyle = {
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  background: "#ffffff",
+};
+
+const sctrackOutputHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  padding: "12px 16px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+};
+
+const SIGNALING_CALL_TRACK_OUTPUT_BODY_BG = "#f1f5f9";
+
+const sctrackOutputBodyStyle = {
+  backgroundColor: SIGNALING_CALL_TRACK_OUTPUT_BODY_BG,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  overflow: "hidden",
+};
+
+const sctrackOutputTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 200,
+  maxHeight: 320,
+  margin: 0,
+  padding: "12px 16px 16px",
+  border: "none",
+  borderRadius: 0,
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 13,
+  lineHeight: 1.6,
+  fontFamily: "monospace",
+  color: C.labelText,
+  backgroundColor: "transparent",
+  whiteSpace: "pre-wrap",
+  cursor: "default",
+};
+
+const sctrackPageWrapStyle = {
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+  backgroundColor: "#f8fafc",
+};
+
+const sctrackPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  display: "flex",
+  flexDirection: "column",
+};
+
+const sctrackTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
   display: "flex",
   flexDirection: "column",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   boxSizing: "border-box",
 };
 
-const SignalingCallTrackPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
+const sctrackHeaderStyle = {
+  width: "100%",
+  minHeight: 44,
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: `10px ${SIGNALING_CALL_TRACK_FORM_PAD_X}px`,
+  fontWeight: 700,
+  fontSize: 13,
+  color: "#3E5475",
+  borderBottom: `1px solid ${C.divider}`,
   boxSizing: "border-box",
 };
 
-const SignalingCallTrackPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+const sctrackFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
 };
 
+const SctrackBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>{SIGNALING_CALL_TRACK_BREADCRUMB[0]}</span>
+    <span>&gt;</span>
+    <span>{SIGNALING_CALL_TRACK_BREADCRUMB[1]}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {SIGNALING_CALL_TRACK_BREADCRUMB[2]}
+    </span>
+  </div>
+);
 
 const extractCmdOutput = (res) =>
   String(res?.responseData ?? res?.data ?? "").trim();
@@ -388,44 +446,27 @@ const applyTrackFilter = (text, type, value) => {
 };
 
 const resolveAsteriskLogPath = async () => {
-  for (const path of SCTRACK_LOG_CANDIDATES) {
+  for (const path of SIGNALING_CALL_TRACK_LOG_CANDIDATES) {
     const res = await postLinuxCmd({
-      cmd: SCTRACK_LINUX_COMMANDS.CHECK_READABLE(path),
+      cmd: SIGNALING_CALL_TRACK_LINUX_COMMANDS.CHECK_READABLE(path),
     });
-    if (extractCmdOutput(res) === SCTRACK_CMD_RESULTS.OK) return path;
+    if (extractCmdOutput(res) === SIGNALING_CALL_TRACK_CMD_RESULTS.OK) return path;
   }
-  return SCTRACK_LOG_CANDIDATES[0];
-};
-
-const blueBarStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  color: "#3E5475",
-  borderBottom: `1px solid ${C.divider}`,
+  return SIGNALING_CALL_TRACK_LOG_CANDIDATES[0];
 };
 
 const SignalingCallTrack = () => {
+  const outputRef = useRef(null);
   const [filterType, setFilterType] = useState("caller");
   const [filterValue, setFilterValue] = useState("0");
   const [trackMessage, setTrackMessage] = useState("");
   const [isTracking, setIsTracking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState(SCTRACK_DEFAULT_TOAST);
+  const [toast, setToast] = useState(SIGNALING_CALL_TRACK_TOAST_DEFAULT);
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(SCTRACK_DEFAULT_TOAST), SCTRACK_TOAST_DURATION);
+    setTimeout(() => setToast(SIGNALING_CALL_TRACK_TOAST_DEFAULT), SIGNALING_CALL_TRACK_TOAST_DURATION_MS);
   };
 
   const rawMessageRef = useRef("");
@@ -438,6 +479,11 @@ const SignalingCallTrack = () => {
   useEffect(() => {
     isTrackingRef.current = isTracking;
   }, [isTracking]);
+
+  useEffect(() => {
+    if (!outputRef.current || !trackMessage) return;
+    outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [trackMessage]);
 
   const refreshDisplay = useCallback(() => {
     const { type, value } = appliedFilterRef.current;
@@ -457,15 +503,14 @@ const SignalingCallTrack = () => {
 
     try {
       const wcRes = await postLinuxCmd({
-        cmd: SCTRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPath),
+        cmd: SIGNALING_CALL_TRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPath),
       });
-      const lineCount =
-        parseInt(extractCmdOutput(wcRes), 10) || 0;
+      const lineCount = parseInt(extractCmdOutput(wcRes), 10) || 0;
       if (lineCount <= lineCountRef.current) return;
 
       const newLines = lineCount - lineCountRef.current;
       const tailRes = await postLinuxCmd({
-        cmd: SCTRACK_LINUX_COMMANDS.TAIL_LINES(newLines, logPath),
+        cmd: SIGNALING_CALL_TRACK_LINUX_COMMANDS.TAIL_LINES(newLines, logPath),
       });
       const chunk = extractCmdOutput(tailRes);
       lineCountRef.current = lineCount;
@@ -497,25 +542,25 @@ const SignalingCallTrack = () => {
       logPathRef.current = logPath;
 
       const wcRes = await postLinuxCmd({
-        cmd: SCTRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPath),
+        cmd: SIGNALING_CALL_TRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPath),
       });
       lineCountRef.current = parseInt(extractCmdOutput(wcRes), 10) || 0;
 
-      await runAsteriskCmd(SCTRACK_ASTERISK_COMMANDS.LOGGER_ON);
+      await runAsteriskCmd(SIGNALING_CALL_TRACK_ASTERISK_COMMANDS.LOGGER_ON);
 
       stopPolling();
       pollRef.current = setInterval(() => {
         pollLogChunk();
-      }, SCTRACK_POLL_MS);
+      }, SIGNALING_CALL_TRACK_POLL_MS);
 
       await pollLogChunk();
       setIsTracking(true);
-      showToast(SCTRACK_MESSAGES.START_SUCCESS, "success");
+      showToast(SIGNALING_CALL_TRACK_MESSAGES.START_SUCCESS, "success");
     } catch (error) {
       console.error("Start call track error:", error);
       stopPolling();
       setIsTracking(false);
-      showToast(error.message || SCTRACK_MESSAGES.START_FAILED, "error");
+      showToast(error.message || SIGNALING_CALL_TRACK_MESSAGES.START_FAILED, "error");
     } finally {
       setBusy(false);
     }
@@ -527,15 +572,15 @@ const SignalingCallTrack = () => {
     try {
       stopPolling();
       try {
-        await runAsteriskCmd(SCTRACK_ASTERISK_COMMANDS.LOGGER_OFF);
+        await runAsteriskCmd(SIGNALING_CALL_TRACK_ASTERISK_COMMANDS.LOGGER_OFF);
       } catch (error) {
         console.warn("pjsip set logger off:", error);
       }
       setIsTracking(false);
-      showToast(SCTRACK_MESSAGES.STOP_SUCCESS, "success");
+      showToast(SIGNALING_CALL_TRACK_MESSAGES.STOP_SUCCESS, "success");
     } catch (error) {
       console.error("Stop call track error:", error);
-      showToast(error.message || SCTRACK_MESSAGES.STOP_FAILED, "error");
+      showToast(error.message || SIGNALING_CALL_TRACK_MESSAGES.STOP_FAILED, "error");
     } finally {
       setBusy(false);
     }
@@ -548,9 +593,12 @@ const SignalingCallTrack = () => {
     };
     refreshDisplay();
     if (filterType === "none" || !filterValue.trim()) {
-      showToast(SCTRACK_MESSAGES.FILTER_CLEARED, "info");
+      showToast(SIGNALING_CALL_TRACK_MESSAGES.FILTER_CLEARED, "info");
     } else {
-      showToast(SCTRACK_MESSAGES.FILTER_APPLIED(filterType, filterValue.trim()), "success");
+      showToast(
+        SIGNALING_CALL_TRACK_MESSAGES.FILTER_APPLIED(filterType, filterValue.trim()),
+        "success",
+      );
     }
   };
 
@@ -559,20 +607,20 @@ const SignalingCallTrack = () => {
     setTrackMessage("");
     if (isTracking) {
       postLinuxCmd({
-        cmd: SCTRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPathRef.current),
+        cmd: SIGNALING_CALL_TRACK_LINUX_COMMANDS.GET_LINE_COUNT(logPathRef.current),
       })
         .then((res) => {
           lineCountRef.current = parseInt(extractCmdOutput(res), 10) || 0;
         })
         .catch(() => {});
     }
-    showToast(SCTRACK_MESSAGES.CLEAR_SUCCESS, "info");
+    showToast(SIGNALING_CALL_TRACK_MESSAGES.CLEAR_SUCCESS, "info");
   };
 
   const handleDownload = () => {
     const content = trackMessage || rawMessageRef.current;
     if (!content.trim()) {
-      showToast(SCTRACK_MESSAGES.DOWNLOAD_EMPTY, "warning");
+      showToast(SIGNALING_CALL_TRACK_MESSAGES.DOWNLOAD_EMPTY, "warning");
       return;
     }
     const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "_");
@@ -585,77 +633,50 @@ const SignalingCallTrack = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    showToast(SCTRACK_MESSAGES.DOWNLOAD_SUCCESS, "success");
+    showToast(SIGNALING_CALL_TRACK_MESSAGES.DOWNLOAD_SUCCESS, "success");
   };
 
   useEffect(() => {
     return () => {
       stopPolling();
       if (isTrackingRef.current) {
-        postAsteriskCLI({ command: SCTRACK_ASTERISK_COMMANDS.LOGGER_OFF }).catch(() => {});
+        postAsteriskCLI({ command: SIGNALING_CALL_TRACK_ASTERISK_COMMANDS.LOGGER_OFF }).catch(
+          () => {},
+        );
       }
     };
   }, [stopPolling]);
 
+  const hasTrackData = Boolean(trackMessage.trim());
+  const canFilter =
+    filterType === "none" || Boolean(filterValue.trim());
+
   return (
-<div style={SignalingCallTrackPageWrapStyle} data-native-scroll>
-  <div style={SignalingCallTrackPageInnerStyle}>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast(SCTRACK_DEFAULT_TOAST)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div
+      className={SIGNALING_CALL_TRACK_SCROLL_CLASS}
+      style={sctrackPageWrapStyle}
+      data-native-scroll
+    >
+      <div style={sctrackPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast(SIGNALING_CALL_TRACK_TOAST_DEFAULT)}
+            sx={sctrackFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      
-        {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>{SCTRACK_BREADCRUMB[0]}</span>
-          <span>&gt;</span>
-          <span>{SCTRACK_BREADCRUMB[1]}</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {SCTRACK_BREADCRUMB[2]}
-          </span>
-        </div>
+        <SctrackBreadcrumb />
 
-        <div style={tableContainerStyle}>
-          <div style={{ ...blueBarStyle, justifyContent: "left" }}>
-            <span>{SCTRACK_TRACE_HEADERS.title}</span>
+        <div style={sctrackTableContainerStyle}>
+          <div style={sctrackHeaderStyle}>
+            <span>{SIGNALING_CALL_TRACK_CARD_TITLE}</span>
           </div>
 
-          <div style={{ padding: "24px 20px" }}>
-            {/* Filter Row */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 32,
-                marginBottom: 24,
-                flexWrap: "wrap",
-              }}
-            >
+          <div style={sctrackBodyStyle}>
+            <div style={sctrackFilterRowStyle}>
               <RadioGroup
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
@@ -663,7 +684,7 @@ const SignalingCallTrack = () => {
                 row
                 style={{ gap: 16 }}
               >
-                {SCTRACK_RADIO_OPTIONS.map((opt) => (
+                {SIGNALING_CALL_TRACK_RADIO_OPTIONS.map((opt) => (
                   <FormControlLabel
                     key={opt.value}
                     value={opt.value}
@@ -678,17 +699,20 @@ const SignalingCallTrack = () => {
                       />
                     }
                     label={
-                      <span
-                        style={{
-                          fontSize: 14,
-                          color: C.valueText,
-                          fontWeight: 500,
-                        }}
+                      <Tooltip
+                        title={SIGNALING_CALL_TRACK_TOOLTIPS.filterType}
+                        {...tooltipProps}
                       >
-                        <Tooltip title={SCTRACK_TOOLTIPS.FILTER_TYPE} {...tooltipProps}>
-                          <span style={{ color: C.labelText }}>{opt.label}</span>
-                        </Tooltip>
-                      </span>
+                        <span
+                          style={{
+                            fontSize: 14,
+                            color: C.valueText,
+                            fontWeight: 500,
+                          }}
+                        >
+                          {opt.label}
+                        </span>
+                      </Tooltip>
                     }
                     sx={{ margin: 0 }}
                   />
@@ -702,98 +726,91 @@ const SignalingCallTrack = () => {
                   ...inputStyle,
                   minWidth: 120,
                   maxWidth: 180,
+                  width: "auto",
                 }}
+                disabled={filterType === "none"}
                 {...inputInteraction}
               />
             </div>
 
-            {/* Buttons Row - Justify left as requested */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-                gap: 16,
-                marginBottom: 32,
-              }}
-            >
+            <div style={sctrackToolbarRowStyle}>
               <Btn
                 type="button"
-                variant="primary"
+                variant={SIGNALING_CALL_TRACK_BUTTON_VARIANTS.PRIMARY}
                 onClick={handleStart}
                 disabled={busy || isTracking}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                style={SIGNALING_CALL_TRACK_BUTTON_STYLE}
               >
-                {SCTRACK_BUTTONS.start}
+                {SIGNALING_CALL_TRACK_BUTTON_LABELS.START}
               </Btn>
               <Btn
                 type="button"
-                variant="cancel"
+                variant={SIGNALING_CALL_TRACK_BUTTON_VARIANTS.CANCEL}
                 onClick={handleStop}
                 disabled={busy || !isTracking}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                style={SIGNALING_CALL_TRACK_BUTTON_STYLE}
               >
-                {SCTRACK_BUTTONS.stop}
+                {SIGNALING_CALL_TRACK_BUTTON_LABELS.STOP}
               </Btn>
               <Btn
                 type="button"
-                variant="cancel"
+                variant={SIGNALING_CALL_TRACK_BUTTON_VARIANTS.CANCEL}
                 onClick={handleFilter}
-                disabled={busy}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                disabled={busy || !hasTrackData || !canFilter}
+                style={SIGNALING_CALL_TRACK_BUTTON_STYLE}
               >
-                {SCTRACK_BUTTONS.filter}
+                {SIGNALING_CALL_TRACK_BUTTON_LABELS.FILTER}
               </Btn>
               <Btn
                 type="button"
-                variant="cancel"
+                variant={SIGNALING_CALL_TRACK_BUTTON_VARIANTS.CANCEL}
                 onClick={handleClear}
-                disabled={busy}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                disabled={busy || !hasTrackData}
+                style={SIGNALING_CALL_TRACK_BUTTON_STYLE}
               >
-                {SCTRACK_BUTTONS.clear}
+                {SIGNALING_CALL_TRACK_BUTTON_LABELS.CLEAR}
               </Btn>
               <Btn
                 type="button"
-                variant="cancel"
+                variant={SIGNALING_CALL_TRACK_BUTTON_VARIANTS.CANCEL}
                 onClick={handleDownload}
-                disabled={busy}
-                style={{ minWidth: 100, height: 33, fontSize: 13 }}
+                disabled={busy || !hasTrackData}
+                style={SIGNALING_CALL_TRACK_BUTTON_STYLE}
               >
-                {SCTRACK_BUTTONS.download}
+                {SIGNALING_CALL_TRACK_BUTTON_LABELS.DOWNLOAD}
               </Btn>
             </div>
 
-            {/* Track Message Textarea */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <label
-                style={{ fontSize: 14, color: C.labelText, fontWeight: 600 }}
-              >
-                <Tooltip title={SCTRACK_TOOLTIPS.TRACK_MESSAGE} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCTRACK_LABELS.trackMessage}</span>
+            <div style={sctrackOutputPanelStyle}>
+              <div style={sctrackOutputHeaderStyle}>
+                <Tooltip
+                  title={SIGNALING_CALL_TRACK_TOOLTIPS.trackMessage}
+                  {...tooltipProps}
+                >
+                  <span
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: C.sectionHeading,
+                      cursor: "help",
+                    }}
+                  >
+                    {SIGNALING_CALL_TRACK_SECTION_OUTPUT}
+                  </span>
                 </Tooltip>
-              </label>
-              <textarea
-                value={trackMessage}
-                readOnly
-                style={{
-                  width: "100%",
-                  minHeight: 220,
-                  maxHeight: 400,
-                  border: `1px solid ${OUTLINED_BORDER}`,
-                  borderRadius: 10,
-                  backgroundColor: C.pageBg,
-                  color: C.valueText,
-                  fontSize: 14,
-                  padding: "12px",
-                  fontFamily: "monospace",
-                  resize: "vertical",
-                  outline: "none",
-                  transition: "border-color 0.2s ease",
-                }}
-                {...inputInteraction}
-              />
+              </div>
+              <div style={sctrackOutputBodyStyle}>
+                <textarea
+                  ref={outputRef}
+                  className={SIGNALING_CALL_TRACK_SCROLL_CLASS}
+                  style={sctrackOutputTextareaStyle}
+                  value={trackMessage}
+                  readOnly
+                  tabIndex={-1}
+                  placeholder={SIGNALING_CALL_TRACK_OUTPUT_PLACEHOLDER}
+                  onFocus={(e) => e.target.blur()}
+                />
+              </div>
             </div>
           </div>
         </div>

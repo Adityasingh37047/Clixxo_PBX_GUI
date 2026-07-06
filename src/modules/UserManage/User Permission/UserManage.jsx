@@ -6,6 +6,26 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import {
   PAGE_PERMISSION_GROUPS,
   INITIAL_PERMISSIONS,
+  USER_MANAGE_BREADCRUMB,
+  USER_MANAGE_CARD_TITLES,
+  USER_MANAGE_TABLE_HEADERS,
+  USER_MANAGE_LABELS,
+  USER_MANAGE_ACCESS_TYPE_LABELS,
+  USER_MANAGE_ACCESS_TYPE_OPTIONS,
+  USER_MANAGE_ROLE_PERMISSION_OPTIONS,
+  USER_MANAGE_BUTTON_LABELS,
+  USER_MANAGE_BUTTON_VARIANTS,
+  USER_MANAGE_BUTTON_STYLE,
+  USER_MANAGE_TOOLBAR_BUTTON_STYLE,
+  USER_MANAGE_TOOLTIPS,
+  USER_MANAGE_PLACEHOLDERS,
+  USER_MANAGE_MESSAGES,
+  USER_MANAGE_DEFAULT_TOAST,
+  USER_MANAGE_TOAST_DURATION_MS,
+  USER_MANAGE_FORM_ERROR_HIDE_MS,
+  USER_MANAGE_DEFAULT_ACCESS_TYPE,
+  USER_MANAGE_DEFAULT_ROLE_PERMISSION,
+  USER_MANAGE_ICON_COLORS,
 } from "../../../constants/UserManageConstants";
 import {
   fetchUserList,
@@ -25,9 +45,8 @@ const C = {
   divider: "#e2e6ec",
   labelText: "#3E5475",
   valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
+  mutedText: "#94a3b8",
+  strongText: "#1e293b",
   accent: "#4A5D75",
   accentDark: "#3a4a5e",
   errorRed: "#dc2626",
@@ -158,32 +177,22 @@ const blueBarStyle = {
   boxSizing: "border-box",
 };
 
-const formFooterStyle = {
+const permissionCardFooterStyle = {
   display: "flex",
   flexWrap: "wrap",
   alignItems: "center",
   justifyContent: "center",
   gap: 12,
   width: "100%",
-  marginTop: 24,
-  padding: "10px 20px",
-  border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: CARD_RADIUS,
-  boxSizing: "border-box",
-  background: C.cardBg,
-  boxShadow: C.cardShadow,
-};
-
-const formFooterBtnStyle = {
-  minWidth: 110,
-  height: 34,
-  fontSize: 13,
   margin: 0,
-  padding: "0 28px",
-  lineHeight: "34px",
+  padding: "10px 28px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
   boxSizing: "border-box",
+  flexShrink: 0,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
-
 
 const tooltipProps = {
   arrow: true,
@@ -207,13 +216,14 @@ const tooltipProps = {
   },
 };
 
-const tooltips = {
-  username: "The username of the user.",
-  password: "The password of the user.",
-  confirmPassword: "The confirmation password of the user.",
-  accessType: "The access type of the user.",
-  rolePermission: "The role permission of the user.",
-};  
+const userManageCheckboxSx = {
+  padding: "4px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+  "& .MuiSvgIcon-root": { fontSize: 18 },
+};
+
 // ── Button Component (matches SignalingCapture) ───────────────────────────────
 const Btn = ({
   children,
@@ -320,16 +330,17 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
         userSelect: "none",
+        boxSizing: "border-box",
         ...s,
         ...extraStyle,
       }}
@@ -389,14 +400,6 @@ const tdStyle = {
   whiteSpace: "nowrap",
 };
 
-const cbSx = {
-  padding: "4px",
-  color: "#64748b",
-  "&.Mui-checked": { color: C.accent },
-  "&.MuiCheckbox-indeterminate": { color: C.accent },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
-};
-
 function allChecked(pages, perms) {
   return pages.length > 0 && pages.every((p) => perms[p.id]);
 }
@@ -443,7 +446,7 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
   const [err, setErr] = useState("");
   const handle = () => {
     if (pw.length < 5) {
-      setErr("Password must be at least 5 characters.");
+      setErr(USER_MANAGE_MESSAGES.passwordMinLength);
       return;
     }
     onSave(pw);
@@ -481,12 +484,13 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
             color: C.labelText,
           }}
         >
-          Reset Password — {user.username}
+          {USER_MANAGE_CARD_TITLES.RESET_PASSWORD_PREFIX}
+          {user.username}
         </p>
         <input
           style={{ ...inputStyle, marginBottom: 6, height: 36 }}
           type="password"
-          placeholder="New password (min 5 chars)"
+          placeholder={USER_MANAGE_PLACEHOLDERS.NEW_PASSWORD}
           value={pw}
           onChange={(e) => {
             setPw(e.target.value);
@@ -514,11 +518,22 @@ function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
             marginTop: 16,
           }}
         >
-          <Btn variant="primary" onClick={handle} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+          <Btn
+            variant={USER_MANAGE_BUTTON_VARIANTS.PRIMARY}
+            onClick={handle}
+            disabled={loading}
+            style={USER_MANAGE_BUTTON_STYLE}
+          >
+            {loading
+              ? USER_MANAGE_BUTTON_LABELS.SAVING
+              : USER_MANAGE_BUTTON_LABELS.SAVE}
           </Btn>
-          <Btn variant="cancel" onClick={onCancel}>
-            Cancel
+          <Btn
+            variant={USER_MANAGE_BUTTON_VARIANTS.CANCEL}
+            onClick={onCancel}
+            style={USER_MANAGE_BUTTON_STYLE}
+          >
+            {USER_MANAGE_BUTTON_LABELS.CANCEL}
           </Btn>
         </div>
       </div>
@@ -572,6 +587,7 @@ function PermissionTree({ permissions, setPermissions }) {
               style={{
                 backgroundColor: C.gridHeaderBg,
                 paddingLeft: L1,
+                borderTop: `1px solid ${C.divider}`,
                 borderBottom: `1px solid ${C.divider}`,
               }}
             >
@@ -580,7 +596,7 @@ function PermissionTree({ permissions, setPermissions }) {
                 checked={allChecked(secPages, permissions)}
                 indeterminate={someChecked(secPages, permissions)}
                 onChange={() => toggleSection(section)}
-                sx={cbSx}
+                sx={userManageCheckboxSx}
               />
               <span
                 className="ml-2 text-[13px] font-bold"
@@ -599,7 +615,6 @@ function PermissionTree({ permissions, setPermissions }) {
                   style={{
                     backgroundColor: C.cardBg,
                     paddingLeft: L2,
-                    borderBottom: `1px solid ${C.divider}`,
                   }}
                 >
                   <Checkbox
@@ -607,7 +622,7 @@ function PermissionTree({ permissions, setPermissions }) {
                     checked={allChecked(sub.pages, permissions)}
                     indeterminate={someChecked(sub.pages, permissions)}
                     onChange={() => toggleSub(sub)}
-                    sx={cbSx}
+                    sx={userManageCheckboxSx}
                   />
                   <span
                     className="ml-2 text-[12.5px] font-semibold"
@@ -624,7 +639,6 @@ function PermissionTree({ permissions, setPermissions }) {
                     gridTemplateColumns:
                       "repeat(auto-fill, minmax(140px, 1fr))",
                     gap: "8px 10px",
-                    borderBottom: `1px solid ${C.divider}`,
                   }}
                 >
                   {sub.pages.map((page) => (
@@ -636,7 +650,7 @@ function PermissionTree({ permissions, setPermissions }) {
                         size="small"
                         checked={!!permissions[page.id]}
                         onChange={() => togglePage(page.id)}
-                        sx={cbSx}
+                        sx={userManageCheckboxSx}
                       />
                       <span
                         className="text-[12px]"
@@ -668,15 +682,17 @@ export default function UserManage() {
   const [editUser, setEditUser] = useState(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [accessType, setAccessType] = useState("custom");
-  const [rolePermission, setRolePermission] = useState("Read, Write");
+  const [accessType, setAccessType] = useState(USER_MANAGE_DEFAULT_ACCESS_TYPE);
+  const [rolePermission, setRolePermission] = useState(
+    USER_MANAGE_DEFAULT_ROLE_PERMISSION,
+  );
   const [permissions, setPermissions] = useState({ ...INITIAL_PERMISSIONS });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const formErrorTimerRef = useRef(null);
 
   // Toast
-  const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [toast, setToast] = useState(USER_MANAGE_DEFAULT_TOAST);
   const toastTimerRef = useRef(null);
 
   const clearFormError = () => {
@@ -691,16 +707,16 @@ export default function UserManage() {
     formErrorTimerRef.current = setTimeout(() => {
       setFormError("");
       formErrorTimerRef.current = null;
-    }, 5000);
+    }, USER_MANAGE_FORM_ERROR_HIDE_MS);
   };
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => {
-      setToast({ msg: "", type: "success" });
+      setToast(USER_MANAGE_DEFAULT_TOAST);
       toastTimerRef.current = null;
-    }, 5000);
+    }, USER_MANAGE_TOAST_DURATION_MS);
   };
 
   useEffect(() => {
@@ -721,7 +737,7 @@ export default function UserManage() {
       if (msg.toLowerCase().includes("only superadmin")) {
         showToast(msg, "error");
       } else {
-        setListError("Failed to load users.");
+        setListError(USER_MANAGE_MESSAGES.loadFailed);
       }
     } finally {
       setLoadingList(false);
@@ -737,8 +753,8 @@ export default function UserManage() {
     setEditUser(null);
     setUsername("");
     setPassword("");
-    setAccessType("custom");
-    setRolePermission("Read, Write");
+    setAccessType(USER_MANAGE_DEFAULT_ACCESS_TYPE);
+    setRolePermission(USER_MANAGE_DEFAULT_ROLE_PERMISSION);
     setPermissions({ ...INITIAL_PERMISSIONS });
     clearFormError();
   };
@@ -748,9 +764,14 @@ export default function UserManage() {
     setEditUser(user);
     setUsername(user.username || "");
     setPassword("");
-    const at = user.access?.access_type ?? user.access_type ?? "custom";
+    const at =
+      user.access?.access_type ??
+      user.access_type ??
+      USER_MANAGE_DEFAULT_ACCESS_TYPE;
     const rp =
-      user.access?.role_permission ?? user.role_permission ?? "Read, Write";
+      user.access?.role_permission ??
+      user.role_permission ??
+      USER_MANAGE_DEFAULT_ROLE_PERMISSION;
     setAccessType(at);
     setRolePermission(rp);
     const pages = user.access?.pages ?? user.pages ?? user.access_pages ?? [];
@@ -770,11 +791,11 @@ export default function UserManage() {
 
     if (mode === "add") {
       if (username.trim().length < 5) {
-        showFormError("Username must be at least 5 characters.");
+        showFormError(USER_MANAGE_MESSAGES.usernameMinLength);
         return;
       }
       if (password.length < 5) {
-        showFormError("Password must be at least 5 characters.");
+        showFormError(USER_MANAGE_MESSAGES.passwordMinLength);
         return;
       }
       setSaving(true);
@@ -788,10 +809,10 @@ export default function UserManage() {
           pages,
         });
         if (res?.response === false) {
-          showFormError(res?.message || "Failed to create user.");
+          showFormError(res?.message || USER_MANAGE_MESSAGES.createFailed);
           return;
         }
-        showToast("User created successfully.");
+        showToast(USER_MANAGE_MESSAGES.createSuccess);
         closeForm();
         loadUsers();
       } catch (err) {
@@ -799,7 +820,7 @@ export default function UserManage() {
           err?.response?.data?.message ||
           err?.response?.data?.error ||
           err?.message ||
-          "Failed to create user.";
+          USER_MANAGE_MESSAGES.createFailed;
         showFormError(typeof msg === "string" ? msg : JSON.stringify(msg));
       } finally {
         setSaving(false);
@@ -815,10 +836,10 @@ export default function UserManage() {
           pages,
         });
         if (res?.response === false) {
-          showFormError(res?.message || "Failed to update user access.");
+          showFormError(res?.message || USER_MANAGE_MESSAGES.updateFailed);
           return;
         }
-        showToast("User access updated successfully.");
+        showToast(USER_MANAGE_MESSAGES.updateSuccess);
         closeForm();
         loadUsers();
       } catch (err) {
@@ -826,7 +847,7 @@ export default function UserManage() {
           err?.response?.data?.message ||
           err?.response?.data?.error ||
           err?.message ||
-          "Failed to update user access.";
+          USER_MANAGE_MESSAGES.updateFailed;
         showFormError(typeof msg === "string" ? msg : JSON.stringify(msg));
       } finally {
         setSaving(false);
@@ -836,15 +857,15 @@ export default function UserManage() {
 
   const handleDelete = async (user) => {
     const isConfirmed = window.confirm(
-      `Are you sure you want to delete user "${user.username}"?`,
+      USER_MANAGE_MESSAGES.deleteConfirm(user.username),
     );
     if (!isConfirmed) return;
     try {
       await deleteUser(user.id);
-      showToast("User deleted successfully.");
+      showToast(USER_MANAGE_MESSAGES.deleteSuccess);
       loadUsers();
     } catch {
-      showToast("Failed to delete user.", "error");
+      showToast(USER_MANAGE_MESSAGES.deleteFailed, "error");
     }
   };
 
@@ -854,7 +875,7 @@ export default function UserManage() {
         {toast.msg && (
           <Alert
             severity={toast.type}
-            onClose={() => setToast({ msg: "", type: "success" })}
+            onClose={() => setToast(USER_MANAGE_DEFAULT_TOAST)}
             sx={{
               position: "fixed",
               top: 20,
@@ -878,34 +899,35 @@ export default function UserManage() {
             display: "flex",
             alignItems: "center",
             gap: 4,
+            flexWrap: "wrap",
           }}
         >
-          <span>User Manage</span>
+          <span>{USER_MANAGE_BREADCRUMB[0]}</span>
           <span>&gt;</span>
-          <span>User Permission</span>
+          <span>{USER_MANAGE_BREADCRUMB[1]}</span>
           <span>&gt;</span>
           <span style={{ color: C.strongText, fontWeight: 600 }}>
-            User Manage
+            {USER_MANAGE_BREADCRUMB[2]}
           </span>
         </div>
 
         {/* ── User List Card ── */}
-        <div style={{ ...tableContainerStyle, marginTop: 4 }}>
+        <div style={tableContainerStyle}>
           <div style={blueBarStyle}>
-            <span>User List</span>
+            <span>{USER_MANAGE_CARD_TITLES.USER_LIST}</span>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {mode !== null && (
                 <Btn
-                  variant="cancel"
+                  variant={USER_MANAGE_BUTTON_VARIANTS.CANCEL}
                   onClick={closeForm}
-                  style={{ minWidth: 90, height: 33, fontSize: 13 }}
+                  style={USER_MANAGE_TOOLBAR_BUTTON_STYLE}
                 >
-                  Cancel
+                  {USER_MANAGE_BUTTON_LABELS.CANCEL}
                 </Btn>
               )}
               {mode === null && (
                 <Btn
-                  variant="primary"
+                  variant={USER_MANAGE_BUTTON_VARIANTS.PRIMARY}
                   onClick={() => {
                     if (!canWrite) {
                       showReadOnlyToast();
@@ -914,9 +936,9 @@ export default function UserManage() {
                     openAdd();
                   }}
                   disabled={!canWrite}
-                  style={{ minWidth: 110, height: 33, fontSize: 13 }}
+                  style={USER_MANAGE_TOOLBAR_BUTTON_STYLE}
                 >
-                  + Add User
+                  {USER_MANAGE_BUTTON_LABELS.ADD_USER}
                 </Btn>
               )}
             </div>
@@ -931,7 +953,7 @@ export default function UserManage() {
                 fontWeight: 500,
               }}
             >
-              Loading users...
+              {USER_MANAGE_MESSAGES.loadingUsers}
             </p>
           ) : listError ? (
             <p
@@ -955,7 +977,7 @@ export default function UserManage() {
                 fontWeight: 500,
               }}
             >
-              No users found.
+              {USER_MANAGE_MESSAGES.noUsers}
             </p>
           ) : (
             <div style={{ overflowX: "auto", width: "100%" }}>
@@ -977,7 +999,7 @@ export default function UserManage() {
                         zIndex: 10,
                       }}
                     >
-                      ID
+                      {USER_MANAGE_TABLE_HEADERS.ID}
                     </TH>
                     <TH
                       style={{
@@ -987,7 +1009,7 @@ export default function UserManage() {
                         zIndex: 10,
                       }}
                     >
-                      Username
+                      {USER_MANAGE_TABLE_HEADERS.USERNAME}
                     </TH>
                     <TH
                       style={{
@@ -997,7 +1019,7 @@ export default function UserManage() {
                         zIndex: 10,
                       }}
                     >
-                      Access Type
+                      {USER_MANAGE_TABLE_HEADERS.ACCESS_TYPE}
                     </TH>
                     <TH
                       style={{
@@ -1007,10 +1029,10 @@ export default function UserManage() {
                         zIndex: 10,
                       }}
                     >
-                      Role Permission
+                      {USER_MANAGE_TABLE_HEADERS.ROLE_PERMISSION}
                     </TH>
                     <TH style={{ position: "sticky", top: 0, zIndex: 10 }}>
-                      Sections
+                      {USER_MANAGE_TABLE_HEADERS.SECTIONS}
                     </TH>
                     <TH
                       style={{
@@ -1021,7 +1043,7 @@ export default function UserManage() {
                         zIndex: 10,
                       }}
                     >
-                      Actions
+                      {USER_MANAGE_TABLE_HEADERS.ACTIONS}
                     </TH>
                   </tr>
                 </thead>
@@ -1092,7 +1114,9 @@ export default function UserManage() {
                               color: isSuperAdmin ? "#1d4ed8" : "#15803d",
                             }}
                           >
-                            {isSuperAdmin ? "Super Admin" : "Custom"}
+                            {isSuperAdmin
+                              ? USER_MANAGE_ACCESS_TYPE_LABELS.superadmin
+                              : USER_MANAGE_ACCESS_TYPE_LABELS.custom}
                           </span>
                         </td>
                         <td
@@ -1127,7 +1151,7 @@ export default function UserManage() {
                                 fontSize: 13,
                               }}
                             >
-                              All
+                              {USER_MANAGE_LABELS.ALL_SECTIONS}
                             </span>
                           ) : (
                             <span>
@@ -1157,10 +1181,10 @@ export default function UserManage() {
                                 titleAccess="Edit"
                                 style={{
                                   cursor: canWrite ? "pointer" : "not-allowed",
-                                  color: C.accent,
+                                  color: USER_MANAGE_ICON_COLORS.EDIT,
                                   fontSize: 22,
-                                  opacity: canWrite ? 0.75 : 0.3,
-                                  transition: "opacity 0.15s ease, color 0.15s ease",
+                                  opacity: canWrite ? 0.7 : 0.3,
+                                  transition: "opacity 0.15s ease",
                                 }}
                                 onClick={() => {
                                   if (!canWrite) {
@@ -1172,13 +1196,11 @@ export default function UserManage() {
                                 onMouseEnter={(e) => {
                                   if (canWrite) {
                                     e.currentTarget.style.opacity = "1";
-                                    e.currentTarget.style.color = C.accentDark;
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (canWrite) {
-                                    e.currentTarget.style.opacity = "0.75";
-                                    e.currentTarget.style.color = C.accent;
+                                    e.currentTarget.style.opacity = "0.7";
                                   }
                                 }}
                               />
@@ -1188,10 +1210,10 @@ export default function UserManage() {
                                 titleAccess="Delete"
                                 style={{
                                   cursor: canWrite ? "pointer" : "not-allowed",
-                                  color: C.errorRed,
+                                  color: USER_MANAGE_ICON_COLORS.DELETE,
                                   fontSize: 22,
-                                  opacity: canWrite ? 0.75 : 0.3,
-                                  transition: "opacity 0.15s ease, color 0.15s ease",
+                                  opacity: canWrite ? 0.7 : 0.3,
+                                  transition: "opacity 0.15s ease",
                                 }}
                                 onClick={() => {
                                   if (!canWrite) {
@@ -1203,13 +1225,11 @@ export default function UserManage() {
                                 onMouseEnter={(e) => {
                                   if (canWrite) {
                                     e.currentTarget.style.opacity = "1";
-                                    e.currentTarget.style.color = "#b91c1c";
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (canWrite) {
-                                    e.currentTarget.style.opacity = "0.75";
-                                    e.currentTarget.style.color = C.errorRed;
+                                    e.currentTarget.style.opacity = "0.7";
                                   }
                                 }}
                               />
@@ -1232,8 +1252,8 @@ export default function UserManage() {
               <div style={{ ...blueBarStyle, justifyContent: "flex-start" }}>
                 <span>
                   {mode === "add"
-                    ? "Add User"
-                    : `Edit User — ${editUser?.username}`}
+                    ? USER_MANAGE_CARD_TITLES.ADD_USER
+                    : `${USER_MANAGE_CARD_TITLES.EDIT_USER_PREFIX}${editUser?.username}`}
                 </span>
               </div>
               <div className="p-6 flex flex-col items-center">
@@ -1243,12 +1263,12 @@ export default function UserManage() {
                 >
                   {mode === "add" && (
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <Tooltip title={tooltips.username} {...tooltipProps}>
+                      <Tooltip title={USER_MANAGE_TOOLTIPS.username} {...tooltipProps}>
                         <span
                           className="sm:w-[140px] shrink-0"
                           style={labelStyle}
                         >
-                          Username
+                          {USER_MANAGE_LABELS.USERNAME}
                         </span>
                       </Tooltip>
                       <input
@@ -1256,19 +1276,19 @@ export default function UserManage() {
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Min 5 characters"
+                        placeholder={USER_MANAGE_PLACEHOLDERS.MIN_5_CHARS}
                         {...inputInteraction}
                       />
                     </div>
                   )}
                   {mode === "add" && (
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                      <Tooltip title={tooltips.password} {...tooltipProps}>
+                      <Tooltip title={USER_MANAGE_TOOLTIPS.password} {...tooltipProps}>
                         <span
                           className="sm:w-[140px] shrink-0"
                           style={labelStyle}
                         >
-                          Password
+                          {USER_MANAGE_LABELS.PASSWORD}
                         </span>
                       </Tooltip>
                       <input
@@ -1276,18 +1296,18 @@ export default function UserManage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Min 5 characters"
+                        placeholder={USER_MANAGE_PLACEHOLDERS.MIN_5_CHARS}
                         {...inputInteraction}
                       />
                     </div>
                   )}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <Tooltip title={tooltips.accessType} {...tooltipProps}>
+                    <Tooltip title={USER_MANAGE_TOOLTIPS.accessType} {...tooltipProps}>
                       <span
                         className="sm:w-[140px] shrink-0"
                         style={labelStyle}
                       >
-                        Access Type
+                        {USER_MANAGE_LABELS.ACCESS_TYPE}
                       </span>
                     </Tooltip>
                     <select
@@ -1296,17 +1316,23 @@ export default function UserManage() {
                       onChange={(e) => setAccessType(e.target.value)}
                       {...inputInteraction}
                     >
-                      <option value="custom">Custom</option>
-                      <option value="superadmin">Super Admin</option>
+                      {USER_MANAGE_ACCESS_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <Tooltip title={tooltips.rolePermission} {...tooltipProps}>
+                    <Tooltip
+                      title={USER_MANAGE_TOOLTIPS.rolePermission}
+                      {...tooltipProps}
+                    >
                       <span
                         className="sm:w-[140px] shrink-0"
                         style={labelStyle}
                       >
-                        Role Permission
+                        {USER_MANAGE_LABELS.ROLE_PERMISSION}
                       </span>
                     </Tooltip>
                     <select
@@ -1315,8 +1341,11 @@ export default function UserManage() {
                       onChange={(e) => setRolePermission(e.target.value)}
                       {...inputInteraction}
                     >
-                      <option value="Read, Write">Read, Write</option>
-                      <option value="Read">Read</option>
+                      {USER_MANAGE_ROLE_PERMISSION_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -1324,13 +1353,44 @@ export default function UserManage() {
             </div>
 
             <div style={{ ...tableContainerStyle, marginTop: 20 }}>
-              <div style={{ ...blueBarStyle, justifyContent: "flex-start" }}>
-                <span>Page Permissions</span>
+              <div
+                style={{
+                  ...blueBarStyle,
+                  justifyContent: "flex-start",
+                  borderBottom: "none",
+                }}
+              >
+                <span>{USER_MANAGE_CARD_TITLES.PAGE_PERMISSIONS}</span>
               </div>
               <PermissionTree
                 permissions={permissions}
                 setPermissions={setPermissions}
               />
+              <div style={permissionCardFooterStyle}>
+                <Btn
+                  variant={USER_MANAGE_BUTTON_VARIANTS.PRIMARY}
+                  onClick={() => {
+                    if (!canWrite) {
+                      showReadOnlyToast();
+                      return;
+                    }
+                    handleSave();
+                  }}
+                  disabled={saving || !canWrite}
+                  style={USER_MANAGE_BUTTON_STYLE}
+                >
+                  {saving
+                    ? USER_MANAGE_BUTTON_LABELS.SAVING
+                    : USER_MANAGE_BUTTON_LABELS.SAVE}
+                </Btn>
+                <Btn
+                  variant={USER_MANAGE_BUTTON_VARIANTS.CANCEL}
+                  onClick={closeForm}
+                  style={USER_MANAGE_BUTTON_STYLE}
+                >
+                  {USER_MANAGE_BUTTON_LABELS.CANCEL}
+                </Btn>
+              </div>
             </div>
 
             {formError && (
@@ -1350,29 +1410,6 @@ export default function UserManage() {
               </Alert>
             )}
 
-            <div style={formFooterStyle}>
-              <Btn
-                variant="primary"
-                onClick={() => {
-                  if (!canWrite) {
-                    showReadOnlyToast();
-                    return;
-                  }
-                  handleSave();
-                }}
-                disabled={saving || !canWrite}
-                style={formFooterBtnStyle}
-              >
-                {saving ? "Saving..." : "Save"}
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={closeForm}
-                style={formFooterBtnStyle}
-              >
-                Cancel
-              </Btn>
-            </div>
           </>
         )}
       </div>

@@ -38,11 +38,11 @@ import {
 
 const AUTH_COMPACT_MQ = "(max-width: 768px)";
 const AUTH_CARD_RADIUS = 10;
-const AUTH_LABEL_COL_WIDTH = 200;
+const AUTH_FORM_MAX_WIDTH = 720;
+const AUTH_FORM_HORIZONTAL_PADDING = 24;
+const AUTH_FIELD_LABEL_WIDTH = 260;
 const AUTH_CONTROL_COL_WIDTH = 220;
-const AUTH_FIELD_COL_GAP = 8;
-const AUTH_FORM_PAD_X = 28;
-const AUTH_FIELDS_STACK_GAP = 10;
+const AUTH_FIELD_MIDDLE_GAP = 24;
 
 const C = {
   pageBg: "#f8fafc",
@@ -50,7 +50,7 @@ const C = {
   cardBorder: "#d8dde5",
   divider: "#e2e6ec",
   labelText: "#3E5475",
-  valueText: "#0f172a",
+  valueText: "#30415A",
   mutedText: "#6b7280",
   accent: "#3E5475",
   sectionHeading: "#30415A",
@@ -201,25 +201,13 @@ const authorizationFooterBtnStyle = {
   minWidth: 100,
 };
 
-const authorizationFieldsStackStyle = {
-  display: "flex",
-  flexDirection: "column",
+const authorizationFormBodyStyle = {
   width: "100%",
-  minWidth: 0,
-  gap: AUTH_FIELDS_STACK_GAP,
-};
-
-const authorizationFormBodyStyle = (isCompact) => ({
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  minWidth: 0,
-  padding: isCompact
-    ? `16px ${AUTH_FORM_PAD_X}px 20px`
-    : `16px ${AUTH_FORM_PAD_X}px 20px`,
+  maxWidth: AUTH_FORM_MAX_WIDTH,
+  margin: "0 auto",
+  padding: `0 ${AUTH_FORM_HORIZONTAL_PADDING}px`,
   boxSizing: "border-box",
-  background: C.cardBg,
-});
+};
 
 const authorizationFixedAlertSx = {
   position: "fixed",
@@ -253,62 +241,16 @@ const AUTH_TOOLTIP_PROPS = {
   },
 };
 
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
+const AUTH_READ_ONLY_BORDER = "#d1d5db";
 
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW();
-};
-
-const inputInteraction = {
-  onFocus: (e) => {
-    if (e.target.readOnly) return;
-    setFieldFocus(e.target);
-  },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.readOnly) return;
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldHover(e.target);
-    }
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldDefault(e.target);
-    }
-  },
-};
-
-const authReadOnlyInputStyle = {
+const authReadOnlyInputStyle = (isCompact) => ({
   height: 32,
-  width: AUTH_CONTROL_COL_WIDTH,
-  minWidth: AUTH_CONTROL_COL_WIDTH,
-  maxWidth: AUTH_CONTROL_COL_WIDTH,
+  width: isCompact ? "100%" : AUTH_CONTROL_COL_WIDTH,
+  minWidth: 0,
+  maxWidth: "100%",
   padding: "0 10px",
   fontSize: 13,
-  border: `1px solid ${OUTLINED_BORDER}`,
+  border: `1px solid ${AUTH_READ_ONLY_BORDER}`,
   borderRadius: 6,
   outline: "none",
   backgroundColor: "#f8fafc",
@@ -316,7 +258,8 @@ const authReadOnlyInputStyle = {
   boxSizing: "border-box",
   textAlign: "center",
   cursor: "default",
-};
+  userSelect: "text",
+});
 
 const AuthorizationBreadcrumb = ({ section, current }) => (
   <div
@@ -346,80 +289,66 @@ const AuthorizationFieldRow = ({
   value,
   isStatus,
   statusColor,
-  labelColWidth = AUTH_LABEL_COL_WIDTH,
+  isCompact,
 }) => {
-  const labelWrapStyle = {
-    flex: `0 0 ${labelColWidth}px`,
-    width: labelColWidth,
-    maxWidth: labelColWidth,
-    minWidth: labelColWidth,
-  };
-
-  const valueColStyle = {
-    flex: "1 1 auto",
-    minWidth: AUTH_CONTROL_COL_WIDTH,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "flex-start",
-    paddingTop: 2,
-  };
-
-  const controlSlotStyle = {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    width: AUTH_CONTROL_COL_WIDTH,
-    minWidth: AUTH_CONTROL_COL_WIDTH,
-    maxWidth: AUTH_CONTROL_COL_WIDTH,
-  };
+  const stacked = isCompact;
 
   return (
     <div
       style={{
         display: "flex",
-        flexDirection: "row",
-        alignItems: "flex-start",
+        flexDirection: stacked ? "column" : "row",
+        alignItems: stacked ? "stretch" : "center",
+        justifyContent: "flex-start",
+        padding: "8px 0",
+        gap: stacked ? 8 : AUTH_FIELD_MIDDLE_GAP,
         width: "100%",
-        minHeight: 36,
-        gap: AUTH_FIELD_COL_GAP,
       }}
     >
-      <div style={labelWrapStyle}>
-        <Tooltip title={tooltip || ""} {...AUTH_TOOLTIP_PROPS}>
-          <label
-            style={{
-              fontSize: 12,
-              color: C.labelText,
-              fontWeight: 600,
-              width: "100%",
-              minWidth: 0,
-              lineHeight: 1.35,
-              wordBreak: "break-word",
-              cursor: "help",
-            }}
-          >
-            {label}
-          </label>
-        </Tooltip>
-      </div>
+      <Tooltip title={tooltip || ""} {...AUTH_TOOLTIP_PROPS}>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: C.labelText,
+            textAlign: "left",
+            width: stacked ? "100%" : "auto",
+            maxWidth: stacked ? "100%" : AUTH_FIELD_LABEL_WIDTH,
+            flexShrink: 0,
+            lineHeight: 1.4,
+            cursor: "help",
+          }}
+        >
+          {label}
+        </span>
+      </Tooltip>
 
-      <div style={valueColStyle}>
-        <div style={controlSlotStyle}>
-          <input
-            type="text"
-            value={value}
-            readOnly
-            style={{
-              ...authReadOnlyInputStyle,
-              fontWeight: isStatus ? 700 : 500,
-              color: isStatus ? statusColor : C.valueText,
-            }}
-            {...inputInteraction}
-          />
-          {loading && <CircularProgress size={16} sx={{ flexShrink: 0 }} />}
-        </div>
+      <div
+        style={{
+          minWidth: 0,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          gap: 8,
+          width: stacked ? "100%" : AUTH_CONTROL_COL_WIDTH,
+          marginLeft: stacked ? 0 : "auto",
+        }}
+      >
+        <input
+          type="text"
+          value={value}
+          readOnly
+          tabIndex={-1}
+          aria-readonly="true"
+          onFocus={(e) => e.target.blur()}
+          style={{
+            ...authReadOnlyInputStyle(isCompact),
+            fontWeight: isStatus ? 700 : 500,
+            color: isStatus ? statusColor : C.valueText,
+          }}
+        />
+        {loading && <CircularProgress size={16} sx={{ flexShrink: 0 }} />}
       </div>
     </div>
   );
@@ -557,7 +486,6 @@ function parseLicensePayload(responseData) {
 
 const Authorization = () => {
   const isCompact = useMediaQuery(AUTH_COMPACT_MQ);
-  const labelColWidth = isCompact ? 160 : AUTH_LABEL_COL_WIDTH;
   const [serial, setSerial] = useState(DEFAULT_SERIAL);
   const [deviceType, setDeviceType] = useState("");
   const [expireDate, setExpireDate] = useState("");
@@ -748,17 +676,12 @@ const Authorization = () => {
         />
 
         <div style={authorizationCardStyle}>
-          <div
-            style={{
-              ...authorizationHeaderStyle,
-              padding: `10px ${AUTH_FORM_PAD_X}px`,
-            }}
-          >
+          <div style={authorizationHeaderStyle}>
             <span>{AUTH_CARD_TITLE}</span>
           </div>
 
-          <div style={authorizationFormBodyStyle(isCompact)}>
-            <div style={authorizationFieldsStackStyle}>
+          <div style={{ padding: "12px 0 0", boxSizing: "border-box" }}>
+            <div style={{ ...authorizationFormBodyStyle, paddingBottom: 16 }}>
               {rows.map((row) => (
                 <AuthorizationFieldRow
                   key={row.label}
@@ -768,7 +691,7 @@ const Authorization = () => {
                   loading={row.loading}
                   isStatus={row.isStatus}
                   statusColor={statusColor}
-                  labelColWidth={labelColWidth}
+                  isCompact={isCompact}
                 />
               ))}
             </div>

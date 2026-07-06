@@ -1,22 +1,30 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import Tooltip from "@mui/material/Tooltip";
-import { InfoOutlined } from "@mui/icons-material";
+import { Alert, CircularProgress, Tooltip, useMediaQuery } from "@mui/material";
 import {
-  SCT_LABELS,
-  SCT_TEST_TYPE_OPTIONS,
-  SCT_TRUNK_GROUP_OPTIONS,
-  SCT_BUTTONS,
-  SCT_TRACE_LABEL,
-  SCT_LOG_CANDIDATES,
-  SCT_POLL_MS,
-  SCT_POLL_DURATION_MS,
-  SCT_MESSAGES,
-  SCT_TOOLTIPS,
-  SCT_BREADCRUMBS,
-  SCT_DEFAULTS,
-  SCT_COMMANDS,
-  SCT_LOG_MESSAGES,
-  SCT_TRACE_HEADERS,
+  SIGNALING_CALL_TEST_LABELS,
+  SIGNALING_CALL_TEST_TYPE_OPTIONS,
+  SIGNALING_CALL_TEST_TRUNK_GROUP_OPTIONS,
+  SIGNALING_CALL_TEST_BUTTON_LABELS,
+  SIGNALING_CALL_TEST_BUTTON_VARIANTS,
+  SIGNALING_CALL_TEST_BUTTON_STYLE,
+  SIGNALING_CALL_TEST_LOG_CANDIDATES,
+  SIGNALING_CALL_TEST_POLL_MS,
+  SIGNALING_CALL_TEST_POLL_DURATION_MS,
+  SIGNALING_CALL_TEST_MESSAGES,
+  SIGNALING_CALL_TEST_TOOLTIPS,
+  SIGNALING_CALL_TEST_BREADCRUMB,
+  SIGNALING_CALL_TEST_DEFAULTS,
+  SIGNALING_CALL_TEST_COMMANDS,
+  SIGNALING_CALL_TEST_LOG_MESSAGES,
+  SIGNALING_CALL_TEST_TRACE_HEADERS,
+  SIGNALING_CALL_TEST_CARD_TITLE,
+  SIGNALING_CALL_TEST_SECTION_CONFIG,
+  SIGNALING_CALL_TEST_SECTION_OUTPUT,
+  SIGNALING_CALL_TEST_OUTPUT_PLACEHOLDER,
+  SIGNALING_CALL_TEST_SECTION_HEADING_COLOR,
+  SIGNALING_CALL_TEST_FORM_PAD_X,
+  SIGNALING_CALL_TEST_LABEL_COL_WIDTH,
+  SIGNALING_CALL_TEST_FIELD_COL_GAP,
 } from "../../../constants/SignalingCallTestConstants";
 import {
   postAsteriskCLI,
@@ -24,35 +32,29 @@ import {
   amiOriginate,
   listGroups,
 } from "../../../api/apiService";
-import { Alert } from "@mui/material";
+
+const SIGNALING_CALL_TEST_SCROLL_CLASS = "sct-scroll";
+const SIGNALING_CALL_TEST_COMPACT_MQ = "(max-width: 768px)";
+
 const C = {
-  pageBg: "#f8fafc",
   cardBg: "#ffffff",
   cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  cardShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#4A5D75",
-  accentDark: "#3a4a5e",
-  amber: "#dc2626",
+  labelText: "#5a6d87",
+  valueText: "#374151",
+  mutedText: "#94a3b8",
   errorRed: "#dc2626",
-  gridHeaderBg: "#F8FAFC",
+  sectionHeading: SIGNALING_CALL_TEST_SECTION_HEADING_COLOR,
 };
 
 const CARD_RADIUS = 10;
 const FIELD_RADIUS = 6;
 
-// ── Local field UI (matches Network.jsx design language) ──
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;  
-
+const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -69,10 +71,10 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW(OUTLINED_FOCUS);
+  el.style.boxShadow = FOCUS_RING_SHADOW();
 };
 
-const nativeFieldInteraction = {
+const inputInteraction = {
   onFocus: (e) => {
     if (e.target.disabled) return;
     setFieldFocus(e.target);
@@ -97,91 +99,111 @@ const nativeFieldInteraction = {
   },
 };
 
-const inputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const getSystemToolsInputInteraction = (hasError, errorColor = "#dc2626") => {
-  if (!hasError) return inputInteraction;
-  const ring = (el, focused) => {
-    el.style.borderColor = errorColor;
-    el.style.borderWidth = "1px";
-    el.style.boxShadow = focused ? `0 0 0 1px ${errorColor}` : "none";
-  };
-  return {
-    onFocus: (e) => ring(e.target, true),
-    onBlur: (e) => ring(e.target, false),
-    onMouseEnter: (e) => ring(e.target, document.activeElement === e.target),
-    onMouseLeave: (e) => ring(e.target, document.activeElement === e.target),
-  };
-};
-
-const systemToolsFieldInputStyle = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 14,
+const systemFieldInputStyle = {
   width: "100%",
-  backgroundColor: "#f8fafc",
+  minWidth: 0,
+  maxWidth: "100%",
+  padding: "0 12px",
+  borderRadius: FIELD_RADIUS,
+  border: `1px solid ${OUTLINED_BORDER}`,
   outline: "none",
-  color: "#3E5475",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  background: "#fff",
+  color: C.valueText,
   boxSizing: "border-box",
   boxShadow: "none",
+  fontSize: 13,
+  lineHeight: 1.35,
+  minHeight: 36,
+  height: 36,
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const SYSTEM_TOOLS_FILL_BG_EDITABLE = "#ffffff";
-const SYSTEM_TOOLS_FILL_BG_READ_ONLY = "#f1f5f9";
-
-const systemToolsFieldInputStyleWhite = {
-  ...systemToolsFieldInputStyle,
-  backgroundColor: "#ffffff",
-  borderRadius: 8,
-  color: "#3E5475",
-};
-const systemToolsFieldSelectStyleWhite = {
-  ...systemToolsFieldInputStyleWhite,
+const systemFieldSelectStyle = {
+  ...systemFieldInputStyle,
   appearance: "auto",
+  paddingTop: 7,
+  paddingBottom: 7,
+  cursor: "pointer",
 };
-const inputStyle = systemToolsFieldInputStyleWhite;
-const selectStyle = systemToolsFieldSelectStyleWhite;
 
-  const tooltipProps = {
-    arrow: true,
-    placement: "top",
-    slotProps: {
-      tooltip: {
-        sx: {
-          bgcolor: "#fff",
-          color: "#334155",
-          border: "1px solid #d1d5db",
-          fontSize: 12,
-          maxWidth: 500,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        },
-      },
-      arrow: {
-        sx: {
-          color: "#fff",
-        },
+const inputStyle = systemFieldInputStyle;
+const selectStyle = systemFieldSelectStyle;
+
+const tooltipProps = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
       },
     },
-  };
+    arrow: { sx: { color: "#fff" } },
+  },
+};
+
+const sctFieldRowStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "flex-start",
+  width: "100%",
+  gap: SIGNALING_CALL_TEST_FIELD_COL_GAP,
+};
+
+const sctFieldLabelWrapStyle = {
+  flex: `0 0 ${SIGNALING_CALL_TEST_LABEL_COL_WIDTH}px`,
+  width: SIGNALING_CALL_TEST_LABEL_COL_WIDTH,
+  minWidth: SIGNALING_CALL_TEST_LABEL_COL_WIDTH,
+  maxWidth: SIGNALING_CALL_TEST_LABEL_COL_WIDTH,
+  paddingTop: 9,
+};
+
+const sctFieldControlWrapStyle = {
+  flex: "1 1 auto",
+  minWidth: 0,
+  width: "100%",
+};
+
+const FieldRow = ({ name, label, children }) => {
+  const tooltip = SIGNALING_CALL_TEST_TOOLTIPS[name];
+  const labelNode = (
+    <label
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: C.labelText,
+        width: "100%",
+        lineHeight: 1.4,
+        wordBreak: "break-word",
+        cursor: tooltip ? "help" : "default",
+      }}
+    >
+      {label}
+    </label>
+  );
+
+  return (
+    <div style={sctFieldRowStyle}>
+      <div style={sctFieldLabelWrapStyle}>
+        {tooltip ? (
+          <Tooltip title={tooltip} {...tooltipProps}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )}
+      </div>
+      <div style={sctFieldControlWrapStyle}>{children}</div>
+    </div>
+  );
+};
 
 const Btn = ({
   children,
@@ -190,8 +212,6 @@ const Btn = ({
   variant = "default",
   style: extraStyle,
   type,
-  component,
-  startIcon,
 }) => {
   const styles = {
     default: {
@@ -204,27 +224,13 @@ const Btn = ({
         "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
       color: "#fff",
       border: "1px solid #5A6F8F",
+      fontWeight: 600,
     },
     cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
+      background: "#e2e8f0",
+      color: "#475569",
+      border: "1px solid #e2e8f0",
+      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
     },
   };
 
@@ -232,20 +238,14 @@ const Btn = ({
   const hoverBg =
     {
       primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
+      cancel: "#d4dce6",
+      default: "#f1f5f9",
+    }[variant] || "#f1f5f9";
   const activeBg =
     {
       primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
+      cancel: "#c5ced9",
+      default: "#e2e8f0",
     }[variant] || "#d1d5db";
   const baseBg = extraStyle?.background ?? s.background;
   const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
@@ -266,9 +266,8 @@ const Btn = ({
           : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
   };
 
-  const Component = component || "button";
   return (
-    <Component
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}
@@ -278,15 +277,16 @@ const Btn = ({
         justifyContent: "center",
         padding: "6px 14px",
         borderRadius: 10,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
         transition:
           "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 36,
+        height: 30,
         gap: 6,
         whiteSpace: "nowrap",
+        userSelect: "none",
         ...s,
         ...extraStyle,
       }}
@@ -309,86 +309,232 @@ const Btn = ({
         clearPressStyle(e.currentTarget);
       }}
     >
-      {startIcon && (
-        <span style={{ display: "inline-flex" }}>
-          {startIcon}
-        </span>
-      )}
       {children}
-    </Component>
+    </button>
   );
 };
-const tableContainerStyle = {
+
+const PanelTitle = ({ title }) => (
+  <span
+    style={{
+      fontSize: 14,
+      fontWeight: 600,
+      color: C.sectionHeading,
+      letterSpacing: "0.01em",
+    }}
+  >
+    {title}
+  </span>
+);
+
+const sctBodyStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 20,
+  padding: `20px ${SIGNALING_CALL_TEST_FORM_PAD_X}px 24px`,
+  background: C.cardBg,
+  boxSizing: "border-box",
+};
+
+const sctConfigPanelStyle = {
+  background: "#ffffff",
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+};
+
+const sctConfigHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 16,
+  flexWrap: "wrap",
+  padding: "14px 18px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+};
+
+const sctConfigActionsStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  flexWrap: "wrap",
+};
+
+const sctConfigBodyStyle = {
+  padding: "18px 18px 20px",
+};
+
+const sctFieldsGridStyle = (isCompact) => ({
+  display: "grid",
+  gridTemplateColumns: isCompact ? "1fr" : "1fr 1fr",
+  gap: isCompact ? 16 : 24,
+  width: "100%",
+  alignItems: "start",
+});
+
+const sctFieldsColumnStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  minWidth: 0,
+};
+
+const sctOutputPanelStyle = {
+  border: `1px solid ${C.divider}`,
+  borderRadius: 8,
+  overflow: "hidden",
+  background: "#ffffff",
+};
+
+const sctOutputHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  padding: "12px 16px",
+  borderBottom: `1px solid ${C.divider}`,
+  background: "#ffffff",
+};
+
+const SIGNALING_CALL_TEST_OUTPUT_BODY_BG = "#f1f5f9";
+
+const sctOutputBodyStyle = {
+  backgroundColor: SIGNALING_CALL_TEST_OUTPUT_BODY_BG,
+  borderBottomLeftRadius: 8,
+  borderBottomRightRadius: 8,
+  overflow: "hidden",
+};
+
+const sctOutputTextareaStyle = {
+  display: "block",
+  width: "100%",
+  minHeight: 200,
+  maxHeight: 320,
+  margin: 0,
+  padding: "12px 16px 16px",
+  border: "none",
+  borderRadius: 0,
+  outline: "none",
+  resize: "vertical",
+  boxSizing: "border-box",
+  fontSize: 13,
+  lineHeight: 1.6,
+  fontFamily: "monospace",
+  color: C.labelText,
+  backgroundColor: "transparent",
+  whiteSpace: "pre-wrap",
+  cursor: "default",
+};
+
+const sctPageWrapStyle = {
+  minHeight: "calc(100vh - 80px)",
+  padding: 16,
+  boxSizing: "border-box",
+  backgroundColor: "#f8fafc",
+};
+
+const sctPageInnerStyle = {
+  width: "100%",
+  maxWidth: "100%",
+  margin: "0 auto",
+  display: "flex",
+  flexDirection: "column",
+};
+
+const sctTableContainerStyle = {
   width: "100%",
   maxWidth: "100%",
   margin: 0,
   display: "flex",
   flexDirection: "column",
   background: C.cardBg,
-  border: `1.5px solid ${C.cardBorder}`,
+  border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
   boxShadow: C.cardShadow,
   overflow: "hidden",
   boxSizing: "border-box",
 };
 
-const SignalingCallTestPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const SignalingCallTestPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const blueBarStyle = {
+const sctHeaderStyle = {
   width: "100%",
   minHeight: 44,
   background: C.cardBg,
-  borderTopLeftRadius: 10,
-  borderTopRightRadius: 10,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  justifyContent: "flex-start",
-  padding: "7px 14px",
-  flexWrap: "wrap",
-  gap: 12,
+  padding: `10px ${SIGNALING_CALL_TEST_FORM_PAD_X}px`,
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",
   borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
+
+const sctFixedAlertSx = {
+  position: "fixed",
+  top: 20,
+  right: 20,
+  zIndex: 9999,
+  minWidth: 300,
+  maxWidth: 500,
+  wordBreak: "break-word",
+  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+};
+
+const SctBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: C.mutedText,
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+    }}
+  >
+    <span>{SIGNALING_CALL_TEST_BREADCRUMB[0]}</span>
+    <span>&gt;</span>
+    <span>{SIGNALING_CALL_TEST_BREADCRUMB[1]}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{SIGNALING_CALL_TEST_BREADCRUMB[2]}</span>
+  </div>
+);
 
 const extractCmdOutput = (res) =>
   String(res?.responseData ?? res?.data ?? "").trim();
 
 const resolveAsteriskLogPath = async () => {
-  for (const path of SCT_LOG_CANDIDATES) {
+  for (const path of SIGNALING_CALL_TEST_LOG_CANDIDATES) {
     const res = await postLinuxCmd({
-      cmd: SCT_COMMANDS.checkReadable(path),
+      cmd: SIGNALING_CALL_TEST_COMMANDS.CHECK_READABLE(path),
     });
     if (extractCmdOutput(res) === "OK") return path;
   }
-  return SCT_LOG_CANDIDATES[0];
+  return SIGNALING_CALL_TEST_LOG_CANDIDATES[0];
 };
 
 const getTestTypeLabel = (value) =>
-  SCT_TEST_TYPE_OPTIONS.find((opt) => opt.value === value)?.label || value;
+  SIGNALING_CALL_TEST_TYPE_OPTIONS.find((opt) => opt.value === value)?.label || value;
 
 const getTrunkGroupLabel = (value, options) =>
   options.find((opt) => opt.value === value)?.label || value;
 
 const SignalingCallTest = () => {
-  const [testType, setTestType] = useState(SCT_TEST_TYPE_OPTIONS[0].value);
+  const isCompact = useMediaQuery(SIGNALING_CALL_TEST_COMPACT_MQ);
+  const outputRef = useRef(null);
+  const [testType, setTestType] = useState(SIGNALING_CALL_TEST_TYPE_OPTIONS[0].value);
   const [trunkGroup, setTrunkGroup] = useState(
-    SCT_TRUNK_GROUP_OPTIONS[0].value,
+    SIGNALING_CALL_TEST_TRUNK_GROUP_OPTIONS[0].value,
   );
   const [trunkGroupOptions, setTrunkGroupOptions] = useState(
-    SCT_TRUNK_GROUP_OPTIONS,
+    SIGNALING_CALL_TEST_TRUNK_GROUP_OPTIONS,
   );
   const [callerId, setCallerId] = useState("");
   const [calledId, setCalledId] = useState("");
@@ -396,7 +542,7 @@ const SignalingCallTest = () => {
   const [trace, setTrace] = useState("");
   const [busy, setBusy] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [toast, setToast] = useState(SCT_DEFAULTS.toast);
+  const [toast, setToast] = useState(SIGNALING_CALL_TEST_DEFAULTS.toast);
 
   const logPathRef = useRef("");
   const lineCountRef = useRef(0);
@@ -404,9 +550,14 @@ const SignalingCallTest = () => {
   const pollStopRef = useRef(null);
   const isRunningRef = useRef(false);
 
+  useEffect(() => {
+    if (!outputRef.current || !trace) return;
+    outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [trace]);
+
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
-    setTimeout(() => setToast(SCT_DEFAULTS.toast), SCT_DEFAULTS.toastTimeout);
+    setTimeout(() => setToast(SIGNALING_CALL_TEST_DEFAULTS.toast), SIGNALING_CALL_TEST_DEFAULTS.toastTimeout);
   };
 
   const appendTrace = useCallback((chunk) => {
@@ -425,7 +576,7 @@ const SignalingCallTest = () => {
     }
     if (isRunningRef.current) {
       try {
-        await postAsteriskCLI({ command: SCT_COMMANDS.loggerOff });
+        await postAsteriskCLI({ command: SIGNALING_CALL_TEST_COMMANDS.LOGGER_OFF });
       } catch (_) {}
     }
     isRunningRef.current = false;
@@ -438,20 +589,20 @@ const SignalingCallTest = () => {
 
     try {
       const wcRes = await postLinuxCmd({
-        cmd: SCT_COMMANDS.countLines(logPath),
+        cmd: SIGNALING_CALL_TEST_COMMANDS.COUNT_LINES(logPath),
       });
       const lineCount = parseInt(extractCmdOutput(wcRes), 10) || 0;
       if (lineCount <= lineCountRef.current) return;
 
       const newLines = lineCount - lineCountRef.current;
       const tailRes = await postLinuxCmd({
-        cmd: SCT_COMMANDS.tailLines(newLines, logPath),
+        cmd: SIGNALING_CALL_TEST_COMMANDS.TAIL_LINES(newLines, logPath),
       });
       const chunk = extractCmdOutput(tailRes);
       lineCountRef.current = lineCount;
       appendTrace(chunk);
     } catch (error) {
-      console.error(SCT_LOG_MESSAGES.pollError, error);
+      console.error(SIGNALING_CALL_TEST_LOG_MESSAGES.POLL_ERROR, error);
     }
   }, [appendTrace]);
 
@@ -487,7 +638,7 @@ const SignalingCallTest = () => {
           );
         }
       } catch (error) {
-        console.warn(SCT_LOG_MESSAGES.trunkLoadError, error);
+        console.warn(SIGNALING_CALL_TEST_LOG_MESSAGES.TRUNK_LOAD_ERROR, error);
       }
     };
 
@@ -499,7 +650,7 @@ const SignalingCallTest = () => {
       if (pollRef.current) clearInterval(pollRef.current);
       if (pollStopRef.current) clearTimeout(pollStopRef.current);
       if (isRunningRef.current) {
-        postAsteriskCLI({ command: SCT_COMMANDS.loggerOff }).catch(() => {});
+        postAsteriskCLI({ command: SIGNALING_CALL_TEST_COMMANDS.LOGGER_OFF }).catch(() => {});
       }
     };
   }, []);
@@ -512,7 +663,7 @@ const SignalingCallTest = () => {
     const original = originalCallee.trim();
 
     if (!called) {
-      showToast(SCT_MESSAGES.calledIdRequired, "error");
+      showToast(SIGNALING_CALL_TEST_MESSAGES.CALLED_ID_REQUIRED, "error");
       return;
     }
 
@@ -520,13 +671,13 @@ const SignalingCallTest = () => {
     await stopTestSession();
 
     const header = [
-      `=== ${SCT_TRACE_HEADERS.title} ===`,
-      `${SCT_TRACE_HEADERS.time}: ${new Date().toLocaleString()}`,
-      `${SCT_TRACE_HEADERS.testType}: ${getTestTypeLabel(testType)}`,
-      `${SCT_TRACE_HEADERS.trunkGroup}: ${getTrunkGroupLabel(trunkGroup, trunkGroupOptions)}`,
-      `${SCT_TRACE_HEADERS.callerId}: ${caller || SCT_TRACE_HEADERS.empty}`,
-      `${SCT_TRACE_HEADERS.calledId}: ${called}`,
-      `${SCT_TRACE_HEADERS.originalCallee}: ${original || SCT_TRACE_HEADERS.empty}`,
+      `=== ${SIGNALING_CALL_TEST_TRACE_HEADERS.TITLE} ===`,
+      `${SIGNALING_CALL_TEST_TRACE_HEADERS.TIME}: ${new Date().toLocaleString()}`,
+      `${SIGNALING_CALL_TEST_TRACE_HEADERS.TEST_TYPE}: ${getTestTypeLabel(testType)}`,
+      `${SIGNALING_CALL_TEST_TRACE_HEADERS.TRUNK_GROUP}: ${getTrunkGroupLabel(trunkGroup, trunkGroupOptions)}`,
+      `${SIGNALING_CALL_TEST_TRACE_HEADERS.CALLER_ID}: ${caller || SIGNALING_CALL_TEST_TRACE_HEADERS.EMPTY}`,
+      `${SIGNALING_CALL_TEST_TRACE_HEADERS.CALLED_ID}: ${called}`,
+      `${SIGNALING_CALL_TEST_TRACE_HEADERS.ORIGINAL_CALLEE}: ${original || SIGNALING_CALL_TEST_TRACE_HEADERS.EMPTY}`,
       "",
     ].join("\n");
 
@@ -537,25 +688,25 @@ const SignalingCallTest = () => {
       logPathRef.current = logPath;
 
       const wcRes = await postLinuxCmd({
-        cmd: SCT_COMMANDS.countLines(logPath),
+        cmd: SIGNALING_CALL_TEST_COMMANDS.COUNT_LINES(logPath),
       });
       lineCountRef.current = parseInt(extractCmdOutput(wcRes), 10) || 0;
 
-      await runAsteriskCmd(SCT_COMMANDS.loggerOn);
+      await runAsteriskCmd(SIGNALING_CALL_TEST_COMMANDS.LOGGER_ON);
       isRunningRef.current = true;
       setIsRunning(true);
 
       pollRef.current = setInterval(() => {
         pollLogChunk();
-      }, SCT_POLL_MS);
+      }, SIGNALING_CALL_TEST_POLL_MS);
 
       pollStopRef.current = setTimeout(async () => {
         await stopTestSession();
-        appendTrace(`\n${SCT_TRACE_HEADERS.title}`);
-        showToast(SCT_MESSAGES.signalingFinished, "info");
-      }, SCT_POLL_DURATION_MS);
+        appendTrace(`\n${SIGNALING_CALL_TEST_TRACE_HEADERS.TITLE}`);
+        showToast(SIGNALING_CALL_TEST_MESSAGES.SIGNALING_FINISHED, "info");
+      }, SIGNALING_CALL_TEST_POLL_DURATION_MS);
 
-      appendTrace(SCT_MESSAGES.sendingOriginate);
+      appendTrace(SIGNALING_CALL_TEST_MESSAGES.SENDING_ORIGINATE);
       const originatePayload = { extension: called };
       if (caller) {
         originatePayload.callerid = `"${caller}" <${caller}>`;
@@ -564,24 +715,24 @@ const SignalingCallTest = () => {
       const origRes = await amiOriginate(originatePayload);
       if (origRes?.response === false) {
         appendTrace(
-          `Originate failed: ${origRes?.message || SCT_MESSAGES.unknownError}`,
+          `Originate failed: ${origRes?.message || SIGNALING_CALL_TEST_MESSAGES.UNKNOWN_ERROR}`,
         );
-        showToast(origRes?.message || SCT_MESSAGES.originateFailed, "error");
+        showToast(origRes?.message || SIGNALING_CALL_TEST_MESSAGES.ORIGINATE_FAILED, "error");
       } else {
         appendTrace(
           origRes?.message ||
             origRes?.responseData ||
-            SCT_MESSAGES.originateRequestSent,
+            SIGNALING_CALL_TEST_MESSAGES.ORIGINATE_REQUEST_SENT,
         );
-        showToast(SCT_MESSAGES.signalingStarted, "success");
+        showToast(SIGNALING_CALL_TEST_MESSAGES.SIGNALING_STARTED, "success");
       }
 
       await pollLogChunk();
     } catch (error) {
-      console.error(SCT_LOG_MESSAGES.signalingError, error);
+      console.error(SIGNALING_CALL_TEST_LOG_MESSAGES.SIGNALING_ERROR, error);
       await stopTestSession();
-      appendTrace(`${SCT_LOG_MESSAGES.signalingError}: ${error.message || SCT_MESSAGES.failedToStartTest}`);
-      showToast(error.message || SCT_MESSAGES.failedToStartTest, "error");
+      appendTrace(`${SIGNALING_CALL_TEST_LOG_MESSAGES.SIGNALING_ERROR}: ${error.message || SIGNALING_CALL_TEST_MESSAGES.FAILED_TO_START_TEST}`);
+      showToast(error.message || SIGNALING_CALL_TEST_MESSAGES.FAILED_TO_START_TEST, "error");
     } finally {
       setBusy(false);
     }
@@ -593,251 +744,171 @@ const SignalingCallTest = () => {
     setCalledId("");
     setOriginalCallee("");
     setTrace("");
-    showToast(SCT_MESSAGES.formCleared, "success");
+    showToast(SIGNALING_CALL_TEST_MESSAGES.FORM_CLEARED, "success");
   };
 
-  const inputProps = inputInteraction;
+  const canStart = Boolean(calledId.trim());
+  const hasClearableData =
+    Boolean(trace.trim()) ||
+    Boolean(callerId.trim()) ||
+    Boolean(calledId.trim()) ||
+    Boolean(originalCallee.trim());
 
   return (
-    <div
-      style={SignalingCallTestPageWrapStyle} data-native-scroll>
-      <div style={SignalingCallTestPageInnerStyle}>
-    
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast(SCT_DEFAULTS.toast)}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div className={SIGNALING_CALL_TEST_SCROLL_CLASS} style={sctPageWrapStyle} data-native-scroll>
+      <div style={sctPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast(SIGNALING_CALL_TEST_DEFAULTS.toast)}
+            sx={sctFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-    
-        {/* ── Breadcrumb ── */}
-        <div
-          style={{
-            fontSize: 12,
-            color: C.mutedText,
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-          }}
-        >
-          <span>{SCT_BREADCRUMBS[0]}</span>
-          <span>&gt;</span>
-          <span>{SCT_BREADCRUMBS[1]}</span>
-          <span>&gt;</span>
-          <span style={{ color: C.strongText, fontWeight: 600 }}>
-            {SCT_BREADCRUMBS[2]}
-          </span>
-        </div>
+        <SctBreadcrumb />
 
-        <div style={tableContainerStyle}>
-          <div style={blueBarStyle}>
-            <span>{SCT_TRACE_HEADERS.title}</span>
+        <div style={sctTableContainerStyle}>
+          <div style={sctHeaderStyle}>
+            <span>{SIGNALING_CALL_TEST_CARD_TITLE}</span>
           </div>
 
-          <div className="w-full px-5 pt-3 pb-2 flex flex-col items-center">
-            <form className="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 items-center">
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                }}
-              >
-                <Tooltip title={SCT_TOOLTIPS.testType} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCT_LABELS.testType}</span>
-                </Tooltip>
-              </label>
-              <select
-                style={selectStyle}
-                value={testType}
-                onChange={(e) => setTestType(e.target.value)}
-                {...inputProps}
-              >
-                {SCT_TEST_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                }}
-              >
-                <Tooltip title={SCT_TOOLTIPS.trunkGroup} {...tooltipProps}>
-                    <span style={{ color: C.labelText }}>{SCT_LABELS.trunkGroup}</span>
-                </Tooltip>
-              </label>
-              <select
-                style={selectStyle}
-                value={trunkGroup}
-                onChange={(e) => setTrunkGroup(e.target.value)}
-                {...inputProps}
-              >
-                {trunkGroupOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                }}
-              >
-                <Tooltip title={SCT_TOOLTIPS.callerId} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCT_LABELS.callerId}</span>
-                </Tooltip>
-              </label>
-              <input
-                type="text"
-                style={inputStyle}
-                value={callerId}
-                onChange={(e) => setCallerId(e.target.value)}
-                {...inputProps}
-              />
-
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                }}
-              >
-                <Tooltip title={SCT_TOOLTIPS.calledId} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCT_LABELS.calledId}</span>
-                </Tooltip>
-              </label>
-              <input
-                type="text"
-                style={inputStyle}
-                value={calledId}
-                onChange={(e) => setCalledId(e.target.value)}
-                {...inputProps}
-              />
-
-              <label
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: C.labelText,
-                  textAlign: "left",
-                }}
-              >
-                <Tooltip title={SCT_TOOLTIPS.originalCallee} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCT_LABELS.originalCallee}</span>
-                </Tooltip>
-              </label>
-              <input
-                type="text"
-                style={inputStyle}
-                value={originalCallee}
-                onChange={(e) => setOriginalCallee(e.target.value)}
-                {...inputProps}
-              />
-            </form>
-
-            {/* Action Buttons */}
-            <div className="w-full mt-3 flex flex-col items-center">
-              <div
-                className="w-full max-w-2xl flex flex-row flex-wrap justify-center gap-3 pt-2 pb-2"
-                style={{ borderTop: `1px solid ${C.divider}` }}
-              >
-                <Btn
-                  variant="primary"
-                  type="button"
-                  onClick={handleStart}
-                  disabled={busy || isRunning}
-                  style={{ minWidth: 100, height: 33, fontSize: 13 }}
-                >
-                  {busy ? SCT_MESSAGES.starting : SCT_BUTTONS.start}
-                </Btn>
-                <Btn
-                  variant="cancel"
-                  type="button"
-                  onClick={handleClear}
-                  disabled={busy}
-                  style={{ minWidth: 100, height: 33, fontSize: 13 }}
-                >
-                  {SCT_BUTTONS.clear}
-                </Btn>
+          <div style={sctBodyStyle}>
+            <div style={sctConfigPanelStyle}>
+              <div style={sctConfigHeaderStyle}>
+                <PanelTitle title={SIGNALING_CALL_TEST_SECTION_CONFIG} />
+                <div style={sctConfigActionsStyle}>
+                  <Btn
+                    variant={SIGNALING_CALL_TEST_BUTTON_VARIANTS.PRIMARY}
+                    type="button"
+                    onClick={handleStart}
+                    disabled={busy || isRunning || !canStart}
+                    style={SIGNALING_CALL_TEST_BUTTON_STYLE}
+                  >
+                    {busy ? (
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <CircularProgress size={12} color="inherit" />
+                        {SIGNALING_CALL_TEST_BUTTON_LABELS.STARTING}
+                      </span>
+                    ) : (
+                      SIGNALING_CALL_TEST_BUTTON_LABELS.START
+                    )}
+                  </Btn>
+                </div>
               </div>
-              <div
-                style={{
-                  width: "calc(100% - 32px)",
-                  marginLeft: 16,
-                  marginRight: 16,
-                  borderBottom: `1px solid ${C.divider}`,
-                  boxSizing: "border-box",
-                }}
-              />
+
+              <div style={sctConfigBodyStyle}>
+                <div style={sctFieldsGridStyle(isCompact)}>
+                  <div style={sctFieldsColumnStyle}>
+                    <FieldRow name="testType" label={SIGNALING_CALL_TEST_LABELS.testType}>
+                      <select
+                        style={selectStyle}
+                        value={testType}
+                        onChange={(e) => setTestType(e.target.value)}
+                        {...inputInteraction}
+                      >
+                        {SIGNALING_CALL_TEST_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </FieldRow>
+
+                    <FieldRow name="trunkGroup" label={SIGNALING_CALL_TEST_LABELS.trunkGroup}>
+                      <select
+                        style={selectStyle}
+                        value={trunkGroup}
+                        onChange={(e) => setTrunkGroup(e.target.value)}
+                        {...inputInteraction}
+                      >
+                        {trunkGroupOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </FieldRow>
+
+                    <FieldRow name="callerId" label={SIGNALING_CALL_TEST_LABELS.callerId}>
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        value={callerId}
+                        onChange={(e) => setCallerId(e.target.value)}
+                        {...inputInteraction}
+                      />
+                    </FieldRow>
+                  </div>
+
+                  <div style={sctFieldsColumnStyle}>
+                    <FieldRow name="calledId" label={SIGNALING_CALL_TEST_LABELS.calledId}>
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        value={calledId}
+                        onChange={(e) => setCalledId(e.target.value)}
+                        {...inputInteraction}
+                      />
+                    </FieldRow>
+
+                    <FieldRow
+                      name="originalCallee"
+                      label={SIGNALING_CALL_TEST_LABELS.originalCallee}
+                    >
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        value={originalCallee}
+                        onChange={(e) => setOriginalCallee(e.target.value)}
+                        {...inputInteraction}
+                      />
+                    </FieldRow>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Signaling Trace — same size/layout as Signaling Call Track › Track Message */}
-            <div
-              className="w-full mt-1 pt-2 pb-2"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                alignSelf: "stretch",
-              }}
-            >
-              <label
-                style={{
-                  fontSize: 14,
-                  color: C.labelText,
-                  fontWeight: 600,
-                }}
-              >
-                <Tooltip title={SCT_TOOLTIPS.trace} {...tooltipProps}>
-                  <span style={{ color: C.labelText }}>{SCT_TRACE_LABEL}</span>
-                </Tooltip>
-              </label>
-              <textarea
-                value={trace}
-                readOnly
-                style={{
-                  width: "100%",
-                  minHeight: 220,
-                  maxHeight: 400,
-                  border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 10,
-                  backgroundColor: C.pageBg,
-                  color: C.valueText,
-                  fontSize: 14,
-                  padding: "12px",
-                  fontFamily: "monospace",
-                  resize: "vertical",
-                  outline: "none",
-                  transition: "border-color 0.2s ease",
-                  boxSizing: "border-box",
-                }}
-                {...inputProps}
-              />
+            <div style={sctOutputPanelStyle}>
+              <div style={sctOutputHeaderStyle}>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: C.sectionHeading,
+                  }}
+                >
+                  {SIGNALING_CALL_TEST_SECTION_OUTPUT}
+                </span>
+                <Btn
+                  variant={SIGNALING_CALL_TEST_BUTTON_VARIANTS.CANCEL}
+                  type="button"
+                  onClick={handleClear}
+                  disabled={busy || !hasClearableData}
+                  style={SIGNALING_CALL_TEST_BUTTON_STYLE}
+                >
+                  {SIGNALING_CALL_TEST_BUTTON_LABELS.CLEAR}
+                </Btn>
+              </div>
+              <div style={sctOutputBodyStyle}>
+                <textarea
+                  ref={outputRef}
+                  className={SIGNALING_CALL_TEST_SCROLL_CLASS}
+                  style={sctOutputTextareaStyle}
+                  value={trace}
+                  readOnly
+                  tabIndex={-1}
+                  placeholder={SIGNALING_CALL_TEST_OUTPUT_PLACEHOLDER}
+                  onFocus={(e) => e.target.blur()}
+                />
+              </div>
             </div>
           </div>
         </div>

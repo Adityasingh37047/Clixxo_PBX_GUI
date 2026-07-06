@@ -1,13 +1,34 @@
 // ConfigFile Page Constants
-export const CONFIG_FILE_TITLE = 'Config File';
+export const CONFIG_FILE_TITLE = "Config File";
+export const CONFIG_FILE_CARD_TITLE = CONFIG_FILE_TITLE;
 
 export const CONFIG_FILE_BREADCRUMB = [
   "Maintenance",
-  "System Tool",
+  "System Tools",
   CONFIG_FILE_TITLE,
 ];
 
-export const CONFIG_FILE_HOSTS_VALUE = 'hosts';
+export const CONFIG_FILE_BUTTON_LABELS = {
+  SAVE: "Save Changes",
+  RESET: "Reset",
+  SAVING: "Saving...",
+  LOADING_FILE: "Loading config file...",
+};
+
+export const CONFIG_FILE_BUTTON_VARIANTS = {
+  SAVE: "primary",
+  RESET: "cancel",
+};
+
+export const CONFIG_FILE_BUTTON_STYLE = {
+  height: 30,
+  minWidth: 100,
+  fontSize: 12,
+  borderRadius: 10,
+  padding: "6px 14px",
+};
+
+export const CONFIG_FILE_HOSTS_VALUE = "hosts";
 
 export const CONFIG_FILE_OPTIONS = [
   { label: 'SMConfig.ini', value: 'SMConfig.ini' },
@@ -167,8 +188,8 @@ export const CONFIG_FILE_MESSAGES = {
 };
 
 export const CONFIG_FILE_STATUS_MESSAGES = {
-  LOADING_FILE: "Loading config file...",
-  SAVING: "Saving...",
-  RESET: "Reset",
-  SAVE_CHANGES: "Save Changes",
+  LOADING_FILE: CONFIG_FILE_BUTTON_LABELS.LOADING_FILE,
+  SAVING: CONFIG_FILE_BUTTON_LABELS.SAVING,
+  RESET: CONFIG_FILE_BUTTON_LABELS.RESET,
+  SAVE_CHANGES: CONFIG_FILE_BUTTON_LABELS.SAVE,
 };
