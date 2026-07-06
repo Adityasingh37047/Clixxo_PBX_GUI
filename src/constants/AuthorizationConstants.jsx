@@ -5,7 +5,7 @@ export const AUTH_STATUS = {
 };
 
 export const AUTH_BREADCRUMB_ROOT = "Maintenance";
-export const AUTH_BREADCRUMB_SECTION = "System Tool";
+export const AUTH_BREADCRUMB_SECTION = "System Tools";
 export const AUTH_PAGE_TITLE = "Authorization";
 export const AUTH_BREADCRUMB_SEPARATOR = ">";
 
