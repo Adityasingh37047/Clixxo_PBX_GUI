@@ -170,8 +170,9 @@ const EXTENSION_FIELD_TOOLTIP_PROPS = {
         border: "1px solid #d1d5db",
         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
         fontSize: 13,
+        lineHeight: 1.45,
         maxWidth: 500,
-        padding: "12px 16px",
+        padding: "10px 12px",
       },
     },
     arrow: {
@@ -185,19 +186,27 @@ const EXTENSION_FIELD_TOOLTIP_PROPS = {
 const formatExtensionTooltipTitle = (text) => {
   if (!text) return "";
   const normalized = text
-    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<br\s*\/?>\s*/gi, "\n")
     .replace(/&quot;/g, '"')
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
+    .replace(/&gt;/g, ">")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+  if (!normalized.includes("\n")) return normalized;
+
+  const lines = normalized.split("\n");
+  return (
+    <span style={{ display: "block", lineHeight: 1.45, margin: 0 }}>
+      {lines.map((line, index) => (
+        <React.Fragment key={index}>
+          {index > 0 ? <br /> : null}
+          {line}
+        </React.Fragment>
+      ))}
+    </span>
+  );
 };
 
 const ExtensionTooltipLabel = ({ tooltipKey, children, style = {} }) => {

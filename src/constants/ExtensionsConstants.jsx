@@ -1,3 +1,12 @@
+export const EXTENSIONS_DELETE_LOADING_TEXT =
+  "Deleting extensions... Please wait.";
+
+export const getExtensionsDeleteLoadingText = (count) => {
+  if (!count || count < 1) return EXTENSIONS_DELETE_LOADING_TEXT;
+  if (count === 1) return "Deleting extension... Please wait.";
+  return `Deleting ${count} extensions... Please wait.`;
+};
+
 export const EXTENSION_FIELD_TOOLTIPS = {
   extension:
     "The extension number that will be associated with this particular user or phone.",
@@ -83,7 +92,7 @@ export const EXTENSION_FIELD_TOOLTIPS = {
     "When this feature is enabled, the RTP stream is encrypted, having the same certification with TLS. The default setting is No.",
 
   sip_bypass_media:
-    "Set whether to send the media stream point to point or in transparent proxy mode.<br>\nProxy Media: The media stream will pass IPPBX;<br>\nBypass Media: The media stream will be transport point to point.<br>\nDo not enable recording when set &quot;Bypass Media&quot; to avoid problems.",
+    "Set whether to send the media stream point to point or in transparent proxy mode.\nProxy Media: The media stream will pass IPPBX;\nBypass Media: The media stream will be transport point to point.\nDo not enable recording when set &quot;Bypass Media&quot; to avoid problems.",
 
   call_timeout:
     "Sets the maximum ringing duration in seconds for every call of this extension. The default value is 30s. If you wish to customize, enter the value in the text box directly. Phone will stop ringing after the time defined. The default value is 30s.",

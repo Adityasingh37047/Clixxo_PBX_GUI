@@ -1358,6 +1358,26 @@ export const deleteSipAccount = async (extension, context) => {
   }
 };
 
+// Bulk delete SIP accounts — accepts an array of extension strings/numbers.
+// context is not required by the backend for bulk_delete.
+export const bulkDeleteSipAccounts = async (extensions) => {
+  try {
+    const response = await axiosInstance.post('/pjsip', {
+      type: 'bulk_delete',
+      data: {
+        extensions: (extensions || []).map((e) => String(e)),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error bulk deleting SIP accounts:', error);
+    if (error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+      throw new Error('Network Error');
+    }
+    throw error.response?.data || { message: 'Server unavailable' };
+  }
+};
+
 // SIP Account CSV Export — returns a Blob for download
 export const exportSipAccountsCsv = async () => {
   const token = sessionStorage.getItem('authToken');

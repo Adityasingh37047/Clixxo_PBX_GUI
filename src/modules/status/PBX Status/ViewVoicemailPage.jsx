@@ -2,18 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   CircularProgress,
   Checkbox,
-  IconButton,
-  Tooltip,
   useMediaQuery,
 } from "@mui/material";
-import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-import StopRoundedIcon from "@mui/icons-material/StopRounded";
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
+import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   listVoicemails,
   playVoicemail,
   deleteVoicemail,
 } from "../../../api/apiService";
+import { RecordingActionBtn, RecordingPlayerBar } from "../../../components/common";
 import {
   VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS,
   VIEW_VOICEMAIL_COMPACT_MQ,
@@ -44,9 +43,6 @@ const VIEW_VOICEMAIL_TABLE_CARD_RADIUS = 10;
 
 const VIEW_VOICEMAIL_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
-
-const VIEW_VOICEMAIL_SECONDARY_CARD_SHADOW =
-  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
 
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
@@ -384,16 +380,6 @@ const TableListEmptyState = ({ message }) => (
   </div>
 );
 
-const toolIconBtnSx = {
-  width: 26,
-  height: 26,
-  border: "1px solid #c2c8d0",
-  borderRadius: 1,
-  backgroundColor: "#f5f7fa",
-  p: 0,
-  "&:hover": { backgroundColor: "#e8edf3" },
-};
-
 const viewVoicemailTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
@@ -507,14 +493,33 @@ const ViewVoicemailPage = () => {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selected, setSelected] = useState([]);
   const audioRef = useRef(null);
+  const audioUrlRef = useRef("");
   const hasInitialLoadRef = useRef(false);
+
+  useEffect(() => {
+    audioUrlRef.current = audioUrl;
+  }, [audioUrl]);
+
+  useEffect(
+    () => () => {
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (audioUrl && audioRef.current) {
+      audioRef.current.play().catch(() => {});
+    }
+  }, [audioUrl]);
 
   const stopPlayer = () => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
+    audioUrlRef.current = "";
     setAudioUrl("");
     setPlayingId(null);
   };
@@ -565,7 +570,7 @@ const ViewVoicemailPage = () => {
   }, []);
 
   const handlePlay = async (row) => {
-    if (playingId === row.id) {
+    if (playingId === row.id && audioUrl) {
       stopPlayer();
       return;
     }
@@ -576,7 +581,6 @@ const ViewVoicemailPage = () => {
       const url = URL.createObjectURL(blob);
       setAudioUrl(url);
       setPlayingId(row.id);
-      setTimeout(() => audioRef.current?.play?.(), 0);
     } catch (e) {
       setError(e.message || "Failed to play message.");
     } finally {
@@ -801,7 +805,7 @@ const ViewVoicemailPage = () => {
               {bulkDeleting ? (
                 <CircularProgress size={11} style={{ color: "#374151" }} />
               ) : null}
-              <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
+              <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
               Delete
             </Btn>
             {(extensionInput.trim() || folderFilter !== "all") && (
@@ -894,7 +898,8 @@ const ViewVoicemailPage = () => {
                       const isLast = idx === rows.length - 1;
                       const isSelected = selected.includes(String(row.id));
                       const rowBg = getViewVoicemailRowBg(isSelected, idx);
-                      const isPlaying = playingId === row.id;
+                      const isPlaying =
+                        playingId === row.id && Boolean(audioUrl);
                       const lastRowCellStyle = isLast
                         ? { borderBottom: "none" }
                         : {};
@@ -976,31 +981,27 @@ const ViewVoicemailPage = () => {
                             {fmtDuration(row.duration)}
                           </TD>
                           <TD bg={rowBg} style={lastRowCellStyle}>
-                            <Tooltip title={isPlaying ? "Stop" : "Play"}>
-                              <IconButton
-                                size="small"
-                                sx={toolIconBtnSx}
-                                disabled={
-                                  !!playLoading && playLoading !== row.id
-                                }
-                                onClick={() => handlePlay(row)}
-                              >
-                                {playLoading === row.id ? (
-                                  <CircularProgress
-                                    size={13}
-                                    style={{ color: C.successGreen }}
-                                  />
-                                ) : isPlaying ? (
-                                  <StopRoundedIcon
-                                    sx={{ fontSize: 16, color: C.errorRed }}
-                                  />
-                                ) : (
-                                  <PlayArrowRoundedIcon
-                                    sx={{ fontSize: 16, color: C.successGreen }}
-                                  />
-                                )}
-                              </IconButton>
-                            </Tooltip>
+                            <RecordingActionBtn
+                              variant="play"
+                              title={
+                                isPlaying ? "Stop" : "Play voicemail"
+                              }
+                              disabled={
+                                !!playLoading && playLoading !== row.id
+                              }
+                              onClick={() => handlePlay(row)}
+                            >
+                              {playLoading === row.id ? (
+                                <CircularProgress
+                                  size={13}
+                                  sx={{ color: C.accent }}
+                                />
+                              ) : isPlaying ? (
+                                <PauseOutlinedIcon sx={{ fontSize: 14 }} />
+                              ) : (
+                                <PlayArrowOutlinedIcon sx={{ fontSize: 14 }} />
+                              )}
+                            </RecordingActionBtn>
                           </TD>
                           <TD
                             bg={rowBg}
@@ -1009,25 +1010,23 @@ const ViewVoicemailPage = () => {
                               ...lastRowCellStyle,
                             }}
                           >
-                            <Tooltip title="Delete">
-                              <IconButton
-                                size="small"
-                                sx={toolIconBtnSx}
-                                disabled={!!deleteLoading || bulkDeleting}
-                                onClick={() => handleDelete(row)}
-                              >
-                                {deleteLoading === row.id ? (
-                                  <CircularProgress
-                                    size={13}
-                                    style={{ color: C.errorRed }}
-                                  />
-                                ) : (
-                                  <DeleteOutlineRoundedIcon
-                                    sx={{ fontSize: 16, color: C.errorRed }}
-                                  />
-                                )}
-                              </IconButton>
-                            </Tooltip>
+                            <RecordingActionBtn
+                              variant="delete"
+                              title="Delete"
+                              disabled={!!deleteLoading || bulkDeleting}
+                              onClick={() => handleDelete(row)}
+                            >
+                              {deleteLoading === row.id ? (
+                                <CircularProgress
+                                  size={13}
+                                  sx={{ color: "#dc2626" }}
+                                />
+                              ) : (
+                                <DeleteOutlineOutlinedIcon
+                                  sx={{ fontSize: 14 }}
+                                />
+                              )}
+                            </RecordingActionBtn>
                           </TD>
                         </tr>
                       );
@@ -1086,43 +1085,17 @@ const ViewVoicemailPage = () => {
           )}
         </div>
 
-        {/* Audio player */}
-        {audioUrl && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginTop: 16,
-              background: C.cardBg,
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: VIEW_VOICEMAIL_TABLE_CARD_RADIUS,
-              padding: "10px 16px",
-              boxShadow: VIEW_VOICEMAIL_SECONDARY_CARD_SHADOW,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: C.successGreen,
-                whiteSpace: "nowrap",
-              }}
-            >
-              Now Playing:
-            </span>
-            <audio
-              ref={audioRef}
-              controls
-              src={audioUrl}
-              style={{ height: 30, flex: 1 }}
-              onEnded={stopPlayer}
-            />
-            <IconButton size="small" onClick={stopPlayer} sx={toolIconBtnSx}>
-              <StopRoundedIcon sx={{ fontSize: 16, color: C.errorRed }} />
-            </IconButton>
-          </div>
-        )}
+        <RecordingPlayerBar
+          ref={audioRef}
+          open={Boolean(audioUrl || playLoading)}
+          loading={Boolean(playLoading)}
+          label="Voicemail"
+          src={audioUrl}
+          onEnded={stopPlayer}
+          onClose={stopPlayer}
+          isCompact={isCompact}
+          accentColor={C.accent}
+        />
       </div>
     </div>
   );

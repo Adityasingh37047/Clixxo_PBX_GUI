@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   CircularProgress,
-  Checkbox,
   useMediaQuery,
   Dialog,
   DialogTitle,
@@ -27,6 +26,7 @@ import {
   CALL_COUNT_FILTER_TOOLTIPS,
   CALL_COUNT_FOOTER_LIMIT_NOTE,
   CALL_COUNT_ITEMS_PER_PAGE,
+  CALL_COUNT_MAX_PAGES,
   CALL_COUNT_STATUS_OPTIONS,
   CALL_COUNT_TABLE_MIN_WIDTH,
   CALL_COUNT_TALK_DURATION_OPERATOR_OPTIONS,
@@ -36,7 +36,7 @@ import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 
 // ── Shared PBX UI library (only the byte-identical primitives). CallCount keeps
-//    its own Btn, CallCountPagination, Pill, and PageBreadcrumb — those differ. ──
+//    its own Btn, CallCountPagination alias, Pill, and PageBreadcrumb. ──
 import {
   C,
   OUTLINED_BORDER,
@@ -48,12 +48,15 @@ import {
   TH,
   ExtensionTableListLoading as TableListLoading,
   ExtensionTableListEmptyState as TableListEmptyState,
+  ExtensionPagination as CallCountPagination,
   extensionPageWrapStyle as pbxPageWrapStyle,
   extensionPageInnerStyle as pbxPageInnerStyle,
   extensionCardStyle as callCountCardStyle,
   extensionToolbarStyle as callCountToolbarStyle,
   extensionSelectedBadgeStyle as callCountSelectedBadgeStyle,
   extensionCancelBtnStyle as callCountCancelBtnStyle,
+  RecordingActionBtn,
+  RecordingPlayerBar,
 } from "../../components/common";
 
 // ── Local page UI (inlined from cdrSharedUi) ────────────────────────────────
@@ -139,7 +142,7 @@ const Btn = ({
 
   return (
     <Component
-      type={type}
+      type={type ?? "button"}
       form={form}
       title={title}
       onClick={onClick}
@@ -217,104 +220,12 @@ const PageBreadcrumb = ({ segments, style }) => (
   </div>
 );
 
-const CALL_COUNT_TABLE_CARD_RADIUS = 10;
 
 const callCountToolbarFilterRefreshBtnStyle = {
   ...callCountCancelBtnStyle,
   width: 70,
   boxSizing: "border-box",
 };
-
-const callCountPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "10px 28px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: CALL_COUNT_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: CALL_COUNT_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  boxSizing: "border-box",
-  gap: 12,
-};
-
-const callCountPaginationBtnStyle = {
-  height: 30,
-};
-
-const callCountPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 6,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const CallCountPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-  compact = false,
-}) => (
-  <div
-    style={{
-      ...callCountPaginationStyle,
-      ...(compact
-        ? {
-            flexDirection: "column",
-            alignItems: "stretch",
-            gap: 10,
-          }
-        : {}),
-      ...style,
-    }}
-  >
-    <span
-      style={{
-        fontSize: 11,
-        color: C.mutedText,
-        textAlign: compact ? "center" : "left",
-      }}
-    >
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div
-      style={{
-        display: "flex",
-        gap: 8,
-        alignItems: "center",
-        ...(compact ? { justifyContent: "center", flexWrap: "wrap" } : {}),
-      }}
-    >
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-        style={callCountPaginationBtnStyle}
-      >
-        ← Prev
-      </Btn>
-      <span style={callCountPageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-        style={callCountPaginationBtnStyle}
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
 
 /** Separator line left of vertical scrollbar only — see index.css `.trunk-table-scroll` */
 const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
@@ -384,41 +295,6 @@ const callCountTableTdStyle = {
 const callCountTableThStyle = {
   letterSpacing: "0.08em",
   boxSizing: "border-box",
-};
-
-const callCountTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const recordingIconBtnBase = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 26,
-  height: 24,
-  borderRadius: 6,
-  fontSize: 12,
-  lineHeight: 1,
-  cursor: "pointer",
-  padding: 0,
-  transition: "all 0.15s ease",
-};
-
-const recordingIconBtnStyle = {
-  ...recordingIconBtnBase,
-  background: "#eff6ff",
-  color: "#3E5475",
-  border: "1px solid #bfdbfe",
-};
-
-const recordingDeleteBtnStyle = {
-  ...recordingIconBtnBase,
-  background: "#fef2f2",
-  color: "#dc2626",
-  border: "1px solid #fecaca",
 };
 
 // ── Column definitions ────────────────────────────────────────────────────────
@@ -1079,6 +955,7 @@ const CallCount = () => {
   const hasInitialLoadRef = useRef(false);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(CALL_COUNT_ITEMS_PER_PAGE);
   const [selectedIds, setSelectedIds] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -1190,14 +1067,27 @@ const CallCount = () => {
         trunk_name: filters.trunkName || undefined,
       });
       if (data && data.success && Array.isArray(data.data)) {
-        setRows(data.data);
+        const pageRows = data.data;
+        setRows(pageRows);
         setLastUpdated(new Date());
+        const rowCount = pageRows.length;
+        setTotalPages((prev) => {
+          if (rowCount < limit) {
+            return Math.max(1, pageToLoad);
+          }
+          return Math.min(
+            CALL_COUNT_MAX_PAGES,
+            Math.max(prev, pageToLoad + 1),
+          );
+        });
       } else {
         setRows([]);
+        setTotalPages(1);
       }
     } catch {
       setError("Failed to load call records. Please try again.");
       setRows([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
       setIsInitialLoad(false);
@@ -1211,29 +1101,18 @@ const CallCount = () => {
     }
   }, []);
 
-  const handlePrev = () => {
-    if (page <= 1) return;
-    const p = page - 1;
-    setPage(p);
-    loadCdr(p);
-  };
-
-  const handleNext = () => {
-    const hasMoreRecords = hasActiveFilters
-      ? filteredData.length >= limit
-      : rows && rows.length >= limit;
-    if (loading || !hasMoreRecords) return;
-    const p = page + 1;
-    setPage(p);
-    loadCdr(p);
+  const handlePageChange = (nextPage) => {
+    const next = Math.min(totalPages, Math.max(1, nextPage));
+    if (next === page || loading) return;
+    setPage(next);
+    loadCdr(next);
   };
 
   const handleToggleRow = (uniqueid) => {
-    if (!uniqueid) return;
+    const id = String(uniqueid ?? "");
+    if (!id) return;
     setSelectedIds((prev) =>
-      prev.includes(uniqueid)
-        ? prev.filter((id) => id !== uniqueid)
-        : [...prev, uniqueid],
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -1267,6 +1146,23 @@ const CallCount = () => {
     appliedModifyDraft.talkDurationOperator,
     appliedModifyDraft.talkDurationSeconds,
   ]);
+
+  const handleToggleAll = () => {
+    const pageIds = filteredData
+      .map((r) => String(r.uniqueid ?? ""))
+      .filter(Boolean);
+    if (!pageIds.length) return;
+    const allSelected = pageIds.every((id) => selectedIds.includes(id));
+    setSelectedIds((prev) =>
+      allSelected
+        ? prev.filter((id) => !pageIds.includes(id))
+        : Array.from(new Set([...prev, ...pageIds])),
+    );
+  };
+
+  const handleClearAll = () => {
+    setSelectedIds([]);
+  };
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -1306,6 +1202,7 @@ const CallCount = () => {
     });
     setSelectedIds([]);
     setPage(1);
+    setTotalPages(1);
     setError("");
     loadCdr(1, resetFilters);
   };
@@ -1333,6 +1230,7 @@ const CallCount = () => {
       talkDurationSeconds: modifyDraft.talkDurationSeconds,
     });
     setPage(1);
+    setTotalPages(1);
     loadCdr(1, filterDraft);
     setShowModifyModal(false);
   };
@@ -1350,17 +1248,6 @@ const CallCount = () => {
   const handleModifyReset = () => {
     setShowModifyModal(false);
     handleResetFilters();
-  };
-
-  const handleToggleAll = () => {
-    const pageIds = filteredData.map((r) => r.uniqueid).filter(Boolean);
-    if (!pageIds.length) return;
-    const allSelected = pageIds.every((id) => selectedIds.includes(id));
-    setSelectedIds((prev) =>
-      allSelected
-        ? prev.filter((id) => !pageIds.includes(id))
-        : Array.from(new Set([...prev, ...pageIds])),
-    );
   };
 
   const handleDelete = async () => {
@@ -1413,22 +1300,6 @@ const CallCount = () => {
       setLoading(false);
     }
   };
-
-  const allPageSelected =
-    filteredData.length > 0 &&
-    filteredData
-      .map((r) => r.uniqueid)
-      .filter(Boolean)
-      .every((id) => selectedIds.includes(id));
-
-  const somePageSelected =
-    filteredData.some((r) => r.uniqueid && selectedIds.includes(r.uniqueid)) &&
-    !allPageSelected;
-
-  const hasNextPage = hasActiveFilters
-    ? filteredData.length >= limit
-    : rows.length >= limit;
-  const totalPages = Math.max(1, page + (hasNextPage ? 1 : 0));
 
   return (
     <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
@@ -1551,6 +1422,23 @@ const CallCount = () => {
                 Delete
               </Btn>
               <Btn
+                type="button"
+                onClick={handleToggleAll}
+                disabled={filteredData.length === 0}
+                variant="cancel"
+                style={callCountCancelBtnStyle}
+              >
+                Select All
+              </Btn>
+              <Btn
+                type="button"
+                onClick={handleClearAll}
+                variant="cancel"
+                style={callCountCancelBtnStyle}
+              >
+                Clear All
+              </Btn>
+              <Btn
                 onClick={handleDownload}
                 disabled={loading}
                 variant="cancel"
@@ -1589,33 +1477,12 @@ const CallCount = () => {
                   }}
                 >
                   <colgroup>
-                    <col style={{ width: "2.5%" }} />
-                    <col style={{ width: "2.5%" }} />
                     {columns.map((col) => (
                       <col key={col.key} style={{ width: col.width }} />
                     ))}
                   </colgroup>
                   <thead>
                     <tr>
-                      <TH
-                        style={{
-                          width: 36,
-                          padding: 0,
-                          borderLeft: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
-                        }}
-                      >
-                        <Checkbox
-                          size="small"
-                          checked={allPageSelected}
-                          indeterminate={somePageSelected}
-                          onChange={handleToggleAll}
-                          sx={callCountTableCheckboxSx}
-                        />
-                      </TH>
-
                       {columns.map((col, colIdx) => (
                         <TH
                           key={col.key}
@@ -1626,6 +1493,7 @@ const CallCount = () => {
                             position: "sticky",
                             top: 0,
                             zIndex: 10,
+                            ...(colIdx === 0 ? { borderLeft: "none" } : {}),
                             ...(colIdx === columns.length - 1
                               ? { borderRight: "none" }
                               : {}),
@@ -1642,7 +1510,7 @@ const CallCount = () => {
                     {filteredData.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={columns.length + 2}
+                          colSpan={columns.length}
                           style={{
                             textAlign: "center",
                             padding: "40px 16px",
@@ -1663,7 +1531,8 @@ const CallCount = () => {
                           ? { borderBottom: "none" }
                           : {};
                         const isSelected =
-                          row.uniqueid && selectedIds.includes(row.uniqueid);
+                          row.uniqueid &&
+                          selectedIds.includes(String(row.uniqueid));
                         const rowBg = isSelected
                           ? "#eff6ff"
                           : idx % 2 === 1
@@ -1672,48 +1541,33 @@ const CallCount = () => {
 
                         return (
                           <tr
-                            key={getRowKey(row, idx)}
+                            key={`${getRowKey(row, idx)}-${isSelected ? "1" : "0"}`}
+                            onClick={() => {
+                              if (row.uniqueid) {
+                                handleToggleRow(String(row.uniqueid));
+                              }
+                            }}
                             style={{
                               background: rowBg,
                               transition: "background 0.15s ease",
+                              cursor: row.uniqueid ? "pointer" : "default",
                             }}
                             onMouseEnter={(e) => {
-                              if (!isSelected)
+                              if (!isSelected) {
                                 e.currentTarget.style.background = "#f1f5f9";
+                              }
                             }}
                             onMouseLeave={(e) => {
-                              if (!isSelected)
-                                e.currentTarget.style.background = rowBg;
+                              e.currentTarget.style.background = rowBg;
                             }}
                           >
-                            <td
-                              style={{
-                                ...callCountTableTdStyle,
-                                padding: "4px 0",
-                                background: rowBg,
-                                width: 36,
-                                borderLeft: "none",
-                                ...lastRowCellStyle,
-                              }}
-                            >
-                              <Checkbox
-                                size="small"
-                                disabled={!row.uniqueid}
-                                checked={
-                                  !!row.uniqueid &&
-                                  selectedIds.includes(row.uniqueid)
-                                }
-                                onChange={() => handleToggleRow(row.uniqueid)}
-                                sx={callCountTableCheckboxSx}
-                              />
-                            </td>
-
                             <td
                               title={formatDate(row.calldate)}
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("calldate"),
-                                background: rowBg,
+                                background: "inherit",
+                                borderLeft: "none",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1725,7 +1579,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("src"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1739,7 +1593,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("src_ip"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1753,7 +1607,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("dst"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1767,7 +1621,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("dst_ip"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1781,7 +1635,7 @@ const CallCount = () => {
                                 ...callCountTableTdStyle,
                                 padding:
                                   getCallCountCellPadding("call_direction"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1794,7 +1648,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("disposition"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1818,7 +1672,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("billsec"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1830,7 +1684,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("dcontext"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1845,7 +1699,7 @@ const CallCount = () => {
                                 ...callCountTableTdStyle,
                                 padding:
                                   getCallCountCellPadding("hangup_cause"),
-                                background: rowBg,
+                                background: "inherit",
                                 ...lastRowCellStyle,
                               }}
                             >
@@ -1858,7 +1712,7 @@ const CallCount = () => {
                               style={{
                                 ...callCountTableTdStyle,
                                 padding: getCallCountCellPadding("recording"),
-                                background: rowBg,
+                                background: "inherit",
                                 borderRight: "none",
                                 whiteSpace: "nowrap",
                                 overflow: "visible",
@@ -1867,14 +1721,15 @@ const CallCount = () => {
                             >
                               {hasRecording(row) ? (
                                 <div
+                                  onClick={(e) => e.stopPropagation()}
                                   style={{
                                     display: "inline-flex",
                                     gap: 6,
                                     justifyContent: "center",
                                   }}
                                 >
-                                  <button
-                                    type="button"
+                                  <RecordingActionBtn
+                                    variant="play"
                                     title={
                                       recording.uniqueid === row.uniqueid &&
                                       recording.url
@@ -1886,7 +1741,6 @@ const CallCount = () => {
                                       recording.loading &&
                                       recording.uniqueid === row.uniqueid
                                     }
-                                    style={recordingIconBtnStyle}
                                   >
                                     {recording.loading &&
                                     recording.uniqueid === row.uniqueid ? (
@@ -1904,17 +1758,16 @@ const CallCount = () => {
                                         sx={{ fontSize: 14 }}
                                       />
                                     )}
-                                  </button>
-                                  <button
-                                    type="button"
+                                  </RecordingActionBtn>
+                                  <RecordingActionBtn
+                                    variant="delete"
                                     title="Delete recording"
                                     onClick={() => handleDeleteRecording(row)}
-                                    style={recordingDeleteBtnStyle}
                                   >
                                     <DeleteOutlineOutlinedIcon
                                       sx={{ fontSize: 14 }}
                                     />
-                                  </button>
+                                  </RecordingActionBtn>
                                 </div>
                               ) : (
                                 <span style={{ color: C.mutedText }}>—</span>
@@ -1934,73 +1787,24 @@ const CallCount = () => {
                   totalPages={totalPages}
                   recordCount={filteredData.length}
                   recordLabel="record"
-                  compact={isCompact}
-                  onPageChange={(p) => {
-                    if (p < page) handlePrev();
-                    else if (p > page) handleNext();
-                  }}
+                  onPageChange={handlePageChange}
                 />
               )}
             </>
           )}
         </div>
 
-        {(recording.url || recording.loading) && (
-          <div
-            style={{
-              position: "fixed",
-              left: "50%",
-              bottom: 20,
-              transform: "translateX(-50%)",
-              zIndex: 1300,
-              width: isCompact ? "calc(100vw - 24px)" : 560,
-              maxWidth: "calc(100vw - 24px)",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              background: "#ffffff",
-              border: `1px solid ${C.cardBorder}`,
-              borderRadius: 12,
-              boxShadow: "0 12px 32px rgba(15, 23, 42, 0.18)",
-              padding: "10px 14px",
-              boxSizing: "border-box",
-            }}
-          >
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: C.labelText,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {recording.loading ? "Loading…" : "Recording"}
-            </span>
-            {recording.url ? (
-              <audio
-                ref={audioRef}
-                src={recording.url}
-                controls
-                autoPlay
-                onEnded={stopRecording}
-                style={{ height: 36, flex: 1, minWidth: 0 }}
-              />
-            ) : (
-              <div
-                style={{ flex: 1, display: "flex", justifyContent: "center" }}
-              >
-                <CircularProgress size={20} sx={{ color: C.accent }} />
-              </div>
-            )}
-            <Btn
-              variant="cancel"
-              onClick={stopRecording}
-              style={{ height: 30 }}
-            >
-              Close
-            </Btn>
-          </div>
-        )}
+        <RecordingPlayerBar
+          ref={audioRef}
+          open={Boolean(recording.url || recording.loading)}
+          loading={recording.loading}
+          label="Recording"
+          src={recording.url}
+          onEnded={stopRecording}
+          onClose={stopRecording}
+          isCompact={isCompact}
+          accentColor={C.accent}
+        />
 
         <Dialog
           open={showModifyModal}

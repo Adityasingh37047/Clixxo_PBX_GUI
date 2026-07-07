@@ -7,7 +7,6 @@ import {
   TextField,
   CircularProgress,
   Checkbox,
-  FormControlLabel,
   Tooltip,
   useMediaQuery,
 } from "@mui/material";
@@ -50,8 +49,16 @@ import {
   addNewModalFooterStyle,
   addNewModalFooterBtnStyle,
   extensionModalCancelBtnStyle as extGroupModalCancelBtnStyle,
+  EXTENSION_MODAL_SECTION_BG,
+  EXTENSION_MODAL_SECTION_HEADING_COLOR,
   getExtensionTdStyle as getExtGroupTdStyle,
   getExtensionRowBg as getExtGroupRowBg,
+  ExtensionCodecListBox,
+  ExtensionCodecDualListBtn,
+  extensionCodecColumnLabelStyle,
+  extensionCodecBtnColumnStyle,
+  EXTENSION_CODEC_BTN_COL_WIDTH,
+  EXTENSION_CODEC_LIST_LABEL_OFFSET,
 } from "../../../components/common";
 
 const EXT_GROUP_COMPACT_MQ = EXTENSION_COMPACT_MQ;
@@ -120,6 +127,54 @@ const ExtGroupFieldLabel = ({ tooltipKey, children, style = {} }) => {
   );
 };
 
+const ExtGroupSectionHeading = ({
+  tooltipKey,
+  children,
+  isFirst = false,
+}) => {
+  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  return (
+    <div
+      style={{
+        margin: isFirst
+          ? isLaptopNarrow
+            ? "16px 0 24px 0"
+            : "0 0 24px 0"
+          : "16px 0 24px 0",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
+      <span
+        style={{
+          position: "absolute",
+          top: -10,
+          left: isLaptopNarrow ? 0 : -6,
+          background: EXTENSION_MODAL_SECTION_BG,
+          paddingRight: 8,
+          fontSize: 14,
+          fontWeight: 600,
+          color: EXTENSION_MODAL_SECTION_HEADING_COLOR,
+          display: "inline-flex",
+          alignItems: "center",
+        }}
+      >
+        <ExtGroupFieldLabel
+          tooltipKey={tooltipKey}
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: EXTENSION_MODAL_SECTION_HEADING_COLOR,
+          }}
+        >
+          {children}
+        </ExtGroupFieldLabel>
+      </span>
+    </div>
+  );
+};
+
 // ── Page-specific: extensions list truncation helper ──
 const EXT_GROUP_LIST_TRUNCATE_THRESHOLD = 10;
 const EXT_GROUP_LIST_DISPLAY_LIMIT = 6;
@@ -173,7 +228,7 @@ const extGroupModalFormStyle = {
 };
 
 const extGroupDialogPaperSx = {
-  width: 500,
+  width: 720,
   maxWidth: "95vw",
   margin: 24,
   maxHeight: "calc(100vh - 80px - 48px)",
@@ -332,6 +387,8 @@ const ExtensionGroupsPage = () => {
   const [groupName, setGroupName] = useState("");
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
+  const [availableExtSelected, setAvailableExtSelected] = useState([]);
+  const [chosenExtSelected, setChosenExtSelected] = useState([]);
 
   // ── Load Data ──
   const loadGroups = async () => {
@@ -484,6 +541,8 @@ const ExtensionGroupsPage = () => {
     setEditGroupId(null);
     setGroupName("");
     setSelectedExtensions([]);
+    setAvailableExtSelected([]);
+    setChosenExtSelected([]);
   };
 
   const handleCloseModal = () => {
@@ -491,11 +550,126 @@ const ExtensionGroupsPage = () => {
     resetModalState();
   };
 
-  const toggleExtension = (ext) => {
-    setSelectedExtensions((prev) =>
-      prev.includes(ext) ? prev.filter((e) => e !== ext) : [...prev, ext],
+  const getExtensionLabel = (extension) => {
+    const found = availableExtensions.find((e) => e.extension === extension);
+    if (!found) return String(extension);
+    return found.name ? `${found.extension} — ${found.name}` : found.extension;
+  };
+
+  const availableExtensionList = availableExtensions
+    .filter(({ extension }) => !selectedExtensions.includes(extension))
+    .map(({ extension }) => ({ value: extension, label: getExtensionLabel(extension) }));
+
+  const chosenExtensionList = selectedExtensions.map((extension) => ({
+    value: extension,
+    label: getExtensionLabel(extension),
+  }));
+
+  const clearExtHighlight = () => {
+    setAvailableExtSelected([]);
+    setChosenExtSelected([]);
+  };
+
+  const toggleAvailableExtSelect = (id) => {
+    setAvailableExtSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
+
+  const toggleChosenExtSelect = (id) => {
+    setChosenExtSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const addSelectedExtensions = () => {
+    if (!availableExtSelected.length) return;
+    setSelectedExtensions((prev) => [
+      ...prev,
+      ...availableExtSelected.filter((id) => !prev.includes(id)),
+    ]);
+    setAvailableExtSelected([]);
+  };
+
+  const addAllExtensions = () => {
+    setSelectedExtensions((prev) => [
+      ...prev,
+      ...availableExtensions
+        .map((e) => e.extension)
+        .filter((id) => id && !prev.includes(id)),
+    ]);
+    setAvailableExtSelected([]);
+  };
+
+  const removeSelectedExtensions = () => {
+    if (!chosenExtSelected.length) return;
+    setSelectedExtensions((prev) =>
+      prev.filter((id) => !chosenExtSelected.includes(id)),
+    );
+    setChosenExtSelected([]);
+  };
+
+  const removeAllExtensions = () => {
+    setSelectedExtensions([]);
+    setChosenExtSelected([]);
+  };
+
+  const moveExtensionToBottom = () => {
+    if (!chosenExtSelected.length) return;
+    setSelectedExtensions((prev) => [
+      ...prev.filter((id) => !chosenExtSelected.includes(id)),
+      ...prev.filter((id) => chosenExtSelected.includes(id)),
+    ]);
+  };
+
+  const moveExtensionUp = () => {
+    if (!chosenExtSelected.length) return;
+    setSelectedExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = 1; i < arr.length; i += 1) {
+        if (chosenExtSelected.includes(arr[i]) && !chosenExtSelected.includes(arr[i - 1])) {
+          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+        }
+      }
+      return arr;
+    });
+  };
+
+  const moveExtensionDown = () => {
+    if (!chosenExtSelected.length) return;
+    setSelectedExtensions((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 2; i >= 0; i -= 1) {
+        if (chosenExtSelected.includes(arr[i]) && !chosenExtSelected.includes(arr[i + 1])) {
+          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+        }
+      }
+      return arr;
+    });
+  };
+
+  const moveExtensionToTop = () => {
+    if (!chosenExtSelected.length) return;
+    setSelectedExtensions((prev) => [
+      ...prev.filter((id) => chosenExtSelected.includes(id)),
+      ...prev.filter((id) => !chosenExtSelected.includes(id)),
+    ]);
+  };
+
+  useEffect(() => {
+    if (!showModal) return undefined;
+
+    const handleOutsideClear = (e) => {
+      if (!availableExtSelected.length && !chosenExtSelected.length) return;
+      if (e.target.closest("[data-codec-strip-id]")) return;
+      if (e.target.closest("[data-codec-action-btn]")) return;
+      if (e.target.closest("[data-codec-list-box]")) return;
+      clearExtHighlight();
+    };
+
+    document.addEventListener("mousedown", handleOutsideClear);
+    return () => document.removeEventListener("mousedown", handleOutsideClear);
+  }, [showModal, availableExtSelected, chosenExtSelected]);
 
   const handleSaveGroup = async () => {
     const name = groupName?.trim();
@@ -780,11 +954,9 @@ const ExtensionGroupsPage = () => {
           <div style={extGroupModalFormStyle}>
             {/* Group Name Field */}
             <div>
-              <div style={{ marginBottom: 6 }}>
-                <ExtGroupFieldLabel tooltipKey="group_name">
-                  Group Name
-                </ExtGroupFieldLabel>
-              </div>
+              <ExtGroupSectionHeading tooltipKey="group_name" isFirst>
+                Group Name
+              </ExtGroupSectionHeading>
               <TextField
                 fullWidth
                 value={groupName}
@@ -798,72 +970,146 @@ const ExtensionGroupsPage = () => {
 
             {/* Extensions Selection */}
             <div>
-              <div style={{ marginBottom: 6 }}>
-                <ExtGroupFieldLabel tooltipKey="selected_extensions">
-                  Select Extensions
-                </ExtGroupFieldLabel>
-              </div>
-              <div style={extGroupExtensionsListStyle}>
-                <div style={{ maxHeight: 220, overflowY: "auto", padding: 12 }}>
-                  {loading.extensions ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        padding: 30,
-                      }}
-                    >
-                      <CircularProgress size={20} />
-                    </div>
-                  ) : availableExtensions.length === 0 ? (
-                    <p
-                      style={{
-                        textAlign: "center",
-                        fontSize: 12,
-                        color: C.mutedText,
-                        margin: "20px 0",
-                      }}
-                    >
-                      No extensions found. Create SIP accounts first.
-                    </p>
-                  ) : (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                      }}
-                    >
-                      {availableExtensions.map(({ extension, name }) => (
-                        <FormControlLabel
-                          key={extension}
-                          control={
-                            <Checkbox
-                              checked={selectedExtensions.includes(extension)}
-                              onChange={() => toggleExtension(extension)}
-                              size="small"
-                              sx={extGroupTableCheckboxSx}
-                            />
-                          }
-                          label={
-                            <span style={{ fontSize: 13, color: C.valueText }}>
-                              {extension} {name ? `— ${name}` : ""}
-                            </span>
-                          }
-                          sx={{ margin: 0 }}
-                        />
-                      ))}
-                    </div>
-                  )}
+              <ExtGroupSectionHeading tooltipKey="selected_extensions">
+                Select Extensions
+              </ExtGroupSectionHeading>
+              {loading.extensions ? (
+                <div
+                  style={{
+                    ...extGroupExtensionsListStyle,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: 30,
+                    minHeight: 188,
+                  }}
+                >
+                  <CircularProgress size={20} />
                 </div>
-              </div>
-            </div>
-
-            <div
-              style={{ fontSize: 11, color: C.mutedText, textAlign: "right" }}
-            >
-              {selectedExtensions.length} extension(s) selected
+              ) : availableExtensions.length === 0 ? (
+                <div
+                  style={{
+                    ...extGroupExtensionsListStyle,
+                    padding: 20,
+                    textAlign: "center",
+                    fontSize: 12,
+                    color: C.mutedText,
+                    minHeight: 188,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  No extensions found. Create SIP accounts first.
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: `1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px 1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px`,
+                    gap: 10,
+                    width: "100%",
+                    alignItems: "start",
+                  }}
+                >
+                  <div>
+                    <div style={extensionCodecColumnLabelStyle}>Available</div>
+                    <ExtensionCodecListBox
+                      variant="available"
+                      items={availableExtensionList}
+                      selectedIds={availableExtSelected}
+                      onToggle={toggleAvailableExtSelect}
+                      onDragSelect={setAvailableExtSelected}
+                      onClearHighlight={clearExtHighlight}
+                      emptyText="No available extensions"
+                      getLabel={(id) => getExtensionLabel(id)}
+                    />
+                  </div>
+                  <div>
+                    <div
+                      style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
+                      aria-hidden="true"
+                    />
+                    <div style={extensionCodecBtnColumnStyle}>
+                      <ExtensionCodecDualListBtn
+                        onClick={addSelectedExtensions}
+                        title="Move selected to Selected"
+                      >
+                        &gt;
+                      </ExtensionCodecDualListBtn>
+                      <ExtensionCodecDualListBtn
+                        onClick={addAllExtensions}
+                        title="Move all to Selected"
+                      >
+                        &gt;&gt;
+                      </ExtensionCodecDualListBtn>
+                      <ExtensionCodecDualListBtn
+                        onClick={removeSelectedExtensions}
+                        title="Move selected to Available"
+                      >
+                        &lt;
+                      </ExtensionCodecDualListBtn>
+                      <ExtensionCodecDualListBtn
+                        onClick={removeAllExtensions}
+                        title="Move all to Available"
+                      >
+                        &lt;&lt;
+                      </ExtensionCodecDualListBtn>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={extensionCodecColumnLabelStyle}>Selected</div>
+                    <ExtensionCodecListBox
+                      variant="selected"
+                      items={chosenExtensionList}
+                      selectedIds={chosenExtSelected}
+                      onToggle={toggleChosenExtSelect}
+                      onDragSelect={setChosenExtSelected}
+                      onClearHighlight={clearExtHighlight}
+                      emptyText="No selected extensions"
+                      getLabel={(id) => getExtensionLabel(id)}
+                    />
+                  </div>
+                  <div>
+                    <div
+                      style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
+                      aria-hidden="true"
+                    />
+                    <div style={extensionCodecBtnColumnStyle}>
+                      <ExtensionCodecDualListBtn
+                        reorder
+                        down
+                        title="Move to bottom"
+                        onClick={moveExtensionToBottom}
+                      >
+                        vv
+                      </ExtensionCodecDualListBtn>
+                      <ExtensionCodecDualListBtn
+                        reorder
+                        title="Move up"
+                        onClick={moveExtensionUp}
+                      >
+                        ^
+                      </ExtensionCodecDualListBtn>
+                      <ExtensionCodecDualListBtn
+                        reorder
+                        down
+                        title="Move down"
+                        onClick={moveExtensionDown}
+                      >
+                        v
+                      </ExtensionCodecDualListBtn>
+                      <ExtensionCodecDualListBtn
+                        reorder
+                        title="Move to top"
+                        onClick={moveExtensionToTop}
+                      >
+                        ^^
+                      </ExtensionCodecDualListBtn>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>

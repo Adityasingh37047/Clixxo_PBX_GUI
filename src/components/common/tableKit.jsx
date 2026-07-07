@@ -1,5 +1,6 @@
 import { CircularProgress } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { C } from "../../theme/pbxTokens";
 import { Btn } from "./Button";
 
@@ -63,6 +64,28 @@ const ExtensionEditIcon = ({ disabled, onClick }) => (
     style={{
       cursor: disabled ? "not-allowed" : "pointer",
       color: "#2563eb",
+      fontSize: 22,
+      opacity: disabled ? 0.4 : 0.7,
+      transition: "opacity 0.15s ease",
+    }}
+    onMouseEnter={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "1";
+    }}
+    onMouseLeave={(e) => {
+      if (!disabled) e.currentTarget.style.opacity = "0.7";
+    }}
+  />
+);
+
+const ExtensionDeleteIcon = ({ disabled, onClick }) => (
+  <DeleteOutlineOutlinedIcon
+    titleAccess="Delete"
+    onClick={() => {
+      if (!disabled) onClick();
+    }}
+    style={{
+      cursor: disabled ? "not-allowed" : "pointer",
+      color: "#dc2626",
       fontSize: 22,
       opacity: disabled ? 0.4 : 0.7,
       transition: "opacity 0.15s ease",
@@ -142,6 +165,7 @@ export {
   getExtensionRowBg,
   extensionNoResultsRowStyle,
   ExtensionEditIcon,
+  ExtensionDeleteIcon,
   extensionTableCheckboxSx,
   ExtensionTableListLoading,
   ExtensionTableListEmptyState,

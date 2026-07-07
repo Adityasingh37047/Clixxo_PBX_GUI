@@ -24,6 +24,7 @@ import {
   createSipAccount,
   updateSipAccount,
   deleteSipAccount,
+  bulkDeleteSipAccounts,
   bulkCreateSipAccounts,
   exportSipAccountsCsv,
   importSipAccountsCsv,
@@ -644,7 +645,7 @@ export function useExtensionsPage() {
     }
   };
 
-  // ── Delete / ClearAll ─────────────────────────────────────────────────────
+  // ── Bulk delete (multi-select "Delete Selected") ──────────────────────────
   const handleDelete = async () => {
     if (!selected.length) {
       showMessage("error", "Please select accounts to delete");
@@ -658,27 +659,70 @@ export function useExtensionsPage() {
       return;
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const results = await Promise.allSettled(
-        selected.map((extension) => {
-          const account = accounts.find(
-            (item) => String(item.extension) === String(extension),
-          );
-          if (!account) {
-            return Promise.reject(new Error(`Extension ${extension} not found`));
-          }
-          return deleteSipAccount(account.extension, account.context);
-        }),
-      );
-      const ok = results.filter(
-        (r) => r.status === "fulfilled" && r.value.response,
-      ).length;
-      const bad = results.length - ok;
-      if (ok) showMessage("success", `${ok} account(s) deleted successfully`);
-      if (bad) showMessage("error", `Failed to delete ${bad} account(s)`);
-      setSelected([]);
-      await loadAccounts();
+      const response = await bulkDeleteSipAccounts(selected);
+      if (response?.response) {
+        showMessage(
+          "success",
+          response.message ||
+            `${response.deleted ?? selected.length} account(s) deleted successfully`,
+        );
+        setSelected([]);
+        await loadAccounts();
+      } else {
+        showMessage(
+          "error",
+          response?.message || "Failed to delete accounts",
+        );
+      }
     } catch (error) {
-      showMessage("error", error.message || "Failed to delete accounts");
+      showMessage(
+        "error",
+        error.message === "Network Error"
+          ? "Network error. Please check your connection."
+          : error.message || "Failed to delete accounts",
+      );
+    } finally {
+      setLoading((prev) => ({ ...prev, delete: false }));
+    }
+  };
+
+  // ── Single delete (per-row trash icon) ────────────────────────────────────
+  const handleDeleteSingle = async (extension) => {
+    const account = accounts.find(
+      (item) => String(item.extension) === String(extension),
+    );
+    if (!account) {
+      showMessage("error", `Extension ${extension} not found`);
+      return;
+    }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete extension ${account.extension}?`,
+      )
+    )
+      return;
+    setLoading((prev) => ({ ...prev, delete: true }));
+    try {
+      const response = await deleteSipAccount(account.extension, account.context);
+      if (response?.response) {
+        showMessage(
+          "success",
+          response.message || `Extension ${account.extension} deleted successfully`,
+        );
+        setSelected((prev) =>
+          prev.filter((key) => key !== String(account.extension)),
+        );
+        await loadAccounts();
+      } else {
+        showMessage("error", response?.message || "Failed to delete extension");
+      }
+    } catch (error) {
+      showMessage(
+        "error",
+        error.message === "Network Error"
+          ? "Network error. Please check your connection."
+          : error.message || "Failed to delete extension",
+      );
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -834,6 +878,7 @@ export function useExtensionsPage() {
     handleSave,
     handleBulkSave,
     handleDelete,
+    handleDeleteSingle,
     handleImportSubmit,
     handleExport,
     codecTransferActions,

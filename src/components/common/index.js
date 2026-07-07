@@ -8,6 +8,8 @@ export * from "./tableKit";
 export * from "./modalKit";
 export * from "./DualListBox";
 export * from "./CodecListBox";
+export * from "./RecordingActionBtn";
+export * from "./RecordingPlayerBar";
 
 // Generic aliases for reuse on non-Extensions pages.
 export { ExtensionPagination as Pagination } from "./Pagination";
