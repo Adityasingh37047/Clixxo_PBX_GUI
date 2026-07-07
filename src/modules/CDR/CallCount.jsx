@@ -26,7 +26,7 @@ import {
   CALL_COUNT_FILTER_TOOLTIPS,
   CALL_COUNT_FOOTER_LIMIT_NOTE,
   CALL_COUNT_ITEMS_PER_PAGE,
-  CALL_COUNT_MAX_PAGES,
+  CALL_COUNT_MAX_RECORDS,
   CALL_COUNT_STATUS_OPTIONS,
   CALL_COUNT_TABLE_MIN_WIDTH,
   CALL_COUNT_TALK_DURATION_OPERATOR_OPTIONS,
@@ -49,6 +49,7 @@ import {
   ExtensionTableListLoading as TableListLoading,
   ExtensionTableListEmptyState as TableListEmptyState,
   ExtensionPagination as CallCountPagination,
+  MessageBanner,
   extensionPageWrapStyle as pbxPageWrapStyle,
   extensionPageInnerStyle as pbxPageInnerStyle,
   extensionCardStyle as callCountCardStyle,
@@ -954,8 +955,9 @@ const CallCount = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasInitialLoadRef = useRef(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [limit] = useState(CALL_COUNT_ITEMS_PER_PAGE);
   const [selectedIds, setSelectedIds] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -1000,6 +1002,11 @@ const CallCount = () => {
   const stopRecording = () => {
     if (recordingUrlRef.current) URL.revokeObjectURL(recordingUrlRef.current);
     setRecording({ uniqueid: null, url: "", loading: false });
+  };
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   };
 
   const handlePlayRecording = async (row) => {
@@ -1071,23 +1078,26 @@ const CallCount = () => {
         setRows(pageRows);
         setLastUpdated(new Date());
         const rowCount = pageRows.length;
-        setTotalPages((prev) => {
-          if (rowCount < limit) {
-            return Math.max(1, pageToLoad);
-          }
-          return Math.min(
-            CALL_COUNT_MAX_PAGES,
-            Math.max(prev, pageToLoad + 1),
+        const apiTotal = Number(data.total);
+        if (Number.isFinite(apiTotal) && apiTotal >= 0) {
+          setTotalRecords(Math.min(apiTotal, CALL_COUNT_MAX_RECORDS));
+        } else if (rowCount < limit) {
+          setTotalRecords(
+            Math.min(
+              (pageToLoad - 1) * limit + rowCount,
+              CALL_COUNT_MAX_RECORDS,
+            ),
           );
-        });
+        }
+        setPage(pageToLoad);
       } else {
         setRows([]);
-        setTotalPages(1);
+        setTotalRecords(0);
       }
     } catch {
       setError("Failed to load call records. Please try again.");
       setRows([]);
-      setTotalPages(1);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
       setIsInitialLoad(false);
@@ -1101,10 +1111,18 @@ const CallCount = () => {
     }
   }, []);
 
+  const totalPages = useMemo(() => {
+    if (totalRecords > 0) {
+      return Math.max(1, Math.ceil(totalRecords / limit));
+    }
+    const hasNextPage = rows.length >= limit;
+    return Math.max(1, page + (hasNextPage ? 1 : 0));
+  }, [totalRecords, rows.length, limit, page]);
+
   const handlePageChange = (nextPage) => {
     const next = Math.min(totalPages, Math.max(1, nextPage));
     if (next === page || loading) return;
-    setPage(next);
+    if (next > page && rows.length < limit) return;
     loadCdr(next);
   };
 
@@ -1202,7 +1220,7 @@ const CallCount = () => {
     });
     setSelectedIds([]);
     setPage(1);
-    setTotalPages(1);
+    setTotalRecords(0);
     setError("");
     loadCdr(1, resetFilters);
   };
@@ -1230,7 +1248,7 @@ const CallCount = () => {
       talkDurationSeconds: modifyDraft.talkDurationSeconds,
     });
     setPage(1);
-    setTotalPages(1);
+    setTotalRecords(0);
     loadCdr(1, filterDraft);
     setShowModifyModal(false);
   };
@@ -1260,6 +1278,7 @@ const CallCount = () => {
         ? "Are you sure you want to delete this record?"
         : `Are you sure you want to delete ${selectedIds.length} records?`;
     if (!window.confirm(msg)) return;
+    const deleteCount = selectedIds.length;
     try {
       setLoading(true);
       for (const id of selectedIds) {
@@ -1271,6 +1290,10 @@ const CallCount = () => {
       }
       setSelectedIds([]);
       await loadCdr(page);
+      showMessage(
+        "success",
+        `Deleted ${deleteCount} call count record(s)`,
+      );
     } catch {
       setError("Failed to delete some records. Please refresh and try again.");
     } finally {
@@ -1304,6 +1327,11 @@ const CallCount = () => {
   return (
     <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
       <div style={pbxPageInnerStyle}>
+        <MessageBanner
+          message={message}
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
+
         {/* Error banner */}
         {error && (
           <div
