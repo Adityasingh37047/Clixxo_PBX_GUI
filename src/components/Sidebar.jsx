@@ -658,7 +658,7 @@ const Sidebar = ({
         {/* LEFT MENU */}
         <div
           ref={mainMenuRef}
-          className="sidebar-rail notepad-scrollbar"
+          className="sidebar-rail"
           onMouseEnter={() => setScrollTarget("main")}
           style={{
             minWidth: LEFT_W,
@@ -680,7 +680,7 @@ const Sidebar = ({
         {(isMobile ? activeSection : activeSection != null) && (
           <div
             ref={subMenuRef}
-            className="sidebar-submenu-panel notepad-scrollbar"
+            className="sidebar-submenu-panel sidebar-slim-scrollbar"
             style={{
               width: isMobile ? `calc(100vw - ${LEFT_W}px)` : RIGHT_W,
               background: SIDEBAR_RAIL_BG,

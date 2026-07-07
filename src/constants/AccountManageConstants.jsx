@@ -53,20 +53,30 @@ export const ACCOUNT_MANAGE_BUTTON_VARIANTS = {
   CANCEL: "cancel",
 };
 
+/** Footer / modal Save & Close — matches PBX addNewModalFooterBtnStyle */
 export const ACCOUNT_MANAGE_BUTTON_STYLE = {
   height: 30,
-  minWidth: 100,
+  padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
-  padding: "6px 14px",
-  boxSizing: "border-box",
+  minWidth: 100,
 };
 
-/** Toolbar row — fixed width so Inverse / Clear All / Delete / Add New match */
-export const ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE = {
-  ...ACCOUNT_MANAGE_BUTTON_STYLE,
-  minWidth: 110,
-  width: 110,
+/** Toolbar cancel actions — matches PBX extensionCancelBtnStyle */
+export const ACCOUNT_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+/** Toolbar primary (+ Add New) — matches PBX extensionPrimaryBtnStyle */
+export const ACCOUNT_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
 };
 
 export const ACCOUNT_MANAGE_TOOLTIPS = {

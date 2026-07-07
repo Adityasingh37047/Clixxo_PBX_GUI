@@ -35,11 +35,10 @@ export const CHANGE_PASSWORD_BUTTON_VARIANTS = {
 
 export const CHANGE_PASSWORD_BUTTON_STYLE = {
   height: 30,
-  minWidth: 100,
+  padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
-  padding: "6px 14px",
-  boxSizing: "border-box",
+  minWidth: 100,
 };
 
 export const CHANGE_PASSWORD_TOOLTIPS = {

@@ -9,7 +9,8 @@ import {
   ACCOUNT_MANAGE_BUTTON_LABELS,
   ACCOUNT_MANAGE_BUTTON_VARIANTS,
   ACCOUNT_MANAGE_BUTTON_STYLE,
-  ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE,
+  ACCOUNT_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE,
+  ACCOUNT_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE,
   ACCOUNT_MANAGE_TOOLTIPS,
   ACCOUNT_MANAGE_MODAL_TITLE,
   ACCOUNT_MANAGE_MESSAGES,
@@ -29,6 +30,7 @@ import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import Alert from "@mui/material/Alert";
 import Checkbox from "@mui/material/Checkbox";
+import { Btn } from "../../../components/common";
 // ── Color palette (same as UserManage) ────────────────────────────────────────
 const C = {
   pageBg: "#f8fafc",
@@ -166,141 +168,6 @@ const tooltipProps = {
       },
     },
   },
-};
-
-// ── Button Component (same as UserManage) ────────────────────────────────────
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  component,
-  startIcon,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    edit: {
-      background: "#dcfce7",
-      color: "#166534",
-      border: "1px solid #bbf7d0",
-    },
-    delete: {
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "1px solid #fecaca",
-    },
-    danger: {
-      background: C.errorRed,
-      color: C.cardBg,
-      border: `0.5px solid ${C.errorRed}`,
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      error: "#b91c1c",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      error: "#991b1b",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        boxSizing: "border-box",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {startIcon && <span style={{ display: "inline-flex" }}>{startIcon}</span>}
-      {children}
-    </Component>
-  );
 };
 
 const modalOverlayStyle = {
@@ -1036,7 +903,7 @@ const AccountManage = () => {
                 variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.CANCEL}
                 onClick={handleInverse}
                 disabled={loading}
-                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
+                style={ACCOUNT_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE}
               >
                 {ACCOUNT_MANAGE_BUTTON_LABELS.INVERSE}
               </Btn>
@@ -1044,7 +911,7 @@ const AccountManage = () => {
                 variant={ACCOUNT_MANAGE_BUTTON_VARIANTS.CANCEL}
                 onClick={handleClearAll}
                 disabled={loading || accounts.length === 0}
-                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
+                style={ACCOUNT_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE}
               >
                 {ACCOUNT_MANAGE_BUTTON_LABELS.CLEAR_ALL}
               </Btn>
@@ -1058,7 +925,7 @@ const AccountManage = () => {
                   handleDelete();
                 }}
                 disabled={loading || selected.length === 0}
-                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
+                style={ACCOUNT_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 {ACCOUNT_MANAGE_BUTTON_LABELS.DELETE}
@@ -1073,7 +940,7 @@ const AccountManage = () => {
                   handleOpenModal();
                 }}
                 disabled={loading}
-                style={ACCOUNT_MANAGE_TOOLBAR_BUTTON_STYLE}
+                style={ACCOUNT_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE}
               >
                 {ACCOUNT_MANAGE_BUTTON_LABELS.ADD_NEW}
               </Btn>

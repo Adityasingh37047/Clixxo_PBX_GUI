@@ -233,3 +233,33 @@ select.system-settings-native-field {
   max-width: 280px !important;
   overflow: hidden;
 }
+
+/* Sidebar right submenu only — slim vertical scrollbar (e.g. Maintenance → System Tools) */
+.sidebar-submenu-panel.sidebar-slim-scrollbar {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.42) transparent;
+}
+
+.sidebar-submenu-panel.sidebar-slim-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.sidebar-submenu-panel.sidebar-slim-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-submenu-panel.sidebar-slim-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.42);
+  border-radius: 999px;
+}
+
+.sidebar-submenu-panel.sidebar-slim-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.68);
+}
+
+.sidebar-submenu-panel.sidebar-slim-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}

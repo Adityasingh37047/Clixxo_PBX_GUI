@@ -400,19 +400,30 @@ export const USER_MANAGE_BUTTON_VARIANTS = {
   CANCEL: "cancel",
 };
 
+/** Footer / modal Save & Cancel — matches PBX addNewModalFooterBtnStyle */
 export const USER_MANAGE_BUTTON_STYLE = {
   height: 30,
-  minWidth: 100,
+  padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
-  padding: "6px 14px",
-  boxSizing: "border-box",
+  minWidth: 100,
 };
 
-export const USER_MANAGE_TOOLBAR_BUTTON_STYLE = {
-  ...USER_MANAGE_BUTTON_STYLE,
-  minWidth: 110,
-  width: 110,
+/** Toolbar primary (+ Add User) — natural PBX width, no forced min/max */
+export const USER_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+};
+
+/** Toolbar cancel — same box as + Add User; width matched in UserManage via sizer */
+export const USER_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE = {
+  ...USER_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
 export const USER_MANAGE_TOOLTIPS = {
