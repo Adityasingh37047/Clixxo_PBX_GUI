@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   CircularProgress,
+  Checkbox,
   IconButton,
   Tooltip,
   useMediaQuery,
@@ -296,6 +297,8 @@ const viewVoicemailRefreshBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  width: 70,
+  boxSizing: "border-box",  
 };
 
 const TH = ({ children, align = "center", style: extra }) => (
@@ -390,6 +393,16 @@ const toolIconBtnSx = {
   p: 0,
   "&:hover": { backgroundColor: "#e8edf3" },
 };
+
+const viewVoicemailTableCheckboxSx = {
+  padding: "1px",
+  color: "#3E5475",
+  "&.Mui-checked": { color: "#0284c7" },
+  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
+};
+
+const getViewVoicemailRowBg = (isSelected, idx) =>
+  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
 const viewVoicemailFooterStyle = {
   display: "flex",
@@ -491,6 +504,8 @@ const ViewVoicemailPage = () => {
   const [playingId, setPlayingId] = useState(null);
   const [playLoading, setPlayLoading] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [selected, setSelected] = useState([]);
   const audioRef = useRef(null);
   const hasInitialLoadRef = useRef(false);
 
@@ -581,6 +596,7 @@ const ViewVoicemailPage = () => {
     try {
       const res = await deleteVoicemail(row.id);
       if (res?.response) {
+        setSelected((prev) => prev.filter((id) => id !== String(row.id)));
         await loadMessages(page);
       } else {
         setError(
@@ -596,7 +612,63 @@ const ViewVoicemailPage = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!selected.length) {
+      setError("Please select voicemails to delete.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selected.length} voicemail(s)?`,
+      )
+    )
+      return;
+    if (playingId && selected.includes(String(playingId))) stopPlayer();
+    setBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(
+        selected.map((id) => deleteVoicemail(id)),
+      );
+      const ok = results.filter(
+        (r) => r.status === "fulfilled" && r.value?.response,
+      ).length;
+      const bad = results.length - ok;
+      if (bad) {
+        setError(`Failed to delete ${bad} voicemail(s).`);
+      }
+      setSelected([]);
+      await loadMessages(page);
+    } catch (e) {
+      setError(e.message || "Failed to delete voicemails.");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  const allPageSelected =
+    rows.length > 0 &&
+    rows.every((row) => selected.includes(String(row.id)));
+
+  const somePageSelected =
+    rows.some((row) => selected.includes(String(row.id))) && !allPageSelected;
+
+  const handleToggleAll = () => {
+    const pageKeys = rows.map((row) => String(row.id));
+    if (allPageSelected) {
+      setSelected((prev) => prev.filter((key) => !pageKeys.includes(key)));
+    } else {
+      setSelected((prev) => Array.from(new Set([...prev, ...pageKeys])));
+    }
+  };
+
+  const handleToggleRow = (id) => {
+    const key = String(id);
+    setSelected((prev) =>
+      prev.includes(key) ? prev.filter((i) => i !== key) : [...prev, key],
+    );
+  };
 
   return (
     <div
@@ -720,6 +792,18 @@ const ViewVoicemailPage = () => {
             >
               Refresh
             </Btn>
+            <Btn
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting || !selected.length}
+              variant="cancel"
+              style={{ ...viewVoicemailRefreshBtnStyle, width: "auto" }}
+            >
+              {bulkDeleting ? (
+                <CircularProgress size={11} style={{ color: "#374151" }} />
+              ) : null}
+              <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
+              Delete
+            </Btn>
             {(extensionInput.trim() || folderFilter !== "all") && (
               <Btn
                 variant="outline"
@@ -767,18 +851,33 @@ const ViewVoicemailPage = () => {
                   }}
                 >
                   <colgroup>
+                    <col style={{ width: "3%" }} />
                     <col style={{ width: "4%" }} />
-                    <col style={{ width: "16%" }} />
+                    <col style={{ width: "15%" }} />
                     <col style={{ width: "8%" }} />
-                    <col style={{ width: "20%" }} />
+                    <col style={{ width: "19%" }} />
                     <col style={{ width: "10%" }} />
                     <col style={{ width: "14%" }} />
                     <col style={{ width: "8%" }} />
-                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "9%" }} />
                     <col style={{ width: "10%" }} />
                   </colgroup>
                   <thead>
                     <tr>
+                      <TH
+                        style={{
+                          width: 40,
+                          padding: 0,
+                        }}
+                      >
+                        <Checkbox
+                          size="small"
+                          checked={allPageSelected}
+                          indeterminate={somePageSelected}
+                          onChange={handleToggleAll}
+                          sx={viewVoicemailTableCheckboxSx}
+                        />
+                      </TH>
                       <TH>ID</TH>
                       <TH>UNIQUE ID</TH>
                       <TH>Mailbox</TH>
@@ -793,7 +892,8 @@ const ViewVoicemailPage = () => {
                   <tbody>
                     {rows.map((row, idx) => {
                       const isLast = idx === rows.length - 1;
-                      const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                      const isSelected = selected.includes(String(row.id));
+                      const rowBg = getViewVoicemailRowBg(isSelected, idx);
                       const isPlaying = playingId === row.id;
                       const lastRowCellStyle = isLast
                         ? { borderBottom: "none" }
@@ -807,12 +907,30 @@ const ViewVoicemailPage = () => {
                             transition: "background 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#f8fafc";
+                            if (!isSelected)
+                              e.currentTarget.style.background = "#f8fafc";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.background = rowBg;
+                            if (!isSelected)
+                              e.currentTarget.style.background = rowBg;
                           }}
                         >
+                          <TD
+                            bg={rowBg}
+                            style={{
+                              ...lastRowCellStyle,
+                              width: 36,
+                              padding: 0,
+                            }}
+                          >
+                            <Checkbox
+                              size="small"
+                              checked={isSelected}
+                              onChange={() => handleToggleRow(row.id)}
+                              disabled={!!deleteLoading || bulkDeleting}
+                              sx={viewVoicemailTableCheckboxSx}
+                            />
+                          </TD>
                           <TD bg={rowBg} style={lastRowCellStyle}>
                             {(page - 1) * limit + idx + 1}
                           </TD>
@@ -895,7 +1013,7 @@ const ViewVoicemailPage = () => {
                               <IconButton
                                 size="small"
                                 sx={toolIconBtnSx}
-                                disabled={!!deleteLoading}
+                                disabled={!!deleteLoading || bulkDeleting}
                                 onClick={() => handleDelete(row)}
                               >
                                 {deleteLoading === row.id ? (

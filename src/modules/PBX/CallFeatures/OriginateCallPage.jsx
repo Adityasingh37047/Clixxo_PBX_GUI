@@ -9,6 +9,7 @@ import {
   Radio,
   RadioGroup,
   Select as MuiSelect,
+  Tooltip,
   useMediaQuery,
 } from "@mui/material";
 import {
@@ -18,6 +19,7 @@ import {
   ORIGINATE_CALL_DEFAULT_CONTEXT,
   ORIGINATE_CALL_DEFAULT_MODE,
   ORIGINATE_CALL_DEFAULT_PRIORITY,
+  ORIGINATE_CALL_FIELD_TOOLTIPS,
   ORIGINATE_CALL_FORM_NOTE,
   ORIGINATE_CALL_MODE_OPTIONS,
   ORIGINATE_CALL_TITLE,
@@ -484,6 +486,28 @@ const originateCallRadioSx = {
   "&.Mui-checked": { color: C.accent },
 };
 
+const ORIGINATE_CALL_TOOLTIP_PROPS = {
+  arrow: true,
+  placement: "top",
+  slotProps: {
+    tooltip: {
+      sx: {
+        backgroundColor: "#fff",
+        color: "#333",
+        border: "1px solid #d1d5db",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+        fontSize: 12,
+        lineHeight: 1.45,
+        maxWidth: 500,
+        padding: "10px 12px",
+      },
+    },
+    arrow: {
+      sx: { color: "#fff" },
+    },
+  },
+};
+
 const originateCallFieldInputStyle = {
   ...originateCallFormInputStyle,
   width: "100%",
@@ -502,6 +526,7 @@ function buildCallerId(name, number) {
 
 const OriginateCallFieldRow = ({
   label,
+  tooltipKey,
   required = false,
   children,
   align = "center",
@@ -517,10 +542,20 @@ const OriginateCallFieldRow = ({
     {hideLabel ? (
       <span style={originateCallLabelColStyle} aria-hidden="true" />
     ) : (
-      <label style={originateCallLabelColStyle}>
-        {label}
-        {required ? <span style={{ color: C.amber }}> *</span> : null}
-      </label>
+      <Tooltip
+        title={ORIGINATE_CALL_FIELD_TOOLTIPS[tooltipKey] || ""}
+        {...ORIGINATE_CALL_TOOLTIP_PROPS}
+      >
+        <label
+          style={{
+            ...originateCallLabelColStyle,
+            cursor: tooltipKey ? "help" : "default",
+          }}
+        >
+          {label}
+          {required ? <span style={{ color: C.amber }}> *</span> : null}
+        </label>
+      </Tooltip>
     )}
     <div style={originateCallValueColStyle}>
       <div
@@ -678,7 +713,11 @@ const OriginateCallPage = () => {
                   paddingBottom: 16,
                 }}
               >
-                <OriginateCallFieldRow label="Dial Extension" required>
+                <OriginateCallFieldRow
+                  label="Dial Extension"
+                  tooltipKey="extension"
+                  required
+                >
                   <input
                     type="text"
                     value={extension}
@@ -689,7 +728,7 @@ const OriginateCallPage = () => {
                   />
                 </OriginateCallFieldRow>
 
-                <OriginateCallFieldRow label="Name (label only)">
+                <OriginateCallFieldRow label="Name (label only)" tooltipKey="name">
                   <input
                     type="text"
                     value={name}
@@ -700,7 +739,10 @@ const OriginateCallPage = () => {
                   />
                 </OriginateCallFieldRow>
 
-                <OriginateCallFieldRow label="Caller ID Name">
+                <OriginateCallFieldRow
+                  label="Caller ID Name"
+                  tooltipKey="callerIdName"
+                >
                   <input
                     type="text"
                     value={callerIdName}
@@ -711,7 +753,10 @@ const OriginateCallPage = () => {
                   />
                 </OriginateCallFieldRow>
 
-                <OriginateCallFieldRow label="Caller ID Number">
+                <OriginateCallFieldRow
+                  label="Caller ID Number"
+                  tooltipKey="callerIdNumber"
+                >
                   <input
                     type="text"
                     value={callerIdNumber}
@@ -722,7 +767,12 @@ const OriginateCallPage = () => {
                   />
                 </OriginateCallFieldRow>
 
-                <OriginateCallFieldRow label="Mode" required align="flex-start">
+                <OriginateCallFieldRow
+                  label="Mode"
+                  tooltipKey="mode"
+                  required
+                  align="flex-start"
+                >
                   <RadioGroup
                     value={mode}
                     onChange={(e) => setMode(e.target.value)}
@@ -762,23 +812,34 @@ const OriginateCallPage = () => {
                           size="small"
                           sx={originateCallFormCheckboxSx}
                         />
-                        <label
-                          htmlFor="fixedApp"
-                          style={{
-                            fontSize: 13,
-                            color: C.labelText,
-                            cursor: "pointer",
-                            fontWeight: 500,
-                          }}
+                        <Tooltip
+                          title={
+                            ORIGINATE_CALL_FIELD_TOOLTIPS.useFixedApp || ""
+                          }
+                          {...ORIGINATE_CALL_TOOLTIP_PROPS}
                         >
-                          Use fixed Application Wait + appData below
-                          (recommended)
-                        </label>
+                          <label
+                            htmlFor="fixedApp"
+                            style={{
+                              fontSize: 13,
+                              color: C.labelText,
+                              cursor: "help",
+                              fontWeight: 500,
+                            }}
+                          >
+                            Use fixed Application Wait + appData below
+                            (recommended)
+                          </label>
+                        </Tooltip>
                       </div>
                     </OriginateCallFieldRow>
 
                     {!useFixedApp && (
-                      <OriginateCallFieldRow label="Application" required>
+                      <OriginateCallFieldRow
+                        label="Application"
+                        tooltipKey="application"
+                        required
+                      >
                         <input
                           type="text"
                           value={application}
@@ -792,6 +853,7 @@ const OriginateCallPage = () => {
 
                     <OriginateCallFieldRow
                       label={useFixedApp ? "App Data (s)" : "Application Data"}
+                      tooltipKey="appData"
                     >
                       <input
                         type="text"
@@ -805,7 +867,11 @@ const OriginateCallPage = () => {
                   </>
                 ) : (
                   <>
-                    <OriginateCallFieldRow label="Context" required>
+                    <OriginateCallFieldRow
+                      label="Context"
+                      tooltipKey="context"
+                      required
+                    >
                       <FormControl size="small" fullWidth>
                         <MuiSelect
                           value={context}
@@ -827,7 +893,11 @@ const OriginateCallPage = () => {
                       </FormControl>
                     </OriginateCallFieldRow>
 
-                    <OriginateCallFieldRow label="Exten (B leg)" required>
+                    <OriginateCallFieldRow
+                      label="Exten (B leg)"
+                      tooltipKey="exten"
+                      required
+                    >
                       <input
                         type="text"
                         value={exten}
@@ -838,7 +908,7 @@ const OriginateCallPage = () => {
                       />
                     </OriginateCallFieldRow>
 
-                    <OriginateCallFieldRow label="Priority">
+                    <OriginateCallFieldRow label="Priority" tooltipKey="priority">
                       <input
                         type="number"
                         value={priority}
