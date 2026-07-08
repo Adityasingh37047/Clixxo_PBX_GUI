@@ -5,7 +5,7 @@ import {
   EXTENSION_INITIAL_FORM,
   EXTENSION_CODEC_OPTIONS,
 } from "../../../../constants/ExtensionsConstants";
-import { parseExtensionCodecList } from "../../../../components/common/CodecListBox";
+import { parseExtensionCodecList } from "../../../../components/common/DualListBox";
 import {
   transformApiToUi,
   transformUiToApi,

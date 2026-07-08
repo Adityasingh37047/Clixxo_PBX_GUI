@@ -284,7 +284,9 @@ const cardStyle = {
 const cardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
-  padding: "10px 28px",
+  display: "flex",
+  alignItems: "center",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,

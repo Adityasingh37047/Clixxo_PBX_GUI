@@ -429,7 +429,7 @@ const advancedCardTitleBarStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "flex-start",
-  padding: "10px 28px",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,

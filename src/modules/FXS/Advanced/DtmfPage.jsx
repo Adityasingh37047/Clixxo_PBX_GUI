@@ -360,7 +360,7 @@ const dtmfHeaderStyle = {
   display: "flex",
   alignItems: "center",
   minHeight: 44,
-  padding: "10px 28px 10px 14px",
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.divider}`,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,

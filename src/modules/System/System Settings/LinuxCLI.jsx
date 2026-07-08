@@ -325,7 +325,7 @@ const cliHeaderStyle = {
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: `10px ${LINUX_CLI_FORM_PAD_X}px`,
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: "#3E5475",

@@ -437,7 +437,7 @@ const hostsHeaderStyle = {
   gap: 12,
   alignItems: "center",
   justifyContent: "space-between",
-  padding: `10px ${HOSTS_FORM_PAD_X}px`,
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.divider}`,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,

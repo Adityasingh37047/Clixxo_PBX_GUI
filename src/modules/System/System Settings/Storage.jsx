@@ -428,7 +428,7 @@ const storageHeaderStyle = {
   justifyContent: "space-between",
   gap: 12,
   flexWrap: "wrap",
-  padding: `10px ${STORAGE_FORM_PAD_X}px 10px 14px`,
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.divider}`,
   boxSizing: "border-box",
 };

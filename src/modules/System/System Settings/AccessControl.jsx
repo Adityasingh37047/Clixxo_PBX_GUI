@@ -201,12 +201,19 @@ const accessControlFooterStyle = {
   borderBottomRightRadius: CARD_RADIUS,
 };
 
-const accessControlToolbarBtnStyle = {
+const accessControlCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+const accessControlPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   borderRadius: 10,
-  minWidth: 100,
 };
 
 const addNewModalFooterStyle = {
@@ -1027,7 +1034,7 @@ const AccessControl = () => {
               variant="cancel"
               onClick={handleInverse}
               disabled={loading.delete || commands.length === 0}
-              style={accessControlToolbarBtnStyle}
+              style={accessControlCancelBtnStyle}
             >
               {ACCESS_CONTROL_BTN_INVERSE}
             </Btn>
@@ -1035,7 +1042,7 @@ const AccessControl = () => {
               variant="cancel"
               onClick={handleDelete}
               disabled={selected.length === 0 || loading.delete}
-              style={accessControlToolbarBtnStyle}
+              style={accessControlCancelBtnStyle}
             >
               <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
               {loading.delete ? "Deleting..." : ACCESS_CONTROL_BTN_DELETE}
@@ -1044,7 +1051,7 @@ const AccessControl = () => {
               variant="cancel"
               onClick={handleClearAll}
               disabled={commands.length === 0 || loading.delete}
-              style={accessControlToolbarBtnStyle}
+              style={accessControlCancelBtnStyle}
             >
               {loading.delete ? "Clearing..." : ACCESS_CONTROL_BTN_CLEAR_ALL}
             </Btn>
@@ -1052,7 +1059,7 @@ const AccessControl = () => {
               variant="primary"
               onClick={() => handleOpenModal()}
               disabled={loading.save}
-              style={accessControlToolbarBtnStyle}
+              style={accessControlPrimaryBtnStyle}
             >
               {ACCESS_CONTROL_BTN_ADD_NEW}
             </Btn>
@@ -1241,7 +1248,7 @@ const AccessControl = () => {
                 variant="primary"
                 onClick={handleApply}
                 disabled={loading.apply}
-                style={accessControlToolbarBtnStyle}
+                style={accessControlPrimaryBtnStyle}
                 startIcon={
                   loading.apply ? (
                     <CircularProgress size={11} style={{ color: "#fff" }} />
@@ -1261,7 +1268,7 @@ const AccessControl = () => {
                   );
                 }}
                 disabled={loading.apply}
-                style={accessControlToolbarBtnStyle}
+                style={accessControlCancelBtnStyle}
               >
                 {ACCESS_CONTROL_BTN_CANCEL}
               </Btn>

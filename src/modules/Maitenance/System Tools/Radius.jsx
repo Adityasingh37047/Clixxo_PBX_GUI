@@ -280,7 +280,7 @@ const radiusHeaderStyle = {
   minHeight: 44,
   display: "flex",
   alignItems: "center",
-  padding: `10px ${RADIUS_FORM_PAD_X}px`,
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,

@@ -380,7 +380,7 @@ const toneDetecterHeaderStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   minHeight: 44,
-  padding: "10px 28px",
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.divider}`,
   background: C.cardBg,
   borderTopLeftRadius: CARD_RADIUS,

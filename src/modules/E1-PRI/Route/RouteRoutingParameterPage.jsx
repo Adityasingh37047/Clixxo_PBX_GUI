@@ -351,13 +351,17 @@ const cardStyle = {
 const cardTitleBarStyle = {
   width: "100%",
   minHeight: 44,
-  padding: "10px 28px",
+  background: C.cardBg,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
+  display: "flex",
+  alignItems: "center",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
   boxSizing: "border-box",
-  background: C.cardBg,
 };
 
 const formBodyStyle = {

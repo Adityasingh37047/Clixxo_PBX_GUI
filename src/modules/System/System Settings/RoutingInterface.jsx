@@ -462,7 +462,6 @@ const routesTableShellStyle = {
   borderRadius: ROUTES_TABLE_RADIUS,
   overflow: "hidden",
   background: C.cardBg,
-  boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
 };
 
 const tooltipProps = {
@@ -514,7 +513,7 @@ function isValidIPv4(ip) {
 const TH = ({ children, isLast = false }) => (
   <th
     style={{
-      background: C.gridHeaderBg,
+      background: "#F8FAFC",
       color: C.labelText,
       fontWeight: 700,
       fontSize: 11,
@@ -524,24 +523,50 @@ const TH = ({ children, isLast = false }) => (
       borderRight: isLast ? "none" : `1px solid ${C.divider}`,
       whiteSpace: "nowrap",
       textTransform: "uppercase",
-      letterSpacing: "0.12em",
+      letterSpacing: "0.14em",
     }}
   >
     {children}
   </th>
 );
 
-const TD = ({ children, highlight, isLastCol = false, isLastRow = false }) => (
+const tdStyle = {
+  padding: "7px 14px",
+  fontSize: 13,
+  color: C.valueText,
+  textAlign: "center",
+  borderBottom: `1px solid ${C.divider}`,
+  borderRight: `1px solid ${C.divider}`,
+  whiteSpace: "nowrap",
+};
+
+const getRoutesTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
+  ...tdStyle,
+  background: rowBg,
+  ...lastRowCellStyle,
+  ...extra,
+});
+
+const getRoutesRowBg = (_isActive, idx) =>
+  idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const TD = ({
+  children,
+  highlight,
+  isLastCol = false,
+  isLastRow = false,
+  rowBg,
+}) => (
   <td
-    style={{
-      padding: "8px 14px",
-      fontSize: 12,
-      color: highlight ? C.accent : C.valueText,
-      fontWeight: highlight ? 700 : 400,
-      textAlign: "center",
-      borderBottom: isLastRow ? "none" : `1px solid ${C.divider}`,
-      borderRight: isLastCol ? "none" : `1px solid ${C.divider}`,
-    }}
+    style={getRoutesTdStyle(
+      rowBg,
+      isLastRow ? { borderBottom: "none" } : {},
+      {
+        borderRight: isLastCol ? "none" : `1px solid ${C.divider}`,
+        color: highlight ? C.accent : C.valueText,
+        fontWeight: highlight ? 700 : 400,
+      },
+    )}
   >
     {children}
   </td>
@@ -798,8 +823,10 @@ const RoutingInterface = () => {
                       <table
                         style={{
                           width: "100%",
-                          borderCollapse: "collapse",
-                          fontSize: 12,
+                          borderCollapse: "separate",
+                          borderSpacing: 0,
+                          tableLayout: "auto",
+                          fontSize: 13,
                         }}
                       >
                         <thead>
@@ -815,19 +842,39 @@ const RoutingInterface = () => {
                             const isActive =
                               route.interface === current.interface;
                             const isLastRow = idx === activeRoutes.length - 1;
+                            const rowBg = getRoutesRowBg(isActive, idx);
                             return (
                               <tr
                                 key={idx}
                                 style={{
-                                  background: isActive ? "#f0f4f8" : C.cardBg,
+                                  background: rowBg,
+                                  transition: "background 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = "#f8fafc";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = rowBg;
                                 }}
                               >
-                                <TD highlight={isActive} isLastRow={isLastRow}>
+                                <TD
+                                  highlight={isActive}
+                                  isLastRow={isLastRow}
+                                  rowBg={rowBg}
+                                >
                                   {route.interface}
                                 </TD>
-                                <TD isLastRow={isLastRow}>{route.gateway}</TD>
-                                <TD isLastRow={isLastRow}>{route.metric}</TD>
-                                <TD isLastCol isLastRow={isLastRow}>
+                                <TD isLastRow={isLastRow} rowBg={rowBg}>
+                                  {route.gateway}
+                                </TD>
+                                <TD isLastRow={isLastRow} rowBg={rowBg}>
+                                  {route.metric}
+                                </TD>
+                                <TD
+                                  isLastCol
+                                  isLastRow={isLastRow}
+                                  rowBg={rowBg}
+                                >
                                   {isActive ? (
                                     <span
                                       style={{

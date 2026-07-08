@@ -34,15 +34,17 @@ function ExtensionFormDialog(props) {
         }}
         sx={{
           "& .MuiDialog-container": {
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
+            pt: 8,
           },
         }}
         PaperProps={{
           sx: {
             width: 760,
             maxWidth: "96vw",
-            margin: 24,
+            mx: "auto",
+            my: 0,
             maxHeight: "calc(100vh - 80px - 48px)",
             display: "flex",
             flexDirection: "column",

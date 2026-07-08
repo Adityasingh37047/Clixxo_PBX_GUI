@@ -128,10 +128,11 @@ const pcmReceptionTimeoutToolbarStyle = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "7px 14px",
-  fontWeight: 600,
+  fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
   borderBottom: `1px solid ${C.divider}`,
+  boxSizing: "border-box",
 };
 
 const pcmReceptionTimeoutFormPanelStyle = {

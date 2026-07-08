@@ -302,7 +302,7 @@ const configFileHeaderStyle = {
   justifyContent: "space-between",
   gap: 12,
   flexWrap: "wrap",
-  padding: `10px ${CONFIG_FILE_FORM_PAD_X}px`,
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,

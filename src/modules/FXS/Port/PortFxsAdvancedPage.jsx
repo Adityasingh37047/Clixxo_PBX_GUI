@@ -425,7 +425,7 @@ const portFxsAdvancedHeaderStyle = {
   alignItems: "center",
   justifyContent: "flex-end",
   minHeight: 44,
-  padding: "10px 28px",
+  padding: "7px 14px",
   borderBottom: `1px solid ${C.divider}`,
   background: C.cardBg,
   flexWrap: "wrap",

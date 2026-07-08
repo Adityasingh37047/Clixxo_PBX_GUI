@@ -416,7 +416,7 @@ const managementHeaderStyle = {
   borderTopRightRadius: CARD_RADIUS,
   display: "flex",
   alignItems: "center",
-  padding: `10px ${MANAGEMENT_FORM_PAD_X}px`,
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
