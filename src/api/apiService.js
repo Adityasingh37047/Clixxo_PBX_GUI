@@ -3349,6 +3349,18 @@ export const deleteCdr = async (uniqueid) => {
     throw error;
   }
 };
+export const bulkDeleteCdr = async (uniqueids) => {
+  try {
+    const response = await axiosInstance.post("/delete-cdr", {
+      uniqueid: uniqueids,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting CDR records:", error.message);
+    throw error;
+  }
+};
 
 export const downloadCdr = async () => {
   try {

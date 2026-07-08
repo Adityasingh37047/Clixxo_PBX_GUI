@@ -106,6 +106,15 @@ export function useExtensionsPage() {
     page * itemsPerPage,
   );
 
+  useEffect(() => {
+    setPage((current) =>
+      Math.min(
+        Math.max(1, current),
+        Math.max(1, Math.ceil(filteredAccounts.length / itemsPerPage)),
+      ),
+    );
+  }, [filteredAccounts.length, itemsPerPage]);
+
   const extensionOptions = React.useMemo(
     () =>
       Array.from(new Set(accounts.map((a) => String(a.extension)))).sort(
