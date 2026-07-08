@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -53,12 +53,7 @@ import {
   EXTENSION_MODAL_SECTION_HEADING_COLOR,
   getExtensionTdStyle as getExtGroupTdStyle,
   getExtensionRowBg as getExtGroupRowBg,
-  ExtensionCodecListBox,
-  ExtensionCodecDualListBtn,
-  extensionCodecColumnLabelStyle,
-  extensionCodecBtnColumnStyle,
-  EXTENSION_CODEC_BTN_COL_WIDTH,
-  EXTENSION_CODEC_LIST_LABEL_OFFSET,
+  ExtensionCodecDualList,
 } from "../../../components/common";
 
 const EXT_GROUP_COMPACT_MQ = EXTENSION_COMPACT_MQ;
@@ -387,8 +382,6 @@ const ExtensionGroupsPage = () => {
   const [groupName, setGroupName] = useState("");
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [selectedExtensions, setSelectedExtensions] = useState([]);
-  const [availableExtSelected, setAvailableExtSelected] = useState([]);
-  const [chosenExtSelected, setChosenExtSelected] = useState([]);
 
   // ── Load Data ──
   const loadGroups = async () => {
@@ -541,8 +534,6 @@ const ExtensionGroupsPage = () => {
     setEditGroupId(null);
     setGroupName("");
     setSelectedExtensions([]);
-    setAvailableExtSelected([]);
-    setChosenExtSelected([]);
   };
 
   const handleCloseModal = () => {
@@ -556,120 +547,14 @@ const ExtensionGroupsPage = () => {
     return found.name ? `${found.extension} — ${found.name}` : found.extension;
   };
 
-  const availableExtensionList = availableExtensions
-    .filter(({ extension }) => !selectedExtensions.includes(extension))
-    .map(({ extension }) => ({ value: extension, label: getExtensionLabel(extension) }));
-
-  const chosenExtensionList = selectedExtensions.map((extension) => ({
-    value: extension,
-    label: getExtensionLabel(extension),
-  }));
-
-  const clearExtHighlight = () => {
-    setAvailableExtSelected([]);
-    setChosenExtSelected([]);
-  };
-
-  const toggleAvailableExtSelect = (id) => {
-    setAvailableExtSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const toggleChosenExtSelect = (id) => {
-    setChosenExtSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const addSelectedExtensions = () => {
-    if (!availableExtSelected.length) return;
-    setSelectedExtensions((prev) => [
-      ...prev,
-      ...availableExtSelected.filter((id) => !prev.includes(id)),
-    ]);
-    setAvailableExtSelected([]);
-  };
-
-  const addAllExtensions = () => {
-    setSelectedExtensions((prev) => [
-      ...prev,
-      ...availableExtensions
-        .map((e) => e.extension)
-        .filter((id) => id && !prev.includes(id)),
-    ]);
-    setAvailableExtSelected([]);
-  };
-
-  const removeSelectedExtensions = () => {
-    if (!chosenExtSelected.length) return;
-    setSelectedExtensions((prev) =>
-      prev.filter((id) => !chosenExtSelected.includes(id)),
-    );
-    setChosenExtSelected([]);
-  };
-
-  const removeAllExtensions = () => {
-    setSelectedExtensions([]);
-    setChosenExtSelected([]);
-  };
-
-  const moveExtensionToBottom = () => {
-    if (!chosenExtSelected.length) return;
-    setSelectedExtensions((prev) => [
-      ...prev.filter((id) => !chosenExtSelected.includes(id)),
-      ...prev.filter((id) => chosenExtSelected.includes(id)),
-    ]);
-  };
-
-  const moveExtensionUp = () => {
-    if (!chosenExtSelected.length) return;
-    setSelectedExtensions((prev) => {
-      const arr = [...prev];
-      for (let i = 1; i < arr.length; i += 1) {
-        if (chosenExtSelected.includes(arr[i]) && !chosenExtSelected.includes(arr[i - 1])) {
-          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-        }
-      }
-      return arr;
-    });
-  };
-
-  const moveExtensionDown = () => {
-    if (!chosenExtSelected.length) return;
-    setSelectedExtensions((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 2; i >= 0; i -= 1) {
-        if (chosenExtSelected.includes(arr[i]) && !chosenExtSelected.includes(arr[i + 1])) {
-          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-        }
-      }
-      return arr;
-    });
-  };
-
-  const moveExtensionToTop = () => {
-    if (!chosenExtSelected.length) return;
-    setSelectedExtensions((prev) => [
-      ...prev.filter((id) => chosenExtSelected.includes(id)),
-      ...prev.filter((id) => !chosenExtSelected.includes(id)),
-    ]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!availableExtSelected.length && !chosenExtSelected.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearExtHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, availableExtSelected, chosenExtSelected]);
+  const allExtensionOptions = useMemo(
+    () =>
+      availableExtensions.map(({ extension, name }) => ({
+        value: extension,
+        label: name ? `${extension} — ${name}` : extension,
+      })),
+    [availableExtensions],
+  );
 
   const handleSaveGroup = async () => {
     const name = groupName?.trim();
@@ -1003,112 +888,14 @@ const ExtensionGroupsPage = () => {
                   No extensions found. Create SIP accounts first.
                 </div>
               ) : (
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px 1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px`,
-                    gap: 10,
-                    width: "100%",
-                    alignItems: "start",
-                  }}
-                >
-                  <div>
-                    <div style={extensionCodecColumnLabelStyle}>Available</div>
-                    <ExtensionCodecListBox
-                      variant="available"
-                      items={availableExtensionList}
-                      selectedIds={availableExtSelected}
-                      onToggle={toggleAvailableExtSelect}
-                      onDragSelect={setAvailableExtSelected}
-                      onClearHighlight={clearExtHighlight}
-                      emptyText="No available extensions"
-                      getLabel={(id) => getExtensionLabel(id)}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
-                      aria-hidden="true"
-                    />
-                    <div style={extensionCodecBtnColumnStyle}>
-                      <ExtensionCodecDualListBtn
-                        onClick={addSelectedExtensions}
-                        title="Move selected to Selected"
-                      >
-                        &gt;
-                      </ExtensionCodecDualListBtn>
-                      <ExtensionCodecDualListBtn
-                        onClick={addAllExtensions}
-                        title="Move all to Selected"
-                      >
-                        &gt;&gt;
-                      </ExtensionCodecDualListBtn>
-                      <ExtensionCodecDualListBtn
-                        onClick={removeSelectedExtensions}
-                        title="Move selected to Available"
-                      >
-                        &lt;
-                      </ExtensionCodecDualListBtn>
-                      <ExtensionCodecDualListBtn
-                        onClick={removeAllExtensions}
-                        title="Move all to Available"
-                      >
-                        &lt;&lt;
-                      </ExtensionCodecDualListBtn>
-                    </div>
-                  </div>
-                  <div>
-                    <div style={extensionCodecColumnLabelStyle}>Selected</div>
-                    <ExtensionCodecListBox
-                      variant="selected"
-                      items={chosenExtensionList}
-                      selectedIds={chosenExtSelected}
-                      onToggle={toggleChosenExtSelect}
-                      onDragSelect={setChosenExtSelected}
-                      onClearHighlight={clearExtHighlight}
-                      emptyText="No selected extensions"
-                      getLabel={(id) => getExtensionLabel(id)}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
-                      aria-hidden="true"
-                    />
-                    <div style={extensionCodecBtnColumnStyle}>
-                      <ExtensionCodecDualListBtn
-                        reorder
-                        down
-                        title="Move to bottom"
-                        onClick={moveExtensionToBottom}
-                      >
-                        vv
-                      </ExtensionCodecDualListBtn>
-                      <ExtensionCodecDualListBtn
-                        reorder
-                        title="Move up"
-                        onClick={moveExtensionUp}
-                      >
-                        ^
-                      </ExtensionCodecDualListBtn>
-                      <ExtensionCodecDualListBtn
-                        reorder
-                        down
-                        title="Move down"
-                        onClick={moveExtensionDown}
-                      >
-                        v
-                      </ExtensionCodecDualListBtn>
-                      <ExtensionCodecDualListBtn
-                        reorder
-                        title="Move to top"
-                        onClick={moveExtensionToTop}
-                      >
-                        ^^
-                      </ExtensionCodecDualListBtn>
-                    </div>
-                  </div>
-                </div>
+                <ExtensionCodecDualList
+                  allOptions={allExtensionOptions}
+                  selected={selectedExtensions}
+                  onChange={setSelectedExtensions}
+                  getLabel={getExtensionLabel}
+                  emptyTextAvailable="No available extensions"
+                  emptyTextSelected="No selected extensions"
+                />
               )}
             </div>
           </div>

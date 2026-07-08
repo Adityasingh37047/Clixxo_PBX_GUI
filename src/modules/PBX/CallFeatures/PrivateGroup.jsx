@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -28,6 +28,7 @@ import {
   PRIVATE_GROUP_ITEMS_PER_PAGE,
   PRIVATE_GROUP_TITLE,
 } from "../../../constants/PrivateGroupConstants";
+import { ExtensionCodecDualList as PrivateGroupMemberCodecDualList } from "../../../components/common";
 
 const PRIVATE_GROUP_COMPACT_MQ = "(max-width: 768px)";
 const ENABLE_OPTIONS = ["Yes", "No"];
@@ -47,14 +48,6 @@ const C = {
   errorRed: "#dc2626",
   successGreen: "#16a34a",
   placeholderText: "#94a3b8",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#c9d0d9",
-  codecBtnBg: "#d9dde3",
 };
 
 // ── Local page UI ──
@@ -714,300 +707,6 @@ const PrivateGroupSectionHeading = ({
   );
 };
 
-const PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT = 188;
-const PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH = 40;
-const PRIVATE_GROUP_MEMBER_CODEC_BTN_GAP = 6;
-const PRIVATE_GROUP_MEMBER_CODEC_BTN_HEIGHT =
-  (PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT -
-    PRIVATE_GROUP_MEMBER_CODEC_BTN_GAP * 3) /
-  4;
-const PRIVATE_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET = 28;
-
-const privateGroupMemberCodecColumnLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
-const getPrivateGroupMemberCodecListBoxStyle = (isEmpty) => ({
-  width: "100%",
-  minHeight: PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
-  height: PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const privateGroupMemberCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const privateGroupMemberCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const privateGroupMemberCodecDualListBtnStyle = {
-  width: PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
-  height: PRIVATE_GROUP_MEMBER_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const privateGroupMemberCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: PRIVATE_GROUP_MEMBER_CODEC_BTN_GAP,
-  height: PRIVATE_GROUP_MEMBER_CODEC_LIST_BOX_HEIGHT,
-  width: PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH,
-};
-
-const PrivateGroupMemberCodecDualListBtn = ({ onClick, title, children }) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-    style={privateGroupMemberCodecDualListBtnStyle}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow =
-        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const PrivateGroupMemberCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => typeof item === "string" ? item : item.value;
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      style={getPrivateGroupMemberCodecListBoxStyle(isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={privateGroupMemberCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={privateGroupMemberCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PrivateGroup = () => {
@@ -1037,8 +736,6 @@ const PrivateGroup = () => {
   // Dual list state
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [memberExtensions, setMemberExtensions] = useState([]);
-  const [availableSelected, setAvailableSelected] = useState([]);
-  const [chosenSelected, setChosenSelected] = useState([]);
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -1172,8 +869,6 @@ const PrivateGroup = () => {
     setName("");
     setEnabled("Yes");
     setMemberExtensions([]);
-    setAvailableSelected([]);
-    setChosenSelected([]);
   };
 
   const handleOpenAddModal = async () => {
@@ -1187,8 +882,6 @@ const PrivateGroup = () => {
     setName(row.name || "");
     setEnabled(row.enabled === "No" ? "No" : "Yes");
     setMemberExtensions(Array.isArray(row.members) ? [...row.members] : []);
-    setAvailableSelected([]);
-    setChosenSelected([]);
     setShowModal(true);
     if (!hasLoadedExtensionsRef.current) await loadExtensions();
   };
@@ -1291,78 +984,16 @@ const PrivateGroup = () => {
     })();
   };
 
-  // ── Dual Listbox Logic ──
-  const extensionLabelMap = useMemo(() => {
-    const map = new Map();
-    availableExtensions.forEach((e) => map.set(e.value, e.label));
-    return map;
-  }, [availableExtensions]);
+  const getExtLabel = (ext) => {
+    const found = availableExtensions.find((e) => e.value === ext);
+    return found?.label || ext;
+  };
 
-  const getExtLabel = (ext) => extensionLabelMap.get(ext) || ext;
-  const availableList = useMemo(
+  const allExtensionOptions = useMemo(
     () =>
-      availableExtensions.filter((e) => !memberExtensions.includes(e.value)),
-    [availableExtensions, memberExtensions],
+      availableExtensions.map(({ value, label }) => ({ value, label })),
+    [availableExtensions],
   );
-
-  const addSelectedMembers = () => {
-    if (availableSelected.length === 0) return;
-    setMemberExtensions((prev) => [
-      ...prev,
-      ...availableSelected.filter((id) => !prev.includes(id)),
-    ]);
-    setAvailableSelected([]);
-  };
-  const addAllMembers = () => {
-    setMemberExtensions(availableExtensions.map((e) => e.value));
-    setAvailableSelected([]);
-  };
-  const removeSelectedMembers = () => {
-    if (chosenSelected.length === 0) return;
-    setMemberExtensions((prev) =>
-      prev.filter((id) => !chosenSelected.includes(id)),
-    );
-    setChosenSelected([]);
-  };
-  const removeAllMembers = () => {
-    setMemberExtensions([]);
-    setChosenSelected([]);
-  };
-
-  const toggleAvailableMemberSelect = (id) => {
-    setAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-  const toggleChosenMemberSelect = (id) => {
-    setChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const selectAvailableMembers = (ids) => setAvailableSelected(ids);
-
-  const selectChosenMembers = (ids) => setChosenSelected(ids);
-
-  const clearMemberHighlight = () => {
-    setAvailableSelected([]);
-    setChosenSelected([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!availableSelected.length && !chosenSelected.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearMemberHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, availableSelected, chosenSelected]);
 
   const availableMemberEmptyText = loading.extensions
     ? "Loading..."
@@ -1750,81 +1381,15 @@ const PrivateGroup = () => {
               tooltipKey="member"
             />
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `1fr ${PRIVATE_GROUP_MEMBER_CODEC_BTN_COL_WIDTH}px 1fr`,
-                gap: 10,
-                width: "100%",
-                alignItems: "start",
-              }}
-            >
-              <div>
-                <div style={privateGroupMemberCodecColumnLabelStyle}>
-                  Available
-                </div>
-                <PrivateGroupMemberCodecListBox
-                  items={loading.extensions ? [] : availableList}
-                  selectedIds={availableSelected}
-                  onToggle={toggleAvailableMemberSelect}
-                  onDragSelect={selectAvailableMembers}
-                  onClearHighlight={clearMemberHighlight}
-                  emptyText={availableMemberEmptyText}
-                  getLabel={(id) => {
-                    const item = availableList.find((x) => x.value === id);
-                    return item?.label || getExtLabel(id);
-                  }}
-                />
-              </div>
-              <div>
-                <div
-                  style={{
-                    height: PRIVATE_GROUP_MEMBER_CODEC_LIST_LABEL_OFFSET,
-                  }}
-                  aria-hidden="true"
-                />
-                <div style={privateGroupMemberCodecBtnColumnStyle}>
-                  <PrivateGroupMemberCodecDualListBtn
-                    onClick={addSelectedMembers}
-                    title="Move selected to Selected"
-                  >
-                    &gt;
-                  </PrivateGroupMemberCodecDualListBtn>
-                  <PrivateGroupMemberCodecDualListBtn
-                    onClick={addAllMembers}
-                    title="Move all to Selected"
-                  >
-                    &gt;&gt;
-                  </PrivateGroupMemberCodecDualListBtn>
-                  <PrivateGroupMemberCodecDualListBtn
-                    onClick={removeSelectedMembers}
-                    title="Move selected to Available"
-                  >
-                    &lt;
-                  </PrivateGroupMemberCodecDualListBtn>
-                  <PrivateGroupMemberCodecDualListBtn
-                    onClick={removeAllMembers}
-                    title="Move all to Available"
-                  >
-                    &lt;&lt;
-                  </PrivateGroupMemberCodecDualListBtn>
-                </div>
-              </div>
-              <div>
-                <div style={privateGroupMemberCodecColumnLabelStyle}>
-                  Selected
-                </div>
-                <PrivateGroupMemberCodecListBox
-                  items={memberExtensions}
-                  selectedIds={chosenSelected}
-                  onToggle={toggleChosenMemberSelect}
-                  onDragSelect={selectChosenMembers}
-                  onClearHighlight={clearMemberHighlight}
-                  emptyText="No selected member"
-                  getLabel={getExtLabel}
-                />
-              </div>
-            </div>
+            <PrivateGroupMemberCodecDualList
+              hideReorder
+              allOptions={allExtensionOptions}
+              selected={memberExtensions}
+              onChange={setMemberExtensions}
+              getLabel={getExtLabel}
+              emptyTextAvailable={availableMemberEmptyText}
+              emptyTextSelected="No selected member"
+            />
           </div>
         </DialogContent>
 

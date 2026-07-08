@@ -82,6 +82,7 @@ import {
   extensionSelectedBadgeStyle as sipRegisterSelectedBadgeStyle,
   extensionCancelBtnStyle as sipRegisterCancelBtnStyle,
   extensionPrimaryBtnStyle as sipRegisterPrimaryBtnStyle,
+  ExtensionCodecDualList as SipRegisterCodecDualList,
 } from "../../../components/common";
 const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
 
@@ -319,322 +320,6 @@ const TrunkModalSectionHeading = ({
       >
         {title}
       </span>
-    </div>
-  );
-};
-
-const SIP_REGISTER_CODEC_LIST_BOX_HEIGHT = 188;
-const SIP_REGISTER_CODEC_BTN_COL_WIDTH = 40;
-const SIP_REGISTER_CODEC_BTN_GAP = 6;
-const SIP_REGISTER_CODEC_BTN_HEIGHT =
-  (SIP_REGISTER_CODEC_LIST_BOX_HEIGHT - SIP_REGISTER_CODEC_BTN_GAP * 3) / 4;
-const SIP_REGISTER_CODEC_LIST_LABEL_OFFSET = 28;
-
-const sipRegisterCodecColumnLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
-const getSipRegisterCodecListBoxStyle = (isEmpty) => ({
-  width: "100%",
-  minHeight: SIP_REGISTER_CODEC_LIST_BOX_HEIGHT,
-  height: SIP_REGISTER_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const sipRegisterCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const sipRegisterCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const sipRegisterCodecDualListBtnStyle = {
-  width: SIP_REGISTER_CODEC_BTN_COL_WIDTH,
-  height: SIP_REGISTER_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition:
-    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const sipRegisterCodecDualListReorderBtnStyle = {
-  ...sipRegisterCodecDualListBtnStyle,
-  fontSize: 11,
-  fontWeight: 500,
-};
-
-const sipRegisterCodecDualListReorderDownBtnStyle = {
-  ...sipRegisterCodecDualListReorderBtnStyle,
-  fontWeight: 400,
-};
-
-const sipRegisterCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: SIP_REGISTER_CODEC_BTN_GAP,
-  height: SIP_REGISTER_CODEC_LIST_BOX_HEIGHT,
-  width: SIP_REGISTER_CODEC_BTN_COL_WIDTH,
-};
-
-const SipRegisterCodecDualListBtn = ({
-  onClick,
-  title,
-  children,
-  reorder,
-  down,
-}) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-    style={
-      down
-        ? sipRegisterCodecDualListReorderDownBtnStyle
-        : reorder
-          ? sipRegisterCodecDualListReorderBtnStyle
-          : sipRegisterCodecDualListBtnStyle
-    }
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow =
-        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const SipRegisterCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => (typeof item === "string" ? item : item.value);
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      style={getSipRegisterCodecListBoxStyle(isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={sipRegisterCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={sipRegisterCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
     </div>
   );
 };
@@ -1029,8 +714,6 @@ const SipRegisterPage = () => {
     { matchMode: "", strip: "", prepend: "" },
   ]);
   const [dnisRows, setDnisRows] = useState([{ dnisNumber: "", dnisName: "" }]);
-  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
-  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
   const [ethPortOptions, setEthPortOptions] = useState(
     SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
   );
@@ -1079,30 +762,8 @@ const SipRegisterPage = () => {
     [form.allow_codecs],
   );
 
-  const availableCodecList = useMemo(
-    () =>
-      SIP_REGISTER_CODEC_OPTIONS.filter(
-        (c) => !selectedCodecList.includes(c.value),
-      ),
-    [selectedCodecList],
-  );
-
   const getCodecLabel = (value) =>
     SIP_REGISTER_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
-
-  const toggleCodecAvailableSelect = (id) =>
-    setCodecAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const toggleCodecChosenSelect = (id) =>
-    setCodecChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const selectCodecAvailable = (ids) => setCodecAvailableSelected(ids);
-
-  const selectCodecChosen = (ids) => setCodecChosenSelected(ids);
 
   const updateCodecList = (newList) => {
     const newCodecsString = newList.join(",");
@@ -1123,89 +784,6 @@ const SipRegisterPage = () => {
     setForm((prev) => ({ ...prev, allow_codecs: newCodecsString }));
   };
 
-  const addSelectedCodecs = () => {
-    if (!codecAvailableSelected.length) return;
-    updateCodecList([
-      ...selectedCodecList,
-      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
-    ]);
-    setCodecAvailableSelected([]);
-  };
-
-  const addAllCodecs = () => {
-    updateCodecList(SIP_REGISTER_CODEC_OPTIONS.map((c) => c.value));
-    setCodecAvailableSelected([]);
-  };
-
-  const removeSelectedCodecs = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
-    );
-    setCodecChosenSelected([]);
-  };
-
-  const removeAllCodecs = () => {
-    updateCodecList([]);
-    setCodecChosenSelected([]);
-  };
-
-  const moveCodecToBottom = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        const moving = codecChosenSelected.filter((id) => next.includes(id));
-        const rest = next.filter((id) => !moving.includes(id));
-        return [...rest, ...moving];
-      })(),
-    );
-  };
-
-  const moveCodecUp = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        codecChosenSelected.forEach((id) => {
-          const idx = next.indexOf(id);
-          if (idx > 0) {
-            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-          }
-        });
-        return next;
-      })(),
-    );
-  };
-
-  const moveCodecDown = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        [...codecChosenSelected].reverse().forEach((id) => {
-          const idx = next.indexOf(id);
-          if (idx >= 0 && idx < next.length - 1) {
-            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-          }
-        });
-        return next;
-      })(),
-    );
-  };
-
-  const moveCodecToTop = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        const moving = codecChosenSelected.filter((id) => next.includes(id));
-        const rest = next.filter((id) => !moving.includes(id));
-        return [...moving, ...rest];
-      })(),
-    );
-  };
-
   const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
     "None",
     "Extension Number",
@@ -1224,8 +802,6 @@ const SipRegisterPage = () => {
   const [dodAddName, setDodAddName] = useState("");
   const [dodAddNumber, setDodAddNumber] = useState("");
   const [dodMemberExtensions, setDodMemberExtensions] = useState([]);
-  const [dodAvailableSelected, setDodAvailableSelected] = useState([]);
-  const [dodChosenSelected, setDodChosenSelected] = useState([]);
   const [dodAvailableExtensions, setDodAvailableExtensions] = useState([]);
   const dodHasLoadedExtensionsRef = useRef(false);
 
@@ -1237,28 +813,10 @@ const SipRegisterPage = () => {
 
   const getDodExtLabel = (ext) => dodExtensionLabelMap.get(ext) || ext;
 
-  const dodAvailableList = useMemo(
-    () =>
-      dodAvailableExtensions.filter(
-        (e) => !dodMemberExtensions.includes(e.value),
-      ),
-    [dodAvailableExtensions, dodMemberExtensions],
-  );
-
-  const dodAvailableSelectedInList = useMemo(
-    () =>
-      dodAvailableSelected.filter((id) =>
-        dodAvailableList.some((t) => t.value === id),
-      ),
-    [dodAvailableSelected, dodAvailableList],
-  );
-
   const resetDodAddForm = () => {
     setDodAddName("");
     setDodAddNumber("");
     setDodMemberExtensions([]);
-    setDodAvailableSelected([]);
-    setDodChosenSelected([]);
   };
 
   const loadDodExtensions = async () => {
@@ -1300,82 +858,6 @@ const SipRegisterPage = () => {
     setShowDodAddModal(true);
     if (!dodHasLoadedExtensionsRef.current) await loadDodExtensions();
   };
-
-  const dodAddSelectedMembers = () => {
-    if (!dodAvailableSelected.length) return;
-    setDodMemberExtensions((prev) => [
-      ...prev,
-      ...dodAvailableSelected.filter((id) => !prev.includes(id)),
-    ]);
-    setDodAvailableSelected([]);
-  };
-
-  const dodAddAllMembers = () => {
-    setDodMemberExtensions(dodAvailableExtensions.map((e) => e.value));
-    setDodAvailableSelected([]);
-  };
-
-  const dodRemoveSelectedMembers = () => {
-    if (!dodChosenSelected.length) return;
-    setDodMemberExtensions((prev) =>
-      prev.filter((id) => !dodChosenSelected.includes(id)),
-    );
-    setDodChosenSelected([]);
-  };
-
-  const dodRemoveAllMembers = () => {
-    setDodMemberExtensions([]);
-    setDodChosenSelected([]);
-  };
-
-  const toggleDodAvailableSelect = (id) =>
-    setDodAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const toggleDodChosenSelect = (id) =>
-    setDodChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const selectDodAvailable = (ids) => setDodAvailableSelected(ids);
-
-  const selectDodChosen = (ids) => setDodChosenSelected(ids);
-
-  const clearDualListHighlight = () => {
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
-    setDodAvailableSelected([]);
-    setDodChosenSelected([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (
-        !codecAvailableSelected.length &&
-        !codecChosenSelected.length &&
-        !dodAvailableSelected.length &&
-        !dodChosenSelected.length
-      ) {
-        return;
-      }
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearDualListHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [
-    showModal,
-    codecAvailableSelected,
-    codecChosenSelected,
-    dodAvailableSelected,
-    dodChosenSelected,
-  ]);
 
   const handleConfirmDodAdd = () => {
     const name = dodAddName.trim();
@@ -1925,8 +1407,6 @@ const SipRegisterPage = () => {
     setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
     setDnisRows([{ dnisNumber: "", dnisName: "" }]);
     setValidationErrors({});
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
     if (row && idx !== null) {
       const uiReg =
         row.ui_register ??
@@ -1981,8 +1461,6 @@ const SipRegisterPage = () => {
     setDnisRows([{ dnisNumber: "", dnisName: "" }]);
     setShowPassword(false); // Reset password visibility when closing modal
     setValidationErrors({}); // Clear validation errors when closing modal
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
   };
   const handleChange = (key, value) => {
     setForm((prev) => {
@@ -2527,51 +2005,6 @@ const SipRegisterPage = () => {
   const handlePageChange = (newPage) => {
     setPage(Math.max(1, Math.min(totalPages, newPage)));
   };
-
-  const sipRegisterCodecTransferActions = [
-    {
-      onClick: addSelectedCodecs,
-      title: "Move selected to Selected",
-      label: ">",
-    },
-    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
-    {
-      onClick: removeSelectedCodecs,
-      title: "Move selected to Available",
-      label: "<",
-    },
-    {
-      onClick: removeAllCodecs,
-      title: "Move all to Available",
-      label: "<<",
-    },
-  ];
-
-  const sipRegisterCodecReorderActions = [
-    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
-    { onClick: moveCodecUp, title: "Move up", label: "^" },
-    { onClick: moveCodecDown, title: "Move down", label: "v" },
-    { onClick: moveCodecToBottom, title: "Move to bottom", label: "vv" },
-  ];
-
-  const sipRegisterDodTransferActions = [
-    {
-      onClick: dodAddSelectedMembers,
-      title: "Move selected to Selected",
-      label: ">",
-    },
-    { onClick: dodAddAllMembers, title: "Move all to Selected", label: ">>" },
-    {
-      onClick: dodRemoveSelectedMembers,
-      title: "Move selected to Available",
-      label: "<",
-    },
-    {
-      onClick: dodRemoveAllMembers,
-      title: "Move all to Available",
-      label: "<<",
-    },
-  ];
 
   const dodAvailableEmptyText =
     dodAvailableExtensions.length === 0 && !dodHasLoadedExtensionsRef.current
@@ -3685,83 +3118,13 @@ const SipRegisterPage = () => {
             {modalTab === "codec" && (
               <div className="p-3 sm:p-5">
                 <TrunkModalSectionHeading title="CODEC Priority" isFirst />
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `1fr ${SIP_REGISTER_CODEC_BTN_COL_WIDTH}px 1fr ${SIP_REGISTER_CODEC_BTN_COL_WIDTH}px`,
-                    gap: 10,
-                    width: "100%",
-                    maxWidth: 720,
-                    margin: "0 auto",
-                    alignItems: "start",
-                  }}
-                >
-                  <div>
-                    <div style={sipRegisterCodecColumnLabelStyle}>
-                      Available
-                    </div>
-                    <SipRegisterCodecListBox
-                      items={availableCodecList}
-                      selectedIds={codecAvailableSelected}
-                      onToggle={toggleCodecAvailableSelect}
-                      onDragSelect={selectCodecAvailable}
-                      onClearHighlight={clearDualListHighlight}
-                      emptyText="Available codecs"
-                      getLabel={(id) => getCodecLabel(id)}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      style={{ height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET }}
-                      aria-hidden="true"
-                    />
-                    <div style={sipRegisterCodecBtnColumnStyle}>
-                      {sipRegisterCodecTransferActions.map(
-                        ({ onClick, title, label }) => (
-                          <SipRegisterCodecDualListBtn
-                            key={title}
-                            onClick={onClick}
-                            title={title}
-                          >
-                            {label}
-                          </SipRegisterCodecDualListBtn>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={sipRegisterCodecColumnLabelStyle}>Selected</div>
-                    <SipRegisterCodecListBox
-                      items={selectedCodecList}
-                      selectedIds={codecChosenSelected}
-                      onToggle={toggleCodecChosenSelect}
-                      onDragSelect={selectCodecChosen}
-                      onClearHighlight={clearDualListHighlight}
-                      emptyText="No selected codecs"
-                      getLabel={(id) => getCodecLabel(id)}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      style={{ height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET }}
-                      aria-hidden="true"
-                    />
-                    <div style={sipRegisterCodecBtnColumnStyle}>
-                      {sipRegisterCodecReorderActions.map(
-                        ({ onClick, title, label }) => (
-                          <SipRegisterCodecDualListBtn
-                            key={title}
-                            reorder
-                            title={title}
-                            onClick={onClick}
-                          >
-                            {label}
-                          </SipRegisterCodecDualListBtn>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <SipRegisterCodecDualList
+                  allOptions={SIP_REGISTER_CODEC_OPTIONS}
+                  selected={selectedCodecList}
+                  onChange={updateCodecList}
+                  getLabel={getCodecLabel}
+                  style={{ maxWidth: 720, margin: "0 auto" }}
+                />
                 {validationErrors.allow_codecs && (
                   <div className="text-red-500 text-xs mt-3 text-center">
                     {validationErrors.allow_codecs}
@@ -4477,67 +3840,15 @@ const SipRegisterPage = () => {
                     </div>
 
                     <div style={{ marginTop: 4 }}>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: `1fr ${SIP_REGISTER_CODEC_BTN_COL_WIDTH}px 1fr`,
-                          gap: 10,
-                          width: "100%",
-                          alignItems: "start",
-                        }}
-                      >
-                        <div>
-                          <div style={sipRegisterCodecColumnLabelStyle}>
-                            Available
-                          </div>
-                          <SipRegisterCodecListBox
-                            items={dodAvailableList}
-                            selectedIds={dodAvailableSelectedInList}
-                            onToggle={toggleDodAvailableSelect}
-                            onDragSelect={selectDodAvailable}
-                            onClearHighlight={clearDualListHighlight}
-                            emptyText={dodAvailableEmptyText}
-                            getLabel={(id, item) =>
-                              item?.label || getDodExtLabel(id)
-                            }
-                          />
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              height: SIP_REGISTER_CODEC_LIST_LABEL_OFFSET,
-                            }}
-                            aria-hidden="true"
-                          />
-                          <div style={sipRegisterCodecBtnColumnStyle}>
-                            {sipRegisterDodTransferActions.map(
-                              ({ onClick, title, label }) => (
-                                <SipRegisterCodecDualListBtn
-                                  key={title}
-                                  onClick={onClick}
-                                  title={title}
-                                >
-                                  {label}
-                                </SipRegisterCodecDualListBtn>
-                              ),
-                            )}
-                          </div>
-                        </div>
-                        <div>
-                          <div style={sipRegisterCodecColumnLabelStyle}>
-                            Selected
-                          </div>
-                          <SipRegisterCodecListBox
-                            items={dodMemberExtensions}
-                            selectedIds={dodChosenSelected}
-                            onToggle={toggleDodChosenSelect}
-                            onDragSelect={selectDodChosen}
-                            onClearHighlight={clearDualListHighlight}
-                            emptyText="No selected extensions"
-                            getLabel={(id) => getDodExtLabel(id)}
-                          />
-                        </div>
-                      </div>
+                      <SipRegisterCodecDualList
+                        hideReorder
+                        allOptions={dodAvailableExtensions}
+                        selected={dodMemberExtensions}
+                        onChange={setDodMemberExtensions}
+                        getLabel={getDodExtLabel}
+                        emptyTextAvailable={dodAvailableEmptyText}
+                        emptyTextSelected="No selected extensions"
+                      />
                     </div>
 
                     <div className="flex justify-center gap-4 mt-4">

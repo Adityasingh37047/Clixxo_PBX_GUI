@@ -119,16 +119,23 @@ const ExtensionModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
 const EXTENSION_MODAL_SECTION_BG = "#f8fafc";
 const EXTENSION_MODAL_SECTION_HEADING_COLOR = "#30415A";
 
-const ExtensionModalSectionHeading = ({ title, isFirst = false }) => {
+const ExtensionModalSectionHeading = ({
+  title,
+  titleNode,
+  isFirst = false,
+  margin,
+}) => {
   const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
+  const defaultMargin = isFirst
+    ? isLaptopNarrow
+      ? "16px 0 24px 0"
+      : "0 0 24px 0"
+    : "16px 0 24px 0";
+
   return (
     <div
       style={{
-        margin: isFirst
-          ? isLaptopNarrow
-            ? "16px 0 24px 0"
-            : "0 0 24px 0"
-          : "16px 0 24px 0",
+        margin: margin ?? defaultMargin,
         position: "relative",
         width: "100%",
       }}
@@ -144,9 +151,12 @@ const ExtensionModalSectionHeading = ({ title, isFirst = false }) => {
           fontSize: 14,
           fontWeight: 600,
           color: EXTENSION_MODAL_SECTION_HEADING_COLOR,
+          display: titleNode ? "inline-flex" : undefined,
+          alignItems: titleNode ? "center" : undefined,
+          gap: titleNode ? 0 : undefined,
         }}
       >
-        {title}
+        {titleNode ?? title}
       </span>
     </div>
   );

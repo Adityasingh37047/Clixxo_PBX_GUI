@@ -8,7 +8,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { C } from "../../../../theme/pbxTokens";
-import { ExtensionMonitorDualListbox } from "../../../../components/common";
+import { ExtensionCodecDualList as ExtensionMonitorCodecDualList } from "../../../../components/common";
 import { FieldRow } from "./formFields";
 import { SectionCard } from "./formFields";
 import { ExtensionTooltipLabel } from "./formFields";
@@ -859,15 +859,19 @@ function FeaturesTab(props) {
                     </FieldRow>
                   </div>
                   {form.monitor_allow === "extensions" && (
-                    <ExtensionMonitorDualListbox
-                      available={extensionOptions.filter(
-                        (e) =>
-                          !(form.monitor_allowed_extensions || []).includes(e),
-                      )}
+                    <ExtensionMonitorCodecDualList
+                      allOptions={extensionOptions.map((ext) => ({
+                        value: ext,
+                        label: ext,
+                      }))}
                       selected={form.monitor_allowed_extensions || []}
                       onChange={(newSelected) =>
                         handleChange("monitor_allowed_extensions", newSelected)
                       }
+                      hideReorder
+                      isCompact={isCompact}
+                      emptyTextAvailable="No extensions available"
+                      emptyTextSelected="No selected extensions"
                     />
                   )}
                 </SectionCard>

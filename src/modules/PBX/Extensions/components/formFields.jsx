@@ -1,7 +1,7 @@
 // Extensions form-field kit: tooltip label, FieldRow, SectionCard, field styles,
 // and the destination autocomplete. Consumed by the Basic/Features/Advanced tabs.
 import React, { useState, useEffect } from "react";
-import { Tooltip, TextField, useMediaQuery } from "@mui/material";
+import { Tooltip, TextField } from "@mui/material";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import {
   C,
@@ -306,37 +306,22 @@ const SectionCard = ({ title, children, isFirst = false }) => (
   </div>
 );
 
-const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  return (
-  <div style={{ margin: "16px 0 24px 0", position: "relative", width: "100%" }}>
-    <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: isLaptopNarrow ? 0 : -6,
-        background: EXTENSION_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: EXTENSION_MODAL_SECTION_HEADING_COLOR,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 0,
-      }}
-    >
-      <ExtensionTooltipLabel
-        tooltipKey={tooltipKey}
-        style={{ fontSize: 14, color: EXTENSION_MODAL_SECTION_HEADING_COLOR }}
-      >
-        Allow Codecs
-      </ExtensionTooltipLabel>
-      {required && <span style={{ color: C.errorRed }}> *</span>}
-    </span>
-  </div>
-  );
-};
+const AllowCodecsSectionHeading = ({ tooltipKey, required = false }) => (
+  <ExtensionModalSectionHeading
+    margin="24px 0 24px 0"
+    titleNode={
+      <>
+        <ExtensionTooltipLabel
+          tooltipKey={tooltipKey}
+          style={{ fontSize: 14, color: EXTENSION_MODAL_SECTION_HEADING_COLOR }}
+        >
+          Allow Codecs
+        </ExtensionTooltipLabel>
+        {required && <span style={{ color: C.errorRed }}> *</span>}
+      </>
+    }
+  />
+);
 
 // ── Destination autocomplete ──
 

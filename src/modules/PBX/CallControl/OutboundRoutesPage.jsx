@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -33,6 +33,7 @@ import {
   listSipRegistrations,
   updateOutboundRoute,
 } from "../../../api/apiService";
+import { ExtensionCodecDualList as OutboundRouteCodecDualList } from "../../../components/common";
 
 const OUTBOUND_ROUTE_COMPACT_MQ = "(max-width: 768px)";
 
@@ -50,15 +51,6 @@ const C = {
   amber: "#dc2626",
   successGreen: "#16a34a",
   errorRed: "#dc2626",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#c9d0d9",
-  codecBtnBg: "#d9dde3",
-  placeholderText: "#94a3b8",
 };
 
 // ── Local page UI ──
@@ -495,14 +487,6 @@ const OutboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }
   );
 };
 
-const outboundRouteDualListLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
@@ -807,306 +791,6 @@ const OutboundRoutePagination = ({
   </div>
 );
 
-const OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
-const OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH = 40;
-const OUTBOUND_ROUTE_CODEC_BTN_GAP = 6;
-const OUTBOUND_ROUTE_CODEC_BTN_HEIGHT =
-  (OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT - OUTBOUND_ROUTE_CODEC_BTN_GAP * 3) / 4;
-const OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
-
-const getOutboundRouteCodecListBoxStyle = (isEmpty) => ({
-  width: "100%",
-  minHeight: OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  height: OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const outboundRouteCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const outboundRouteCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const outboundRouteCodecDualListBtnStyle = {
-  width: OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
-  height: OUTBOUND_ROUTE_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const outboundRouteCodecDualListReorderBtnStyle = {
-  ...outboundRouteCodecDualListBtnStyle,
-  fontSize: 11,
-  fontWeight: 500
-};
-
-const outboundRouteCodecDualListReorderDownBtnStyle = {
-  ...outboundRouteCodecDualListReorderBtnStyle,
-  fontWeight: 400,
-};
-
-const outboundRouteCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: OUTBOUND_ROUTE_CODEC_BTN_GAP,
-  height: OUTBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  width: OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
-};
-
-const OutboundRouteCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-        style={
-      down
-        ? outboundRouteCodecDualListReorderDownBtnStyle
-        : reorder
-          ? outboundRouteCodecDualListReorderBtnStyle
-          : outboundRouteCodecDualListBtnStyle
-    }
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const OutboundRouteCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => typeof item === "string" ? item : (item.value ?? item.id);
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      style={getOutboundRouteCodecListBoxStyle(isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={outboundRouteCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={outboundRouteCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-};
-
 const OUTBOUND_ROUTE_MODAL_LABEL_WIDTH = 185;
 const OUTBOUND_ROUTE_MODAL_FIELD_WIDTH = 210;
 const OUTBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT = 28;
@@ -1309,15 +993,9 @@ const OutboundRoutesPage = () => {
 
   const [availableExtensions, setAvailableExtensions] = useState([]);
   const [memberExtensions, setMemberExtensions] = useState([]);
-  const [availableExtensionSelected, setAvailableExtensionSelected] = useState(
-    [],
-  );
-  const [chosenExtensionSelected, setChosenExtensionSelected] = useState([]);
 
   const [availableTrunks, setAvailableTrunks] = useState([]);
   const [memberTrunks, setMemberTrunks] = useState([]);
-  const [availableTrunkSelected, setAvailableTrunkSelected] = useState([]);
-  const [chosenTrunkSelected, setChosenTrunkSelected] = useState([]);
 
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
@@ -1518,15 +1196,13 @@ const OutboundRoutesPage = () => {
   const getExtensionLabel = (id) => extensionLabelMap.get(id) || id;
   const getTrunkLabel = (id) => trunkLabelMap.get(id) || id;
 
-  const extensionAvailableList = useMemo(
-    () =>
-      availableExtensions.filter((item) => !memberExtensions.includes(item.id)),
-    [availableExtensions, memberExtensions],
+  const allExtensionOptions = useMemo(
+    () => availableExtensions.map(({ id, label }) => ({ value: id, label: label || id })),
+    [availableExtensions],
   );
-
-  const trunkAvailableList = useMemo(
-    () => availableTrunks.filter((item) => !memberTrunks.includes(item.id)),
-    [availableTrunks, memberTrunks],
+  const allTrunkOptions = useMemo(
+    () => availableTrunks.map(({ id, label }) => ({ value: id, label: label || id })),
+    [availableTrunks],
   );
 
   const resetForm = () => {
@@ -1544,10 +1220,6 @@ const OutboundRoutesPage = () => {
     setCallerConversion({ ...OUTBOUND_ROUTE_DEFAULT_CALLER_CONVERSION });
     setMemberExtensions([]);
     setMemberTrunks([]);
-    setAvailableExtensionSelected([]);
-    setChosenExtensionSelected([]);
-    setAvailableTrunkSelected([]);
-    setChosenTrunkSelected([]);
   };
 
   const ensureFormListsLoaded = async () => {
@@ -1596,10 +1268,6 @@ const OutboundRoutesPage = () => {
       Array.isArray(row.memberExtensions) ? row.memberExtensions : [],
     );
     setMemberTrunks(Array.isArray(row.memberTrunks) ? row.memberTrunks : []);
-    setAvailableExtensionSelected([]);
-    setChosenExtensionSelected([]);
-    setAvailableTrunkSelected([]);
-    setChosenTrunkSelected([]);
     setShowModal(true);
     await ensureFormListsLoaded();
   };
@@ -1777,211 +1445,6 @@ const OutboundRoutesPage = () => {
     setDialPatterns((prev) =>
       prev.length <= 1 ? prev : prev.filter((_, i) => i !== index),
     );
-
-  const addSelectedExtensions = () => {
-    if (availableExtensionSelected.length === 0) return;
-    setMemberExtensions((prev) => [
-      ...prev,
-      ...availableExtensionSelected.filter((id) => !prev.includes(id)),
-    ]);
-    setAvailableExtensionSelected([]);
-  };
-  const addAllExtensions = () => {
-    setMemberExtensions(availableExtensions.map((item) => item.id));
-    setAvailableExtensionSelected([]);
-  };
-  const removeSelectedExtensions = () => {
-    if (chosenExtensionSelected.length === 0) return;
-    setMemberExtensions((prev) =>
-      prev.filter((id) => !chosenExtensionSelected.includes(id)),
-    );
-    setChosenExtensionSelected([]);
-  };
-  const removeAllExtensions = () => {
-    setMemberExtensions([]);
-    setChosenExtensionSelected([]);
-  };
-
-  const toggleAvailableExtensionSelect = (id) => {
-    setAvailableExtensionSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const toggleChosenExtensionSelect = (id) => {
-    setChosenExtensionSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const moveExtToBottom = () => {
-    if (!chosenExtensionSelected.length) return;
-    setMemberExtensions((prev) => {
-      const rest = prev.filter((id) => !chosenExtensionSelected.includes(id));
-      const chosen = prev.filter((id) => chosenExtensionSelected.includes(id));
-      return [...rest, ...chosen];
-    });
-  };
-  const moveExtUp = () => {
-    if (!chosenExtensionSelected.length) return;
-    setMemberExtensions((prev) => {
-      const arr = [...prev];
-      for (let i = 1; i < arr.length; i++) {
-        if (
-          chosenExtensionSelected.includes(arr[i]) &&
-          !chosenExtensionSelected.includes(arr[i - 1])
-        )
-          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-      }
-      return arr;
-    });
-  };
-  const moveExtDown = () => {
-    if (!chosenExtensionSelected.length) return;
-    setMemberExtensions((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 2; i >= 0; i--) {
-        if (
-          chosenExtensionSelected.includes(arr[i]) &&
-          !chosenExtensionSelected.includes(arr[i + 1])
-        )
-          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-      }
-      return arr;
-    });
-  };
-  const moveExtToTop = () => {
-    if (!chosenExtensionSelected.length) return;
-    setMemberExtensions((prev) => {
-      const chosen = prev.filter((id) => chosenExtensionSelected.includes(id));
-      const rest = prev.filter((id) => !chosenExtensionSelected.includes(id));
-      return [...chosen, ...rest];
-    });
-  };
-
-  const addSelectedTrunks = () => {
-    if (availableTrunkSelected.length === 0) return;
-    setMemberTrunks((prev) => [
-      ...prev,
-      ...availableTrunkSelected.filter((id) => !prev.includes(id)),
-    ]);
-    setAvailableTrunkSelected([]);
-  };
-  const addAllTrunks = () => {
-    setMemberTrunks(availableTrunks.map((item) => item.id));
-    setAvailableTrunkSelected([]);
-  };
-  const removeSelectedTrunks = () => {
-    if (chosenTrunkSelected.length === 0) return;
-    setMemberTrunks((prev) =>
-      prev.filter((id) => !chosenTrunkSelected.includes(id)),
-    );
-    setChosenTrunkSelected([]);
-  };
-  const removeAllTrunks = () => {
-    setMemberTrunks([]);
-    setChosenTrunkSelected([]);
-  };
-
-  const toggleAvailableTrunkSelect = (id) => {
-    setAvailableTrunkSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const toggleChosenTrunkSelect = (id) => {
-    setChosenTrunkSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const selectAvailableExtensions = (ids) => setAvailableExtensionSelected(ids);
-
-  const selectChosenExtensions = (ids) => setChosenExtensionSelected(ids);
-
-  const selectAvailableTrunks = (ids) => setAvailableTrunkSelected(ids);
-
-  const selectChosenTrunks = (ids) => setChosenTrunkSelected(ids);
-
-  const clearDualListHighlight = () => {
-    setAvailableExtensionSelected([]);
-    setChosenExtensionSelected([]);
-    setAvailableTrunkSelected([]);
-    setChosenTrunkSelected([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (
-        !availableExtensionSelected.length &&
-        !chosenExtensionSelected.length &&
-        !availableTrunkSelected.length &&
-        !chosenTrunkSelected.length
-      ) {
-        return;
-      }
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearDualListHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [
-    showModal,
-    availableExtensionSelected,
-    chosenExtensionSelected,
-    availableTrunkSelected,
-    chosenTrunkSelected,
-  ]);
-
-  const moveTrunkToBottom = () => {
-    if (!chosenTrunkSelected.length) return;
-    setMemberTrunks((prev) => {
-      const rest = prev.filter((id) => !chosenTrunkSelected.includes(id));
-      const chosen = prev.filter((id) => chosenTrunkSelected.includes(id));
-      return [...rest, ...chosen];
-    });
-  };
-  const moveTrunkUp = () => {
-    if (!chosenTrunkSelected.length) return;
-    setMemberTrunks((prev) => {
-      const arr = [...prev];
-      for (let i = 1; i < arr.length; i++) {
-        if (
-          chosenTrunkSelected.includes(arr[i]) &&
-          !chosenTrunkSelected.includes(arr[i - 1])
-        )
-          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-      }
-      return arr;
-    });
-  };
-  const moveTrunkDown = () => {
-    if (!chosenTrunkSelected.length) return;
-    setMemberTrunks((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 2; i >= 0; i--) {
-        if (
-          chosenTrunkSelected.includes(arr[i]) &&
-          !chosenTrunkSelected.includes(arr[i + 1])
-        )
-          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-      }
-      return arr;
-    });
-  };
-  const moveTrunkToTop = () => {
-    if (!chosenTrunkSelected.length) return;
-    setMemberTrunks((prev) => {
-      const chosen = prev.filter((id) => chosenTrunkSelected.includes(id));
-      const rest = prev.filter((id) => !chosenTrunkSelected.includes(id));
-      return [...chosen, ...rest];
-    });
-  };
 
   const allRowsSelected =
     rows.length > 0 && rows.every((_, index) => selected.includes(index));
@@ -2693,223 +2156,25 @@ const OutboundRoutesPage = () => {
               title="Member Extensions *"
               tooltipKey="member_extensions"
             >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: `1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px`,
-                  gap: 10,
-                  width: "100%",
-                  alignItems: "start",
-                }}
-              >
-                <div>
-                  <div style={outboundRouteDualListLabelStyle}>Available</div>
-                  <OutboundRouteCodecListBox
-                    items={loading.members ? [] : extensionAvailableList}
-                    selectedIds={availableExtensionSelected}
-                    onToggle={toggleAvailableExtensionSelect}
-                    onDragSelect={selectAvailableExtensions}
-                    onClearHighlight={clearDualListHighlight}
-                    emptyText={
-                      loading.members ? "Loading extensions..." : "No extensions"
-                    }
-                    getLabel={(id, item) =>
-                      item?.label || getExtensionLabel(id)
-                    }
-                  />
-                </div>
-                <div>
-                  <div
-                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
-                    aria-hidden="true"
-                  />
-                  <div style={outboundRouteCodecBtnColumnStyle}>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={addSelectedExtensions}
-                      title="Move selected to Selected"
-                    >
-                      &gt;
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={addAllExtensions}
-                      title="Move all to Selected"
-                    >
-                      &gt;&gt;
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={removeSelectedExtensions}
-                      title="Move selected to Available"
-                    >
-                      &lt;
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={removeAllExtensions}
-                      title="Move all to Available"
-                    >
-                      &lt;&lt;
-                    </OutboundRouteCodecDualListBtn>
-                  </div>
-                </div>
-                <div>
-                  <div style={outboundRouteDualListLabelStyle}>Selected</div>
-                  <OutboundRouteCodecListBox
-                    items={memberExtensions}
-                    selectedIds={chosenExtensionSelected}
-                    onToggle={toggleChosenExtensionSelect}
-                    onDragSelect={selectChosenExtensions}
-                    onClearHighlight={clearDualListHighlight}
-                    emptyText="No selected extensions"
-                    getLabel={(id) => getExtensionLabel(id)}
-                  />
-                </div>
-                <div>
-                  <div
-                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
-                    aria-hidden="true"
-                  />
-                  <div style={outboundRouteCodecBtnColumnStyle}>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      down
-                      onClick={moveExtToBottom}
-                    >
-                      vv
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveExtUp}
-                    >
-                      ^
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move down"
-                      down
-                      onClick={moveExtDown}
-                    >
-                      v
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveExtToTop}
-                    >
-                      ^^
-                    </OutboundRouteCodecDualListBtn>
-                  </div>
-                </div>
-              </div>
+              <OutboundRouteCodecDualList
+                allOptions={loading.members ? [] : allExtensionOptions}
+                selected={memberExtensions}
+                onChange={setMemberExtensions}
+                getLabel={getExtensionLabel}
+                emptyTextAvailable={loading.members ? "Loading extensions..." : "No extensions"}
+                emptyTextSelected="No selected extensions"
+              />
             </SectionCard>
 
             <SectionCard title="Member Trunks *" tooltipKey="member_trunks">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: `1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${OUTBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px`,
-                  gap: 10,
-                  width: "100%",
-                  alignItems: "start",
-                }}
-              >
-                <div>
-                  <div style={outboundRouteDualListLabelStyle}>Available</div>
-                  <OutboundRouteCodecListBox
-                    items={loading.trunks ? [] : trunkAvailableList}
-                    selectedIds={availableTrunkSelected}
-                    onToggle={toggleAvailableTrunkSelect}
-                    onDragSelect={selectAvailableTrunks}
-                    onClearHighlight={clearDualListHighlight}
-                    emptyText={
-                      loading.trunks ? "Loading trunks..." : "No trunks"
-                    }
-                    getLabel={(id, item) => item?.label || getTrunkLabel(id)}
-                  />
-                </div>
-                <div>
-                  <div
-                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
-                    aria-hidden="true"
-                  />
-                  <div style={outboundRouteCodecBtnColumnStyle}>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={addSelectedTrunks}
-                      title="Move selected to Selected"
-                    >
-                      &gt;
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={addAllTrunks}
-                      title="Move all to Selected"
-                    >
-                      &gt;&gt;
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={removeSelectedTrunks}
-                      title="Move selected to Available"
-                    >
-                      &lt;
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      onClick={removeAllTrunks}
-                      title="Move all to Available"
-                    >
-                      &lt;&lt;
-                    </OutboundRouteCodecDualListBtn>
-                  </div>
-                </div>
-                <div>
-                  <div style={outboundRouteDualListLabelStyle}>Selected</div>
-                  <OutboundRouteCodecListBox
-                    items={memberTrunks}
-                    selectedIds={chosenTrunkSelected}
-                    onToggle={toggleChosenTrunkSelect}
-                    onDragSelect={selectChosenTrunks}
-                    onClearHighlight={clearDualListHighlight}
-                    emptyText="No selected trunks"
-                    getLabel={(id) => getTrunkLabel(id)}
-                  />
-                </div>
-                <div>
-                  <div
-                    style={{ height: OUTBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
-                    aria-hidden="true"
-                  />
-                  <div style={outboundRouteCodecBtnColumnStyle}>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      down
-                      onClick={moveTrunkToBottom}
-                    >
-                      vv
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveTrunkUp}
-                    >
-                      ^
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move down"
-                      down
-                      onClick={moveTrunkDown}
-                    >
-                      v
-                    </OutboundRouteCodecDualListBtn>
-                    <OutboundRouteCodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveTrunkToTop}
-                    >
-                      ^^
-                    </OutboundRouteCodecDualListBtn>
-                  </div>
-                </div>
-              </div>
+              <OutboundRouteCodecDualList
+                allOptions={loading.trunks ? [] : allTrunkOptions}
+                selected={memberTrunks}
+                onChange={setMemberTrunks}
+                getLabel={getTrunkLabel}
+                emptyTextAvailable={loading.trunks ? "Loading trunks..." : "No trunks"}
+                emptyTextSelected="No selected trunks"
+              />
             </SectionCard>
           </div>
         </DialogContent>

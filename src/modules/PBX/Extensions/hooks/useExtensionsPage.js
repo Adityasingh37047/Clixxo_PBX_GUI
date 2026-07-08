@@ -62,8 +62,6 @@ export function useExtensionsPage() {
     fixedPassword: "",
     passwordPrefix: "",
   });
-  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
-  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
 
   // Pagination
   const itemsPerPage = 50;
@@ -207,47 +205,8 @@ export function useExtensionsPage() {
     [form.allow_codecs],
   );
 
-  const availableCodecList = useMemo(
-    () => EXTENSION_CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
-    [selectedCodecList],
-  );
-
   const getCodecLabel = (value) =>
     EXTENSION_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
-
-  const toggleCodecAvailableSelect = (id) =>
-    setCodecAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const toggleCodecChosenSelect = (id) =>
-    setCodecChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const selectCodecAvailable = (ids) => setCodecAvailableSelected(ids);
-
-  const selectCodecChosen = (ids) => setCodecChosenSelected(ids);
-
-  const clearCodecHighlightSelection = () => {
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!codecAvailableSelected.length && !codecChosenSelected.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearCodecHighlightSelection();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, codecAvailableSelected, codecChosenSelected]);
 
   const updateCodecList = (newList) => {
     const str = newList.join(",");
@@ -261,89 +220,6 @@ export function useExtensionsPage() {
     const ae = validateAllowCodecs(str);
     if (ae) setValidationErrors((p) => ({ ...p, allow_codecs: ae }));
     setForm((prev) => ({ ...prev, allow_codecs: str }));
-  };
-
-  const addSelectedCodecs = () => {
-    if (!codecAvailableSelected.length) return;
-    updateCodecList([
-      ...selectedCodecList,
-      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
-    ]);
-    setCodecAvailableSelected([]);
-  };
-
-  const addAllCodecs = () => {
-    updateCodecList(EXTENSION_CODEC_OPTIONS.map((c) => c.value));
-    setCodecAvailableSelected([]);
-  };
-
-  const removeSelectedCodecs = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
-    );
-    setCodecChosenSelected([]);
-  };
-
-  const removeAllCodecs = () => {
-    updateCodecList([]);
-    setCodecChosenSelected([]);
-  };
-
-  const moveCodecToBottom = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        const moving = codecChosenSelected.filter((id) => next.includes(id));
-        const rest = next.filter((id) => !moving.includes(id));
-        return [...rest, ...moving];
-      })(),
-    );
-  };
-
-  const moveCodecUp = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        codecChosenSelected.forEach((id) => {
-          const idx = next.indexOf(id);
-          if (idx > 0) {
-            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-          }
-        });
-        return next;
-      })(),
-    );
-  };
-
-  const moveCodecDown = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        [...codecChosenSelected].reverse().forEach((id) => {
-          const idx = next.indexOf(id);
-          if (idx >= 0 && idx < next.length - 1) {
-            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-          }
-        });
-        return next;
-      })(),
-    );
-  };
-
-  const moveCodecToTop = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        const moving = codecChosenSelected.filter((id) => next.includes(id));
-        const rest = next.filter((id) => !moving.includes(id));
-        return [...moving, ...rest];
-      })(),
-    );
   };
 
   // ── Follow Me helpers ─────────────────────────────────────────────────────
@@ -403,8 +279,6 @@ export function useExtensionsPage() {
 
   // ── Modal open/close ──────────────────────────────────────────────────────
   const handleOpenModal = (row = null, idx = null) => {
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
     setForm(
       normalizeCallForwardMutex(
         row
@@ -419,8 +293,6 @@ export function useExtensionsPage() {
   };
 
   const openBulkModal = () => {
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
     setForm({ ...EXTENSION_INITIAL_FORM });
     setEditIndex(null);
     setBulkForm({
@@ -440,8 +312,6 @@ export function useExtensionsPage() {
     setEditIndex(null);
     setShowPassword(false);
     setValidationErrors({});
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
     setFormMode("single");
     setActiveTab("basic");
   };
@@ -781,32 +651,6 @@ export function useExtensionsPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // RENDER
   // ─────────────────────────────────────────────────────────────────────────────
-  const codecTransferActions = [
-    {
-      onClick: addSelectedCodecs,
-      title: "Move selected to Selected",
-      label: ">",
-    },
-    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
-    {
-      onClick: removeSelectedCodecs,
-      title: "Move selected to Available",
-      label: "<",
-    },
-    {
-      onClick: removeAllCodecs,
-      title: "Move all to Available",
-      label: "<<",
-    },
-  ];
-
-  const codecReorderActions = [
-    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
-    { onClick: moveCodecUp, title: "Move up", label: "^" },
-    { onClick: moveCodecDown, title: "Move down", label: "v", down: true },
-    { onClick: moveCodecToBottom, title: "Move to bottom", label: "vv", down: true },
-  ];
-
   return {
     isCompact,
     accounts,
@@ -836,8 +680,6 @@ export function useExtensionsPage() {
     setSearchQuery,
     bulkForm,
     setBulkForm,
-    codecAvailableSelected,
-    codecChosenSelected,
     itemsPerPage,
     page,
     setPage,
@@ -853,21 +695,8 @@ export function useExtensionsPage() {
     loadAccounts,
     handleChange,
     selectedCodecList,
-    availableCodecList,
     getCodecLabel,
-    toggleCodecAvailableSelect,
-    toggleCodecChosenSelect,
-    selectCodecAvailable,
-    selectCodecChosen,
-    clearCodecHighlightSelection,
-    addSelectedCodecs,
-    addAllCodecs,
-    removeSelectedCodecs,
-    removeAllCodecs,
-    moveCodecToBottom,
-    moveCodecUp,
-    moveCodecDown,
-    moveCodecToTop,
+    updateCodecList,
     handleFollowMeEntryChange,
     handleAddFollowMeEntry,
     handleDndNumberChange,
@@ -881,7 +710,5 @@ export function useExtensionsPage() {
     handleDeleteSingle,
     handleImportSubmit,
     handleExport,
-    codecTransferActions,
-    codecReorderActions,
   };
 }

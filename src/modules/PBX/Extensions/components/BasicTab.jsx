@@ -7,14 +7,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import {
-  ExtensionCodecListBox,
-  ExtensionCodecDualListBtn,
-  extensionCodecColumnLabelStyle,
-  extensionCodecBtnColumnStyle,
-  EXTENSION_CODEC_BTN_COL_WIDTH,
-  EXTENSION_CODEC_LIST_LABEL_OFFSET,
-} from "../../../../components/common";
+import { ExtensionCodecDualList } from "../../../../components/common";
+import { EXTENSION_CODEC_OPTIONS } from "../../../../constants/ExtensionsConstants";
 import { FieldRow, ErrMsg } from "./formFields";
 import { SectionCard, AllowCodecsSectionHeading } from "./formFields";
 import {
@@ -25,11 +19,8 @@ import {
 function BasicTab(props) {
   const {
     formMode, form, handleChange, validationErrors, editIndex, showPassword,
-    setShowPassword, bulkForm, setBulkForm, isCompact, availableCodecList,
-    selectedCodecList, codecAvailableSelected, codecChosenSelected,
-    toggleCodecAvailableSelect, toggleCodecChosenSelect, selectCodecAvailable,
-    selectCodecChosen, clearCodecHighlightSelection, getCodecLabel,
-    codecTransferActions, codecReorderActions,
+    setShowPassword, bulkForm, setBulkForm, isCompact,
+    selectedCodecList, updateCodecList, getCodecLabel,
   } = props;
   return (
               <div
@@ -283,82 +274,12 @@ function BasicTab(props) {
                       tooltipKey="allow_codecs"
                       required
                     />
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: `1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px 1fr ${EXTENSION_CODEC_BTN_COL_WIDTH}px`,
-                        gap: 10,
-                        width: "100%",
-                        alignItems: "start",
-                      }}
-                    >
-                      <div>
-                        <div style={extensionCodecColumnLabelStyle}>Available</div>
-                        <ExtensionCodecListBox
-                          variant="available"
-                          items={availableCodecList}
-                          selectedIds={codecAvailableSelected}
-                          onToggle={toggleCodecAvailableSelect}
-                          onDragSelect={selectCodecAvailable}
-                          onClearHighlight={clearCodecHighlightSelection}
-                          emptyText="Available codecs"
-                          getLabel={(id) => getCodecLabel(id)}
-                        />
-                      </div>
-                      <div>
-                        <div
-                          style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
-                          aria-hidden="true"
-                        />
-                        <div style={extensionCodecBtnColumnStyle}>
-                          {codecTransferActions.map(
-                            ({ onClick, title, label }) => (
-                              <ExtensionCodecDualListBtn
-                                key={title}
-                                onClick={onClick}
-                                title={title}
-                              >
-                                {label}
-                              </ExtensionCodecDualListBtn>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <div style={extensionCodecColumnLabelStyle}>Selected</div>
-                        <ExtensionCodecListBox
-                          variant="selected"
-                          items={selectedCodecList}
-                          selectedIds={codecChosenSelected}
-                          onToggle={toggleCodecChosenSelect}
-                          onDragSelect={selectCodecChosen}
-                          onClearHighlight={clearCodecHighlightSelection}
-                          emptyText="No selected codecs"
-                          getLabel={(id) => getCodecLabel(id)}
-                        />
-                      </div>
-                      <div>
-                        <div
-                          style={{ height: EXTENSION_CODEC_LIST_LABEL_OFFSET }}
-                          aria-hidden="true"
-                        />
-                        <div style={extensionCodecBtnColumnStyle}>
-                          {codecReorderActions.map(
-                            ({ onClick, title, label, down }) => (
-                              <ExtensionCodecDualListBtn
-                                key={title}
-                                reorder
-                                down={down}
-                                title={title}
-                                onClick={onClick}
-                              >
-                                {label}
-                              </ExtensionCodecDualListBtn>
-                            ),
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <ExtensionCodecDualList
+                      allOptions={EXTENSION_CODEC_OPTIONS}
+                      selected={selectedCodecList}
+                      onChange={updateCodecList}
+                      getLabel={getCodecLabel}
+                    />
                     {validationErrors.allow_codecs && (
                       <ErrMsg>{validationErrors.allow_codecs}</ErrMsg>
                     )}

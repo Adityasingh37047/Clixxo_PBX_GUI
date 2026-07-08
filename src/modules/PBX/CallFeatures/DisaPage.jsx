@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -35,6 +35,7 @@ import {
   DISA_TITLE,
   DISA_TRANSPARENT_OPTIONS,
 } from "../../../constants/DisaConstants";
+import { ExtensionCodecDualList as DisaRouteCodecDualList } from "../../../components/common";
 
 const INITIAL_FORM = {
   name: "",
@@ -61,15 +62,6 @@ const C = {
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
-  placeholderText: "#94a3b8",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#c9d0d9",
-  codecBtnBg: "#d9dde3",
 };
 
 // ── Local page UI ──
@@ -764,315 +756,6 @@ const DisaSectionHeading = ({
   );
 };
 
-const DISA_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
-const DISA_ROUTE_CODEC_BTN_COL_WIDTH = 40;
-const DISA_ROUTE_CODEC_BTN_GAP = 6;
-const DISA_ROUTE_CODEC_BTN_HEIGHT =
-  (DISA_ROUTE_CODEC_LIST_BOX_HEIGHT - DISA_ROUTE_CODEC_BTN_GAP * 3) / 4;
-const DISA_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
-
-const disaRouteCodecColumnLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
-const getDisaRouteCodecListBoxStyle = (isEmpty) => ({
-  width: "100%",
-  minHeight: DISA_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  height: DISA_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const disaRouteCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const disaRouteCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const disaRouteCodecDualListBtnStyle = {
-  width: DISA_ROUTE_CODEC_BTN_COL_WIDTH,
-  height: DISA_ROUTE_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const disaRouteCodecDualListReorderBtnStyle = {
-  ...disaRouteCodecDualListBtnStyle,
-  fontSize: 11,
-  fontWeight: 500
-};
-
-const disaRouteCodecDualListReorderDownBtnStyle = {
-  ...disaRouteCodecDualListReorderBtnStyle,
-  fontWeight: 400,
-};
-
-const disaRouteCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: DISA_ROUTE_CODEC_BTN_GAP,
-  height: DISA_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  width: DISA_ROUTE_CODEC_BTN_COL_WIDTH,
-};
-
-const DisaRouteCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-        style={
-      down
-        ? disaRouteCodecDualListReorderDownBtnStyle
-        : reorder
-          ? disaRouteCodecDualListReorderBtnStyle
-          : disaRouteCodecDualListBtnStyle
-    }
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow =
-        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const DisaRouteCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => typeof item === "string" || typeof item === "number" ? item : (item.value ?? item.extension ?? item.id);
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      style={getDisaRouteCodecListBoxStyle(isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={disaRouteCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={disaRouteCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-};
-
 const enableDisableCellStyle = (value) => ({
   color: value === "Enable" ? "#16a34a" : "#dc2626",
   fontSize: 11,
@@ -1158,14 +841,23 @@ const DisaPage = () => {
   const [page, setPage] = useState(1);
   // Outbound routes state
   const [allOutboundRoutes, setAllOutboundRoutes] = useState([]);
-  const [availableSelected, setAvailableSelected] = useState([]);
-  const [chosenSelected, setChosenSelected] = useState([]);
 
   const routeNameById = useMemo(() => {
     const map = new Map();
     allOutboundRoutes.forEach((route) => map.set(route.id, route.name));
     return map;
   }, [allOutboundRoutes]);
+
+  const getOutboundRouteLabel = (id) => routeNameById.get(id) || `ID:${id}`;
+
+  const allOutboundRouteOptions = useMemo(
+    () =>
+      allOutboundRoutes.map(({ id, name }) => ({
+        value: id,
+        label: name || String(id),
+      })),
+    [allOutboundRoutes],
+  );
 
   const showMessage = (type, text) => {
     setMessage({ type, text });
@@ -1259,8 +951,6 @@ const DisaPage = () => {
   const resetForm = () => {
     setEditId(null);
     setForm(INITIAL_FORM);
-    setAvailableSelected([]);
-    setChosenSelected([]);
     setShowPassword(false);
   };
 
@@ -1272,8 +962,6 @@ const DisaPage = () => {
   const handleOpenEditModal = async (row) => {
     setEditId(row.id);
     setShowModal(true);
-    setAvailableSelected([]);
-    setChosenSelected([]);
     setLoading((p) => ({ ...p, get: true }));
     try {
       const res = await getDisa(row.id);
@@ -1382,123 +1070,6 @@ const DisaPage = () => {
       setLoading((p) => ({ ...p, save: false }));
     }
   };
-
-  // ── Dual Listbox Computed (IDs) ──
-  const availableRoutes = allOutboundRoutes.filter(
-    (r) => !form.outboundRoutes.includes(r.id),
-  );
-  const chosenRoutes = form.outboundRoutes;
-
-  const addSelectedToChosen = () => {
-    if (!availableSelected.length) return;
-    setForm((f) => ({
-      ...f,
-      outboundRoutes: [
-        ...f.outboundRoutes,
-        ...availableSelected.filter((id) => !f.outboundRoutes.includes(id)),
-      ],
-    }));
-    setAvailableSelected([]);
-  };
-
-  const addAllToChosen = () => {
-    setForm((f) => ({
-      ...f,
-      outboundRoutes: [
-        ...f.outboundRoutes,
-        ...availableRoutes.map((r) => r.id),
-      ],
-    }));
-    setAvailableSelected([]);
-  };
-
-  const removeSelectedFromChosen = () => {
-    if (!chosenSelected.length) return;
-    setForm((f) => ({
-      ...f,
-      outboundRoutes: f.outboundRoutes.filter(
-        (id) => !chosenSelected.includes(id),
-      ),
-    }));
-    setChosenSelected([]);
-  };
-
-  const removeAllFromChosen = () => {
-    setForm((f) => ({ ...f, outboundRoutes: [] }));
-    setChosenSelected([]);
-  };
-
-  const moveChosenUp = () => {
-    if (!chosenSelected.length) return;
-    const routes = [...chosenRoutes];
-    chosenSelected.forEach((id) => {
-      const idx = routes.indexOf(id);
-      if (idx > 0)
-        [routes[idx - 1], routes[idx]] = [routes[idx], routes[idx - 1]];
-    });
-    setForm((f) => ({ ...f, outboundRoutes: routes }));
-  };
-
-  const moveChosenDown = () => {
-    if (!chosenSelected.length) return;
-    const routes = [...chosenRoutes];
-    [...chosenSelected].reverse().forEach((id) => {
-      const idx = routes.indexOf(id);
-      if (idx < routes.length - 1)
-        [routes[idx], routes[idx + 1]] = [routes[idx + 1], routes[idx]];
-    });
-    setForm((f) => ({ ...f, outboundRoutes: routes }));
-  };
-
-  const moveChosenTop = () => {
-    if (!chosenSelected.length) return;
-    const sel = chosenRoutes.filter((id) => chosenSelected.includes(id));
-    const rest = chosenRoutes.filter((id) => !chosenSelected.includes(id));
-    setForm((f) => ({ ...f, outboundRoutes: [...sel, ...rest] }));
-  };
-
-  const moveChosenBottom = () => {
-    if (!chosenSelected.length) return;
-    const sel = chosenRoutes.filter((id) => chosenSelected.includes(id));
-    const rest = chosenRoutes.filter((id) => !chosenSelected.includes(id));
-    setForm((f) => ({ ...f, outboundRoutes: [...rest, ...sel] }));
-  };
-
-  const toggleAvailableRouteSelect = (id) => {
-    setAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const toggleChosenRouteSelect = (id) => {
-    setChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const selectAvailableRoutes = (ids) => setAvailableSelected(ids);
-
-  const selectChosenRoutes = (ids) => setChosenSelected(ids);
-
-  const clearOutboundRouteHighlight = () => {
-    setAvailableSelected([]);
-    setChosenSelected([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!availableSelected.length && !chosenSelected.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearOutboundRouteHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, availableSelected, chosenSelected]);
 
   return (
     <div
@@ -2186,119 +1757,17 @@ const DisaPage = () => {
                   tooltipKey="outbound_routes"
                 />
 
-                <div
-                  style={{
-                    marginTop: 8,
-                    display: "grid",
-                    gridTemplateColumns: `1fr ${DISA_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${DISA_ROUTE_CODEC_BTN_COL_WIDTH}px`,
-                    gap: 10,
-                    width: "100%",
-                    alignItems: "start",
-                  }}
-                >
-                  <div>
-                    <div style={disaRouteCodecColumnLabelStyle}>
-                      Available Routes
-                    </div>
-                    <DisaRouteCodecListBox
-                      items={availableRoutes}
-                      selectedIds={availableSelected}
-                      onToggle={toggleAvailableRouteSelect}
-                      onDragSelect={selectAvailableRoutes}
-                      onClearHighlight={clearOutboundRouteHighlight}
-                      emptyText="No routes available"
-                      getLabel={(id, item) => item?.name || `ID:${id}`}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        height: DISA_ROUTE_CODEC_LIST_LABEL_OFFSET,
-                      }}
-                      aria-hidden="true"
-                    />
-                    <div style={disaRouteCodecBtnColumnStyle}>
-                      <DisaRouteCodecDualListBtn
-                        onClick={addSelectedToChosen}
-                        title="Move selected to Selected"
-                      >
-                        &gt;
-                      </DisaRouteCodecDualListBtn>
-                      <DisaRouteCodecDualListBtn
-                        onClick={addAllToChosen}
-                        title="Move all to Selected"
-                      >
-                        &gt;&gt;
-                      </DisaRouteCodecDualListBtn>
-                      <DisaRouteCodecDualListBtn
-                        onClick={removeSelectedFromChosen}
-                        title="Move selected to Available"
-                      >
-                        &lt;
-                      </DisaRouteCodecDualListBtn>
-                      <DisaRouteCodecDualListBtn
-                        onClick={removeAllFromChosen}
-                        title="Move all to Available"
-                      >
-                        &lt;&lt;
-                      </DisaRouteCodecDualListBtn>
-                    </div>
-                  </div>
-                  <div>
-                    <div style={disaRouteCodecColumnLabelStyle}>
-                      Selected Routes
-                    </div>
-                    <DisaRouteCodecListBox
-                      items={chosenRoutes}
-                      selectedIds={chosenSelected}
-                      onToggle={toggleChosenRouteSelect}
-                      onDragSelect={selectChosenRoutes}
-                      onClearHighlight={clearOutboundRouteHighlight}
-                      emptyText="No selected routes"
-                      getLabel={(id) => routeNameById.get(id) || `ID:${id}`}
-                    />
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        height: DISA_ROUTE_CODEC_LIST_LABEL_OFFSET,
-                      }}
-                      aria-hidden="true"
-                    />
-                    <div style={disaRouteCodecBtnColumnStyle}>
-                      <DisaRouteCodecDualListBtn
-                        reorder
-                        title="Move to bottom"
-                      down
-                        onClick={moveChosenBottom}
-                      >
-                        vv
-                      </DisaRouteCodecDualListBtn>
-                      <DisaRouteCodecDualListBtn
-                        reorder
-                        title="Move up"
-                        onClick={moveChosenUp}
-                      >
-                        ^
-                      </DisaRouteCodecDualListBtn>
-                      <DisaRouteCodecDualListBtn
-                        reorder
-                        title="Move down"
-                      down
-                        onClick={moveChosenDown}
-                      >
-                        v
-                      </DisaRouteCodecDualListBtn>
-                      <DisaRouteCodecDualListBtn
-                        reorder
-                        title="Move to top"
-                        onClick={moveChosenTop}
-                      >
-                        ^^
-                      </DisaRouteCodecDualListBtn>
-                    </div>
-                  </div>
-                </div>
+                <DisaRouteCodecDualList
+                  style={{ marginTop: 8 }}
+                  allOptions={allOutboundRouteOptions}
+                  selected={form.outboundRoutes}
+                  onChange={(outboundRoutes) =>
+                    setForm((f) => ({ ...f, outboundRoutes }))
+                  }
+                  getLabel={getOutboundRouteLabel}
+                  emptyTextAvailable="No routes available"
+                  emptyTextSelected="No selected routes"
+                />
               </div>
             </div>
             </div>

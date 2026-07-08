@@ -47,18 +47,8 @@ import {
   SIP_TO_SIP_ACCOUNT_RECORD_LABEL,
   SIP_TO_SIP_ACCOUNT_SELECTED_SUFFIX,
   SIP_TO_SIP_ACCOUNT_EDIT_TITLE_ACCESS,
-  SIP_TO_SIP_ACCOUNT_CODEC_AVAILABLE,
-  SIP_TO_SIP_ACCOUNT_CODEC_SELECTED,
   SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_AVAILABLE,
   SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_SELECTED,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_SELECTED,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_ADD_ALL,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_SELECTED,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_REMOVE_ALL,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_TOP,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_UP,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_DOWN,
-  SIP_TO_SIP_ACCOUNT_CODEC_TIP_MOVE_BOTTOM,
   SIP_TO_SIP_ACCOUNT_PLACEHOLDER_PASSWORD,
   SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTEXT,
   SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTACT,
@@ -96,6 +86,7 @@ import {
   listGroups,
 } from "../../../api/apiService";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import { ExtensionCodecDualList as SipToSipCodecDualList } from "../../../components/common";
 // ── Local page UI (inlined from e1PriSharedUi)
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -174,14 +165,6 @@ const C = {
   errorRed: "#dc2626",
   successGreen: "#16a34a",
   placeholderText: "#9aa3b2",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBg: "#d9dde3",
-  codecBtnBorder: "#c9d0d9",
 };
 
 const Btn = ({
@@ -827,318 +810,6 @@ const SipToSipFieldRow = ({
   );
 };
 
-const SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT = 188;
-const SIP_TO_SIP_CODEC_BTN_COL_WIDTH = 40;
-const SIP_TO_SIP_CODEC_BTN_GAP = 6;
-const SIP_TO_SIP_CODEC_BTN_HEIGHT =
-  (SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT - SIP_TO_SIP_CODEC_BTN_GAP * 3) / 4;
-const SIP_TO_SIP_CODEC_LIST_LABEL_OFFSET = 28;
-
-const sipToSipCodecColumnLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
-const getSipToSipCodecListBoxStyle = (variant, isEmpty) => ({
-  width: "100%",
-  minHeight: SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT,
-  height: SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const sipToSipCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const sipToSipCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const sipToSipCodecDualListBtnStyle = {
-  width: SIP_TO_SIP_CODEC_BTN_COL_WIDTH,
-  height: SIP_TO_SIP_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition:
-    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const sipToSipCodecDualListReorderBtnStyle = {
-  ...sipToSipCodecDualListBtnStyle,
-  fontSize: 11,
-  fontWeight: 500,
-};
-
-const sipToSipCodecDualListReorderDownBtnStyle = {
-  ...sipToSipCodecDualListReorderBtnStyle,
-  fontWeight: 400,
-};
-
-const sipToSipCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: SIP_TO_SIP_CODEC_BTN_GAP,
-  height: SIP_TO_SIP_CODEC_LIST_BOX_HEIGHT,
-  width: SIP_TO_SIP_CODEC_BTN_COL_WIDTH,
-};
-
-const SipToSipCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-    style={
-      down
-        ? sipToSipCodecDualListReorderDownBtnStyle
-        : reorder
-          ? sipToSipCodecDualListReorderBtnStyle
-          : sipToSipCodecDualListBtnStyle
-    }
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow =
-        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const SipToSipCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-  variant = "available",
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => (typeof item === "string" ? item : item.value);
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      data-codec-list-variant={variant}
-      style={getSipToSipCodecListBoxStyle(variant, isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={sipToSipCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={sipToSipCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-};
-
 const sipToSipModalFormPanelStyle = {
   display: "flex",
   flexDirection: "column",
@@ -1213,8 +884,6 @@ const SipToSipAccountPage = () => {
   const [form, setForm] = useState(SIP_TO_SIP_ACCOUNT_INITIAL_FORM);
   const [editIndex, setEditIndex] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  const [codecAvailableSelected, setCodecAvailableSelected] = useState([]);
-  const [codecChosenSelected, setCodecChosenSelected] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hasInitialLoadRef = useRef(false);
 
@@ -1235,52 +904,19 @@ const SipToSipAccountPage = () => {
     [form.allow_codecs],
   );
 
-  const availableCodecList = useMemo(
-    () => SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.filter((c) => !selectedCodecList.includes(c.value)),
-    [selectedCodecList],
+  const allCodecOptions = useMemo(
+    () => SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS,
+    [],
   );
 
   const getCodecLabel = (value) =>
-    SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
-
-  const toggleCodecAvailableSelect = (id) =>
-    setCodecAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const toggleCodecChosenSelect = (id) =>
-    setCodecChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const selectCodecAvailable = (ids) => setCodecAvailableSelected(ids);
-
-  const selectCodecChosen = (ids) => setCodecChosenSelected(ids);
-
-  const clearCodecHighlightSelection = () => {
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
-  };
+    SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.find((c) => c.value === value)?.label ||
+    value;
 
   useEffect(() => {
     if (!showModal || !modalScrollRef.current) return;
     modalScrollRef.current.scrollTop = 0;
   }, [showModal]);
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!codecAvailableSelected.length && !codecChosenSelected.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearCodecHighlightSelection();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, codecAvailableSelected, codecChosenSelected]);
 
   const updateCodecList = (newList) => {
     const newCodecsString = newList.join(",");
@@ -1299,89 +935,6 @@ const SipToSipAccountPage = () => {
     }
 
     setForm((prev) => ({ ...prev, allow_codecs: newCodecsString }));
-  };
-
-  const addSelectedCodecs = () => {
-    if (!codecAvailableSelected.length) return;
-    updateCodecList([
-      ...selectedCodecList,
-      ...codecAvailableSelected.filter((id) => !selectedCodecList.includes(id)),
-    ]);
-    setCodecAvailableSelected([]);
-  };
-
-  const addAllCodecs = () => {
-    updateCodecList(SIP_TO_SIP_ACCOUNT_CODEC_OPTIONS.map((c) => c.value));
-    setCodecAvailableSelected([]);
-  };
-
-  const removeSelectedCodecs = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      selectedCodecList.filter((id) => !codecChosenSelected.includes(id)),
-    );
-    setCodecChosenSelected([]);
-  };
-
-  const removeAllCodecs = () => {
-    updateCodecList([]);
-    setCodecChosenSelected([]);
-  };
-
-  const moveCodecToBottom = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        const moving = codecChosenSelected.filter((id) => next.includes(id));
-        const rest = next.filter((id) => !moving.includes(id));
-        return [...rest, ...moving];
-      })(),
-    );
-  };
-
-  const moveCodecUp = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        codecChosenSelected.forEach((id) => {
-          const idx = next.indexOf(id);
-          if (idx > 0) {
-            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-          }
-        });
-        return next;
-      })(),
-    );
-  };
-
-  const moveCodecDown = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        [...codecChosenSelected].reverse().forEach((id) => {
-          const idx = next.indexOf(id);
-          if (idx >= 0 && idx < next.length - 1) {
-            [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-          }
-        });
-        return next;
-      })(),
-    );
-  };
-
-  const moveCodecToTop = () => {
-    if (!codecChosenSelected.length) return;
-    updateCodecList(
-      (() => {
-        const next = [...selectedCodecList];
-        const moving = codecChosenSelected.filter((id) => next.includes(id));
-        const rest = next.filter((id) => !moving.includes(id));
-        return [...moving, ...rest];
-      })(),
-    );
   };
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -1456,8 +1009,6 @@ const SipToSipAccountPage = () => {
   };
 
   const handleOpenModal = (row = null, idx = null) => {
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
     if (row && idx !== null) {
       setForm({
         ...SIP_TO_SIP_ACCOUNT_INITIAL_FORM,
@@ -1477,8 +1028,6 @@ const SipToSipAccountPage = () => {
     setShowModal(false);
     setShowPassword(false);
     setValidationErrors({});
-    setCodecAvailableSelected([]);
-    setCodecChosenSelected([]);
   };
 
   // Validation functions
@@ -1757,115 +1306,20 @@ const SipToSipAccountPage = () => {
 
   const formFieldLabel = (field) => `${field.label}:`;
 
-  const codecTransferActions = [
-    {
-      onClick: addSelectedCodecs,
-      title: "Move selected to Selected",
-      label: ">",
-    },
-    { onClick: addAllCodecs, title: "Move all to Selected", label: ">>" },
-    {
-      onClick: removeSelectedCodecs,
-      title: "Move selected to Available",
-      label: "<",
-    },
-    {
-      onClick: removeAllCodecs,
-      title: "Move all to Available",
-      label: "<<",
-    },
-  ];
-
-  const codecReorderActions = [
-    { onClick: moveCodecToTop, title: "Move to top", label: "^^" },
-    { onClick: moveCodecUp, title: "Move up", label: "^" },
-    { onClick: moveCodecDown, title: "Move down", label: "v", down: true },
-    {
-      onClick: moveCodecToBottom,
-      title: "Move to bottom",
-      label: "vv",
-      down: true,
-    },
-  ];
-
   const renderAllowCodecsSection = () => (
     <div style={{ width: "100%" }}>
       <SipToSipAllowCodecsSectionHeading
         tooltipKey="allow_codecs"
         required
       />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `1fr ${SIP_TO_SIP_CODEC_BTN_COL_WIDTH}px 1fr ${SIP_TO_SIP_CODEC_BTN_COL_WIDTH}px`,
-          gap: 10,
-          width: "100%",
-          alignItems: "start",
-        }}
-      >
-        <div>
-          <div style={sipToSipCodecColumnLabelStyle}>{SIP_TO_SIP_ACCOUNT_CODEC_AVAILABLE}</div>
-          <SipToSipCodecListBox
-            variant="available"
-            items={availableCodecList}
-            selectedIds={codecAvailableSelected}
-            onToggle={toggleCodecAvailableSelect}
-            onDragSelect={selectCodecAvailable}
-            onClearHighlight={clearCodecHighlightSelection}
-            emptyText={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_AVAILABLE}
-            getLabel={(id) => getCodecLabel(id)}
-          />
-        </div>
-        <div>
-          <div
-            style={{ height: SIP_TO_SIP_CODEC_LIST_LABEL_OFFSET }}
-            aria-hidden="true"
-          />
-          <div style={sipToSipCodecBtnColumnStyle}>
-            {codecTransferActions.map(({ onClick, title, label }) => (
-              <SipToSipCodecDualListBtn
-                key={title}
-                onClick={onClick}
-                title={title}
-              >
-                {label}
-              </SipToSipCodecDualListBtn>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div style={sipToSipCodecColumnLabelStyle}>{SIP_TO_SIP_ACCOUNT_CODEC_SELECTED}</div>
-          <SipToSipCodecListBox
-            variant="selected"
-            items={selectedCodecList}
-            selectedIds={codecChosenSelected}
-            onToggle={toggleCodecChosenSelect}
-            onDragSelect={selectCodecChosen}
-            onClearHighlight={clearCodecHighlightSelection}
-            emptyText={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_SELECTED}
-            getLabel={(id) => getCodecLabel(id)}
-          />
-        </div>
-        <div>
-          <div
-            style={{ height: SIP_TO_SIP_CODEC_LIST_LABEL_OFFSET }}
-            aria-hidden="true"
-          />
-          <div style={sipToSipCodecBtnColumnStyle}>
-            {codecReorderActions.map(({ onClick, title, label, down }) => (
-              <SipToSipCodecDualListBtn
-                key={title}
-                reorder
-                down={down}
-                title={title}
-                onClick={onClick}
-              >
-                {label}
-              </SipToSipCodecDualListBtn>
-            ))}
-          </div>
-        </div>
-      </div>
+      <SipToSipCodecDualList
+        allOptions={allCodecOptions}
+        selected={selectedCodecList}
+        onChange={updateCodecList}
+        getLabel={getCodecLabel}
+        emptyTextAvailable={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_AVAILABLE}
+        emptyTextSelected={SIP_TO_SIP_ACCOUNT_CODEC_EMPTY_SELECTED}
+      />
       {validationErrors.allow_codecs && (
         <SipToSipErrMsg>{validationErrors.allow_codecs}</SipToSipErrMsg>
       )}

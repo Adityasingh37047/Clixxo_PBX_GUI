@@ -36,6 +36,7 @@ import {
   ACTION_OPTIONS,
   ANNOUNCE_FREQ_OPTIONS,
 } from "../../../constants/CallQueueConstants";
+import { ExtensionCodecDualList as CallQueueAgentCodecDualList } from "../../../components/common";
 
 const CALL_QUEUE_COMPACT_MQ = "(max-width: 768px)";
 
@@ -54,14 +55,6 @@ const C = {
   errorRed: "#dc2626",
   successGreen: "#16a34a",
   placeholderText: "#94a3b8",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#c9d0d9",
-  codecBtnBg: "#d9dde3",
 };
 
 // ── Local page UI ──
@@ -732,319 +725,6 @@ const CallQueueSectionHeading = ({
   );
 };
 
-const CALL_QUEUE_AGENT_CODEC_LIST_BOX_HEIGHT = 188;
-const CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH = 40;
-const CALL_QUEUE_AGENT_CODEC_BTN_GAP = 6;
-const CALL_QUEUE_AGENT_CODEC_BTN_HEIGHT =
-  (CALL_QUEUE_AGENT_CODEC_LIST_BOX_HEIGHT - CALL_QUEUE_AGENT_CODEC_BTN_GAP * 3) /
-  4;
-const CALL_QUEUE_AGENT_CODEC_LIST_LABEL_OFFSET = 28;
-
-const callQueueAgentDualListLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
-const getCallQueueAgentCodecListBoxStyle = (isEmpty) => ({
-  width: "100%",
-  minHeight: CALL_QUEUE_AGENT_CODEC_LIST_BOX_HEIGHT,
-  height: CALL_QUEUE_AGENT_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const callQueueAgentCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const callQueueAgentCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const callQueueAgentCodecDualListBtnStyle = {
-  width: CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH,
-  height: CALL_QUEUE_AGENT_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition:
-    "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const callQueueAgentCodecDualListReorderBtnStyle = {
-  ...callQueueAgentCodecDualListBtnStyle,
-  fontSize: 11,
-  fontWeight: 500
-};
-
-const callQueueAgentCodecDualListReorderDownBtnStyle = {
-  ...callQueueAgentCodecDualListReorderBtnStyle,
-  fontWeight: 400,
-};
-
-const callQueueAgentCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: CALL_QUEUE_AGENT_CODEC_BTN_GAP,
-  height: CALL_QUEUE_AGENT_CODEC_LIST_BOX_HEIGHT,
-  width: CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH,
-};
-
-const CallQueueAgentCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-        style={
-      down
-        ? callQueueAgentCodecDualListReorderDownBtnStyle
-        : reorder
-          ? callQueueAgentCodecDualListReorderBtnStyle
-          : callQueueAgentCodecDualListBtnStyle
-    }
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow =
-        "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const CallQueueAgentCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => typeof item === "string" ? item : (item.value ?? item.extension);
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      style={getCallQueueAgentCodecListBoxStyle(isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={callQueueAgentCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={callQueueAgentCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 const CallQueue = () => {
   const isCompact = useMediaQuery(CALL_QUEUE_COMPACT_MQ);
   const [queues, setQueues] = useState([]);
@@ -1068,8 +748,6 @@ const CallQueue = () => {
     custom_prompts: [],
     country_tones: [],
   });
-  const [highlightAvail, setHighlightAvail] = useState([]);
-  const [highlightSel, setHighlightSel] = useState([]);
   const hasInitialLoadRef = useRef(false);
   const modalScrollRef = useRef(null);
 
@@ -1310,8 +988,6 @@ const CallQueue = () => {
     setForm(row ? apiToForm(row) : { ...CALL_QUEUE_INITIAL_FORM });
     setEditIndex(idx);
     setActiveTab("basic");
-    setHighlightAvail([]);
-    setHighlightSel([]);
     setShowModal(true);
   };
 
@@ -1407,95 +1083,23 @@ const CallQueue = () => {
   const extensionsList = Array.isArray(destinations.Extensions)
     ? destinations.Extensions
     : [];
-  const computedAvailable = extensionsList.filter(
-    (e) => !(form.selected_agents || []).includes(e.value),
+
+  const allAgentOptions = useMemo(
+    () =>
+      extensionsList.map((e) => ({
+        value: String(e.value ?? e.extension ?? e.id ?? ""),
+        label: e.label || String(e.value ?? e.extension ?? e.id ?? ""),
+      })).filter((e) => e.value),
+    [extensionsList],
   );
 
-  const moveToSelected = (all) => {
-    const toMove = all ? computedAvailable.map((e) => e.value) : highlightAvail;
-    handleChange("selected_agents", [
-      ...(form.selected_agents || []),
-      ...toMove.filter((v) => !(form.selected_agents || []).includes(v)),
-    ]);
-    setHighlightAvail([]);
-  };
-  const moveToAvailable = (all) => {
-    const toRemove = all ? form.selected_agents || [] : highlightSel;
-    handleChange(
-      "selected_agents",
-      (form.selected_agents || []).filter((v) => !toRemove.includes(v)),
-    );
-    setHighlightSel([]);
-  };
-  const moveUp = () => {
-    if (!highlightSel.length) return;
-    const arr = [...(form.selected_agents || [])];
-    for (let i = 1; i < arr.length; i++) {
-      if (highlightSel.includes(arr[i]) && !highlightSel.includes(arr[i - 1])) {
-        [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-      }
-    }
-    handleChange("selected_agents", arr);
-  };
-  const moveDown = () => {
-    if (!highlightSel.length) return;
-    const arr = [...(form.selected_agents || [])];
-    for (let i = arr.length - 2; i >= 0; i--) {
-      if (highlightSel.includes(arr[i]) && !highlightSel.includes(arr[i + 1])) {
-        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-      }
-    }
-    handleChange("selected_agents", arr);
-  };
-  const moveToTop = () => {
-    if (!highlightSel.length) return;
-    const arr = form.selected_agents || [];
-    const chosen = arr.filter((v) => highlightSel.includes(v));
-    const rest = arr.filter((v) => !highlightSel.includes(v));
-    handleChange("selected_agents", [...chosen, ...rest]);
-  };
-  const moveToBottom = () => {
-    if (!highlightSel.length) return;
-    const arr = form.selected_agents || [];
-    const rest = arr.filter((v) => !highlightSel.includes(v));
-    const chosen = arr.filter((v) => highlightSel.includes(v));
-    handleChange("selected_agents", [...rest, ...chosen]);
-  };
+  const agentLabelMap = useMemo(() => {
+    const map = new Map();
+    allAgentOptions.forEach((e) => map.set(e.value, e.label));
+    return map;
+  }, [allAgentOptions]);
 
-  const toggleAvailableAgentSelect = (id) => {
-    setHighlightAvail((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-  const toggleSelectedAgentSelect = (id) => {
-    setHighlightSel((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const selectAvailableAgents = (ids) => setHighlightAvail(ids);
-
-  const selectChosenAgents = (ids) => setHighlightSel(ids);
-
-  const clearAgentHighlight = () => {
-    setHighlightAvail([]);
-    setHighlightSel([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!highlightAvail.length && !highlightSel.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearAgentHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, highlightAvail, highlightSel]);
+  const getAgentLabel = (id) => agentLabelMap.get(id) || id;
 
   const ringStrategyLabel = (v) =>
     RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
@@ -1932,116 +1536,14 @@ const CallQueue = () => {
                 </SectionCard>
 
                 <SectionCard title="Agents">
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `1fr ${CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH}px 1fr ${CALL_QUEUE_AGENT_CODEC_BTN_COL_WIDTH}px`,
-                      gap: 10,
-                      width: "100%",
-                      alignItems: "start",
-                    }}
-                  >
-                    <div>
-                      <div style={callQueueAgentDualListLabelStyle}>Available</div>
-                      <CallQueueAgentCodecListBox
-                        items={computedAvailable}
-                        selectedIds={highlightAvail}
-                        onToggle={toggleAvailableAgentSelect}
-                        onDragSelect={selectAvailableAgents}
-                        onClearHighlight={clearAgentHighlight}
-                        emptyText="No extension"
-                        getLabel={(id) => {
-                          const ext = computedAvailable.find((e) => e.value === id);
-                          return ext?.label || id;
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <div
-                        style={{ height: CALL_QUEUE_AGENT_CODEC_LIST_LABEL_OFFSET }}
-                        aria-hidden="true"
-                      />
-                      <div style={callQueueAgentCodecBtnColumnStyle}>
-                        <CallQueueAgentCodecDualListBtn
-                          onClick={() => moveToSelected(false)}
-                          title="Move selected to Selected"
-                        >
-                          &gt;
-                        </CallQueueAgentCodecDualListBtn>
-                        <CallQueueAgentCodecDualListBtn
-                          onClick={() => moveToSelected(true)}
-                          title="Move all to Selected"
-                        >
-                          &gt;&gt;
-                        </CallQueueAgentCodecDualListBtn>
-                        <CallQueueAgentCodecDualListBtn
-                          onClick={() => moveToAvailable(false)}
-                          title="Move selected to Available"
-                        >
-                          &lt;
-                        </CallQueueAgentCodecDualListBtn>
-                        <CallQueueAgentCodecDualListBtn
-                          onClick={() => moveToAvailable(true)}
-                          title="Move all to Available"
-                        >
-                          &lt;&lt;
-                        </CallQueueAgentCodecDualListBtn>
-                      </div>
-                    </div>
-                    <div>
-                      <div style={callQueueAgentDualListLabelStyle}>Selected</div>
-                      <CallQueueAgentCodecListBox
-                        items={form.selected_agents || []}
-                        selectedIds={highlightSel}
-                        onToggle={toggleSelectedAgentSelect}
-                        onDragSelect={selectChosenAgents}
-                        onClearHighlight={clearAgentHighlight}
-                        emptyText="No agent selected"
-                        getLabel={(id) => {
-                          const ext = extensionsList.find((e) => e.value === id);
-                          return ext?.label || id;
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <div
-                        style={{ height: CALL_QUEUE_AGENT_CODEC_LIST_LABEL_OFFSET }}
-                        aria-hidden="true"
-                      />
-                      <div style={callQueueAgentCodecBtnColumnStyle}>
-                        <CallQueueAgentCodecDualListBtn
-                          reorder
-                          title="Move to bottom"
-                      down
-                          onClick={moveToBottom}
-                        >
-                          vv
-                        </CallQueueAgentCodecDualListBtn>
-                        <CallQueueAgentCodecDualListBtn
-                          reorder
-                          title="Move up"
-                          onClick={moveUp}
-                        >
-                          ^
-                        </CallQueueAgentCodecDualListBtn>
-                        <CallQueueAgentCodecDualListBtn
-                          reorder
-                          title="Move down"
-                      down
-                          onClick={moveDown}
-                        >
-                          v
-                        </CallQueueAgentCodecDualListBtn>
-                        <CallQueueAgentCodecDualListBtn
-                          reorder
-                          title="Move to top"
-                          onClick={moveToTop}
-                        >
-                          ^^
-                        </CallQueueAgentCodecDualListBtn>
-                      </div>
-                    </div>
-                  </div>
+                  <CallQueueAgentCodecDualList
+                    allOptions={allAgentOptions}
+                    selected={form.selected_agents || []}
+                    onChange={(agents) => handleChange("selected_agents", agents)}
+                    getLabel={getAgentLabel}
+                    emptyTextAvailable="No extension"
+                    emptyTextSelected="No agent selected"
+                  />
                 </SectionCard>
               </div>
             )}

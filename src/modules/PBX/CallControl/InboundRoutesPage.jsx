@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -36,6 +36,7 @@ import {
   listSipRegistrations,
   updateInboundRoute,
 } from "../../../api/apiService";
+import { ExtensionCodecDualList as InboundRouteCodecDualList } from "../../../components/common";
 
 const INBOUND_ROUTE_COMPACT_MQ = "(max-width: 768px)";
 
@@ -53,15 +54,6 @@ const C = {
   amber: "#dc2626",
   errorRed: "#dc2626",
   successGreen: "#16a34a",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#c9d0d9",
-  codecBtnBg: "#d9dde3",
-  placeholderText: "#94a3b8",
 };
 
 // ── Local page UI ──
@@ -498,14 +490,6 @@ const InboundRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false })
   );
 };
 
-const inboundRouteDualListLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  textAlign: "center",
-  marginBottom: 8,
-};
-
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
@@ -749,306 +733,6 @@ const InboundRoutePagination = ({
   </div>
 );
 
-const INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT = 188;
-const INBOUND_ROUTE_CODEC_BTN_COL_WIDTH = 40;
-const INBOUND_ROUTE_CODEC_BTN_GAP = 6;
-const INBOUND_ROUTE_CODEC_BTN_HEIGHT =
-  (INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT - INBOUND_ROUTE_CODEC_BTN_GAP * 3) / 4;
-const INBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET = 28;
-
-const getInboundRouteCodecListBoxStyle = (isEmpty) => ({
-  width: "100%",
-  minHeight: INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  height: INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  border: `1px solid ${C.codecBoxBorder}`,
-  background: C.codecBoxAvailableBg,
-  borderRadius: 6,
-  padding: isEmpty ? 0 : "8px 8px",
-  boxSizing: "border-box",
-  overflowY: "auto",
-  overflowX: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: isEmpty ? "center" : "stretch",
-  justifyContent: isEmpty ? "center" : "flex-start",
-  gap: 4,
-});
-
-const inboundRouteCodecListEmptyStyle = {
-  color: C.placeholderText,
-  fontSize: 13,
-  fontWeight: 400,
-  textAlign: "center",
-  userSelect: "none",
-  padding: "0 16px",
-};
-
-const inboundRouteCodecStripStyle = (isSelected) => ({
-  display: "block",
-  width: "100%",
-  padding: "6px 8px",
-  borderRadius: 5,
-  fontSize: 13,
-  fontWeight: 400,
-  color: C.valueText,
-  textAlign: "center",
-  background: isSelected ? C.codecStripSelectedBg : C.codecStripBg,
-  border: `1px solid ${isSelected ? C.codecStripSelectedBorder : C.codecStripBorder}`,
-  cursor: "pointer",
-  userSelect: "none",
-  boxSizing: "border-box",
-  lineHeight: 1.35,
-  flexShrink: 0,
-  transition: "background 0.12s ease, border-color 0.12s ease",
-});
-
-const inboundRouteCodecDualListBtnStyle = {
-  width: INBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
-  height: INBOUND_ROUTE_CODEC_BTN_HEIGHT,
-  borderRadius: 6,
-  border: `1px solid ${C.codecBtnBorder}`,
-  background: C.codecBtnBg,
-  color: "#111827",
-  fontSize: 12,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  lineHeight: 1,
-  padding: 0,
-  margin: 0,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  flexShrink: 0,
-  boxShadow: "none",
-  transition: "background 0.12s ease, transform 0.1s ease, box-shadow 0.1s ease",
-  userSelect: "none",
-};
-
-const inboundRouteCodecDualListReorderBtnStyle = {
-  ...inboundRouteCodecDualListBtnStyle,
-  fontSize: 11,
-  fontWeight: 500
-};
-
-const inboundRouteCodecDualListReorderDownBtnStyle = {
-  ...inboundRouteCodecDualListReorderBtnStyle,
-  fontWeight: 400,
-};
-
-const inboundRouteCodecBtnColumnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: INBOUND_ROUTE_CODEC_BTN_GAP,
-  height: INBOUND_ROUTE_CODEC_LIST_BOX_HEIGHT,
-  width: INBOUND_ROUTE_CODEC_BTN_COL_WIDTH,
-};
-
-const InboundRouteCodecDualListBtn = ({ onClick, title, children, reorder, down }) => (
-  <button
-    type="button"
-    data-codec-action-btn
-    title={title}
-    onClick={onClick}
-        style={
-      down
-        ? inboundRouteCodecDualListReorderDownBtnStyle
-        : reorder
-          ? inboundRouteCodecDualListReorderBtnStyle
-          : inboundRouteCodecDualListBtnStyle
-    }
-    onMouseEnter={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.background = C.codecBtnBg;
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-    onMouseDown={(e) => {
-      e.currentTarget.style.background = "#b3bac4";
-      e.currentTarget.style.transform = "translateY(1px) scale(0.96)";
-      e.currentTarget.style.boxShadow = "inset 0 1px 3px rgba(15, 23, 42, 0.18)";
-    }}
-    onMouseUp={(e) => {
-      e.currentTarget.style.background = "#c5cbd3";
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "none";
-    }}
-  >
-    {children}
-  </button>
-);
-
-const InboundRouteCodecListBox = ({
-  items,
-  selectedIds,
-  onToggle,
-  onDragSelect,
-  onClearHighlight,
-  emptyText,
-  getLabel,
-}) => {
-  const isEmpty = items.length === 0;
-  const listRef = useRef(null);
-  const isDragSelectingRef = useRef(false);
-  const didDragRef = useRef(false);
-  const dragAnchorIndexRef = useRef(null);
-  const lastClickIndexRef = useRef(null);
-
-  const getItemId = (item) => typeof item === "string" ? item : (item.value ?? item.extension ?? item.id);
-  const itemIds = useMemo(() => items.map(getItemId), [items]);
-
-  const applyRangeToIndex = (currIdx) => {
-    if (currIdx < 0) return;
-    if (dragAnchorIndexRef.current === null) {
-      dragAnchorIndexRef.current = currIdx;
-    }
-    const anchor = dragAnchorIndexRef.current;
-    const from = Math.min(anchor, currIdx);
-    const to = Math.max(anchor, currIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeBetween = (fromIdx, toIdx) => {
-    if (fromIdx < 0 || toIdx < 0) return;
-    const from = Math.min(fromIdx, toIdx);
-    const to = Math.max(fromIdx, toIdx);
-    onDragSelect?.(itemIds.slice(from, to + 1));
-  };
-
-  const applyRangeAtPoint = (clientX, clientY) => {
-    const el = document.elementFromPoint(clientX, clientY);
-    const strip = el?.closest?.("[data-codec-strip-id]");
-    if (!strip || !listRef.current?.contains(strip)) return;
-    const id = strip.getAttribute("data-codec-strip-id");
-    if (!id) return;
-    applyRangeToIndex(itemIds.indexOf(id));
-  };
-
-  const autoScrollList = (clientY) => {
-    const container = listRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const edge = 28;
-    const speed = 10;
-    if (clientY < rect.top + edge) {
-      container.scrollTop -= speed;
-    } else if (clientY > rect.bottom - edge) {
-      container.scrollTop += speed;
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDragSelectingRef.current || !(e.buttons & 1)) return;
-      didDragRef.current = true;
-      autoScrollList(e.clientY);
-      applyRangeAtPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      isDragSelectingRef.current = false;
-      dragAnchorIndexRef.current = null;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [itemIds, onDragSelect]);
-
-  const handleMouseDown = (e) => {
-    if (e.button !== 0) return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    isDragSelectingRef.current = true;
-    didDragRef.current = false;
-    dragAnchorIndexRef.current = null;
-
-    const strip = e.target.closest?.("[data-codec-strip-id]");
-    if (strip && listRef.current?.contains(strip)) {
-      const id = strip.getAttribute("data-codec-strip-id");
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) {
-        dragAnchorIndexRef.current = idx;
-        applyRangeToIndex(idx);
-        lastClickIndexRef.current = idx;
-      }
-    }
-  };
-
-  const handleClick = (id, e) => {
-    if (didDragRef.current) {
-      e.preventDefault();
-      didDragRef.current = false;
-      const idx = itemIds.indexOf(id);
-      if (idx !== -1) lastClickIndexRef.current = idx;
-      return;
-    }
-
-    const idx = itemIds.indexOf(id);
-    if (idx === -1) return;
-
-    if (e.ctrlKey || e.metaKey) {
-      onToggle(id);
-      lastClickIndexRef.current = idx;
-      return;
-    }
-
-    if (e.shiftKey && lastClickIndexRef.current !== null) {
-      applyRangeBetween(lastClickIndexRef.current, idx);
-      return;
-    }
-
-    onDragSelect?.([id]);
-    lastClickIndexRef.current = idx;
-  };
-
-  const handleContainerClick = (e) => {
-    if (didDragRef.current) return;
-    if (e.target.closest?.("[data-codec-strip-id]")) return;
-    onClearHighlight?.();
-    lastClickIndexRef.current = null;
-  };
-
-  return (
-    <div
-      ref={listRef}
-      data-codec-list-box
-      style={getInboundRouteCodecListBoxStyle(isEmpty)}
-      onMouseDown={handleMouseDown}
-      onClick={handleContainerClick}
-    >
-      {isEmpty ? (
-        <div style={inboundRouteCodecListEmptyStyle}>{emptyText}</div>
-      ) : (
-        items.map((item) => {
-          const id = getItemId(item);
-          const label = getLabel ? getLabel(id) : item.label || id;
-          const isSelected = selectedIds.includes(id);
-          return (
-            <div
-              key={id}
-              data-codec-strip-id={id}
-              role="option"
-              aria-selected={isSelected}
-              onClick={(e) => handleClick(id, e)}
-              style={inboundRouteCodecStripStyle(isSelected)}
-            >
-              {label}
-            </div>
-          );
-        })
-      )}
-    </div>
-  );
-};
-
 const INBOUND_ROUTE_MODAL_LABEL_WIDTH = 185;
 const INBOUND_ROUTE_MODAL_FIELD_WIDTH = 210;
 const INBOUND_ROUTE_RIGHT_LABEL_PADDING_LEFT = 28;
@@ -1208,8 +892,6 @@ const InboundRoutesPage = () => {
 
   const [availableTrunks, setAvailableTrunks] = useState([]);
   const [selectedTrunks, setSelectedTrunks] = useState([]);
-  const [availableSelected, setAvailableSelected] = useState([]);
-  const [chosenSelected, setChosenSelected] = useState([]);
 
   const itemsPerPage = 20;
   const [page, setPage] = useState(1);
@@ -1426,8 +1108,6 @@ const InboundRoutesPage = () => {
     setDestinationTarget("");
     setExtensionRange("");
     setSelectedTrunks([]);
-    setAvailableSelected([]);
-    setChosenSelected([]);
   };
 
   const handleOpenAddModal = async () => {
@@ -1456,8 +1136,6 @@ const InboundRoutesPage = () => {
     setDestinationTarget(row.destinationTarget || "");
     setExtensionRange(row.extensionRange || "");
     setSelectedTrunks(Array.isArray(row.memberTrunks) ? row.memberTrunks : []);
-    setAvailableSelected([]);
-    setChosenSelected([]);
     setShowModal(true);
     const loaders = [];
     if (!hasLoadedTrunksRef.current) loaders.push(loadTrunks());
@@ -1482,118 +1160,14 @@ const InboundRoutesPage = () => {
 
   const getTrunkLabel = (id) => trunkLabelMap.get(id) || id;
 
-  const availableList = useMemo(
-    () => availableTrunks.filter((t) => !selectedTrunks.includes(t.id)),
-    [availableTrunks, selectedTrunks],
+  const allTrunkOptions = useMemo(
+    () =>
+      availableTrunks.map(({ id, label }) => ({
+        value: id,
+        label: label || id,
+      })),
+    [availableTrunks],
   );
-
-  const addSelectedTrunks = () => {
-    if (availableSelected.length === 0) return;
-    setSelectedTrunks((prev) => [
-      ...prev,
-      ...availableSelected.filter((id) => !prev.includes(id)),
-    ]);
-    setAvailableSelected([]);
-  };
-
-  const addAllTrunks = () => {
-    setSelectedTrunks(availableTrunks.map((t) => t.id));
-    setAvailableSelected([]);
-  };
-
-  const removeSelectedTrunks = () => {
-    if (chosenSelected.length === 0) return;
-    setSelectedTrunks((prev) =>
-      prev.filter((id) => !chosenSelected.includes(id)),
-    );
-    setChosenSelected([]);
-  };
-
-  const removeAllTrunks = () => {
-    setSelectedTrunks([]);
-    setChosenSelected([]);
-  };
-
-  const toggleAvailableTrunkSelect = (id) => {
-    setAvailableSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const toggleChosenTrunkSelect = (id) => {
-    setChosenSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const selectAvailableTrunks = (ids) => setAvailableSelected(ids);
-
-  const selectChosenTrunks = (ids) => setChosenSelected(ids);
-
-  const clearTrunkHighlight = () => {
-    setAvailableSelected([]);
-    setChosenSelected([]);
-  };
-
-  useEffect(() => {
-    if (!showModal) return undefined;
-
-    const handleOutsideClear = (e) => {
-      if (!availableSelected.length && !chosenSelected.length) return;
-      if (e.target.closest("[data-codec-strip-id]")) return;
-      if (e.target.closest("[data-codec-action-btn]")) return;
-      if (e.target.closest("[data-codec-list-box]")) return;
-      clearTrunkHighlight();
-    };
-
-    document.addEventListener("mousedown", handleOutsideClear);
-    return () => document.removeEventListener("mousedown", handleOutsideClear);
-  }, [showModal, availableSelected, chosenSelected]);
-
-  const moveTrunkToBottom = () => {
-    if (!chosenSelected.length) return;
-    setSelectedTrunks((prev) => {
-      const rest = prev.filter((id) => !chosenSelected.includes(id));
-      const chosen = prev.filter((id) => chosenSelected.includes(id));
-      return [...rest, ...chosen];
-    });
-  };
-  const moveTrunkUp = () => {
-    if (!chosenSelected.length) return;
-    setSelectedTrunks((prev) => {
-      const arr = [...prev];
-      for (let i = 1; i < arr.length; i++) {
-        if (
-          chosenSelected.includes(arr[i]) &&
-          !chosenSelected.includes(arr[i - 1])
-        )
-          [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-      }
-      return arr;
-    });
-  };
-  const moveTrunkDown = () => {
-    if (!chosenSelected.length) return;
-    setSelectedTrunks((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 2; i >= 0; i--) {
-        if (
-          chosenSelected.includes(arr[i]) &&
-          !chosenSelected.includes(arr[i + 1])
-        )
-          [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
-      }
-      return arr;
-    });
-  };
-  const moveTrunkToTop = () => {
-    if (!chosenSelected.length) return;
-    setSelectedTrunks((prev) => {
-      const chosen = prev.filter((id) => chosenSelected.includes(id));
-      const rest = prev.filter((id) => !chosenSelected.includes(id));
-      return [...chosen, ...rest];
-    });
-  };
 
   const handleSelectRow = (idx) => {
     setSelected((prev) =>
@@ -2393,115 +1967,14 @@ const InboundRoutesPage = () => {
             </div>
 
             <SectionCard title="Member Trunks *" tooltipKey="member_trunks">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: `1fr ${INBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px 1fr ${INBOUND_ROUTE_CODEC_BTN_COL_WIDTH}px`,
-                  gap: 10,
-                  width: "100%",
-                  alignItems: "start",
-                }}
-              >
-                <div>
-                  <div style={inboundRouteDualListLabelStyle}>Available</div>
-                  <InboundRouteCodecListBox
-                    items={loading.trunks ? [] : availableList}
-                    selectedIds={availableSelected}
-                    onToggle={toggleAvailableTrunkSelect}
-                    onDragSelect={selectAvailableTrunks}
-                    onClearHighlight={clearTrunkHighlight}
-                    emptyText={
-                      loading.trunks ? "Loading trunks..." : "No trunks"
-                    }
-                    getLabel={(id) => {
-                      const item = availableList.find((t) => t.id === id);
-                      return item?.label || getTrunkLabel(id);
-                    }}
-                  />
-                </div>
-                <div>
-                  <div
-                    style={{ height: INBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
-                    aria-hidden="true"
-                  />
-                  <div style={inboundRouteCodecBtnColumnStyle}>
-                    <InboundRouteCodecDualListBtn
-                      onClick={addSelectedTrunks}
-                      title="Move selected to Selected"
-                    >
-                      &gt;
-                    </InboundRouteCodecDualListBtn>
-                    <InboundRouteCodecDualListBtn
-                      onClick={addAllTrunks}
-                      title="Move all to Selected"
-                    >
-                      &gt;&gt;
-                    </InboundRouteCodecDualListBtn>
-                    <InboundRouteCodecDualListBtn
-                      onClick={removeSelectedTrunks}
-                      title="Move selected to Available"
-                    >
-                      &lt;
-                    </InboundRouteCodecDualListBtn>
-                    <InboundRouteCodecDualListBtn
-                      onClick={removeAllTrunks}
-                      title="Move all to Available"
-                    >
-                      &lt;&lt;
-                    </InboundRouteCodecDualListBtn>
-                  </div>
-                </div>
-                <div>
-                  <div style={inboundRouteDualListLabelStyle}>Selected</div>
-                  <InboundRouteCodecListBox
-                    items={selectedTrunks}
-                    selectedIds={chosenSelected}
-                    onToggle={toggleChosenTrunkSelect}
-                    onDragSelect={selectChosenTrunks}
-                    onClearHighlight={clearTrunkHighlight}
-                    emptyText="No selected trunks"
-                    getLabel={getTrunkLabel}
-                  />
-                </div>
-                <div>
-                  <div
-                    style={{ height: INBOUND_ROUTE_CODEC_LIST_LABEL_OFFSET }}
-                    aria-hidden="true"
-                  />
-                  <div style={inboundRouteCodecBtnColumnStyle}>
-                    <InboundRouteCodecDualListBtn
-                      reorder
-                      title="Move to bottom"
-                      down
-                      onClick={moveTrunkToBottom}
-                    >
-                      vv
-                    </InboundRouteCodecDualListBtn>
-                    <InboundRouteCodecDualListBtn
-                      reorder
-                      title="Move up"
-                      onClick={moveTrunkUp}
-                    >
-                      ^
-                    </InboundRouteCodecDualListBtn>
-                    <InboundRouteCodecDualListBtn
-                      reorder
-                      title="Move down"
-                      down
-                      onClick={moveTrunkDown}
-                    >
-                      v
-                    </InboundRouteCodecDualListBtn>
-                    <InboundRouteCodecDualListBtn
-                      reorder
-                      title="Move to top"
-                      onClick={moveTrunkToTop}
-                    >
-                      ^^
-                    </InboundRouteCodecDualListBtn>
-                  </div>
-                </div>
-              </div>
+              <InboundRouteCodecDualList
+                allOptions={allTrunkOptions}
+                selected={selectedTrunks}
+                onChange={setSelectedTrunks}
+                getLabel={getTrunkLabel}
+                emptyTextAvailable="No trunks"
+                emptyTextSelected="No selected trunks"
+              />
             </SectionCard>
           </div>
         </DialogContent>
