@@ -10,7 +10,8 @@ import {
 } from "@mui/material";
 import {
   fetchCdr,
-  deleteCdr,
+
+  bulkDeleteCdr,
   downloadCdr,
   fetchCdrRecording,
   deleteCdrRecording,
@@ -1068,11 +1069,35 @@ const CallCount = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await fetchCdr(pageToLoad, limit, {
+      const requestFilters = {
         startdate: filters.startDate || undefined,
         enddate: filters.endDate || undefined,
         trunk_name: filters.trunkName || undefined,
-      });
+      };
+
+      let activePage = pageToLoad;
+      let data = await fetchCdr(activePage, limit, requestFilters);
+
+      if (
+        data?.success &&
+        Array.isArray(data.data) &&
+        data.data.length === 0 &&
+        activePage > 1
+      ) {
+        const apiTotal = Number(data.total);
+        const lastValidPage =
+          Number.isFinite(apiTotal) && apiTotal >= 0
+            ? Math.max(
+                1,
+                Math.ceil(Math.min(apiTotal, CALL_COUNT_MAX_RECORDS) / limit),
+              )
+            : activePage - 1;
+        if (lastValidPage < activePage) {
+          activePage = lastValidPage;
+          data = await fetchCdr(activePage, limit, requestFilters);
+        }
+      }
+
       if (data && data.success && Array.isArray(data.data)) {
         const pageRows = data.data;
         setRows(pageRows);
@@ -1084,12 +1109,12 @@ const CallCount = () => {
         } else if (rowCount < limit) {
           setTotalRecords(
             Math.min(
-              (pageToLoad - 1) * limit + rowCount,
+              (activePage - 1) * limit + rowCount,
               CALL_COUNT_MAX_RECORDS,
             ),
           );
         }
-        setPage(pageToLoad);
+        setPage(activePage);
       } else {
         setRows([]);
         setTotalRecords(0);
@@ -1269,29 +1294,46 @@ const CallCount = () => {
       window.alert("Please select at least one record to delete.");
       return;
     }
+  
     const msg =
       selectedIds.length === 1
         ? "Are you sure you want to delete this record?"
         : `Are you sure you want to delete ${selectedIds.length} records?`;
+  
     if (!window.confirm(msg)) return;
+  
     const deleteCount = selectedIds.length;
+  
     try {
       setLoading(true);
-      for (const id of selectedIds) {
-        try {
-          await deleteCdr(id);
-        } catch {
-          /**/
-        }
-      }
+  
+      // Bulk delete API call (single request)
+      await bulkDeleteCdr(selectedIds);
+  
       setSelectedIds([]);
-      await loadCdr(page);
+  
+      const newTotalRecords = Math.max(0, totalRecords - deleteCount);
+  
+      const pageToLoad =
+        totalRecords > 0
+          ? Math.min(
+              page,
+              Math.max(1, Math.ceil(newTotalRecords / limit))
+            )
+          : page;
+  
+      await loadCdr(pageToLoad);
+  
       showMessage(
         "success",
-        `Deleted ${deleteCount} call count record(s)`,
+        `Deleted ${deleteCount} call count record(s)`
       );
-    } catch {
-      setError("Failed to delete some records. Please refresh and try again.");
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
+  
+      setError(
+        "Failed to delete some records. Please refresh and try again."
+      );
     } finally {
       setLoading(false);
     }
