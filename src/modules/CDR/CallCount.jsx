@@ -1178,10 +1178,6 @@ const CallCount = () => {
     );
   };
 
-  const handleClearAll = () => {
-    setSelectedIds([]);
-  };
-
   const hasActiveFilters = useMemo(() => {
     return (
       appliedFilters.callStatus !== "all" ||
@@ -1451,20 +1447,18 @@ const CallCount = () => {
               </Btn>
               <Btn
                 type="button"
-                onClick={handleToggleAll}
+                onClick={() => {
+                  if (selectedIds.length > 0) {
+                    setSelectedIds([]);
+                  } else {
+                    handleToggleAll();
+                  }
+                }}
                 disabled={filteredData.length === 0}
                 variant="cancel"
                 style={callCountCancelBtnStyle}
               >
-                Select All
-              </Btn>
-              <Btn
-                type="button"
-                onClick={handleClearAll}
-                variant="cancel"
-                style={callCountCancelBtnStyle}
-              >
-                Clear All
+                {selectedIds.length > 0 ? "Deselect All" : "Select All"}
               </Btn>
               <Btn
                 onClick={handleDownload}
@@ -1577,16 +1571,7 @@ const CallCount = () => {
                             }}
                             style={{
                               background: rowBg,
-                              transition: "background 0.15s ease",
                               cursor: row.uniqueid ? "pointer" : "default",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected) {
-                                e.currentTarget.style.background = "#f1f5f9";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = rowBg;
                             }}
                           >
                             <td
