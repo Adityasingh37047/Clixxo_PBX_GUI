@@ -146,9 +146,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -216,7 +213,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 8,
+        borderRadius: 10,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -679,7 +676,7 @@ const PortFxsPage = () => {
       <Btn
         variant="cancel"
         onClick={handleBatchModify}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
       >
         Batch Modify
       </Btn>
@@ -776,7 +773,7 @@ const PortFxsPage = () => {
           <Btn
             variant="primary"
             onClick={handleBatchModify}
-            style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
           >
             Batch Modify
           </Btn>

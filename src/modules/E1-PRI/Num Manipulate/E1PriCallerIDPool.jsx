@@ -403,9 +403,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -734,7 +731,7 @@ const CallerIDPool = () => {
                 variant="cancel"
                 onClick={onDelete}
                 disabled={checkedItems.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 {NUM_MANIPULATE_CALLERID_POOL_DELETE_LABEL}
@@ -743,14 +740,14 @@ const CallerIDPool = () => {
                 variant="cancel"
                 onClick={onClear}
                 disabled={rows.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {NUM_MANIPULATE_CALLERID_POOL_CLEAR_ALL_LABEL}
               </Btn>
               <Btn
                 variant="primary"
                 onClick={onAddNew}
-                style={{ height: 30, padding: "6px 16px", fontSize: 12 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_LABEL}
               </Btn>

@@ -93,9 +93,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -163,7 +160,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 8,
+        borderRadius: 10,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -958,7 +955,7 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={rules.length === 0}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 Inverse
               </Btn>
@@ -966,7 +963,7 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -975,14 +972,14 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 Clear All
               </Btn>
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {ROUTE_IP_PSTN_ADD_NEW_LABEL}
               </Btn>
@@ -1015,7 +1012,7 @@ const RouteIpPstnPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                 >
                   {ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL}
                 </Btn>

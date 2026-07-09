@@ -17,7 +17,6 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import StopRoundedIcon from "@mui/icons-material/StopRounded";
-
 import {
   deleteCustomPrompt,
   deleteMohFile,
@@ -43,6 +42,26 @@ import {
   VOICE_PROMPTS_TABS,
   VOICE_PROMPTS_TITLE,
 } from "../../../constants/VoicePromptsConstants";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as VoicePromptsBreadcrumb,
+  ExtensionTableListLoading as VoicePromptsTableListLoading,
+  ExtensionTableListEmptyState as VoicePromptsTableListEmptyState,
+  extensionFixedAlertSx as voicePromptsFixedAlertSx,
+  extensionPageWrapStyle as voicePromptsPageWrapStyle,
+  extensionPageInnerStyle as voicePromptsPageInnerStyle,
+  extensionCardStyle as voicePromptsCardStyle,
+} from "../../../components/common";
+
+const voicePromptsPrimaryBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
+  minWidth: 100,
+};
 
 const VOICE_PROMPTS_COMPACT_MQ = "(max-width: 768px)";
 
@@ -66,149 +85,6 @@ const C = {
 const VOICE_PROMPTS_CARD_RADIUS = 10;
 
 // ── Local page UI (inlined from pbxSharedUi) ──
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    tabActive: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    tabInactive: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-      fontWeight: 600,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      tabActive: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      tabInactive: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      tabActive: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      tabInactive: "#d1d9e6",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-  const Component = component || "button";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 8,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (!disabled) e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.background = baseBg;
-          clearPressStyle(e.currentTarget);
-        }
-      }}
-      onMouseDown={(e) => {
-        if (!disabled) applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.background = hoverBg;
-          clearPressStyle(e.currentTarget);
-        }
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
 
 const addNewModalFooterStyle = {
   display: "flex",
@@ -249,41 +125,6 @@ const voicePromptsModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const voicePromptsPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const voicePromptsPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const VoicePromptsBreadcrumb = ({ section, current, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
-  >
-    <span>PBX</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
 const VOICE_PROMPTS_TOOLTIP_PROPS = {
   arrow: true,
   placement: "top",
@@ -307,58 +148,6 @@ const VOICE_PROMPTS_TOOLTIP_PROPS = {
 };
 
 const tooltipProps = VOICE_PROMPTS_TOOLTIP_PROPS;
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
 
 const voicePromptsTabHeaderStyle = {
   width: "100%",
@@ -384,22 +173,6 @@ const voicePromptsHeaderLeftStyle = {
   minWidth: 0,
 };
 
-const voicePromptsCardStyle = {
-  background: "#ffffff",
-  borderRadius: VOICE_PROMPTS_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const voicePromptsPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 10,
-  minWidth: 100,
-};
-
 const voicePromptsChooseFileBtnStyle = {
   height: 30,
   padding: "6px 14px",
@@ -419,15 +192,6 @@ const voicePromptsTableCardStyle = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 8,
   background: "#ffffff",
-};
-
-const voicePromptsFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
 };
 
 const VoicePromptsSectionHeading = ({ title, isFirst = false }) => {
@@ -466,36 +230,6 @@ const VoicePromptsSectionHeading = ({ title, isFirst = false }) => {
 const SipPcmSectionHeading = VoicePromptsSectionHeading;
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const voicePromptsTdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
-};
 
 const getVoicePromptsRowBg = (idx) => (idx % 2 === 1 ? "#f8fafc" : "#ffffff");
 
@@ -1319,9 +1053,9 @@ const VoicePromptsPage = () => {
                 />
                 <div style={voicePromptsTableCardStyle}>
                   {mohLoading ? (
-                    <TableListLoading />
+                    <VoicePromptsTableListLoading />
                   ) : mohFiles.length === 0 ? (
-                    <TableListEmptyState
+                    <VoicePromptsTableListEmptyState
                       message="No hold music uploaded yet."
                       showButton={false}
                     />
@@ -1347,11 +1081,11 @@ const VoicePromptsPage = () => {
                           const rowBg = getVoicePromptsRowBg(idx);
                           const isLastRow = idx === mohFiles.length - 1;
                           const cellStyle = {
-                            ...voicePromptsTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : voicePromptsTdStyle.borderBottom,
+                              : tdStyle.borderBottom,
                           };
                           const lastCellStyle = {
                             ...cellStyle,
@@ -1646,9 +1380,9 @@ const VoicePromptsPage = () => {
                 />
                 <div style={voicePromptsTableCardStyle}>
                   {customLoading ? (
-                    <TableListLoading />
+                    <VoicePromptsTableListLoading />
                   ) : customItems.length === 0 ? (
-                    <TableListEmptyState
+                    <VoicePromptsTableListEmptyState
                       message="No custom prompts uploaded yet."
                       showButton={false}
                     />
@@ -1674,11 +1408,11 @@ const VoicePromptsPage = () => {
                           const rowBg = getVoicePromptsRowBg(idx);
                           const isLastRow = idx === customItems.length - 1;
                           const cellStyle = {
-                            ...voicePromptsTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             borderBottom: isLastRow
                               ? "none"
-                              : voicePromptsTdStyle.borderBottom,
+                              : tdStyle.borderBottom,
                           };
                           const lastCellStyle = {
                             ...cellStyle,

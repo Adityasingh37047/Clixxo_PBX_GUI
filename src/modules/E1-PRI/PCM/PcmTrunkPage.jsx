@@ -147,10 +147,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      borderRadius: 6,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -674,11 +670,11 @@ const PcmTrunkPage = () => {
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                style={{ height: 36 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 + Add New
               </Btn>
-              <Btn variant="cancel" style={{ height: 36 }}>
+              <Btn variant="cancel" style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}>
                 Batch Add
               </Btn>
             </div>
@@ -729,7 +725,7 @@ const PcmTrunkPage = () => {
                   variant="cancel"
                   onClick={handleInverse}
                   disabled={trunks.length === 0}
-                  style={{ height: 30 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                 >
                   Inverse
                 </Btn>
@@ -737,7 +733,7 @@ const PcmTrunkPage = () => {
                   variant="cancel"
                   onClick={handleDelete}
                   disabled={selected.length === 0}
-                  style={{ height: 30 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                 >
                   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                   Delete
@@ -746,14 +742,14 @@ const PcmTrunkPage = () => {
                   variant="cancel"
                   onClick={handleClearAll}
                   disabled={trunks.length === 0}
-                  style={{ height: 30 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                 >
                   Clear All
                 </Btn>
                 <Btn
                   variant="primary"
                   onClick={() => handleOpenModal()}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                 >
                   + Add New
                 </Btn>

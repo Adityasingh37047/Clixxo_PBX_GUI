@@ -19,8 +19,6 @@ import {
   deleteExtensionGroup,
 } from "../../../api/apiService";
 import { EXT_GROUP_FIELD_TOOLTIPS } from "../../../constants/ExtensionGroupConstants";
-
-// ── Shared PBX UI library (the same primitives the Extensions page uses) ──
 import {
   C,
   EXTENSION_COMPACT_MQ,
@@ -32,20 +30,21 @@ import {
 import {
   Btn,
   TH,
-  MessageBanner,
-  ExtensionEditIcon,
   ExtensionBreadcrumb as ExtGroupBreadcrumb,
   ExtensionTableListLoading as ExtGroupTableListLoading,
   ExtensionTableListEmptyState as ExtGroupTableListEmptyState,
   ExtensionPagination as ExtGroupPagination,
   extensionTableCheckboxSx as extGroupTableCheckboxSx,
+  extensionPageWrapStyle as extGroupPageWrapStyle,
+  extensionPageInnerStyle as extGroupPageInnerStyle,
   extensionCardStyle as extGroupCardStyle,
   extensionToolbarStyle as extGroupToolbarStyle,
   extensionSelectedBadgeStyle as extGroupSelectedBadgeStyle,
   extensionCancelBtnStyle as extGroupCancelBtnStyle,
   extensionPrimaryBtnStyle as extGroupPrimaryBtnStyle,
-  extensionPageWrapStyle as extGroupPageWrapStyle,
-  extensionPageInnerStyle as extGroupPageInnerStyle,
+  ExtensionCodecDualList as ExtGroupCodecDualList,
+  MessageBanner,
+  ExtensionEditIcon,
   addNewModalFooterStyle,
   addNewModalFooterBtnStyle,
   extensionModalCancelBtnStyle as extGroupModalCancelBtnStyle,
@@ -53,7 +52,6 @@ import {
   EXTENSION_MODAL_SECTION_HEADING_COLOR,
   getExtensionTdStyle as getExtGroupTdStyle,
   getExtensionRowBg as getExtGroupRowBg,
-  ExtensionCodecDualList,
 } from "../../../components/common";
 
 const EXT_GROUP_COMPACT_MQ = EXTENSION_COMPACT_MQ;
@@ -888,7 +886,7 @@ const ExtensionGroupsPage = () => {
                   No extensions found. Create SIP accounts first.
                 </div>
               ) : (
-                <ExtensionCodecDualList
+                <ExtGroupCodecDualList
                   allOptions={allExtensionOptions}
                   selected={selectedExtensions}
                   onChange={setSelectedExtensions}

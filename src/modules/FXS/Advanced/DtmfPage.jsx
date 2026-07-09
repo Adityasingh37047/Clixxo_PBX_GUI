@@ -117,9 +117,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -885,7 +882,7 @@ const DtmfPage = () => {
                   activeTab === DTMF_TAB_DETECTOR ? "tabActive" : "tabInactive"
                 }
                 onClick={() => setActiveTab(DTMF_TAB_DETECTOR)}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {DTMF_DETECTOR_TAB}
               </Btn>
@@ -897,7 +894,7 @@ const DtmfPage = () => {
                     : "tabInactive"
                 }
                 onClick={() => setActiveTab(DTMF_TAB_GENERATOR)}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {DTMF_GENERATOR_TAB}
               </Btn>

@@ -153,9 +153,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -223,7 +220,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 8,
+        borderRadius: 10,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -961,7 +958,7 @@ const PortFxsAdvancedPage = () => {
                     <Btn
                       variant="cancel"
                       onClick={() => handlePeriodCountChange("plus")}
-                      style={{ padding: "4px 12px", height: 28 }}
+                      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                     >
                       + Add Period
                     </Btn>
@@ -970,7 +967,7 @@ const PortFxsAdvancedPage = () => {
                     <Btn
                       variant="cancel"
                       onClick={() => handlePeriodCountChange("minus")}
-                      style={{ padding: "4px 12px", height: 28 }}
+                      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                     >
                       - Remove Period
                     </Btn>
@@ -1061,7 +1058,7 @@ const PortFxsAdvancedPage = () => {
             <Btn
               onClick={handleBatchModify}
               variant="primary"
-              style={{ height: 30, padding: "6px 14px", fontSize: 12 }}
+              style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
             >
               {PORT_FXS_ADVANCED_BATCH_MODIFY_LABEL}
             </Btn>

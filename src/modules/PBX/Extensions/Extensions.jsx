@@ -1,6 +1,5 @@
 import { CircularProgress } from "@mui/material";
 import {
-  MessageBanner,
   ExtensionBreadcrumb,
   ExtensionTableListLoading,
   ExtensionTableListEmptyState,
@@ -8,6 +7,7 @@ import {
   extensionPageWrapStyle,
   extensionPageInnerStyle,
   extensionCardStyle,
+  MessageBanner,
 } from "../../../components/common";
 import { getExtensionsDeleteLoadingText } from "../../../constants/ExtensionsConstants";
 import { C } from "../../../theme/pbxTokens";

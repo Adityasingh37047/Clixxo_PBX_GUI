@@ -28,7 +28,24 @@ import {
   PRIVATE_GROUP_ITEMS_PER_PAGE,
   PRIVATE_GROUP_TITLE,
 } from "../../../constants/PrivateGroupConstants";
-import { ExtensionCodecDualList as PrivateGroupMemberCodecDualList } from "../../../components/common";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as PrivateGroupBreadcrumb,
+  ExtensionTableListLoading as PrivateGroupTableListLoading,
+  ExtensionTableListEmptyState as PrivateGroupTableListEmptyState,
+  extensionTableCheckboxSx as privateGroupTableCheckboxSx,
+  extensionFixedAlertSx as privateGroupFixedAlertSx,
+  extensionPageWrapStyle as privateGroupPageWrapStyle,
+  extensionPageInnerStyle as privateGroupPageInnerStyle,
+  extensionCardStyle as privateGroupCardStyle,
+  extensionToolbarStyle as privateGroupToolbarStyle,
+  extensionSelectedBadgeStyle as privateGroupSelectedBadgeStyle,
+  extensionCancelBtnStyle as privateGroupCancelBtnStyle,
+  extensionPrimaryBtnStyle as privateGroupPrimaryBtnStyle,
+  ExtensionCodecDualList as PrivateGroupCodecDualList,
+} from "../../../components/common";
 
 const PRIVATE_GROUP_COMPACT_MQ = "(max-width: 768px)";
 const ENABLE_OPTIONS = ["Yes", "No"];
@@ -51,290 +68,9 @@ const C = {
 };
 
 // ── Local page UI ──
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  title,
-  type,
-  form,
-  component,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-  const Component = component || "button";
 
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary" || variant === "accent"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  return (
-    <Component
-      type={type}
-      form={form}
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 10,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition: "all 0.15s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const privateGroupTdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
-};
-
-const privateGroupTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 
 const PRIVATE_GROUP_TABLE_CARD_RADIUS = 10;
-
-const privateGroupPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const privateGroupPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const PrivateGroupBreadcrumb = ({ section, current, style }) => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      ...style,
-    }}
-  >
-    <span>PBX</span>
-    <span>&gt;</span>
-    <span>{section}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{current}</span>
-  </div>
-);
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const privateGroupCardStyle = {
-  background: "#ffffff",
-  borderRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const privateGroupToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
-  borderTopRightRadius: PRIVATE_GROUP_TABLE_CARD_RADIUS,
-};
 
 const privateGroupPaginationStyle = {
   display: "flex",
@@ -348,31 +84,6 @@ const privateGroupPaginationStyle = {
   overflow: "hidden",
 };
 
-const privateGroupSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const privateGroupCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const privateGroupPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 10,
-};
-
 const privateGroupPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
@@ -381,15 +92,6 @@ const privateGroupPageBadgeStyle = {
   padding: "5px 14px",
   borderRadius: 6,
   border: `1px solid ${C.cardBorder}`,
-};
-
-const privateGroupFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
 };
 
 const privateGroupEditIconStyle = {
@@ -1093,9 +795,9 @@ const PrivateGroup = () => {
             }}
           >
             {isInitialLoad ? (
-              <TableListLoading />
+              <PrivateGroupTableListLoading />
             ) : rows.length === 0 ? (
-              <TableListEmptyState
+              <PrivateGroupTableListEmptyState
                 message="No private groups found."
                 onAddNew={handleOpenAddModal}
               />
@@ -1171,7 +873,7 @@ const PrivateGroup = () => {
                         ? "#f8fafc"
                         : "#ffffff";
                     const lastRowCellStyle = {
-                      borderBottom: isLastRow ? "none" : privateGroupTdStyle.borderBottom,
+                      borderBottom: isLastRow ? "none" : tdStyle.borderBottom,
                     };
 
                     return (
@@ -1192,7 +894,7 @@ const PrivateGroup = () => {
                       >
                         <td
                           style={{
-                            ...privateGroupTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             borderLeft: "none",
                             ...lastRowCellStyle,
@@ -1207,7 +909,7 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...privateGroupTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
                           }}
@@ -1216,7 +918,7 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...privateGroupTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
                           }}
@@ -1225,7 +927,7 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...privateGroupTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
                           }}
@@ -1245,7 +947,7 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...privateGroupTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             ...lastRowCellStyle,
                           }}
@@ -1260,7 +962,7 @@ const PrivateGroup = () => {
                         </td>
                         <td
                           style={{
-                            ...privateGroupTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             borderRight: "none",
                             ...lastRowCellStyle,
@@ -1381,7 +1083,7 @@ const PrivateGroup = () => {
               tooltipKey="member"
             />
 
-            <PrivateGroupMemberCodecDualList
+            <PrivateGroupCodecDualList
               hideReorder
               allOptions={allExtensionOptions}
               selected={memberExtensions}
@@ -1398,7 +1100,7 @@ const PrivateGroup = () => {
             variant="primary"
             onClick={handleSave}
             disabled={loading.save}
-            style={{ minWidth: 100, height: 36, fontSize: 13 }}
+            style={addNewModalFooterBtnStyle}
           >
             {loading.save ? (
               <>

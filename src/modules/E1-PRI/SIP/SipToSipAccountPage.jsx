@@ -562,7 +562,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
       >
         {buttonLabel}
       </Btn>
@@ -618,6 +618,9 @@ const sipToSipSelectedBadgeStyle = {
 
 const sipToSipCancelBtnStyle = {
   height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 10,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",

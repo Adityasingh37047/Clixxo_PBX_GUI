@@ -96,9 +96,6 @@ const Btn = ({
       color: "#fff",
       border: "1px solid #5A6F8F",
       fontWeight: 600,
-      fontSize: 15,
-      textTransform: "none",
-      padding: "6px 28px",
     },
     cancel: {
       background: "#cbd5e1",
@@ -166,7 +163,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 8,
+        borderRadius: 10,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -911,7 +908,7 @@ const IPCallInCalleeID = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || rules.length === 0}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 Inverse
               </Btn>
@@ -919,7 +916,7 @@ const IPCallInCalleeID = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -934,7 +931,7 @@ const IPCallInCalleeID = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || rules.length === 0}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -946,7 +943,7 @@ const IPCallInCalleeID = () => {
                 variant="cancel"
                 onClick={handleRefresh}
                 disabled={loading.fetch}
-                style={{ height: 30 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
               >
                 {loading.fetch ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1022,7 +1019,7 @@ const IPCallInCalleeID = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
                 >
                   + Add New Rule
                 </Btn>
