@@ -424,7 +424,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -1162,7 +1162,7 @@ const ToneDetecterPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Inverse
               </Btn>
@@ -1170,7 +1170,7 @@ const ToneDetecterPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.delete ? "Deleting..." : "Delete"}
               </Btn>
@@ -1178,7 +1178,7 @@ const ToneDetecterPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.delete ? "Clearing..." : "Clear All"}
               </Btn>
@@ -1186,7 +1186,7 @@ const ToneDetecterPage = () => {
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 disabled={loading.save}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.save ? "Saving..." : "+ Add New"}
               </Btn>
@@ -1218,7 +1218,7 @@ const ToneDetecterPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   + Add New
                 </Btn>
@@ -1365,7 +1365,8 @@ const ToneDetecterPage = () => {
                 <Btn
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page <= 1}
-                  variant="outline"
+                  variant="outline" 
+                  style={{ borderRadius: 4 }}
                 >
                   ← Prev
                 </Btn>
@@ -1376,7 +1377,7 @@ const ToneDetecterPage = () => {
                     color: C.accent,
                     background: "#e0f2fe",
                     padding: "5px 14px",
-                    borderRadius: 6,
+                    borderRadius: 4,
                     border: `1px solid ${C.cardBorder}`,
                   }}
                 >
@@ -1386,6 +1387,7 @@ const ToneDetecterPage = () => {
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   Next →
                 </Btn>

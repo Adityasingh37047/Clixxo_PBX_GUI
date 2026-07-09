@@ -322,7 +322,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -581,7 +581,7 @@ const SipTrunkGroupTableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -589,7 +589,7 @@ const SipTrunkGroupTableListEmptyState = ({
   </div>
 );
 
-const SIP_TRUNK_GROUP_TABLE_CARD_RADIUS = 10;
+const SIP_TRUNK_GROUP_TABLE_CARD_RADIUS = 4;
 
 const sipTrunkGroupCardStyle = {
   background: "#ffffff",
@@ -631,7 +631,7 @@ const sipTrunkGroupSelectedBadgeStyle = {
   fontSize: 11,
   fontWeight: 700,
   padding: "5px 12px",
-  borderRadius: 999,
+      borderRadius: 4,
   border: `1px solid ${C.accent}`,
 };
 
@@ -639,7 +639,7 @@ const sipTrunkGroupCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -650,7 +650,7 @@ const sipTrunkGroupPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const sipTrunkGroupPageBadgeStyle = {
@@ -659,7 +659,7 @@ const sipTrunkGroupPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 

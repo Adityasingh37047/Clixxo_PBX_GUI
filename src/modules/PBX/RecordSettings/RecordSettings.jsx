@@ -90,7 +90,7 @@ const pageFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -113,8 +113,8 @@ const recordSettingsFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
   minWidth: 100,
+  borderRadius: 4,
 };
 
 const OUTLINED_BORDER = "#d1d5db";

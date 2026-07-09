@@ -412,7 +412,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -955,7 +955,7 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Inverse
               </Btn>
@@ -963,7 +963,7 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -972,14 +972,14 @@ const RouteIpPstnPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Clear All
               </Btn>
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {ROUTE_IP_PSTN_ADD_NEW_LABEL}
               </Btn>
@@ -1012,7 +1012,7 @@ const RouteIpPstnPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   {ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL}
                 </Btn>
@@ -1186,6 +1186,7 @@ const RouteIpPstnPage = () => {
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page <= 1}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   ← Prev
                 </Btn>
@@ -1196,7 +1197,7 @@ const RouteIpPstnPage = () => {
                     color: C.accent,
                     background: "#e0f2fe",
                     padding: "5px 14px",
-                    borderRadius: 6,
+                    borderRadius: 4,
                     border: `1px solid ${C.divider}`,
                   }}
                 >
@@ -1206,6 +1207,7 @@ const RouteIpPstnPage = () => {
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   Next →
                 </Btn>

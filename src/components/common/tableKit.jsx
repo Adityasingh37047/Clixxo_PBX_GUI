@@ -150,7 +150,7 @@ const ExtensionTableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>

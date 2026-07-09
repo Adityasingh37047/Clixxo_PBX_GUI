@@ -562,7 +562,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -570,7 +570,7 @@ const TableListEmptyState = ({
   </div>
 );
 
-const SIP_TO_SIP_TABLE_CARD_RADIUS = 10;
+const SIP_TO_SIP_TABLE_CARD_RADIUS = 4;
 
 const sipToSipCardStyle = {
   background: "#ffffff",
@@ -620,7 +620,7 @@ const sipToSipCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -631,7 +631,7 @@ const sipToSipPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const sipToSipPageBadgeStyle = {
@@ -640,7 +640,7 @@ const sipToSipPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -858,7 +858,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+    borderRadius: 4,
   minWidth: 100,
 };
 
@@ -868,6 +868,7 @@ const sipToSipModalCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const SipToSipAccountPage = () => {

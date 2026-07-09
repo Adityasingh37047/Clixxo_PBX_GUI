@@ -91,7 +91,7 @@ const C = {
   successGreen: "#16a34a",
 };
 
-const PCM_RECEPTION_TIMEOUT_CARD_RADIUS = 10;
+const PCM_RECEPTION_TIMEOUT_CARD_RADIUS = 4;
 
 const pcmReceptionTimeoutPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -164,7 +164,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

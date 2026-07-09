@@ -203,7 +203,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: isFooterBtn ? "0 28px" : "6px 14px",
-        borderRadius: 8,
+        borderRadius: 4,
         fontSize: isFooterBtn ? 13 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -391,8 +391,15 @@ const pageFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
+};
+
+const dtmfTabBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 4,
 };
 
 const dtmfFormFooterStyle = {
@@ -416,7 +423,7 @@ const dtmfFormBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -882,7 +889,7 @@ const DtmfPage = () => {
                   activeTab === DTMF_TAB_DETECTOR ? "tabActive" : "tabInactive"
                 }
                 onClick={() => setActiveTab(DTMF_TAB_DETECTOR)}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={dtmfTabBtnStyle}
               >
                 {DTMF_DETECTOR_TAB}
               </Btn>
@@ -894,7 +901,7 @@ const DtmfPage = () => {
                     : "tabInactive"
                 }
                 onClick={() => setActiveTab(DTMF_TAB_GENERATOR)}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={dtmfTabBtnStyle}
               >
                 {DTMF_GENERATOR_TAB}
               </Btn>

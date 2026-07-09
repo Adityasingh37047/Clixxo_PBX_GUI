@@ -466,7 +466,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -477,6 +477,7 @@ const addNewModalFooterCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const addNewModalBackdropSlotProps = {
@@ -724,10 +725,6 @@ const PortFxsAdvancedPage = () => {
     handleCloseModal();
   };
 
-  const handleCancel = () => {
-    handleCloseModal();
-  };
-
   const handleReset = () => {
     setBatchForm(getInitialBatchForm());
     setProhibitLimitCount(1);
@@ -958,7 +955,7 @@ const PortFxsAdvancedPage = () => {
                     <Btn
                       variant="cancel"
                       onClick={() => handlePeriodCountChange("plus")}
-                      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                     >
                       + Add Period
                     </Btn>
@@ -967,7 +964,7 @@ const PortFxsAdvancedPage = () => {
                     <Btn
                       variant="cancel"
                       onClick={() => handlePeriodCountChange("minus")}
-                      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                     >
                       - Remove Period
                     </Btn>
@@ -1058,7 +1055,7 @@ const PortFxsAdvancedPage = () => {
             <Btn
               onClick={handleBatchModify}
               variant="primary"
-              style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+              style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
             >
               {PORT_FXS_ADVANCED_BATCH_MODIFY_LABEL}
             </Btn>
@@ -1177,6 +1174,7 @@ const PortFxsAdvancedPage = () => {
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page <= 1}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   ← Prev
                 </Btn>
@@ -1187,7 +1185,7 @@ const PortFxsAdvancedPage = () => {
                     color: C.accent,
                     background: "#e0f2fe",
                     padding: "5px 14px",
-                    borderRadius: 6,
+                    borderRadius: 4,
                     border: `1px solid ${C.divider}`,
                   }}
                 >
@@ -1197,6 +1195,7 @@ const PortFxsAdvancedPage = () => {
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   Next →
                 </Btn>

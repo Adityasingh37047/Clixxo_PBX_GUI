@@ -138,7 +138,7 @@ const C = {
   accent: "#3E5475",
 };
 
-const PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS = 10;
+const PCM_CIRCUIT_MAINTENANCE_CARD_RADIUS = 4;
 const PCM_CIRCUIT_MAINTENANCE_COMPACT_MQ = "(max-width: 768px)";
 const PCM_CIRCUIT_MAINTENANCE_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 const PCM_CIRCUIT_MAINTENANCE_SHADOW_GUTTER = 14;
@@ -194,6 +194,7 @@ const pcmCircuitMaintenanceCancelBtnStyle = {
   padding: "6px 14px",
   fontSize: 12,
   fontWeight: 600,
+  borderRadius: 4,
 };
 
 const PcmCircuitMaintenanceBreadcrumb = () => (

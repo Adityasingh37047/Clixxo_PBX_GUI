@@ -301,7 +301,7 @@ const Btn = ({
   );
 };
 
-const IP_CALL_IN_CALLERID_CARD_RADIUS = 10;
+const IP_CALL_IN_CALLERID_CARD_RADIUS = 4;
 
 const ipCallInCallerIdPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -374,7 +374,7 @@ const ipCallInCallerIdCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -385,7 +385,7 @@ const ipCallInCallerIdPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const addNewModalFooterStyle = {
@@ -407,7 +407,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -416,7 +416,8 @@ const ipCallInCallerIdModalCancelBtnStyle = {
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",  
+  borderRadius: 4,
 };
 
 const ipCallInCallerIdPageBadgeStyle = {
@@ -425,7 +426,7 @@ const ipCallInCallerIdPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -496,7 +497,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -520,6 +521,7 @@ const IpCallInCallerIdPagination = ({
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         ← Prev
       </Btn>
@@ -530,7 +532,8 @@ const IpCallInCallerIdPagination = ({
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         variant="outline"
-      >
+        style={{ borderRadius: 4 }}
+        >
         Next →
       </Btn>
     </div>

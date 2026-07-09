@@ -301,7 +301,7 @@ const Btn = ({
   );
 };
 
-const IP_CALL_IN_CALLEEID_CARD_RADIUS = 10;
+const IP_CALL_IN_CALLEEID_CARD_RADIUS = 4;
 
 const ipCallInCalleeIdPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -374,7 +374,7 @@ const ipCallInCalleeIdCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -385,7 +385,7 @@ const ipCallInCalleeIdPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const addNewModalFooterStyle = {
@@ -407,7 +407,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -416,7 +416,8 @@ const ipCallInCalleeIdModalCancelBtnStyle = {
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",  
+  borderRadius: 4,
 };
 
 const ipCallInCalleeIdPageBadgeStyle = {
@@ -425,8 +426,9 @@ const ipCallInCalleeIdPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+   
   border: `1px solid ${C.cardBorder}`,
+  borderRadius: 4,
 };
 
 const IPCallInCalleeIdBreadcrumb = () => (
@@ -496,7 +498,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -519,7 +521,8 @@ const IpCallInCalleeIdPagination = ({
       <Btn
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        variant="outline"
+        variant="outline"   
+        style={{borderRadius: 4 }}
       >
         ← Prev
       </Btn>
@@ -529,7 +532,8 @@ const IpCallInCalleeIdPagination = ({
       <Btn
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        variant="outline"
+        variant="outline" 
+        style={{ borderRadius: 4 }}
       >
         Next →
       </Btn>

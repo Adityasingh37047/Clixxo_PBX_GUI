@@ -168,7 +168,7 @@ const C = {
   successGreen: "#16a34a",
 };
 
-const ROUTE_IP_TO_IP_CARD_RADIUS = 10;
+const ROUTE_IP_TO_IP_CARD_RADIUS = 4;  
 
 const routeIpToIpPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -442,7 +442,7 @@ const routeIpToIpCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -453,7 +453,7 @@ const routeIpToIpPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const routeIpToIpPageBadgeStyle = {
@@ -462,7 +462,7 @@ const routeIpToIpPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -485,7 +485,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -562,7 +562,7 @@ const TableListEmptyState = ({
     <Btn
       variant="cancel"
       onClick={onAddNew}
-      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+      style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
     >
       {buttonLabel}
     </Btn>
@@ -585,6 +585,7 @@ const RouteIpToIpPagination = ({
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         ← Prev
       </Btn>
@@ -595,6 +596,7 @@ const RouteIpToIpPagination = ({
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         Next →
       </Btn>

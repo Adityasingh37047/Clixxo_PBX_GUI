@@ -90,7 +90,7 @@ const privateGroupPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -230,7 +230,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -247,7 +247,8 @@ const privateGroupModalCancelBtnStyle = {
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",    
+  borderRadius: 4,
 };
 
 const PRIVATE_GROUP_TOOLTIP_PROPS = {
@@ -1005,7 +1006,8 @@ const PrivateGroup = () => {
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.list || page <= 1}
-                  variant="outline"
+                  variant="outline" 
+                  style={{ borderRadius: 4 }}
                 >
                   ← Prev
                 </Btn>
@@ -1016,6 +1018,7 @@ const PrivateGroup = () => {
                   onClick={handleNext}
                   disabled={loading.list || page >= totalPages}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   Next →
                 </Btn>

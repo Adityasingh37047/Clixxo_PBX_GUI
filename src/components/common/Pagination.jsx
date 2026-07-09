@@ -21,7 +21,7 @@ const extensionPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -43,6 +43,7 @@ const ExtensionPagination = ({
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         ← Prev
       </Btn>
@@ -53,6 +54,7 @@ const ExtensionPagination = ({
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         Next →
       </Btn>

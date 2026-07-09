@@ -907,7 +907,7 @@ const IPCallInCallerID = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={loading.delete || rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Inverse
               </Btn>
@@ -915,7 +915,7 @@ const IPCallInCallerID = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={loading.delete || selected.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -930,7 +930,7 @@ const IPCallInCallerID = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={loading.delete || rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -942,7 +942,7 @@ const IPCallInCallerID = () => {
                 variant="cancel"
                 onClick={handleRefresh}
                 disabled={loading.fetch}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.fetch ? (
                   <CircularProgress size={12} color="inherit" />
@@ -958,6 +958,7 @@ const IPCallInCallerID = () => {
                   height: 30,
                   padding: "6px 14px",
                   fontSize: 12,
+                  borderRadius: 4,
                 }}
               >
                 + Add New
@@ -1018,7 +1019,7 @@ const IPCallInCallerID = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   + Add New Rule
                 </Btn>
@@ -1197,6 +1198,7 @@ const IPCallInCallerID = () => {
                       onClick={() => handlePageChange(page - 1)}
                       disabled={page <= 1}
                       variant="outline"
+                      style={{ borderRadius: 4 }}
                     >
                       ← Prev
                     </Btn>
@@ -1207,7 +1209,7 @@ const IPCallInCallerID = () => {
                         color: C.accent,
                         background: "#e0f2fe",
                         padding: "5px 14px",
-                        borderRadius: 6,
+                        borderRadius: 4,
                         border: `1px solid ${C.cardBorder}`,
                       }}
                     >
@@ -1217,6 +1219,7 @@ const IPCallInCallerID = () => {
                       onClick={() => handlePageChange(page + 1)}
                       disabled={page >= totalPages}
                       variant="outline"
+                      style={{ borderRadius: 4 }}
                     >
                       Next →
                     </Btn>

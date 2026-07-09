@@ -177,7 +177,7 @@ const C = {
   successGreen: "#16a34a",
 };
 
-const FILTERING_RULE_CARD_RADIUS = 10;
+const FILTERING_RULE_CARD_RADIUS = 4;
 
 const filteringRulePageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -457,19 +457,20 @@ const filteringRuleCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+ 
 };
 
 const filteringRulePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
-};
+  borderRadius: 4,
+  };
 
 const addNewModalFooterStyle = {
   display: "flex",
@@ -490,7 +491,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -500,6 +501,7 @@ const filteringRuleModalCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const FilteringRuleBreadcrumb = () => (
@@ -569,7 +571,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>

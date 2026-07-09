@@ -423,7 +423,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -861,7 +861,7 @@ const ColorRingPage = () => {
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Inverse
               </Btn>
@@ -869,7 +869,7 @@ const ColorRingPage = () => {
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Delete
               </Btn>
@@ -877,14 +877,14 @@ const ColorRingPage = () => {
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Clear All
               </Btn>
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 + Add New
               </Btn>
@@ -917,7 +917,7 @@ const ColorRingPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   + Add New
                 </Btn>
@@ -1072,6 +1072,7 @@ const ColorRingPage = () => {
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page <= 1}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   ← Prev
                 </Btn>
@@ -1082,7 +1083,7 @@ const ColorRingPage = () => {
                     color: C.accent,
                     background: "#e0f2fe",
                     padding: "5px 14px",
-                    borderRadius: 6,
+                    borderRadius: 4,
                     border: `1px solid ${C.cardBorder}`,
                   }}
                 >
@@ -1092,6 +1093,7 @@ const ColorRingPage = () => {
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   Next →
                 </Btn>
@@ -1181,7 +1183,7 @@ const ColorRingPage = () => {
                 <Btn
                   variant="cancel"
                   onClick={() => fileInputRef.current?.click()}
-                  style={{ height: 30, fontSize: 12 }}
+                  style={{ height: 30, fontSize: 12, borderRadius: 4 }}
                 >
                   Choose file
                 </Btn>
@@ -1190,7 +1192,7 @@ const ColorRingPage = () => {
                 </span>
               </div>
             </FieldRow>
-            <p style={{ ...wavFileNoteStyle, color: "#dc2626" }}>
+            <p style={{ ...wavFileNoteStyle, color: C.accent }}>
               Note: The file should be a wav file with 8000Hz sampling rate, 16-bit mono, A-law formatted, and less than 200KB in size.
             </p>
           </div>

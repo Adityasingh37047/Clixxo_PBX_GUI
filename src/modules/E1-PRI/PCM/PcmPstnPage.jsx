@@ -391,7 +391,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -401,6 +401,7 @@ const pcmPstnModalCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const TH = ({ children, style: extra }) => (
@@ -501,7 +502,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -509,7 +510,7 @@ const TableListEmptyState = ({
   </div>
 );
 
-const PCM_PSTN_TABLE_CARD_RADIUS = 10;
+const PCM_PSTN_TABLE_CARD_RADIUS = 4;
 
 const pcmPstnCardStyle = {
   background: "#ffffff",
@@ -559,7 +560,7 @@ const pcmPstnCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,   
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -570,7 +571,9 @@ const pcmPstnPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const PCM_PSTN_MODAL_TAB_BAR_STYLE = {

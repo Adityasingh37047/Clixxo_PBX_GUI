@@ -128,7 +128,7 @@ const autoProvisionPageBadgeStyle = {
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -360,7 +360,7 @@ const AutoProvision = () => {
                   gap: 6,
                   background: "#f8fafc",
                   border: `1px solid ${searchFocused ? "#3E5475" : "#d1d5db"}`,
-                  borderRadius: 10,
+                  borderRadius: 4,
                   padding: "5px 10px",
                   boxShadow: searchFocused
                     ? "0 0 0 2px rgba(62, 84, 117, 0.15)"
@@ -536,6 +536,7 @@ const AutoProvision = () => {
                   onClick={handlePrev}
                   disabled={loading.fetch || page <= 1}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   ← Prev
                 </Btn>
@@ -546,6 +547,7 @@ const AutoProvision = () => {
                   onClick={handleNext}
                   disabled={loading.fetch || page >= totalPages}
                   variant="outline"
+                  style={{ borderRadius: 4 }}
                 >
                   Next →
                 </Btn>

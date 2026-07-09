@@ -59,7 +59,7 @@ const voicePromptsPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -105,7 +105,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -173,11 +173,17 @@ const voicePromptsHeaderLeftStyle = {
   minWidth: 0,
 };
 
+const voicePromptsTabBtnStyle = {
+  height: 30,
+  borderRadius: 4,
+};
+
 const voicePromptsChooseFileBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
   minWidth: "auto",
+  borderRadius: 4,
 };
 
 const voicePromptsPanelStyle = {
@@ -375,7 +381,7 @@ const toolIconBtnSx = {
   width: 24,
   height: 24,
   border: "1px solid #c2c8d0",
-  borderRadius: 1,
+  borderRadius: 4,
   backgroundColor: "#f5f7fa",
   p: 0,
   "&:hover": { backgroundColor: "#e8edf3" },
@@ -821,7 +827,7 @@ const VoicePromptsPage = () => {
                     stopCustomPlayer();
                     setActiveTab(tab.id);
                   }}
-                  style={{ height: 30 }}
+                  style={voicePromptsTabBtnStyle}
                 >
                   {tab.label}
                 </Btn>

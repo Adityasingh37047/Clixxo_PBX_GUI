@@ -92,7 +92,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -109,6 +109,7 @@ const timeConditionModalCancelBtnStyle = {
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
+  borderRadius: 4,
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
@@ -126,13 +127,13 @@ const timeConditionPaginationStyle = {
   overflow: "hidden",
 };
 
-const timeConditionPageBadgeStyle = {
+const   timeConditionPageBadgeStyle = {
   fontSize: 11,
   fontWeight: 600,
   color: C.accent,
   background: "#e0f2fe",
   padding: "5px 14px",
-  borderRadius: 6,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
@@ -166,6 +167,7 @@ const TimeConditionPagination = ({
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         ← Prev
       </Btn>
@@ -176,6 +178,7 @@ const TimeConditionPagination = ({
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         variant="outline"
+        style={{ borderRadius: 4 }}
       >
         Next →
       </Btn>

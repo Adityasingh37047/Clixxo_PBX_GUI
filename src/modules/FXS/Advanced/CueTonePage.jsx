@@ -390,7 +390,7 @@ const cueToneFieldsColStyle = {
 
 const cueToneNoteStyle = {
   fontSize: 12,
-  color: C.amber,
+  color: C.accent,
   margin: 0,
   lineHeight: 1.45,
   whiteSpace: "normal",
@@ -399,7 +399,7 @@ const cueToneNoteStyle = {
   width: "100%",
 };
 
-const cueToneFileBtnStyle = { height: 30, fontSize: 12, minWidth: 100 };
+const cueToneFileBtnStyle = { height: 30, fontSize: 12, minWidth: 100, borderRadius: 4 };
 
 const CueToneBreadcrumb = () => (
   <div

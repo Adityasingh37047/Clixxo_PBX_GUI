@@ -7,6 +7,9 @@ import {
   Alert,
   CircularProgress,
   Tooltip,
+  FormControl,
+  Select as MuiSelect,
+  MenuItem,
 } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -149,7 +152,7 @@ const C = {
   amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_MARGIN = 24;
 const NUMBER_FILTER_BLACKLIST_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
 
@@ -240,11 +243,79 @@ const inputStyle = {
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-const selectStyle = {
-  ...inputStyle,
-  padding: "0 28px 0 10px",
-  appearance: "auto",
-  cursor: "pointer",
+const blacklistModalSelectSx = {
+  fontSize: 13,
+  backgroundColor: "#fff",
+  width: "100%",
+  "& .MuiOutlinedInput-root": {
+    minHeight: 32,
+    height: 32,
+    padding: 0,
+    borderRadius: 4,
+    backgroundColor: "#fff",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "& .MuiOutlinedInput-input": {
+    padding: "0 28px 0 10px",
+    height: "30px",
+    boxSizing: "border-box",
+  },
+  "& .MuiSelect-select": {
+    display: "flex",
+    alignItems: "center",
+    padding: "0 28px 0 10px !important",
+    minHeight: "30px !important",
+    lineHeight: 1.35,
+    boxSizing: "border-box",
+    fontSize: 13,
+    backgroundColor: "#fff",
+    color: C.valueText,
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_BORDER,
+    borderRadius: 4,
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_HOVER,
+  },
+  "&.Mui-focused": {
+    boxShadow: FOCUS_RING_SHADOW,
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+  "&.Mui-focused:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: OUTLINED_FOCUS,
+    borderWidth: "1px",
+  },
+};
+
+const NUMBER_FILTER_BLACKLIST_GROUP_SELECT_MENU_PROPS = {
+  anchorOrigin: {
+    vertical: "bottom",
+    horizontal: "left",
+  },
+  transformOrigin: {
+    vertical: "top",
+    horizontal: "left",
+  },
+  PaperProps: {
+    sx: {
+      backgroundColor: "#f8fafc",
+      border: `1px solid ${C.cardBorder}`,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    },
+  },
+  MenuListProps: {
+    sx: { maxHeight: 224 },
+  },
+  PopperProps: {
+    modifiers: [{ name: "flip", enabled: false }],
+    placement: "bottom-start",
+  },
 };
 
 const addHostFormPanelStyle = {
@@ -347,7 +418,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -356,7 +427,8 @@ const blacklistModalCancelBtnStyle = {
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",    
+  borderRadius: 4,
 };
 
 const BlacklistBreadcrumb = () => (
@@ -998,7 +1070,7 @@ const Blacklist = () => {
                 variant="cancel"
                 onClick={onDelete}
                 disabled={checkedItems.length === 0 || isDeleting}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {isDeleting ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1013,7 +1085,7 @@ const Blacklist = () => {
                 variant="cancel"
                 onClick={onClear}
                 disabled={rows.length === 0 || isDeleting}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {NUMBER_FILTER_BLACKLIST_CLEAR_ALL_LABEL}
               </Btn>
@@ -1021,7 +1093,7 @@ const Blacklist = () => {
                 variant="primary"
                 onClick={onAddNew}
                 disabled={isDeleting}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {NUMBER_FILTER_BLACKLIST_ADD_NEW_LABEL}
               </Btn>
@@ -1322,18 +1394,23 @@ const Blacklist = () => {
                 tooltipKey="groupNo"
                 tooltips={NUMBER_FILTER_BLACKLIST_FIELD_TOOLTIPS}
               >
-                <select
-                  value={modalData.groupNo}
-                  onChange={(e) => handleGroupNoChange(e.target.value)}
-                  style={selectStyle}
-                  {...inputInteraction}
+                <FormControl
+                  variant="outlined"
+                  sx={{ width: "100%", margin: 0 }}
                 >
-                  {[...Array(200).keys()].map((i) => (
-                    <option key={i} value={String(i)}>
-                      {i}
-                    </option>
-                  ))}
-                </select>
+                  <MuiSelect
+                    value={modalData.groupNo}
+                    onChange={(e) => handleGroupNoChange(e.target.value)}
+                    sx={blacklistModalSelectSx}
+                    MenuProps={NUMBER_FILTER_BLACKLIST_GROUP_SELECT_MENU_PROPS}
+                  >
+                    {[...Array(200).keys()].map((i) => (
+                      <MenuItem key={i} value={String(i)} sx={{ fontSize: 13 }}>
+                        {i}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
               </E1PriFieldRow>
 
               <E1PriFieldRow

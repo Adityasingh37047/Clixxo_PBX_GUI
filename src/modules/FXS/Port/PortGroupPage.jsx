@@ -472,7 +472,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,  
   minWidth: 100,
 };
 
@@ -870,7 +870,7 @@ const PortGroupPage = () => {
       <Btn
         variant="cancel"
         onClick={handleAddNewClick}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
       >
         + Add New
       </Btn>
@@ -978,7 +978,7 @@ const PortGroupPage = () => {
             variant="cancel"
             onClick={handleTableInverse}
             disabled={groups.length === 0}
-            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
           >
             Inverse
           </Btn>
@@ -986,7 +986,7 @@ const PortGroupPage = () => {
             variant="cancel"
             onClick={handleDelete}
             disabled={selectedCount === 0}
-            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
           >
             <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
             Delete
@@ -995,14 +995,14 @@ const PortGroupPage = () => {
             variant="cancel"
             onClick={handleClearAll}
             disabled={groups.length === 0}
-            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
           >
             Clear All
           </Btn>
           <Btn
             variant="primary"
             onClick={handleAddNewClick}
-            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+            style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
           >
             + Add New
           </Btn>
@@ -1116,7 +1116,7 @@ const PortGroupPage = () => {
             page 1
           </span>
           <div style={{ display: "flex", gap: 8 }}>
-            <Btn disabled variant="outline">
+            <Btn disabled variant="outline" style={{ borderRadius: 4 }}>
               ← Prev
             </Btn>
             <span
@@ -1126,13 +1126,13 @@ const PortGroupPage = () => {
                 color: C.accent,
                 background: "#e0f2fe",
                 padding: "5px 14px",
-                borderRadius: 6,
+                borderRadius: 4,
                 border: `1px solid ${C.divider}`,
               }}
             >
               Page 1 of 1
             </span>
-            <Btn disabled variant="outline">
+            <Btn disabled variant="outline" style={{ borderRadius: 4 }}>
               Next →
             </Btn>
           </div>
@@ -1352,14 +1352,14 @@ const PortGroupPage = () => {
                 <Btn
                   onClick={handleCheckAllPorts}
                   variant="cancel"
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   Check All
                 </Btn>
                 <Btn
                   onClick={handleInversePorts}
                   variant="cancel"
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   Inverse
                 </Btn>
