@@ -1,8 +1,11 @@
 // components/Layout.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
+import Navbar, { getNavbarHeight } from "./Navbar";
 import Sidebar from "./Sidebar";
+
+const OUTER_BG = "#dde0e4";
+const MAIN_BG = "#eef2f7";
 
 const Layout = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -35,7 +38,7 @@ const Layout = () => {
     }
   }, [location.pathname]);
 
-  const NAVBAR_HEIGHT = isMobile ? 140 : 48;
+  const NAVBAR_HEIGHT = getNavbarHeight();
   const outletPadding = isMobile ? 8 : 16;
 
   // Content margin follows sidebar width (right panel always open on desktop)
@@ -43,7 +46,7 @@ const Layout = () => {
   const contentWidth = isMobile ? "100%" : `calc(100% - ${sidebarWidth}px)`;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#eef2f7", overflow: "hidden" }}>
+    <div className="min-h-screen" style={{ backgroundColor: OUTER_BG, overflow: "hidden" }}>
       <Navbar
         isMobile={isMobile}
         sidebarOpen={sidebarOpen}
@@ -67,7 +70,7 @@ const Layout = () => {
           marginTop: NAVBAR_HEIGHT,
           height: `calc(100vh - ${NAVBAR_HEIGHT}px)`,
           overflowY: "auto",
-          backgroundColor: "#eef2f7",
+          backgroundColor: MAIN_BG,
           width: contentWidth,
           minWidth: 0,
           maxWidth: "100%",
@@ -78,7 +81,7 @@ const Layout = () => {
         <div
           className="w-full app-page-outlet"
           style={{
-            backgroundColor: "#eef2f7",
+            backgroundColor: MAIN_BG,
             padding: outletPadding,
             boxSizing: "border-box",
             width: "100%",

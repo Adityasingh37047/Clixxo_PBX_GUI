@@ -45,13 +45,55 @@ const isTouchDevice = () =>
   ("ontouchstart" in window || navigator.maxTouchPoints > 0);
 
 const SIDEBAR_ACCENT = "#3B6FE8";
-const SIDEBAR_RAIL_BG = "#1a2332";
+const SIDEBAR_RAIL_BG = "#1C2536";
+const SIDEBAR_PANEL_BG = "#1a2332";
 const SIDEBAR_BORDER = "#243044";
 const SIDEBAR_TEXT_MUTED = "#94a3b8";
 const SIDEBAR_TEXT_ACTIVE = "#dbeafe";
 const SIDEBAR_TEXT_ICON_ACTIVE = "#93c5fd";
-const SIDEBAR_HOVER_BG = "#243044";
+const SIDEBAR_HOVER_BG = "rgba(255, 255, 255, 0.08)";
 const SUBMENU_ACTIVE_BG = "rgba(59, 111, 232, 0.16)";
+const MODULE_COLLAPSE_MS = 480;
+const RAIL_ITEM_TRANSITION =
+  "background 180ms ease, color 180ms ease";
+const PANEL_ITEM_TRANSITION =
+  "background 180ms ease, color 180ms ease";
+
+const panelActiveAccent = (active) =>
+  active
+    ? {
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          left: 0,
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: 3,
+          height: "48%",
+          backgroundColor: SIDEBAR_ACCENT,
+          borderRadius: "0 3px 3px 0",
+          boxShadow: `0 0 8px ${SIDEBAR_ACCENT}66`,
+        },
+      }
+    : {};
+
+const PANEL_HOVER_BG = "#243044";
+const PANEL_MODULE_CLOSED_WEIGHT = 600;
+const PANEL_MODULE_OPEN_WEIGHT = 700;
+const PANEL_MODULE_OPEN_COLOR = "#e2e8f0";
+
+/** Slow top→bottom open / bottom→top close for module page lists (e.g. FXS Advanced). */
+const SidebarModuleCollapse = ({ in: open, children }) => (
+  <Collapse
+    className="sidebar-module-collapse"
+    in={open}
+    timeout={{ enter: MODULE_COLLAPSE_MS, exit: MODULE_COLLAPSE_MS }}
+    easing={{ enter: "ease-in-out", exit: "ease-in-out" }}
+    unmountOnExit
+  >
+    <div className="sidebar-module-collapse-inner">{children}</div>
+  </Collapse>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -155,10 +197,8 @@ const Sidebar = ({
   // Derived: activeMenu wins; hoveredMenu fills when nothing clicked
   // const activeSection = activeMenu || (canHover ? hoveredMenu : null);
 
-  // Desktop: right submenu always open (clicked section, else default)
-  const activeSection = isMobile
-    ? activeMenu
-    : (activeMenu ?? defaultOpenSectionId);
+  // Desktop/mobile: show submenu for clicked section, else default first module
+  const activeSection = activeMenu ?? defaultOpenSectionId;
 
   // ─── Notify Layout on EVERY width change (hover + click both) ─────────────
   useEffect(() => {
@@ -291,22 +331,21 @@ const Sidebar = ({
           handleNavigation(item.path);
         }}
         sx={{
+          position: "relative",
           cursor: "pointer",
           backgroundColor: active ? SUBMENU_ACTIVE_BG : "transparent",
-          borderLeft: active
-            ? `3px solid ${SIDEBAR_ACCENT}`
-            : "3px solid transparent",
-          minHeight: 34,
+          borderLeft: "none",
+          margin: "1px 0",
+          minHeight: 36,
           display: "flex",
           alignItems: "center",
           width: "100%",
           boxSizing: "border-box",
-          padding: "7px 12px 7px 16px",
-          transition:
-            "background 0.12s ease, color 0.12s ease, padding-left 0.12s ease, border-left-color 0.12s ease",
+          padding: "8px 12px 8px 18px",
+          transition: PANEL_ITEM_TRANSITION,
+          ...panelActiveAccent(active),
           "&:hover": {
-            backgroundColor: active ? SUBMENU_ACTIVE_BG : SIDEBAR_HOVER_BG,
-            paddingLeft: active ? "16px" : "18px",
+            backgroundColor: active ? SUBMENU_ACTIVE_BG : PANEL_HOVER_BG,
           },
         }}
       >
@@ -331,7 +370,6 @@ const Sidebar = ({
   // LEVEL 3 — subgroup with items (collapsible dropdown)
   const renderSubGroup = (group) => {
     const isOpen = openItems[group.id] || false;
-    const hasActiveChild = group.items?.some((item) => isActive(item.path));
     return (
       <React.Fragment key={group.id}>
         <ListItem
@@ -351,15 +389,14 @@ const Sidebar = ({
           sx={{
             cursor: "pointer",
             backgroundColor: "transparent",
-            borderBottom: `1px solid ${SIDEBAR_BORDER}`,
             minHeight: 38,
             display: "flex",
             alignItems: "center",
             padding: "8px 12px",
             width: "100%",
             boxSizing: "border-box",
-            transition: "background 0.12s ease",
-            "&:hover": { backgroundColor: SIDEBAR_HOVER_BG },
+            transition: PANEL_ITEM_TRANSITION,
+            "&:hover": { backgroundColor: PANEL_HOVER_BG },
           }}
         >
           <ListItemText
@@ -367,34 +404,33 @@ const Sidebar = ({
             sx={{
               margin: 0,
               "& .MuiTypography-root": {
-                color: hasActiveChild
-                  ? SIDEBAR_TEXT_ACTIVE
-                  : SIDEBAR_TEXT_MUTED,
-                fontWeight: 700,
+                color: isOpen ? PANEL_MODULE_OPEN_COLOR : SIDEBAR_TEXT_MUTED,
+                fontWeight: isOpen ? PANEL_MODULE_OPEN_WEIGHT : PANEL_MODULE_CLOSED_WEIGHT,
                 fontSize: 10,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                transition: "color 180ms ease",
               },
             }}
           />
           <ExpandLess
             sx={{
-              color: SIDEBAR_TEXT_MUTED,
+              color: isOpen ? PANEL_MODULE_OPEN_COLOR : SIDEBAR_TEXT_MUTED,
               transform: isOpen ? "rotate(180deg)" : "rotate(90deg)",
               fontSize: isMobile ? 15 : 16,
-              transition: "transform 0.2s ease",
+              transition: `transform ${MODULE_COLLAPSE_MS}ms ease-in-out, color 180ms ease`,
               flexShrink: 0,
             }}
           />
         </ListItem>
-        <Collapse in={isOpen} timeout={200} unmountOnExit>
+        <SidebarModuleCollapse in={isOpen}>
           <List component="div" disablePadding>
             {group.items && group.items.map(renderDeepItem)}
           </List>
-        </Collapse>
+        </SidebarModuleCollapse>
       </React.Fragment>
     );
   };
@@ -414,15 +450,14 @@ const Sidebar = ({
           sx={{
             cursor: "pointer",
             backgroundColor: "transparent",
-            borderBottom: `1px solid ${SIDEBAR_BORDER}`,
             minHeight: 38,
             display: "flex",
             alignItems: "center",
             width: "100%",
             boxSizing: "border-box",
             padding: "8px 12px",
-            transition: "background 0.12s ease",
-            "&:hover": { backgroundColor: SIDEBAR_HOVER_BG },
+            transition: PANEL_ITEM_TRANSITION,
+            "&:hover": { backgroundColor: PANEL_HOVER_BG },
           }}
         >
           <ListItemText
@@ -430,32 +465,33 @@ const Sidebar = ({
             sx={{
               margin: 0,
               "& .MuiTypography-root": {
-                color: SIDEBAR_TEXT_MUTED,
-                fontWeight: 700,
+                color: isOpen ? PANEL_MODULE_OPEN_COLOR : SIDEBAR_TEXT_MUTED,
+                fontWeight: isOpen ? PANEL_MODULE_OPEN_WEIGHT : PANEL_MODULE_CLOSED_WEIGHT,
                 fontSize: 10,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                transition: "color 180ms ease",
               },
             }}
           />
           <ExpandLess
             sx={{
-              color: SIDEBAR_TEXT_MUTED,
+              color: isOpen ? PANEL_MODULE_OPEN_COLOR : SIDEBAR_TEXT_MUTED,
               transform: isOpen ? "rotate(180deg)" : "rotate(90deg)",
               fontSize: isMobile ? 14 : 16,
-              transition: "transform 0.2s ease",
+              transition: `transform ${MODULE_COLLAPSE_MS}ms ease-in-out, color 180ms ease`,
               flexShrink: 0,
             }}
           />
         </ListItem>
-        <Collapse in={isOpen} timeout={200} unmountOnExit>
+        <SidebarModuleCollapse in={isOpen}>
           <List component="div" disablePadding>
             {item.subGroups && item.subGroups.map(renderSubGroup)}
           </List>
-        </Collapse>
+        </SidebarModuleCollapse>
       </React.Fragment>
     );
   };
@@ -474,23 +510,21 @@ const Sidebar = ({
           handleNavigation(item.path);
         }}
         sx={{
+          position: "relative",
           cursor: "pointer",
           backgroundColor: active ? SUBMENU_ACTIVE_BG : "transparent",
-          borderBottom: `1px solid ${SIDEBAR_BORDER}`,
-          borderLeft: active
-            ? `3px solid ${SIDEBAR_ACCENT}`
-            : "3px solid transparent",
-          minHeight: 34,
+          borderLeft: "none",
+          margin: "1px 0",
+          minHeight: 36,
           display: "flex",
           alignItems: "center",
           width: "100%",
           boxSizing: "border-box",
-          padding: "7px 12px",
-          transition:
-            "background 0.12s ease, color 0.12s ease, padding-left 0.12s ease, border-left-color 0.12s ease",
+          padding: "8px 12px 8px 14px",
+          transition: PANEL_ITEM_TRANSITION,
+          ...panelActiveAccent(active),
           "&:hover": {
-            backgroundColor: active ? SUBMENU_ACTIVE_BG : SIDEBAR_HOVER_BG,
-            paddingLeft: active ? "12px" : "14px",
+            backgroundColor: active ? SUBMENU_ACTIVE_BG : PANEL_HOVER_BG,
           },
         }}
       >
@@ -505,6 +539,7 @@ const Sidebar = ({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
+              transition: "color 180ms ease",
             },
           }}
         />
@@ -529,7 +564,7 @@ const Sidebar = ({
       <ListItem
         key={section.id}
         component="div"
-        className="sidebar-rail-item"
+        className={`sidebar-rail-item${isCurrentActive ? " is-active" : ""}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -539,40 +574,53 @@ const Sidebar = ({
           cursor: "pointer",
           position: "relative",
           backgroundColor: isCurrentActive ? SUBMENU_ACTIVE_BG : "transparent",
-          borderBottom: `1px solid ${SIDEBAR_BORDER}`,
-          borderLeft: isCurrentActive
-            ? `3px solid ${SIDEBAR_ACCENT}`
-            : "3px solid transparent",
-          borderRadius: isCurrentActive ? "10px" : 0,
-          margin: isCurrentActive ? "4px 5px" : "0",
-          width: isCurrentActive ? "calc(100% - 10px)" : "100%",
-          minHeight: isMobile ? "44px" : isTablet ? "48px" : "52px",
+          borderLeft: "none",
+          borderRadius: 0,
+          margin: "1px 0",
+          width: "100%",
+          minHeight: isMobile ? 46 : isTablet ? 50 : 54,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          padding: isMobile ? "6px 4px" : "10px 6px",
-          transition:
-            "background 0.13s ease, color 0.13s ease, transform 0.13s ease, border-color 0.13s ease",
+          padding: isMobile ? "8px 4px" : "10px 6px",
+          transition: RAIL_ITEM_TRANSITION,
+          ...(isCurrentActive && {
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              left: 0,
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: 3,
+              height: "48%",
+              backgroundColor: SIDEBAR_ACCENT,
+              borderRadius: "0 3px 3px 0",
+              boxShadow: `0 0 8px ${SIDEBAR_ACCENT}66`,
+            },
+          }),
           "&:hover": {
-            backgroundColor: isCurrentActive
-              ? SUBMENU_ACTIVE_BG
-              : SIDEBAR_HOVER_BG,
-            transform: "scale(1.04)",
+            backgroundColor: isCurrentActive ? SUBMENU_ACTIVE_BG : SIDEBAR_HOVER_BG,
           },
-          "&:active": {
-            transform: "scale(0.96)",
+          "&:focus-visible": {
+            outline: `2px solid ${SIDEBAR_ACCENT}`,
+            outlineOffset: -2,
           },
         }}
         title={section.title}
       >
-        <ListItemIcon sx={{ minWidth: 0, marginBottom: isMobile ? 0 : -0.5 }}>
+        <ListItemIcon
+          sx={{
+            minWidth: 0,
+            marginBottom: isMobile ? 0 : 0.25,
+            transition: "color 180ms ease",
+          }}
+        >
           <IconComponent
             sx={{
-              color: isCurrentActive
-                ? SIDEBAR_TEXT_ICON_ACTIVE
-                : SIDEBAR_TEXT_MUTED,
-              fontSize: isMobile ? 18 : isTablet ? 20 : 21,
+              color: isCurrentActive ? SIDEBAR_TEXT_ICON_ACTIVE : SIDEBAR_TEXT_MUTED,
+              fontSize: isMobile ? 19 : isTablet ? 20 : 21,
+              transition: "color 180ms ease",
             }}
           />
         </ListItemIcon>
@@ -581,17 +629,18 @@ const Sidebar = ({
             primary={section.title}
             sx={{
               textAlign: "center",
+              margin: 0,
               "& .MuiTypography-root": {
-                color: isCurrentActive
-                  ? SIDEBAR_TEXT_ACTIVE
-                  : SIDEBAR_TEXT_MUTED,
-                fontWeight: 700,
+                color: isCurrentActive ? SIDEBAR_TEXT_ACTIVE : SIDEBAR_TEXT_MUTED,
+                fontWeight: isCurrentActive ? 700 : 500,
                 fontSize: isTablet ? 10.5 : 11,
-                lineHeight: 1.2,
+                lineHeight: 1.25,
+                letterSpacing: "0.02em",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-                maxWidth: LEFT_W - 12,
+                maxWidth: LEFT_W - 10,
+                transition: "color 180ms ease, font-weight 180ms ease",
               },
             }}
           />
@@ -614,11 +663,13 @@ const Sidebar = ({
       subMenuRef.current.scrollTop = scrollTop;
   };
 
-  const sidebarLeft = isMobile ? (sidebarOpen ? 0 : "-100%") : 0;
-  const sidebarWidth = isMobile
-    ? "100%"
-    : // activeSection ? LEFT_W + RIGHT_W : LEFT_W;
-      LEFT_W + RIGHT_W;
+  const sidebarPanelWidth = LEFT_W + RIGHT_W;
+  const sidebarLeft = isMobile
+    ? sidebarOpen
+      ? 0
+      : `-${sidebarPanelWidth}px`
+    : 0;
+  const sidebarWidth = sidebarPanelWidth;
 
   return (
     <>
@@ -639,9 +690,24 @@ const Sidebar = ({
         />
       )}
 
+      {/* Full-height sidebar backdrop */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          top: `${navbarHeight}px`,
+          left: isMobile ? sidebarLeft : 0,
+          width: sidebarWidth,
+          height: `calc(100vh - ${navbarHeight}px)`,
+          background: SIDEBAR_RAIL_BG,
+          zIndex: 39,
+          pointerEvents: "none",
+          transition: isMobile ? "left 0.3s ease" : "none",
+        }}
+      />
+
       {/* Sidebar wrapper */}
       <div
-        onScroll={handleScroll}
         style={{
           position: "fixed",
           top: `${navbarHeight}px`,
@@ -651,8 +717,10 @@ const Sidebar = ({
           flexDirection: "row",
           width: sidebarWidth,
           zIndex: 40,
+          borderTop: `1px solid ${SIDEBAR_BORDER}`,
           transition: isMobile ? "left 0.3s ease" : "width 0.2s ease",
           overscrollBehavior: "contain",
+          overflow: "hidden",
         }}
       >
         {/* LEFT MENU */}
@@ -663,33 +731,33 @@ const Sidebar = ({
           style={{
             minWidth: LEFT_W,
             width: LEFT_W,
+            height: "100%",
+            flexShrink: 0,
             background: SIDEBAR_RAIL_BG,
-            borderTop: `1px solid ${SIDEBAR_BORDER}`,
-            borderRight: `1px solid ${SIDEBAR_BORDER}`,
             overflowY: "auto",
             overflowX: "hidden",
             WebkitOverflowScrolling: "touch",
           }}
         >
-          <List sx={{ py: 0.5 }}>
+          <List sx={{ py: 0.75, px: 0 }}>
             {sidebarSections.map(renderSidebarSection)}
           </List>
         </div>
 
         {/* RIGHT MENU — always open on desktop; click switches section (mobile: when active) */}
-        {(isMobile ? activeSection : activeSection != null) && (
+        {activeSection != null && (
           <div
             ref={subMenuRef}
             className="sidebar-submenu-panel sidebar-slim-scrollbar"
             style={{
-              width: isMobile ? `calc(100vw - ${LEFT_W}px)` : RIGHT_W,
-              background: SIDEBAR_RAIL_BG,
-              borderTop: `1px solid ${SIDEBAR_BORDER}`,
-              borderRight: `1px solid ${SIDEBAR_BORDER}`,
+              width: RIGHT_W,
+              height: "100%",
+              flex: "0 0 auto",
+              minWidth: 0,
+              background: SIDEBAR_PANEL_BG,
               overflowY: "auto",
               overflowX: "hidden",
               WebkitOverflowScrolling: "touch",
-              animation: "sbSlideIn 0.15s ease",
             }}
           >
             <List sx={{ py: 0 }}>{renderSubmenu()}</List>
@@ -698,9 +766,50 @@ const Sidebar = ({
       </div>
 
       <style>{`
-        @keyframes sbSlideIn {
-          from { opacity: 0; transform: translateX(-6px); }
-          to   { opacity: 1; transform: translateX(0); }
+        .sidebar-module-collapse {
+          transform-origin: top center;
+        }
+
+        .sidebar-module-collapse-inner {
+          transform-origin: top center;
+          overflow: hidden;
+        }
+
+        /* Open: top → bottom */
+        .sidebar-module-collapse.MuiCollapse-entering .sidebar-module-collapse-inner {
+          animation: sidebarModuleOpen ${MODULE_COLLAPSE_MS}ms ease-in-out forwards;
+        }
+
+        .sidebar-module-collapse.MuiCollapse-entered .sidebar-module-collapse-inner {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Close: bottom → top */
+        .sidebar-module-collapse.MuiCollapse-exiting .sidebar-module-collapse-inner {
+          animation: sidebarModuleClose ${MODULE_COLLAPSE_MS}ms ease-in-out forwards;
+        }
+
+        @keyframes sidebarModuleOpen {
+          from {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes sidebarModuleClose {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(-12px);
+          }
         }
       `}</style>
     </>

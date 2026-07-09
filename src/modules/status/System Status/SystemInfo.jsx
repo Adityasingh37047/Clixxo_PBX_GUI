@@ -272,11 +272,11 @@ const Card = ({ title, children, style }) => (
   </div>
 );
 
-const InfoTableRow = ({ label, value, keyName, even }) => (
+const InfoTableRow = ({ label, value, keyName, even, isLast }) => (
   <div
     style={{
       display: "flex",
-      borderBottom: `1px solid ${C.divider}`,
+      borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
       padding: "5px 14px",
       minHeight: 28,
       alignItems: "center",
@@ -780,23 +780,16 @@ const SystemInfo = () => {
                   flexDirection: "column",
                 }}
               >
-                {(SYSTEM_INFO || []).map((info, idx) => (
+                {(SYSTEM_INFO || []).map((info, idx, arr) => (
                   <InfoTableRow
                     key={idx}
                     label={info.label}
                     value={info.value}
                     keyName={info.label}
                     even={idx % 2 === 1}
+                    isLast={idx === arr.length - 1}
                   />
                 ))}
-                <div
-                  style={{
-                    flex: 1,
-                    background: "#f8fafc",
-                    borderTop: `1px solid ${C.divider}`,
-                    minHeight: 8,
-                  }}
-                />
               </Card>
             </div>
           </>
@@ -851,23 +844,16 @@ const SystemInfo = () => {
                   flexDirection: "column",
                 }}
               >
-                {(SYSTEM_INFO || []).map((info, idx) => (
+                {(SYSTEM_INFO || []).map((info, idx, arr) => (
                   <InfoTableRow
                     key={idx}
                     label={info.label}
                     value={info.value}
                     keyName={info.label}
                     even={idx % 2 === 1}
+                    isLast={idx === arr.length - 1}
                   />
                 ))}
-                <div
-                  style={{
-                    flex: 1,
-                    background: "#f8fafc",
-                    borderTop: `1px solid ${C.divider}`,
-                    minHeight: 8,
-                  }}
-                />
               </Card>
               <Card
                 title={SYSTEM_INFO_CARD_TITLES.versionInfo}
