@@ -54,8 +54,9 @@ const addNewModalFooterStyle = {
 const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
+  borderRadius: "4px",
   fontSize: 12,
-  borderRadius: 10,
+  
   minWidth: 100,
 };
 
@@ -71,6 +72,7 @@ const extensionModalCancelBtnStyle = {
   ...addNewModalFooterBtnStyle,
   background: "#cbd5e1",
   color: "#374151",
+  borderRadius: "4px",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
@@ -200,7 +202,8 @@ const extensionCancelBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  
+  borderRadius: "4px",
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
@@ -211,7 +214,7 @@ const extensionPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: "4px",
 };
 
 export {

@@ -1688,13 +1688,13 @@ const ConferencePage = () => {
                                 cursor: "pointer",
                               }}
                             >
-                              <input
-                                type="checkbox"
+                              <Checkbox
+                                size="small"
                                 checked={moderatorMembers.includes(ext.value)}
                                 onChange={() =>
                                   toggleModeratorMember(ext.value)
                                 }
-                                style={{ cursor: "pointer" }}
+                                sx={conferenceTableCheckboxSx}
                               />
                               <span
                                 style={{ fontSize: 13, color: C.labelText }}
@@ -1722,13 +1722,13 @@ const ConferencePage = () => {
                                 cursor: "pointer",
                               }}
                             >
-                              <input
-                                type="checkbox"
+                              <Checkbox
+                                size="small"
                                 checked={selectedGroupIds.includes(
                                   String(group.id),
                                 )}
                                 onChange={() => toggleExtensionGroup(group)}
-                                style={{ cursor: "pointer" }}
+                                sx={conferenceTableCheckboxSx}
                               />
                               <span
                                 style={{ fontSize: 13, color: C.labelText }}

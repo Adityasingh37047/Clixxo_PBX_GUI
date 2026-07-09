@@ -430,7 +430,7 @@ const trunkModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const trunkAdaptRowGridColumns = "1fr 1fr 1fr 32px";
+const trunkAdaptRowGridColumns = "1fr 1fr 1fr 36px";
 
 const trunkDnisRowGridColumns = "1fr 1fr 32px";
 
@@ -449,6 +449,84 @@ const trunkAdaptRowActionBtnSx = {
   "&:hover": {
     backgroundColor: "#b6c2d3",
   },
+};
+
+const sipRegisterAdaptRowIconSx = {
+  fontSize: 18,
+  fontWeight: 600,
+  color: "#374151",
+};
+
+const SipRegisterAdaptRowActionBtn = ({
+  onClick,
+  "aria-label": ariaLabel,
+  children,
+  disabled = false,
+}) => {
+  const baseBg = "#cbd5e1";
+  const hoverBg = "#b6c2d3";
+  const activeBg = "#a3b1c2";
+  const baseShadow = "0 1px 2px rgba(15, 23, 42, 0.08)";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow = "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px solid #cbd5e1",
+        borderRadius: 7,
+        width: 36,
+        height: 36,
+        minWidth: 36,
+        minHeight: 36,
+        padding: 0,
+        background: baseBg,
+        color: "#374151",
+        boxShadow: baseShadow,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        userSelect: "none",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+      }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
+      }}
+    >
+      {children}
+    </button>
+  );
 };
 
 const trunkDodCompactInputStyle = {
@@ -4024,19 +4102,17 @@ const SipRegisterPage = () => {
                   <SipRegisterFieldLabel tooltipKey="prepend">
                     Prepend
                   </SipRegisterFieldLabel>
-                  <IconButton
-                    size="small"
+                  <SipRegisterAdaptRowActionBtn
                     onClick={() =>
                       setAdaptRows((r) => [
                         ...r,
                         { matchMode: "", strip: "", prepend: "" },
                       ])
                     }
-                    sx={trunkAdaptRowActionBtnSx}
                     aria-label="add adapt row"
                   >
-                    <AddIcon fontSize="small" />
-                  </IconButton>
+                    <AddIcon sx={sipRegisterAdaptRowIconSx} />
+                  </SipRegisterAdaptRowActionBtn>
                 </div>
                 <div className="space-y-2">
                   {adaptRows.map((row, i) => (
@@ -4087,16 +4163,14 @@ const SipRegisterPage = () => {
                         sx={trunkAdaptTextFieldSx}
                       />
                       {adaptRows.length > 1 ? (
-                        <IconButton
-                          size="small"
+                        <SipRegisterAdaptRowActionBtn
                           onClick={() =>
                             setAdaptRows((r) => r.filter((_, j) => j !== i))
                           }
-                          sx={trunkAdaptRowActionBtnSx}
                           aria-label="remove adapt row"
                         >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
+                          <CloseIcon sx={sipRegisterAdaptRowIconSx} />
+                        </SipRegisterAdaptRowActionBtn>
                       ) : (
                         <span aria-hidden="true" />
                       )}

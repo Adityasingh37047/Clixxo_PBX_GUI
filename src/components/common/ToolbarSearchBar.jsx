@@ -22,6 +22,7 @@ const EXTENSION_TOOLBAR_SEARCH_INPUT_FONT = {
 const ExtensionToolbarSearchBar = ({
   value,
   onChange,
+  style = {},
   placeholder = "Search...",
   width = EXTENSION_TOOLBAR_SEARCH_WIDTH,
   fitPlaceholder = false,
@@ -91,7 +92,8 @@ const ExtensionToolbarSearchBar = ({
         maxWidth: resolvedWidth,
         flexShrink: 0,
         position: "relative",
-      }}
+        ...style,
+        }}
       onMouseEnter={setHover}
       onMouseLeave={handleMouseLeave}
     >

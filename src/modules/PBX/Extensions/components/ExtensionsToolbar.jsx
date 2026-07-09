@@ -68,6 +68,7 @@ function ExtensionsToolbar(props) {
           }}
           placeholder="Search extension, context, status..."
           fitPlaceholder
+          style={{ borderRadius: "4px" }}
         />
 
         <Btn

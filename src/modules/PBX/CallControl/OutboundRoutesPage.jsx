@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
   Alert,
@@ -10,6 +12,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   MenuItem,
   Select,
   TextField,
@@ -647,18 +650,85 @@ const outboundCompactInputStyle = {
   padding: "7px 10px",
 };
 
-const outboundPatternActionBtnStyle = {
-  height: 32,
-  width: 32,
-  border: "1px solid #6b7280",
-  backgroundColor: "#d9dde3",
-  color: "#111827",
-  fontSize: 14,
+const outboundRouteDialPatternGridColumns =
+  "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 36px";
+
+const outboundRouteDialPatternIconSx = {
+  fontSize: 18,
   fontWeight: 600,
-  cursor: "pointer",
-  borderRadius: 4,
-  padding: 0,
-  lineHeight: 1,
+  color: "#374151",
+};
+
+const OutboundRouteDialPatternActionBtn = ({
+  onClick,
+  "aria-label": ariaLabel,
+  children,
+  disabled = false,
+}) => {
+  const baseBg = "#cbd5e1";
+  const hoverBg = "#b6c2d3";
+  const activeBg = "#a3b1c2";
+  const baseShadow = "0 1px 2px rgba(15, 23, 42, 0.08)";
+
+  const clearPressStyle = (el) => {
+    el.style.transform = "";
+    el.style.boxShadow = baseShadow;
+  };
+
+  const applyPressStyle = (el) => {
+    el.style.background = activeBg;
+    el.style.transform = "translateY(1px) scale(0.98)";
+    el.style.boxShadow = "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px solid #cbd5e1",
+        borderRadius: 7,
+        width: 36,
+        height: 36,
+        minWidth: 36,
+        minHeight: 36,
+        padding: 0,
+        background: baseBg,
+        color: "#374151",
+        boxShadow: baseShadow,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        userSelect: "none",
+        transition:
+          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
+      }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = baseBg;
+        clearPressStyle(e.currentTarget);
+      }}
+      onMouseDown={(e) => {
+        if (disabled) return;
+        applyPressStyle(e.currentTarget);
+      }}
+      onMouseUp={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.background = hoverBg;
+        clearPressStyle(e.currentTarget);
+      }}
+    >
+      {children}
+    </button>
+  );
 };
 
 const OutboundRoutesPage = () => {
@@ -1696,27 +1766,30 @@ const OutboundRoutesPage = () => {
                     }}
                   >
                     {OUTBOUND_ROUTE_TIME_CONDITION_OPTIONS.map((opt) => (
-                      <label
+                      <FormControlLabel
                         key={opt}
-                        style={{
-                          fontSize: 13,
-                          color: C.valueText,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          cursor: "pointer",
+                        control={
+                          <Checkbox
+                            checked={timeConditions.includes(opt)}
+                            onChange={() => toggleTimeCondition(opt)}
+                            disabled={
+                              opt === "Holiday" &&
+                              !timeConditions.includes("All")
+                            }
+                            size="small"
+                            sx={outboundRouteTableCheckboxSx}
+                          />
+                        }
+                        label={opt}
+                        sx={{
+                          margin: 0,
+                          gap: "4px",
+                          "& .MuiFormControlLabel-label": {
+                            fontSize: 13,
+                            color: C.valueText,
+                          },
                         }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={timeConditions.includes(opt)}
-                          onChange={() => toggleTimeCondition(opt)}
-                          disabled={
-                            opt === "Holiday" && !timeConditions.includes("All")
-                          }
-                        />
-                        {opt}
-                      </label>
+                      />
                     ))}
                   </div>
                 </OutboundRightRow>
@@ -1732,7 +1805,7 @@ const OutboundRoutesPage = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
+                  gridTemplateColumns: outboundRouteDialPatternGridColumns,
                   gap: 8,
                   alignItems: "center",
                   marginBottom: 6,
@@ -1752,14 +1825,19 @@ const OutboundRoutesPage = () => {
                     </div>
                   ),
                 )}
-                <div />
+                <OutboundRouteDialPatternActionBtn
+                  onClick={addDialPattern}
+                  aria-label="add dial pattern row"
+                >
+                  <AddIcon sx={outboundRouteDialPatternIconSx} />
+                </OutboundRouteDialPatternActionBtn>
               </div>
               {dialPatterns.map((item, index) => (
                 <div
                   key={`pattern-${index}`}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 72px",
+                    gridTemplateColumns: outboundRouteDialPatternGridColumns,
                     gap: 8,
                     alignItems: "center",
                     marginBottom: 8,
@@ -1781,26 +1859,16 @@ const OutboundRoutesPage = () => {
                       />
                     ),
                   )}
-                  <div style={{ display: "flex", gap: 4 }}>
-                    <button
-                      type="button"
-                      style={outboundPatternActionBtnStyle}
-                      onClick={addDialPattern}
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      style={{
-                        ...outboundPatternActionBtnStyle,
-                        opacity: dialPatterns.length <= 1 ? 0.5 : 1,
-                      }}
+                  {dialPatterns.length > 1 ? (
+                    <OutboundRouteDialPatternActionBtn
                       onClick={() => removeDialPatternAt(index)}
-                      disabled={dialPatterns.length <= 1}
+                      aria-label="remove dial pattern row"
                     >
-                      x
-                    </button>
-                  </div>
+                      <CloseIcon sx={outboundRouteDialPatternIconSx} />
+                    </OutboundRouteDialPatternActionBtn>
+                  ) : (
+                    <span aria-hidden="true" />
+                  )}
                 </div>
               ))}
             </div>

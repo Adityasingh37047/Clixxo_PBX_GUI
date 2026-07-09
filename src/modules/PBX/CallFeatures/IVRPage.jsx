@@ -291,6 +291,10 @@ const ivrModalSelectSx = {
   },
 };
 
+const ivrModalSelectMenuProps = {
+  PaperProps: { sx: { maxHeight: 360 } },
+};
+
 const ivrModalPaperSx = {
   width: 900,
   maxWidth: "96vw",
@@ -2267,6 +2271,7 @@ const IVRPage = () => {
                                   ? formatActionLabel(value)
                                   : "Select action"
                               }
+                              MenuProps={ivrModalSelectMenuProps}
                               sx={ivrModalSelectSx}
                             >
                               <MenuItem value="" sx={{ fontSize: 13 }}>
@@ -2276,7 +2281,7 @@ const IVRPage = () => {
                                 <MenuItem
                                   key={opt}
                                   value={opt}
-                                  sx={{ fontSize: 13, backgroundColor: "#fff" }}
+                                  sx={{ fontSize: 13 }}
                                 >
                                   {formatActionLabel(opt)}
                                 </MenuItem>
@@ -2299,9 +2304,7 @@ const IVRPage = () => {
                             <MuiSelect
                               value={ringBack}
                               onChange={(e) => setRingBack(e.target.value)}
-                              MenuProps={{
-                                PaperProps: { sx: { maxHeight: 360 } },
-                              }}
+                              MenuProps={ivrModalSelectMenuProps}
                               sx={ivrModalSelectSx}
                             >
                               {ringBack &&
