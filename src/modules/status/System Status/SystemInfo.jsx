@@ -272,11 +272,11 @@ const Card = ({ title, children, style }) => (
   </div>
 );
 
-const InfoTableRow = ({ label, value, keyName, even, isLast }) => (
+const InfoTableRow = ({ label, value, keyName, even }) => (
   <div
     style={{
       display: "flex",
-      borderBottom: isLast ? "none" : `1px solid ${C.divider}`,
+      borderBottom: `1px solid ${C.divider}`,
       padding: "5px 14px",
       minHeight: 28,
       alignItems: "center",
@@ -301,6 +301,37 @@ const InfoTableRow = ({ label, value, keyName, even, isLast }) => (
     </span>
   </div>
 );
+
+/** Stretch paired cards to equal height — fill gap with last row stripe, no extra divider line */
+const InfoCardBody = ({ rowCount, children }) => {
+  const fillBg =
+    rowCount > 0 && (rowCount - 1) % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+      }}
+    >
+      {children}
+      {rowCount > 0 ? (
+        <div
+          aria-hidden
+          style={{ flex: 1, background: fillBg, minHeight: 0 }}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+const infoCardStretchStyle = {
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+};
 
 const StatCard = ({ label, value, type, accentColor }) => {
   const accent = accentColor || C.accent;
@@ -717,48 +748,43 @@ const SystemInfo = () => {
                 alignItems: "stretch",
               }}
             >
-              {LAN_INTERFACES.map((lan) => (
-                <Card
-                  key={lan.name}
-                  title={lan.name}
-                  style={{ height: "100%" }}
-                >
-                  {Object.entries(lan.data || {}).map(([key, val], idx) => (
+              {LAN_INTERFACES.map((lan) => {
+                const lanEntries = Object.entries(lan.data || {});
+                return (
+                  <Card
+                    key={lan.name}
+                    title={lan.name}
+                    style={infoCardStretchStyle}
+                  >
+                    <InfoCardBody rowCount={lanEntries.length}>
+                      {lanEntries.map(([key, val], idx) => (
+                        <InfoTableRow
+                          key={key}
+                          label={key}
+                          value={val}
+                          keyName={key}
+                          even={idx % 2 === 1}
+                        />
+                      ))}
+                    </InfoCardBody>
+                  </Card>
+                );
+              })}
+              <Card
+                title={SYSTEM_INFO_CARD_TITLES.versionInfo}
+                style={infoCardStretchStyle}
+              >
+                <InfoCardBody rowCount={(VERSION_INFO || []).length}>
+                  {(VERSION_INFO || []).map((v, idx, arr) => (
                     <InfoTableRow
-                      key={key}
-                      label={key}
-                      value={val}
-                      keyName={key}
+                      key={idx}
+                      label={v.label}
+                      value={v.value}
+                      keyName={v.label}
                       even={idx % 2 === 1}
                     />
                   ))}
-                </Card>
-              ))}
-              <Card
-                title={SYSTEM_INFO_CARD_TITLES.versionInfo}
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {(VERSION_INFO || []).map((v, idx) => (
-                  <InfoTableRow
-                    key={idx}
-                    label={v.label}
-                    value={v.value}
-                    keyName={v.label}
-                    even={idx % 2 === 1}
-                  />
-                ))}
-                <div
-                  style={{
-                    flex: 1,
-                    background: "#f8fafc",
-                    borderTop: `1px solid ${C.divider}`,
-                    minHeight: 8,
-                  }}
-                />
+                </InfoCardBody>
               </Card>
             </div>
 
@@ -774,22 +800,19 @@ const SystemInfo = () => {
             >
               <Card
                 title={SYSTEM_INFO_CARD_TITLES.systemDetails}
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
+                style={infoCardStretchStyle}
               >
-                {(SYSTEM_INFO || []).map((info, idx, arr) => (
-                  <InfoTableRow
-                    key={idx}
-                    label={info.label}
-                    value={info.value}
-                    keyName={info.label}
-                    even={idx % 2 === 1}
-                    isLast={idx === arr.length - 1}
-                  />
-                ))}
+                <InfoCardBody rowCount={(SYSTEM_INFO || []).length}>
+                  {(SYSTEM_INFO || []).map((info, idx, arr) => (
+                    <InfoTableRow
+                      key={idx}
+                      label={info.label}
+                      value={info.value}
+                      keyName={info.label}
+                      even={idx % 2 === 1}
+                    />
+                  ))}
+                </InfoCardBody>
               </Card>
             </div>
           </>
@@ -806,23 +829,28 @@ const SystemInfo = () => {
                   alignItems: "stretch",
                 }}
               >
-                {LAN_INTERFACES.map((lan) => (
-                  <Card
-                    key={lan.name}
-                    title={lan.name}
-                    style={{ height: "100%" }}
-                  >
-                    {Object.entries(lan.data || {}).map(([key, val], idx) => (
-                      <InfoTableRow
-                        key={key}
-                        label={key}
-                        value={val}
-                        keyName={key}
-                        even={idx % 2 === 1}
-                      />
-                    ))}
-                  </Card>
-                ))}
+                {LAN_INTERFACES.map((lan) => {
+                  const lanEntries = Object.entries(lan.data || {});
+                  return (
+                    <Card
+                      key={lan.name}
+                      title={lan.name}
+                      style={infoCardStretchStyle}
+                    >
+                      <InfoCardBody rowCount={lanEntries.length}>
+                        {lanEntries.map(([key, val], idx) => (
+                          <InfoTableRow
+                            key={key}
+                            label={key}
+                            value={val}
+                            keyName={key}
+                            even={idx % 2 === 1}
+                          />
+                        ))}
+                      </InfoCardBody>
+                    </Card>
+                  );
+                })}
               </div>
             )}
 
@@ -838,48 +866,35 @@ const SystemInfo = () => {
             >
               <Card
                 title={SYSTEM_INFO_CARD_TITLES.systemDetails}
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
+                style={infoCardStretchStyle}
               >
-                {(SYSTEM_INFO || []).map((info, idx, arr) => (
-                  <InfoTableRow
-                    key={idx}
-                    label={info.label}
-                    value={info.value}
-                    keyName={info.label}
-                    even={idx % 2 === 1}
-                    isLast={idx === arr.length - 1}
-                  />
-                ))}
+                <InfoCardBody rowCount={(SYSTEM_INFO || []).length}>
+                  {(SYSTEM_INFO || []).map((info, idx, arr) => (
+                    <InfoTableRow
+                      key={idx}
+                      label={info.label}
+                      value={info.value}
+                      keyName={info.label}
+                      even={idx % 2 === 1}
+                    />
+                  ))}
+                </InfoCardBody>
               </Card>
               <Card
                 title={SYSTEM_INFO_CARD_TITLES.versionInfo}
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
+                style={infoCardStretchStyle}
               >
-                {(VERSION_INFO || []).map((v, idx) => (
-                  <InfoTableRow
-                    key={idx}
-                    label={v.label}
-                    value={v.value}
-                    keyName={v.label}
-                    even={idx % 2 === 1}
-                  />
-                ))}
-                <div
-                  style={{
-                    flex: 1,
-                    background: "#f8fafc",
-                    borderTop: `1px solid ${C.divider}`,
-                    minHeight: 8,
-                  }}
-                />
+                <InfoCardBody rowCount={(VERSION_INFO || []).length}>
+                  {(VERSION_INFO || []).map((v, idx, arr) => (
+                    <InfoTableRow
+                      key={idx}
+                      label={v.label}
+                      value={v.value}
+                      keyName={v.label}
+                      even={idx % 2 === 1}
+                    />
+                  ))}
+                </InfoCardBody>
               </Card>
             </div>
           </>
