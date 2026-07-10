@@ -1,31 +1,14 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-} from "react";
-import {
-  sipRegisterFields,
-  SIP_REGISTER_INITIAL_FORM,
-  SIP_REGISTER_CODEC_OPTIONS,
-  SIP_REGISTER_COUNTRY_OPTIONS,
-  SIP_REGISTER_TRANSPORT_OPTIONS,
-  SIP_REGISTER_YES_NO,
-  SIP_REGISTER_ETH_PORT_OPTIONS,
-  SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS,
-  SIP_REGISTER_HEADER_ID_OPTIONS,
-  SIP_REGISTER_CONTACT_OPTIONS,
-  SIP_REGISTER_DTMF_OPTIONS,
-  SIP_REGISTER_TOOLTIPS,
-} from "../../../constants/SipRegisterConstants";
+import React from "react";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import {
+  Alert,
+  Checkbox,
+  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -34,29 +17,12 @@ import {
   Select as MuiSelect,
   MenuItem,
   FormControl,
-  Alert,
-  Tooltip,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  FormGroup,
   FormControlLabel,
-  Checkbox,
   Radio,
   RadioGroup,
-  useMediaQuery,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
-import {
-  fetchSipAccounts,
-  listSipTrunks,
-  createSipTrunk,
-  updateSipTrunk,
-  deleteSipTrunk,
-  fetchSystemInfo,
-} from "../../../api/apiService";
-
-// ── Shared PBX UI library (byte-identical primitives; SIP-specific Pill, codec
-//    box, field labels, modal styles, and zoom logic stay local below). ──
 import {
   C,
   OUTLINED_BORDER,
@@ -65,2030 +31,2165 @@ import {
   FOCUS_RING_SHADOW,
 } from "../../../theme/pbxTokens";
 import {
+  SIP_REGISTER_COUNTRY_OPTIONS,
+  SIP_REGISTER_TRANSPORT_OPTIONS,
+  SIP_REGISTER_YES_NO,
+  SIP_REGISTER_ETH_PORT_OPTIONS,
+  SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS,
+  SIP_REGISTER_CODEC_OPTIONS,
+  SIP_REGISTER_DTMF_OPTIONS,
+} from "../../../constants/SipRegisterConstants";
+import {
   Btn,
   TH,
   tdStyle,
   ExtensionBreadcrumb as SipRegisterBreadcrumb,
+  ExtensionPagination as SipRegisterPagination,
   ExtensionTableListLoading as SipRegisterTableListLoading,
   ExtensionTableListEmptyState as SipRegisterTableListEmptyState,
   ExtensionModalTabs as SipRegisterModalTabs,
-  ExtensionPagination as SipRegisterPagination,
-  extensionTableCheckboxSx as sipRegisterTableCheckboxSx,
-  extensionFixedAlertSx as sipRegisterFixedAlertSx,
+  ExtensionCodecDualList as SipRegisterCodecDualList,
   extensionPageWrapStyle as sipRegisterPageWrapStyle,
   extensionPageInnerStyle as sipRegisterPageInnerStyle,
   extensionCardStyle as sipRegisterCardStyle,
+  extensionFixedAlertSx as sipRegisterFixedAlertSx,
   extensionToolbarStyle as sipRegisterToolbarStyle,
   extensionSelectedBadgeStyle as sipRegisterSelectedBadgeStyle,
   extensionCancelBtnStyle as sipRegisterCancelBtnStyle,
   extensionPrimaryBtnStyle as sipRegisterPrimaryBtnStyle,
-  ExtensionCodecDualList as SipRegisterCodecDualList,
+  extensionTableCheckboxSx as sipRegisterTableCheckboxSx,
 } from "../../../components/common";
-const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
+import { useSipRegisterPage } from "./hooks/useSipRegisterPage";
+import { SIP_PREFIX_FIELDS } from "./utils/transformers";
+import {
+  TRUNK_TABLE_SCROLL_CLASS,
+  trunkTableScrollStyle,
+  trunkTableInnerStyle,
+  SIP_REGISTER_VISIBLE_TABLE_FIELDS,
+  SIP_REGISTER_TABLE_HEADER_LABELS,
+  sipRegisterCheckboxCellStyle,
+  sipRegisterCheckboxWrapStyle,
+  sipRegisterIdCellStyle,
+  sipRegisterIdCenterWrapStyle,
+  sipRegisterStatusCellStyle,
+  sipRegisterModifyCellStyle,
+  getSipRegisterDataCellStyle,
+  getSipRegisterHeaderCellStyle,
+  sipRegisterFieldColumnWidths,
+  sipRegisterFieldColumnPercents,
+  sipRegisterFixedCellStyle,
+  formatSipRegisterStatusLabel,
+  getSipRegisterStatusStyle,
+} from "./sipRegisterTableHelpers";
+import {
+  Pill,
+  TrunkFieldLabel,
+  SipRegisterFieldLabel,
+  TrunkModalSectionHeading,
+  trunkFormCheckboxLabelSx,
+  sipRegisterModalSelectSx,
+  sipRegisterModalTextFieldSx,
+  trunkAdaptTextFieldSx,
+  trunkAdaptRowActionBtnSx,
+  trunkDnisRowGridColumns,
+  trunkAdaptRowGridColumns,
+  trunkDodCompactInputStyle,
+  trunkDodToolbarBtnStyle,
+  nativeFieldInteraction,
+  trunkModalPaperSx,
+  trunkModalTitleStyle,
+  trunkModalFormPanelStyle,
+  sipRegisterModalDialogContentSx,
+  addNewModalFooterStyle,
+  addNewModalFooterBtnStyle,
+  trunkModalCancelBtnStyle,
+  TRUNK_FIELD_LABEL_COLOR,
+} from "./sipRegisterFormFields";
 
-const trunkFormCheckboxLabelSx = {
-  margin: 0,
-  marginLeft: 0,
-  marginRight: 0,
-  alignItems: "center",
-};
-
-const sipRegisterOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const sipRegisterModalTextFieldSx = {
-  "& .MuiOutlinedInput-root": sipRegisterOutlinedInputRootSx,
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-    fontSize: 13,
-    padding: "8px 12px",
-  },
-};
-
-const sipRegisterModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...sipRegisterOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-  },
-};
-
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW;
-};
-
-// ── ToolTips ──────────────────────────────────────────────────────
-const SIP_REGISTER_FIELD_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 13,
-        maxWidth: 500,
-        padding: "12px 16px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatSipRegisterTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const TRUNK_FIELD_LABEL_CLASS =
-  "text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0";
-
-const SipRegisterFieldLabel = ({
-  tooltipKey,
-  children,
-  style = {},
-  className,
-}) => {
-  const tooltip = SIP_REGISTER_TOOLTIPS[tooltipKey] || "";
-  const LabelTag = className ? "label" : "span";
-
-  const label = (
-    <LabelTag
-      className={className}
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </LabelTag>
-  );
-
-  if (!tooltip) return label;
-
-  return (
-    <Tooltip
-      title={formatSipRegisterTooltipTitle(tooltip)}
-      {...SIP_REGISTER_FIELD_TOOLTIP_PROPS}
-    >
-      {label}
-    </Tooltip>
-  );
-};
-
-const TrunkFieldLabel = ({
-  tooltipKey,
-  children,
-  className,
-  required,
-  style,
+const SipRegisterToolbar = ({
+  isCompact,
+  selected,
+  selectedIds,
+  loading,
+  trunks,
+  handleInverse,
+  handleClearAll,
+  handleDelete,
+  handleOpenModal,
 }) => (
-  <SipRegisterFieldLabel
-    tooltipKey={tooltipKey}
-    className={className || TRUNK_FIELD_LABEL_CLASS}
-    style={style}
-  >
-    {children}
-    {required ? <span className="text-red-500"> *</span> : null}
-  </SipRegisterFieldLabel>
-);
-
-const nativeFieldInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
-  },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldHover(e.target);
-    }
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) {
-      setFieldFocus(e.target);
-    } else {
-      setFieldDefault(e.target);
-    }
-  },
-};
-
-const TRUNK_SECTION_HEADING_COLOR = "#30415A";
-const TRUNK_FIELD_LABEL_COLOR = "#3E5475";
-const SIP_REGISTER_MODAL_SECTION_BG = "#f8fafc";
-
-const TrunkModalSectionHeading = ({
-  title,
-  isFirst = false,
-  labelBackground = SIP_REGISTER_MODAL_SECTION_BG,
-  titleLeft = -6,
-}) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  return (
-    <div
-      style={{
-        margin: isFirst
-          ? isLaptopNarrow
-            ? "16px 0 24px 0"
-            : "0 0 24px 0"
-          : "16px 0 24px 0",
-        position: "relative",
-        width: "100%",
-      }}
-    >
-      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-      <span
-        style={{
-          position: "absolute",
-          top: -10,
-          left: isLaptopNarrow ? 0 : titleLeft,
-          background: labelBackground,
-          paddingRight: 8,
-          fontSize: 14,
-          fontWeight: 600,
-          color: TRUNK_SECTION_HEADING_COLOR,
-        }}
-      >
-        {title}
-      </span>
-    </div>
-  );
-};
-
-const parseCodecList = (value) =>
-  (value || "")
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
-
-const validateAllowCodecs = (allowCodecs) => {
-  if (!allowCodecs || allowCodecs.trim() === "") {
-    return "Allow Codecs is required";
-  }
-  return null;
-};
-
-const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
-
-const trunkTableScrollStyle = {
-  overflowX: "auto",
-  overflowY: "auto",
-  maxHeight: 460,
-  borderBottom: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const trunkTableInnerStyle = {
-  minWidth: "100%",
-  width: "max-content",
-  borderBottom: `1px solid ${C.cardBorder}`,
-  boxSizing: "border-box",
-};
-
-const trunkModalPaperSx = {
-  width: 900,
-  maxWidth: "95vw",
-  mx: "auto",
-  my: 0,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: "8px",
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const sipRegisterModalDialogContentSx = {
-  maxHeight: "calc(100vh - 220px)",
-  overflowY: "auto",
-  WebkitOverflowScrolling: "touch",
-};
-
-const trunkModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
-};
-
-const trunkModalFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
-  paddingTop: 0,
-  paddingBottom: 0,
-  boxSizing: "border-box",
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const trunkModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const trunkAdaptRowGridColumns = "1fr 1fr 1fr 36px";
-
-const trunkDnisRowGridColumns = "1fr 1fr 32px";
-
-const trunkAdaptTextFieldSx = {
-  ...sipRegisterModalTextFieldSx,
-};
-
-const trunkAdaptRowActionBtnSx = {
-  border: "1px solid #cbd5e1",
-  borderRadius: 1,
-  width: 32,
-  height: 32,
-  padding: 0,
-  backgroundColor: "#cbd5e1",
-  color: "#374151",
-  "&:hover": {
-    backgroundColor: "#b6c2d3",
-  },
-};
-
-const sipRegisterAdaptRowIconSx = {
-  fontSize: 18,
-  fontWeight: 600,
-  color: "#374151",
-};
-
-const SipRegisterAdaptRowActionBtn = ({
-  onClick,
-  "aria-label": ariaLabel,
-  children,
-  disabled = false,
-}) => {
-  const baseBg = "#cbd5e1";
-  const hoverBg = "#b6c2d3";
-  const activeBg = "#a3b1c2";
-  const baseShadow = "0 1px 2px rgba(15, 23, 42, 0.08)";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow = "inset 0 2px 4px rgba(15, 23, 42, 0.15)";
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "1px solid #cbd5e1",
-        borderRadius: 7,
-        width: 36,
-        height: 36,
-        minWidth: 36,
-        minHeight: 36,
-        padding: 0,
-        background: baseBg,
-        color: "#374151",
-        boxShadow: baseShadow,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        userSelect: "none",
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </button>
-  );
-};
-
-const trunkDodCompactInputStyle = {
-  height: 28,
-  width: "100%",
-  padding: "8px 12px",
-  fontSize: 13,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 4,
-  outline: "none",
-  backgroundColor: "#fff",
-  color: "#0f172a",
-  boxSizing: "border-box",
-  boxShadow: "none",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  cursor: "text",
-};
-
-const trunkDodToolbarBtnStyle = {
-  height: 30,
-  fontSize: 12,
-  padding: "6px 14px",
-  borderRadius: 10,
-};
-
-const Pill = ({ text, bg, color }) => (
-  <span
+  <div
     style={{
-      background: bg,
-      color,
-      padding: "4px 8px",
-      borderRadius: 999,
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: "0.01em",
-      whiteSpace: "nowrap",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      maxWidth: "100%",
+      ...sipRegisterToolbarStyle,
+      ...(isCompact
+        ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+        : {}),
     }}
   >
-    {text}
-  </span>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      {selected.length > 0 && (
+        <span style={sipRegisterSelectedBadgeStyle}>
+          {selected.length} selected
+        </span>
+      )}
+    </div>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        flexWrap: "wrap",
+      }}
+    >
+      <Btn
+        variant="cancel"
+        onClick={handleInverse}
+        disabled={loading.delete || loading.fetch || trunks.length === 0}
+        style={sipRegisterCancelBtnStyle}
+      >
+        Inverse
+      </Btn>
+      <Btn
+        variant="cancel"
+        onClick={handleClearAll}
+        disabled={loading.delete || trunks.length === 0}
+        style={sipRegisterCancelBtnStyle}
+      >
+        Clear All
+      </Btn>
+      <Btn
+        variant="cancel"
+        onClick={handleDelete}
+        disabled={loading.delete || selectedIds.length === 0}
+        style={sipRegisterCancelBtnStyle}
+      >
+        {loading.delete ? (
+          <CircularProgress size={12} color="inherit" />
+        ) : (
+          <>
+            <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+            Delete
+          </>
+        )}
+      </Btn>
+      <Btn
+        variant="primary"
+        onClick={() => handleOpenModal()}
+        disabled={loading.fetch}
+        style={sipRegisterPrimaryBtnStyle}
+      >
+        + Add New
+      </Btn>
+    </div>
+  </div>
 );
 
-const formatSipRegisterStatusLabel = (raw) => {
-  const s = String(raw || "").trim();
-  if (s.toLowerCase() === "not registering") return "Not registered";
-  return s;
-};
-
-/** Map backend registration_status strings to text-only pill colors */
-const getSipRegisterStatusStyle = (raw) => {
-  const s = String(raw || "")
-    .trim()
-    .toLowerCase();
-  if (!s) return { bg: "transparent", color: "#475569" };
-
-  const isFailure =
-    s === "unregistered" ||
-    s === "not registered" ||
-    s === "not registering" ||
-    s.startsWith("not regist") ||
-    s === "rejected" ||
-    s.includes("reject") ||
-    s.includes("failed") ||
-    s.includes("failure");
-
-  if (isFailure) {
-    return { bg: "transparent", color: "#dc2626" };
-  }
-
-  if (s === "pending" || s === "registering" || s.includes("pending")) {
-    return { bg: "transparent", color: "#d97706" };
-  }
-
-  if (s === "registered" || s.includes("registered")) {
-    return { bg: "transparent", color: "#16a34a" };
-  }
-
-  return { bg: "transparent", color: "#475569" };
-};
-
-const SIP_REGISTER_TABLE_WIDE_MIN = 1400;
-
-const SIP_REGISTER_HIDDEN_TABLE_FIELDS = [
-  "index",
-  "password",
-  "provider",
-  "Domain name",
-  "Contact User",
-  "Outbound Proxy",
-  "sip_header",
-  "from_user",
-  "expire_in_sec",
-  "context",
-  "allow_codecs",
-];
-
-const SIP_REGISTER_VISIBLE_TABLE_FIELDS = sipRegisterFields.filter(
-  (f) => !SIP_REGISTER_HIDDEN_TABLE_FIELDS.includes(f.name),
+const SipRegisterTable = ({
+  isInitialLoad,
+  dataEmpty,
+  tableScrollRef,
+  allowHorizontalScroll,
+  tableMinWidth,
+  allPageSelected,
+  somePageSelected,
+  handleToggleAll,
+  pagedRows,
+  page,
+  itemsPerPage,
+  selectedIds,
+  handleToggleRow,
+  loading,
+  handleOpenModal,
+}) => (
+  <div style={{ position: "relative" }}>
+    {isInitialLoad ? (
+      <SipRegisterTableListLoading />
+    ) : dataEmpty ? (
+      <SipRegisterTableListEmptyState
+        message="No SIP register trunks found."
+        onAddNew={() => handleOpenModal()}
+      />
+    ) : (
+      <>
+        <div
+          ref={tableScrollRef}
+          className={TRUNK_TABLE_SCROLL_CLASS}
+          style={{
+            ...trunkTableScrollStyle,
+            overflowX: allowHorizontalScroll ? "auto" : "hidden",
+            borderBottom: "none",
+          }}
+        >
+          <div
+            style={{
+              ...trunkTableInnerStyle,
+              minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
+              width: allowHorizontalScroll ? tableMinWidth : "100%",
+              borderBottom: "none",
+            }}
+          >
+            <table
+              style={{
+                width: allowHorizontalScroll ? tableMinWidth : "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                tableLayout: allowHorizontalScroll ? "auto" : "fixed",
+                minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
+              }}
+            >
+              <colgroup>
+                <col
+                  style={{
+                    width: allowHorizontalScroll ? 40 : "3%",
+                  }}
+                />
+                <col
+                  style={{
+                    width: allowHorizontalScroll ? 44 : "3%",
+                  }}
+                />
+                {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
+                  <col
+                    key={field.name}
+                    style={{
+                      width: allowHorizontalScroll
+                        ? sipRegisterFieldColumnWidths[field.name]
+                        : sipRegisterFieldColumnPercents[field.name],
+                    }}
+                  />
+                ))}
+                <col
+                  style={{
+                    width: allowHorizontalScroll ? 118 : "10%",
+                  }}
+                />
+                <col
+                  style={{
+                    width: allowHorizontalScroll ? 72 : "6%",
+                  }}
+                />
+              </colgroup>
+              <thead>
+                <tr>
+                  <TH
+                    style={{
+                      ...sipRegisterFixedCellStyle(
+                        sipRegisterCheckboxCellStyle,
+                        allowHorizontalScroll,
+                      ),
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    <div style={sipRegisterCheckboxWrapStyle}>
+                      <Checkbox
+                        size="small"
+                        checked={allPageSelected}
+                        indeterminate={somePageSelected}
+                        onChange={handleToggleAll}
+                        sx={sipRegisterTableCheckboxSx}
+                      />
+                    </div>
+                  </TH>
+                  <TH
+                    style={{
+                      ...sipRegisterFixedCellStyle(
+                        sipRegisterIdCellStyle,
+                        allowHorizontalScroll,
+                      ),
+                      textAlign: "center",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    <div style={sipRegisterIdCenterWrapStyle}>ID</div>
+                  </TH>
+                  {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
+                    <TH
+                      key={field.name}
+                      title={field.label}
+                      style={getSipRegisterHeaderCellStyle(
+                        allowHorizontalScroll,
+                      )}
+                    >
+                      {SIP_REGISTER_TABLE_HEADER_LABELS[field.name] ??
+                        field.label}
+                    </TH>
+                  ))}
+                  <TH
+                    style={{
+                      ...sipRegisterFixedCellStyle(
+                        sipRegisterStatusCellStyle,
+                        allowHorizontalScroll,
+                      ),
+                      ...getSipRegisterHeaderCellStyle(allowHorizontalScroll),
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    <div style={sipRegisterIdCenterWrapStyle}>Status</div>
+                  </TH>
+                  <TH
+                    style={{
+                      ...sipRegisterFixedCellStyle(
+                        sipRegisterModifyCellStyle,
+                        allowHorizontalScroll,
+                      ),
+                      ...getSipRegisterHeaderCellStyle(allowHorizontalScroll),
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    Modify
+                  </TH>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedRows.map((trunk, idx) => {
+                  const realIdx = (page - 1) * itemsPerPage + idx;
+                  const isSelected =
+                    trunk.trunk_id && selectedIds.includes(trunk.trunk_id);
+                  const isLastRow = idx === pagedRows.length - 1;
+                  const rowBg = isSelected
+                    ? "#f0f9ff"
+                    : idx % 2 === 1
+                      ? "#f8fafc"
+                      : "#ffffff";
+                  const lastRowCellStyle = isLastRow
+                    ? { borderBottom: "none" }
+                    : {};
+                  const { bg: statusBg, color: statusColor } =
+                    getSipRegisterStatusStyle(trunk.registerStatus);
+                  return (
+                    <tr
+                      key={trunk.trunk_id || idx}
+                      style={{
+                        background: rowBg,
+                        transition: "background-color 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected)
+                          e.currentTarget.style.background = "#f1f5f9";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected)
+                          e.currentTarget.style.background = rowBg;
+                      }}
+                    >
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...sipRegisterFixedCellStyle(
+                            sipRegisterCheckboxCellStyle,
+                            allowHorizontalScroll,
+                          ),
+                          background: rowBg,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div style={sipRegisterCheckboxWrapStyle}>
+                          <Checkbox
+                            size="small"
+                            disabled={!trunk.trunk_id}
+                            checked={
+                              !!trunk.trunk_id &&
+                              selectedIds.includes(trunk.trunk_id)
+                            }
+                            onChange={() => handleToggleRow(trunk.trunk_id)}
+                            sx={sipRegisterTableCheckboxSx}
+                          />
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...sipRegisterFixedCellStyle(
+                            sipRegisterIdCellStyle,
+                            allowHorizontalScroll,
+                          ),
+                          background: rowBg,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div style={sipRegisterIdCenterWrapStyle}>
+                          {(page - 1) * itemsPerPage + idx + 1}
+                        </div>
+                      </td>
+                      {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => {
+                        const value = trunk[field.name];
+                        const hasValue =
+                          value !== undefined &&
+                          value !== null &&
+                          value !== "";
+                        const displayValue =
+                          hasValue && SIP_PREFIX_FIELDS.includes(field.name)
+                            ? `sip:${value}`
+                            : hasValue
+                              ? value
+                              : "—";
+                        return (
+                          <td
+                            key={field.name}
+                            title={String(displayValue)}
+                            style={{
+                              ...tdStyle,
+                              background: rowBg,
+                              fontWeight:
+                                field.name === "trunk_id" ? 600 : 400,
+                              ...getSipRegisterDataCellStyle(
+                                allowHorizontalScroll,
+                              ),
+                              ...lastRowCellStyle,
+                            }}
+                          >
+                            {displayValue}
+                          </td>
+                        );
+                      })}
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...sipRegisterFixedCellStyle(
+                            sipRegisterStatusCellStyle,
+                            allowHorizontalScroll,
+                          ),
+                          background: rowBg,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div style={sipRegisterIdCenterWrapStyle}>
+                          {trunk.registerStatus ? (
+                            <Pill
+                              text={formatSipRegisterStatusLabel(
+                                trunk.registerStatus,
+                              )}
+                              bg={statusBg}
+                              color={statusColor}
+                            />
+                          ) : (
+                            <span style={{ color: C.mutedText }}>—</span>
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          ...tdStyle,
+                          ...sipRegisterFixedCellStyle(
+                            sipRegisterModifyCellStyle,
+                            allowHorizontalScroll,
+                          ),
+                          background: rowBg,
+                          ...lastRowCellStyle,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <EditDocumentIcon
+                            titleAccess="Edit"
+                            style={{
+                              cursor: loading.delete
+                                ? "not-allowed"
+                                : "pointer",
+                              color: "#2563eb",
+                              fontSize: 22,
+                              opacity: loading.delete ? 0.4 : 0.7,
+                              transition: "opacity 0.15s ease",
+                            }}
+                            onClick={() =>
+                              !loading.delete &&
+                              handleOpenModal(trunk, realIdx)
+                            }
+                            onMouseEnter={(e) => {
+                              if (!loading.delete)
+                                e.currentTarget.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!loading.delete)
+                                e.currentTarget.style.opacity = "0.7";
+                            }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
 );
 
-const sipRegisterCheckboxCellStyle = {
-  width: 40,
-  minWidth: 40,
-  maxWidth: 40,
-  padding: 0,
-  borderLeft: "none",
-  textAlign: "center",
-  verticalAlign: "middle",
-};
+const SipRegisterBasicTab = ({
+  form,
+  validationErrors,
+  handleChange,
+  editIndex,
+  ethPortOptions,
+  showPassword,
+  togglePasswordVisibility,
+}) => (
+  <div className="p-3 sm:p-5">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
+      <div className="space-y-0.5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel>Trunk Type</TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <RadioGroup
+              row
+              value={form.ui_trunk_type}
+              onChange={(e) =>
+                handleChange("ui_trunk_type", e.target.value)
+              }
+            >
+              <FormControlLabel
+                value="sip"
+                control={<Radio size="small" />}
+                label="SIP"
+              />
+            </RadioGroup>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="trunk_name" required>
+            Trunk Name
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.trunk_id || ""}
+              onChange={(e) =>
+                handleChange("trunk_id", e.target.value)
+              }
+              error={!!validationErrors.trunk_id}
+              placeholder="Trunk Name"
+              disabled={editIndex !== null}
+            />
+            {validationErrors.trunk_id && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.trunk_id}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="select_country" required>
+            Select Country
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl
+              fullWidth
+              size="small"
+              error={!!validationErrors.ui_country}
+            >
+              <MuiSelect
+                value={form.ui_country}
+                onChange={(e) =>
+                  handleChange("ui_country", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+            {validationErrors.ui_country && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.ui_country}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="transport">
+            Transport
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_transport}
+                onChange={(e) =>
+                  handleChange("ui_transport", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="enable_srtp">
+            Enable SRTP
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0 flex items-center justify-start">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!!form.ui_enable_srtp}
+                  onChange={(e) =>
+                    handleChange("ui_enable_srtp", e.target.checked)
+                  }
+                  size="small"
+                  sx={sipRegisterTableCheckboxSx}
+                />
+              }
+              label=""
+              sx={trunkFormCheckboxLabelSx}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="register" required>
+            Register
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_register}
+                onChange={(e) =>
+                  handleChange("ui_register", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        {form.ui_register === "Yes" && (
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="username" required>
+                Username
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={form.username || ""}
+                  onChange={(e) =>
+                    handleChange("username", e.target.value)
+                  }
+                  error={!!validationErrors.username}
+                  placeholder="Username"
+                />
+                {validationErrors.username && (
+                  <div className="text-red-500 text-xs mt-0.5">
+                    {validationErrors.username}
+                  </div>
+                )}
+              </div>
+            </div>
 
-const sipRegisterCheckboxWrapStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "100%",
-  minHeight: 32,
-};
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="auth_username">
+                Auth Username
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={form.auth_username || ""}
+                  onChange={(e) =>
+                    handleChange("auth_username", e.target.value)
+                  }
+                  placeholder="Auth Username"
+                />
+              </div>
+            </div>
 
-const sipRegisterIdCellStyle = {
-  width: 44,
-  minWidth: 44,
-  maxWidth: 44,
-  textAlign: "center",
-  padding: "6px 2px",
-};
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="reg_fail_retry" required>
+                RegFail Retry
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={form.ui_reg_fail_retry || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "ui_reg_fail_retry",
+                      e.target.value,
+                    )
+                  }
+                  error={!!validationErrors.ui_reg_fail_retry}
+                  placeholder="30"
+                />
+                {validationErrors.ui_reg_fail_retry && (
+                  <div className="text-red-500 text-xs mt-0.5">
+                    {validationErrors.ui_reg_fail_retry}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="outbound_cid_source">
+            Outbound CallerId Source
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_outbound_cid_source}
+                onChange={(e) =>
+                  handleChange(
+                    "ui_outbound_cid_source",
+                    e.target.value,
+                  )
+                }
+                displayEmpty
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
+                  (c) => (
+                    <MenuItem key={c || "_empty"} value={c}>
+                      {c || <em>—</em>}
+                    </MenuItem>
+                  ),
+                )}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-0.5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="record">
+            Record
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_record}
+                onChange={(e) =>
+                  handleChange("ui_record", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="enabled" required>
+            Enabled
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_enabled}
+                onChange={(e) =>
+                  handleChange("ui_enabled", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="eth_port" required>
+            Eth Port
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_eth_port}
+                onChange={(e) =>
+                  handleChange("ui_eth_port", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {(ethPortOptions.length
+                  ? ethPortOptions
+                  : SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({
+                      value: v,
+                      label: v,
+                    }))
+                ).map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="trunk_ip_domain" required>
+            Trunk IP/Domain
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.provider || ""}
+              onChange={(e) =>
+                handleChange("provider", e.target.value)
+              }
+              error={!!validationErrors.provider}
+              placeholder="host:port or domain"
+            />
+            {validationErrors.provider && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.provider}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+            <TrunkFieldLabel tooltipKey="show_outbound_cid_name">
+              Show Outbound CallerID Name
+            </TrunkFieldLabel>
+            <div className="flex-1 min-w-0 flex items-center justify-start">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={!!form.ui_show_outbound_cid_name}
+                    onChange={(e) =>
+                      handleChange(
+                        "ui_show_outbound_cid_name",
+                        e.target.checked,
+                      )
+                    }
+                    size="small"
+                    sx={sipRegisterTableCheckboxSx}
+                  />
+                }
+                label=""
+                sx={trunkFormCheckboxLabelSx}
+              />
+            </div>
+          </div>
+          {form.ui_show_outbound_cid_name && (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="outbound_cid_name">
+                Outbound CallerId Name
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={form.ui_outbound_cid_name}
+                  onChange={(e) =>
+                    handleChange(
+                      "ui_outbound_cid_name",
+                      e.target.value,
+                    )
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
-const sipRegisterIdCenterWrapStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: "100%",
-  textAlign: "center",
-};
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="outbound_cid_number">
+            Outbound CallerId Number
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.ui_outbound_cid_number}
+              onChange={(e) =>
+                handleChange(
+                  "ui_outbound_cid_number",
+                  e.target.value,
+                )
+              }
+            />
+          </div>
+        </div>
 
-const sipRegisterStatusCellStyle = {
-  width: 118,
-  minWidth: 118,
-  maxWidth: 118,
-  textAlign: "center",
-  padding: "7px 4px",
-};
+        {form.ui_register === "Yes" && (
+          <>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="password" required>
+                Password
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <TextField
+                  type={showPassword ? "text" : "password"}
+                  size="small"
+                  fullWidth
+                  value={form.password || ""}
+                  onChange={(e) =>
+                    handleChange("password", e.target.value)
+                  }
+                  error={!!validationErrors.password}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={togglePasswordVisibility}
+                          edge="end"
+                        >
+                          {showPassword ? (
+                            <VisibilityOff fontSize="small" />
+                          ) : (
+                            <Visibility fontSize="small" />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                {validationErrors.password && (
+                  <div className="text-red-500 text-xs mt-0.5">
+                    {validationErrors.password}
+                  </div>
+                )}
+              </div>
+            </div>
 
-const sipRegisterModifyCellStyle = {
-  width: 70,
-  minWidth: 70,
-  maxWidth: 70,
-  padding: "7px 6px",
-  borderRight: "none",
-};
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="expire_in_sec" required>
+                Expire Seconds
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <TextField
+                  size="small"
+                  fullWidth
+                  value={form.expire_in_sec || ""}
+                  onChange={(e) =>
+                    handleChange("expire_in_sec", e.target.value)
+                  }
+                  error={!!validationErrors.expire_in_sec}
+                />
+                {validationErrors.expire_in_sec && (
+                  <div className="text-red-500 text-xs mt-0.5">
+                    {validationErrors.expire_in_sec}
+                  </div>
+                )}
+              </div>
+            </div>
 
-/** 100% — headers may use 2 lines; data stays single line */
-const sipRegisterHeaderCellStyle100 = {
-  whiteSpace: "normal",
-  overflow: "visible",
-  fontSize: 10,
-  letterSpacing: "0.04em",
-  padding: "6px 4px",
-  lineHeight: 1.15,
-  verticalAlign: "middle",
-  wordBreak: "break-word",
-};
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+              <TrunkFieldLabel tooltipKey="match_username" required>
+                Match Username
+              </TrunkFieldLabel>
+              <div className="flex-1 min-w-0">
+                <FormControl
+                  fullWidth
+                  size="small"
+                  error={!!validationErrors.ui_match_username}
+                >
+                  <MuiSelect
+                    value={form.ui_match_username || "Yes"}
+                    onChange={(e) =>
+                      handleChange(
+                        "ui_match_username",
+                        e.target.value,
+                      )
+                    }
+                    sx={sipRegisterModalSelectSx}
+                  >
+                    {SIP_REGISTER_YES_NO.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </MuiSelect>
+                </FormControl>
+                {validationErrors.ui_match_username && (
+                  <div className="text-red-500 text-xs mt-0.5">
+                    {validationErrors.ui_match_username}
+                  </div>
+                )}
+              </div>
+            </div>
 
-const sipRegisterDataCellStyle100 = {
-  whiteSpace: "nowrap",
-  overflow: "visible",
-  fontSize: 11,
-  paddingLeft: 5,
-  paddingRight: 5,
-  lineHeight: 1.3,
-  verticalAlign: "middle",
-};
+            <div className="w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                <TrunkFieldLabel tooltipKey="enable_proxy">
+                  Enable Proxy
+                </TrunkFieldLabel>
+                <div className="flex-1 min-w-0 flex items-center justify-start">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={!!form.ui_enable_proxy}
+                        onChange={(e) =>
+                          handleChange(
+                            "ui_enable_proxy",
+                            e.target.checked,
+                          )
+                        }
+                        size="small"
+                        sx={sipRegisterTableCheckboxSx}
+                      />
+                    }
+                    label=""
+                    sx={trunkFormCheckboxLabelSx}
+                  />
+                </div>
+              </div>
 
-const SIP_REGISTER_TABLE_HEADER_LABELS = {
-  trunk_id: "Trunk ID",
-  username: "Username",
-  auth_username: "Auth User",
-  server_domain: "Server Domain",
-  client_domain: "Client Domain",
-  identity_ip: "Ident. IP",
-};
-
-const getSipRegisterDataCellStyle = (zoomed) =>
-  zoomed ? sipRegisterZoomCellStyle : sipRegisterDataCellStyle100;
-
-const getSipRegisterHeaderCellStyle = (zoomed) =>
-  zoomed ? sipRegisterZoomCellStyle : sipRegisterHeaderCellStyle100;
-
-const sipRegisterFieldColumnWidths = {
-  trunk_id: 100,
-  username: 140,
-  auth_username: 130,
-  server_domain: 240,
-  client_domain: 320,
-  identity_ip: 130,
-};
-
-/** 100% zoom — fits headers + longest SIP value on one line, no horizontal scroll */
-const sipRegisterFieldColumnPercents = {
-  trunk_id: "7%",
-  username: "10%",
-  auth_username: "9%",
-  server_domain: "15%",
-  client_domain: "18%",
-  identity_ip: "10%",
-};
-
-const SIP_REGISTER_ZOOM_TABLE_WIDTH = Math.max(
-  SIP_REGISTER_TABLE_WIDE_MIN,
-  40 +
-    44 +
-    118 +
-    72 +
-    Object.values(sipRegisterFieldColumnWidths).reduce(
-      (sum, width) => sum + width,
-      0,
-    ),
+              {form.ui_enable_proxy && (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+                  <TrunkFieldLabel tooltipKey="proxy_ip" required>
+                    Proxy IP
+                  </TrunkFieldLabel>
+                  <div className="flex-1 min-w-0">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={form.ui_proxy_ip || ""}
+                      onChange={(e) =>
+                        handleChange("ui_proxy_ip", e.target.value)
+                      }
+                      error={!!validationErrors.ui_proxy_ip}
+                    />
+                    {validationErrors.ui_proxy_ip && (
+                      <div className="text-red-500 text-xs mt-0.5">
+                        {validationErrors.ui_proxy_ip}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  </div>
 );
 
-const sipRegisterZoomCellStyle = {
-  whiteSpace: "nowrap",
-  overflow: "visible",
-  maxWidth: "none",
-};
+const SipRegisterCodecTab = ({
+  selectedCodecList,
+  updateCodecList,
+  getCodecLabel,
+  validationErrors,
+}) => (
+  <div className="p-3 sm:p-5">
+    <TrunkModalSectionHeading title="CODEC Priority" isFirst />
+    <SipRegisterCodecDualList
+      allOptions={SIP_REGISTER_CODEC_OPTIONS}
+      selected={selectedCodecList}
+      onChange={updateCodecList}
+      getLabel={getCodecLabel}
+      style={{ maxWidth: 720, margin: "0 auto" }}
+    />
+    {validationErrors.allow_codecs && (
+      <div className="text-red-500 text-xs mt-3 text-center">
+        {validationErrors.allow_codecs}
+      </div>
+    )}
+  </div>
+);
 
-const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
-  zoomed
-    ? { ...baseStyle, maxWidth: "none" }
-    : {
-        ...baseStyle,
-        width: undefined,
-        minWidth: undefined,
-        maxWidth: undefined,
-      };
+const SipRegisterAdvanceTab = ({
+  form,
+  validationErrors,
+  handleChange,
+  dnisRows,
+  setDnisRows,
+  PREFERRED_ASSERTED_IDENTITY_OPTIONS,
+  REMOTE_PARTY_ID_OPTIONS,
+  CONTACT_MODE_OPTIONS,
+}) => (
+  <div className="p-3 sm:p-5 space-y-6">
+    <div className="hidden">
+      <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
+        SIP registration
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+            SIP Header
+          </label>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.sip_header || ""}
+              onChange={(e) =>
+                handleChange("sip_header", e.target.value)
+              }
+              error={!!validationErrors.sip_header}
+              placeholder="+91...@sip.domain"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <span className="text-sm text-gray-600">
+                      sip:
+                    </span>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {validationErrors.sip_header && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.sip_header}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+            Server Domain
+          </label>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.server_domain || ""}
+              onChange={(e) =>
+                handleChange("server_domain", e.target.value)
+              }
+              error={!!validationErrors.server_domain}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <span className="text-sm text-gray-600">
+                      sip:
+                    </span>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {validationErrors.server_domain && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.server_domain}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+            Client Domain
+          </label>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.client_domain || ""}
+              onChange={(e) =>
+                handleChange("client_domain", e.target.value)
+              }
+              error={!!validationErrors.client_domain}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <span className="text-sm text-gray-600">
+                      sip:
+                    </span>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {validationErrors.client_domain && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.client_domain}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+            Outbound Proxy
+          </label>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form["Outbound Proxy"] || ""}
+              onChange={(e) =>
+                handleChange("Outbound Proxy", e.target.value)
+              }
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <span className="text-sm text-gray-600">
+                      sip:
+                    </span>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
+          <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
+            Identifier IP
+          </label>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.identity_ip || ""}
+              onChange={(e) =>
+                handleChange("identity_ip", e.target.value)
+              }
+              error={!!validationErrors.identity_ip}
+            />
+            {validationErrors.identity_ip && (
+              <div className="text-red-500 text-xs mt-0.5">
+                {validationErrors.identity_ip}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <TrunkModalSectionHeading title="VoIP Settings" isFirst />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+        {[
+          [
+            "Get CalledID Type",
+            "ui_get_called_id_type",
+            "get_called_id_type",
+          ],
+          [
+            "OPTIONS Interval (s)",
+            "ui_options_interval",
+            "options_interval",
+          ],
+          ["TX Volume", "ui_tx_volume", "tx_volume"],
+          ["RX Volume", "ui_rx_volume", "rx_volume"],
+          ["From User", "from_user", "from_user"],
+          ["From Domain", "Domain name", "from_domain"],
+        ].map(([lbl, key, tooltipKey]) => (
+          <div
+            key={key}
+            className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
+          >
+            <TrunkFieldLabel tooltipKey={tooltipKey}>
+              {lbl}
+            </TrunkFieldLabel>
+            <div className="flex-1 min-w-0">
+              <TextField
+                size="small"
+                fullWidth
+                value={form[key] || ""}
+                onChange={(e) => handleChange(key, e.target.value)}
+              />
+            </div>
+          </div>
+        ))}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="send_privacy_id">
+            Send Privacy ID
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_send_privacy_id}
+                onChange={(e) =>
+                  handleChange("ui_send_privacy_id", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="sip_force_contact">
+            Sip Force Contact
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_sip_force_contact || ""}
+                displayEmpty
+                onChange={(e) =>
+                  handleChange(
+                    "ui_sip_force_contact",
+                    e.target.value,
+                  )
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                <MenuItem value="">
+                  <em>—</em>
+                </MenuItem>
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <TrunkModalSectionHeading title="Outbound parameters" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="p_preferred_identity">
+            P-Preferred-Identity
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_p_preferred_identity || "None"}
+                onChange={(e) =>
+                  handleChange(
+                    "ui_p_preferred_identity",
+                    e.target.value,
+                  )
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="remote_party_id">
+            Remote-Party-ID
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_remote_party_id || "None"}
+                onChange={(e) =>
+                  handleChange("ui_remote_party_id", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {REMOTE_PARTY_ID_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="p_asserted_identity">
+            P-Asserted-Identity
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_p_asserted_identity || "None"}
+                onChange={(e) =>
+                  handleChange(
+                    "ui_p_asserted_identity",
+                    e.target.value,
+                  )
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="contact">
+            Contact
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_contact_mode || "Trunk User Name"}
+                onChange={(e) =>
+                  handleChange("ui_contact_mode", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {CONTACT_MODE_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <TrunkModalSectionHeading title="Other Settings" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="limit_max_calls">
+            Limit Max Calls
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.ui_limit_max_calls}
+              onChange={(e) =>
+                handleChange("ui_limit_max_calls", e.target.value)
+              }
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="enable_early_session">
+            Enable Early Session
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_enable_early_session}
+                onChange={(e) =>
+                  handleChange(
+                    "ui_enable_early_session",
+                    e.target.value,
+                  )
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="enable_early_media">
+            Enable Early Media
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_enable_early_media}
+                onChange={(e) =>
+                  handleChange(
+                    "ui_enable_early_media",
+                    e.target.value,
+                  )
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_YES_NO.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="user_phone">
+            User Phone
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0 flex items-center justify-start">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!!form.ui_user_phone}
+                  onChange={(e) =>
+                    handleChange("ui_user_phone", e.target.checked)
+                  }
+                  size="small"
+                  sx={sipRegisterTableCheckboxSx}
+                />
+              }
+              label=""
+              sx={trunkFormCheckboxLabelSx}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="call_timeout">
+            Call Timeout(s)
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.ui_call_timeout}
+              onChange={(e) =>
+                handleChange("ui_call_timeout", e.target.value)
+              }
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="dtmf_transmit">
+            DTMF Transmit Mode
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <FormControl fullWidth size="small">
+              <MuiSelect
+                value={form.ui_dtmf_transmit}
+                onChange={(e) =>
+                  handleChange("ui_dtmf_transmit", e.target.value)
+                }
+                sx={sipRegisterModalSelectSx}
+              >
+                {SIP_REGISTER_DTMF_OPTIONS.map((c) => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </MuiSelect>
+            </FormControl>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="max_call_duration">
+            Max Call Duration (s)
+          </TrunkFieldLabel>
+          <div className="flex-1 min-w-0">
+            <TextField
+              size="small"
+              fullWidth
+              value={form.ui_max_call_duration}
+              onChange={(e) =>
+                handleChange("ui_max_call_duration", e.target.value)
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
+          <TrunkFieldLabel tooltipKey="dnis">DNIS</TrunkFieldLabel>
+          <div className="flex-1 min-w-0 flex items-center justify-start">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={!!form.ui_dnis}
+                  onChange={(e) =>
+                    handleChange("ui_dnis", e.target.checked)
+                  }
+                  size="small"
+                  sx={sipRegisterTableCheckboxSx}
+                />
+              }
+              label=""
+              sx={trunkFormCheckboxLabelSx}
+            />
+          </div>
+        </div>
+        {form.ui_dnis && (
+          <div className="mt-2 rounded-md border border-gray-200 bg-white p-3 sm:p-5">
+            <TrunkModalSectionHeading
+              title="DNIS Settings"
+              isFirst
+              labelBackground="#ffffff"
+              titleLeft={0}
+            />
+
+            <div
+              className="grid gap-2 items-center border-b border-gray-200 pb-2 mb-3"
+              style={{
+                gridTemplateColumns: trunkDnisRowGridColumns,
+              }}
+            >
+              <SipRegisterFieldLabel tooltipKey="dnis_number">
+                DNIS Number
+              </SipRegisterFieldLabel>
+              <SipRegisterFieldLabel tooltipKey="dnis_name">
+                DNIS Name
+              </SipRegisterFieldLabel>
+              <IconButton
+                size="small"
+                onClick={() =>
+                  setDnisRows((r) => [
+                    ...r,
+                    { dnisNumber: "", dnisName: "" },
+                  ])
+                }
+                sx={trunkAdaptRowActionBtnSx}
+                aria-label="add dnis row"
+              >
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </div>
+
+            <div className="space-y-2">
+              {dnisRows.map((row, i) => (
+                <div
+                  key={i}
+                  className="grid gap-2 items-center"
+                  style={{
+                    gridTemplateColumns: trunkDnisRowGridColumns,
+                  }}
+                >
+                  <TextField
+                    size="small"
+                    placeholder="DNIS Number"
+                    value={row.dnisNumber}
+                    onChange={(e) =>
+                      setDnisRows((prev) =>
+                        prev.map((x, j) =>
+                          j === i
+                            ? {
+                                ...x,
+                                dnisNumber: e.target.value,
+                              }
+                            : x,
+                        ),
+                      )
+                    }
+                    sx={trunkAdaptTextFieldSx}
+                  />
+                  <div className="flex items-center gap-1 min-w-0">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      placeholder="DNIS Name"
+                      value={row.dnisName}
+                      onChange={(e) =>
+                        setDnisRows((prev) =>
+                          prev.map((x, j) =>
+                            j === i
+                              ? {
+                                  ...x,
+                                  dnisName: e.target.value,
+                                }
+                              : x,
+                          ),
+                        )
+                      }
+                      sx={trunkAdaptTextFieldSx}
+                    />
+                    {dnisRows.length > 1 ? (
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setDnisRows((r) =>
+                            r.filter((_, j) => j !== i),
+                          )
+                        }
+                        sx={trunkAdaptRowActionBtnSx}
+                        aria-label="remove dnis row"
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    ) : null}
+                  </div>
+                  <span aria-hidden="true" />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+              <SipRegisterFieldLabel
+                tooltipKey="replace_cid"
+                style={{ minWidth: "6.5rem", flexShrink: 0 }}
+              >
+                Replace CID
+              </SipRegisterFieldLabel>
+              <FormControl size="small" sx={{ width: 160 }}>
+                <MuiSelect
+                  value={form.ui_replace_cid || "No"}
+                  onChange={(e) =>
+                    handleChange("ui_replace_cid", e.target.value)
+                  }
+                  sx={sipRegisterModalSelectSx}
+                >
+                  {SIP_REGISTER_YES_NO.map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
+                </MuiSelect>
+              </FormControl>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const SipRegisterDodTab = ({
+  dodRows,
+  setDodRows,
+  dodSelected,
+  setDodSelected,
+  showDodAddModal,
+  setShowDodAddModal,
+  dodAddName,
+  setDodAddName,
+  dodAddNumber,
+  setDodAddNumber,
+  dodMemberExtensions,
+  setDodMemberExtensions,
+  dodAvailableExtensions,
+  dodAvailableEmptyText,
+  getDodExtLabel,
+  handleOpenDodAddModal,
+  handleConfirmDodAdd,
+  resetDodAddForm,
+  showMessage,
+}) => (
+  <div className="p-3 sm:p-5">
+    <div className="flex flex-wrap gap-2 mb-3">
+      {["ADD", "DELETE", "IMPORT", "EXPORT"].map((lbl) => (
+        <Btn
+          key={lbl}
+          type="button"
+          variant="cancel"
+          style={trunkDodToolbarBtnStyle}
+          onClick={() => {
+            if (lbl === "ADD") handleOpenDodAddModal();
+            else if (lbl === "DELETE") {
+              if (!dodSelected.length) {
+                showMessage("error", "Select DOD rows to delete");
+                return;
+              }
+              setDodRows((rows) =>
+                rows.filter((_, i) => !dodSelected.includes(i)),
+              );
+              setDodSelected([]);
+            } else
+              showMessage(
+                "info",
+                `${lbl} is not connected to the API yet.`,
+              );
+          }}
+        >
+          {lbl}
+        </Btn>
+      ))}
+    </div>
+
+    {showDodAddModal ? (
+      <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-4 w-full">
+          <div className="flex items-center gap-8 min-w-0">
+            <TrunkFieldLabel
+              tooltipKey="dod_name"
+              required
+              className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
+              style={{ width: 110 }}
+            >
+              DOD Name
+            </TrunkFieldLabel>
+            <input
+              className="flex-1 min-w-0"
+              style={trunkDodCompactInputStyle}
+              value={dodAddName}
+              onChange={(e) => setDodAddName(e.target.value)}
+              {...nativeFieldInteraction}
+            />
+          </div>
+          <div className="flex items-center gap-8 min-w-0">
+            <TrunkFieldLabel
+              tooltipKey="dod_number"
+              required
+              className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
+              style={{ width: 110 }}
+            >
+              DOD Number
+            </TrunkFieldLabel>
+            <input
+              className="flex-1 min-w-0"
+              style={trunkDodCompactInputStyle}
+              value={dodAddNumber}
+              onChange={(e) => setDodAddNumber(e.target.value)}
+              {...nativeFieldInteraction}
+            />
+          </div>
+        </div>
+
+        <div style={{ marginTop: 4 }}>
+          <SipRegisterCodecDualList
+            hideReorder
+            allOptions={dodAvailableExtensions}
+            selected={dodMemberExtensions}
+            onChange={setDodMemberExtensions}
+            getLabel={getDodExtLabel}
+            emptyTextAvailable={dodAvailableEmptyText}
+            emptyTextSelected="No selected extensions"
+          />
+        </div>
+
+        <div className="flex justify-center gap-4 mt-4">
+          <Btn
+            type="button"
+            variant="primary"
+            onClick={handleConfirmDodAdd}
+            style={trunkDodToolbarBtnStyle}
+          >
+            ENSURE
+          </Btn>
+          <Btn
+            type="button"
+            variant="cancel"
+            onClick={() => {
+              setShowDodAddModal(false);
+              resetDodAddForm();
+            }}
+            style={trunkDodToolbarBtnStyle}
+          >
+            CANCEL
+          </Btn>
+        </div>
+      </div>
+    ) : (
+      <div className="overflow-x-auto border border-gray-200 rounded">
+        <table className="w-full min-w-[480px] text-sm">
+          <thead>
+            <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
+              <th className="p-2 w-10 text-left">
+                <input
+                  type="checkbox"
+                  aria-label="select all dod"
+                  onChange={(e) =>
+                    e.target.checked
+                      ? setDodSelected(dodRows.map((_, i) => i))
+                      : setDodSelected([])
+                  }
+                  checked={
+                    dodRows.length > 0 &&
+                    dodSelected.length === dodRows.length
+                  }
+                />
+              </th>
+              <th className="p-2 text-left font-medium">
+                DOD Number
+              </th>
+              <th className="p-2 text-left font-medium">
+                DOD Name
+              </th>
+              <th className="p-2 text-left font-medium">
+                Bind Extension
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {dodRows.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="p-6 text-center text-gray-400"
+                >
+                  No DOD entries. Click ADD to add a row.
+                </td>
+              </tr>
+            ) : (
+              dodRows.map((row, i) => (
+                <tr key={i} className="border-b border-gray-100">
+                  <td className="p-2">
+                    <input
+                      type="checkbox"
+                      checked={dodSelected.includes(i)}
+                      onChange={() =>
+                        setDodSelected((s) =>
+                          s.includes(i)
+                            ? s.filter((x) => x !== i)
+                            : [...s, i],
+                        )
+                      }
+                    />
+                  </td>
+                  <td className="p-1">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={row.dodNumber}
+                      onChange={(e) =>
+                        setDodRows((rows) =>
+                          rows.map((x, j) =>
+                            j === i
+                              ? {
+                                  ...x,
+                                  dodNumber: e.target.value,
+                                }
+                              : x,
+                          ),
+                        )
+                      }
+                      sx={sipRegisterModalTextFieldSx}
+                    />
+                  </td>
+                  <td className="p-1">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={row.dodName}
+                      onChange={(e) =>
+                        setDodRows((rows) =>
+                          rows.map((x, j) =>
+                            j === i
+                              ? { ...x, dodName: e.target.value }
+                              : x,
+                          ),
+                        )
+                      }
+                      sx={sipRegisterModalTextFieldSx}
+                    />
+                  </td>
+                  <td className="p-1">
+                    <TextField
+                      size="small"
+                      fullWidth
+                      value={
+                        Array.isArray(row.bindExtensions)
+                          ? row.bindExtensions.join(", ")
+                          : row.bindExtension || ""
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value || "";
+                        const list = raw
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        setDodRows((rows) =>
+                          rows.map((x, j) =>
+                            j === i
+                              ? {
+                                  ...x,
+                                  bindExtensions: list,
+                                  bindExtension: raw,
+                                }
+                              : x,
+                          ),
+                        );
+                      }}
+                      sx={sipRegisterModalTextFieldSx}
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+);
+
+const SipRegisterAdaptTab = ({ adaptRows, setAdaptRows }) => (
+  <div className="p-3 sm:p-5">
+    <div
+      className="grid gap-2 items-center text-[12px] font-semibold border-b border-gray-200 pb-2 mb-3"
+      style={{
+        gridTemplateColumns: trunkAdaptRowGridColumns,
+      }}
+    >
+      <SipRegisterFieldLabel tooltipKey="match_mode">
+        Match Mode
+      </SipRegisterFieldLabel>
+      <SipRegisterFieldLabel tooltipKey="strip">
+        Strip
+      </SipRegisterFieldLabel>
+      <SipRegisterFieldLabel tooltipKey="prepend">
+        Prepend
+      </SipRegisterFieldLabel>
+      <IconButton
+        size="small"
+        onClick={() =>
+          setAdaptRows((r) => [
+            ...r,
+            { matchMode: "", strip: "", prepend: "" },
+          ])
+        }
+        sx={trunkAdaptRowActionBtnSx}
+        aria-label="add adapt row"
+      >
+        <AddIcon fontSize="small" />
+      </IconButton>
+    </div>
+    <div className="space-y-2">
+      {adaptRows.map((row, i) => (
+        <div
+          key={i}
+          className="grid gap-2 items-center"
+          style={{
+            gridTemplateColumns: trunkAdaptRowGridColumns,
+          }}
+        >
+          <TextField
+            size="small"
+            placeholder="Match"
+            value={row.matchMode}
+            onChange={(e) =>
+              setAdaptRows((r) =>
+                r.map((x, j) =>
+                  j === i ? { ...x, matchMode: e.target.value } : x,
+                ),
+              )
+            }
+            sx={trunkAdaptTextFieldSx}
+          />
+          <TextField
+            size="small"
+            placeholder="Strip"
+            value={row.strip}
+            onChange={(e) =>
+              setAdaptRows((r) =>
+                r.map((x, j) =>
+                  j === i ? { ...x, strip: e.target.value } : x,
+                ),
+              )
+            }
+            sx={trunkAdaptTextFieldSx}
+          />
+          <TextField
+            size="small"
+            placeholder="Prepend"
+            value={row.prepend}
+            onChange={(e) =>
+              setAdaptRows((r) =>
+                r.map((x, j) =>
+                  j === i ? { ...x, prepend: e.target.value } : x,
+                ),
+              )
+            }
+            sx={trunkAdaptTextFieldSx}
+          />
+          {adaptRows.length > 1 ? (
+            <IconButton
+              size="small"
+              onClick={() =>
+                setAdaptRows((r) => r.filter((_, j) => j !== i))
+              }
+              sx={trunkAdaptRowActionBtnSx}
+              aria-label="remove adapt row"
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const SipRegisterPage = () => {
-  // State
-  const [trunks, setTrunks] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [selected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState(SIP_REGISTER_INITIAL_FORM);
-  const [editIndex, setEditIndex] = useState(null);
-  const [loading, setLoading] = useState({
-    fetch: false,
-    save: false,
-    delete: false,
-  });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const hasInitialLoadRef = useRef(false);
-  const modalScrollRef = useRef(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [modalTab, setModalTab] = useState("basic");
-  const [dodRows, setDodRows] = useState([]);
-  const [dodSelected, setDodSelected] = useState([]);
-  const [adaptRows, setAdaptRows] = useState([
-    { matchMode: "", strip: "", prepend: "" },
-  ]);
-  const [dnisRows, setDnisRows] = useState([{ dnisNumber: "", dnisName: "" }]);
-  const [ethPortOptions, setEthPortOptions] = useState(
-    SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
-  );
-  const tableScrollRef = useRef(null);
-  const [tableContainerWidth, setTableContainerWidth] = useState(0);
-  const isCompact = useMediaQuery(SIP_REGISTER_COMPACT_MQ);
-  const allowHorizontalScroll = false; // browser-zoom table mode removed
-  const tableMinWidth = allowHorizontalScroll
-    ? Math.max(
-        SIP_REGISTER_ZOOM_TABLE_WIDTH,
-        tableContainerWidth > 0
-          ? tableContainerWidth + 120
-          : SIP_REGISTER_ZOOM_TABLE_WIDTH,
-      )
-    : "100%";
-
-  useEffect(() => {
-    if (tableScrollRef.current) {
-      tableScrollRef.current.scrollLeft = 0;
-    }
-  }, [allowHorizontalScroll, tableMinWidth]);
-
-  useEffect(() => {
-    const el = tableScrollRef.current;
-    if (!el) return undefined;
-
-    const measureContainer = () => {
-      setTableContainerWidth(el.clientWidth);
-    };
-
-    measureContainer();
-    const ro = new ResizeObserver(measureContainer);
-    ro.observe(el);
-    window.addEventListener("resize", measureContainer);
-    window.visualViewport?.addEventListener("resize", measureContainer);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measureContainer);
-      window.visualViewport?.removeEventListener("resize", measureContainer);
-    };
-  }, [trunks.length, allowHorizontalScroll]);
-
-  const selectedCodecList = useMemo(
-    () => parseCodecList(form.allow_codecs),
-    [form.allow_codecs],
-  );
-
-  const getCodecLabel = (value) =>
-    SIP_REGISTER_CODEC_OPTIONS.find((c) => c.value === value)?.label || value;
-
-  const updateCodecList = (newList) => {
-    const newCodecsString = newList.join(",");
-
-    if (validationErrors.allow_codecs) {
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.allow_codecs;
-        return newErrors;
-      });
-    }
-
-    const codecError = validateAllowCodecs(newCodecsString);
-    if (codecError) {
-      setValidationErrors((prev) => ({ ...prev, allow_codecs: codecError }));
-    }
-
-    setForm((prev) => ({ ...prev, allow_codecs: newCodecsString }));
-  };
-
-  const PREFERRED_ASSERTED_IDENTITY_OPTIONS = [
-    "None",
-    "Extension Number",
-    "Trunk User Name",
-    "DOD Number",
-  ];
-  const REMOTE_PARTY_ID_OPTIONS = [
-    "None",
-    "Extension Number",
-    "Trunk User Name",
-  ];
-  const CONTACT_MODE_OPTIONS = ["Extension Number", "Trunk User Name"];
-
-  // DOD Add modal (DNIS-like extension dual-list)
-  const [showDodAddModal, setShowDodAddModal] = useState(false);
-  const [dodAddName, setDodAddName] = useState("");
-  const [dodAddNumber, setDodAddNumber] = useState("");
-  const [dodMemberExtensions, setDodMemberExtensions] = useState([]);
-  const [dodAvailableExtensions, setDodAvailableExtensions] = useState([]);
-  const dodHasLoadedExtensionsRef = useRef(false);
-
-  const dodExtensionLabelMap = useMemo(() => {
-    const map = new Map();
-    dodAvailableExtensions.forEach((e) => map.set(e.value, e.label));
-    return map;
-  }, [dodAvailableExtensions]);
-
-  const getDodExtLabel = (ext) => dodExtensionLabelMap.get(ext) || ext;
-
-  const resetDodAddForm = () => {
-    setDodAddName("");
-    setDodAddNumber("");
-    setDodMemberExtensions([]);
-  };
-
-  const loadDodExtensions = async () => {
-    try {
-      const res = await fetchSipAccounts();
-      const sipList = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res?.data)
-          ? res.data
-          : [];
-      const exts = sipList
-        .filter((e) => e && e.extension)
-        .map((e) => {
-          const ext = String(e.extension);
-          const display = (e.display_name || e.name || "").trim();
-          return {
-            value: ext,
-            label: display ? `${ext}-${display}` : ext,
-          };
-        })
-        .sort((a, b) => {
-          const an = parseInt(a.value, 10);
-          const bn = parseInt(b.value, 10);
-          if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn)
-            return an - bn;
-          return a.label.localeCompare(b.label);
-        });
-      setDodAvailableExtensions(exts);
-      dodHasLoadedExtensionsRef.current = true;
-    } catch (e) {
-      showMessage("error", e?.message || "Failed to load extensions");
-      setDodAvailableExtensions([]);
-      dodHasLoadedExtensionsRef.current = true;
-    }
-  };
-
-  const handleOpenDodAddModal = async () => {
-    resetDodAddForm();
-    setShowDodAddModal(true);
-    if (!dodHasLoadedExtensionsRef.current) await loadDodExtensions();
-  };
-
-  const handleConfirmDodAdd = () => {
-    const name = dodAddName.trim();
-    const number = dodAddNumber.trim();
-    if (!name) return showMessage("error", "DOD Name is required");
-    if (!number) return showMessage("error", "DOD Number is required");
-    if (!dodMemberExtensions.length)
-      return showMessage("error", "Please select at least one extension");
-
-    setDodRows((prev) => [
-      ...prev,
-      {
-        dodName: name,
-        dodNumber: number,
-        bindExtensions: [...dodMemberExtensions],
-      },
-    ]);
-    setDodSelected([]);
-    setShowDodAddModal(false);
-    resetDodAddForm();
-  };
-
-  // Pagination + Search
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const filteredRows = trunks;
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-  const dataEmpty = trunks.length === 0;
-
-  // Load trunks on component mount
-  useEffect(() => {
-    // Prevent duplicate calls during React StrictMode or development double-rendering
-    if (!hasInitialLoadRef.current) {
-      hasInitialLoadRef.current = true;
-      loadTrunks();
-    }
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!showModal || !modalScrollRef.current) return;
-    modalScrollRef.current.scrollTop = 0;
-  }, [showModal, modalTab]);
-
-  // Load ETH port dropdown options when SIP Register modal opens.
-  // This keeps the menu consistent and shows VPN options only when VPN interfaces are detected.
-  useEffect(() => {
-    if (!showModal) return;
-
-    const getIpFromInterfaceObject = (obj) => {
-      if (!obj || typeof obj !== "object") return null;
-      if (Array.isArray(obj["IP Address"]) && obj["IP Address"][0])
-        return obj["IP Address"][0];
-      if (Array.isArray(obj["Ip Address"]) && obj["Ip Address"][0])
-        return obj["Ip Address"][0];
-      if (Array.isArray(obj["ip_address"]) && obj["ip_address"][0])
-        return obj["ip_address"][0];
-      if (typeof obj["IP Address"] === "string") return obj["IP Address"];
-      if (typeof obj["Ip Address"] === "string") return obj["Ip Address"];
-      if (typeof obj["ip_address"] === "string") return obj["ip_address"];
-      return null;
-    };
-
-    const loadEthPortOptions = async () => {
-      try {
-        const sysInfo = await fetchSystemInfo();
-        const details = sysInfo?.details || {};
-        const lanInterfaces =
-          details.LAN_INTERFACES || details.lan_interfaces || null;
-
-        const interfacesArray = Array.isArray(lanInterfaces)
-          ? lanInterfaces
-          : lanInterfaces && typeof lanInterfaces === "object"
-            ? Object.entries(lanInterfaces).map(([name, data]) => ({
-                name,
-                data,
-              }))
-            : [];
-
-        let vpnOpenVpnIp = null;
-        let vpnSoftEtherIp = null;
-
-        interfacesArray.forEach((iface) => {
-          const name = String(iface?.name || iface?.Name || "").toLowerCase();
-          const ip = getIpFromInterfaceObject(iface?.data || iface);
-
-          if (ip) {
-            if (
-              name.includes("tap0") ||
-              name === "tap0" ||
-              name.includes("tun0") ||
-              name === "tun0"
-            ) {
-              vpnOpenVpnIp = vpnOpenVpnIp || ip;
-            }
-            if (name.includes("vpn_vpn") || name === "vpn_vpn") {
-              vpnSoftEtherIp = vpnSoftEtherIp || ip;
-            }
-          }
-        });
-
-        // Fallback to direct network object access
-        const network = sysInfo?.network || {};
-        vpnOpenVpnIp =
-          vpnOpenVpnIp ||
-          getIpFromInterfaceObject(network?.tap0) ||
-          getIpFromInterfaceObject(network?.tun0);
-        vpnSoftEtherIp =
-          vpnSoftEtherIp || getIpFromInterfaceObject(network?.vpn_vpn);
-
-        const nextOptions = [
-          { value: "ETH0", label: "ETH0" },
-          { value: "ETH1", label: "ETH1" },
-        ];
-
-        if (vpnOpenVpnIp) {
-          nextOptions.push({
-            value: "OpenVPN",
-            label: vpnOpenVpnIp ? `OpenVPN (${vpnOpenVpnIp})` : "OpenVPN",
-          });
-        }
-
-        if (vpnSoftEtherIp) {
-          nextOptions.push({
-            value: vpnSoftEtherIp,
-            label: `SoftEther VPN IP (${vpnSoftEtherIp})`,
-          });
-        }
-
-        setEthPortOptions(nextOptions);
-
-        const validValues = new Set(nextOptions.map((o) => o.value));
-        setForm((prev) => {
-          if (validValues.has(prev.ui_eth_port)) return prev;
-          return {
-            ...prev,
-            ui_eth_port: nextOptions[0]?.value || prev.ui_eth_port,
-          };
-        });
-      } catch {
-        // If system info is not available, keep ETH0/ETH1 only.
-        setEthPortOptions(
-          SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({ value: v, label: v })),
-        );
-      }
-    };
-
-    loadEthPortOptions();
-  }, [showModal]);
-
-  // Message handling
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  // Helper to strip "sip:" prefix for display
-  const stripSipPrefix = (value) => {
-    if (!value) return "";
-    return value.replace(/^sip:/i, "");
-  };
-
-  // Fields that require "sip:" prefix
-  const SIP_PREFIX_FIELDS = [
-    "provider",
-    "sip_header",
-    "Outbound Proxy",
-    "server_domain",
-    "client_domain",
-  ];
-
-  // Transform API data to UI format
-  const transformApiToUi = (apiData) => {
-    const toBool = (v) => {
-      if (typeof v === "boolean") return v;
-      const s = v == null ? "" : String(v).toLowerCase();
-      return (
-        s === "true" ||
-        s === "yes" ||
-        s === "1" ||
-        s === "running" ||
-        s === "connected"
-      );
-    };
-
-    const toYesNo = (v) => (toBool(v) ? "Yes" : "No");
-    const normalizeTransport = (v) => {
-      const s = v == null ? "" : String(v).toLowerCase();
-      if (s === "udp" || s === "tcp" || s === "tls") return s;
-      return s || "udp";
-    };
-    const mapEthPort = (v) => {
-      const s = v == null ? "" : String(v);
-      if (s.toLowerCase() === "lan") return "ETH0";
-      if (s.toLowerCase() === "wan") return "ETH1";
-      return s;
-    };
-
-    const mapOutboundCallerIdSource = (v) => {
-      const s = v == null ? "" : String(v);
-      if (s === "register_name") return "Register Name";
-      return "Transparent caller";
-    };
-
-    const mapRecording = (v) => {
-      const s = v == null ? "" : String(v).toLowerCase();
-      if (s === "yes" || s === "true") return "Yes";
-      return "No";
-    };
-
-    const mapContactMode = (v) => {
-      const s = v == null ? "" : String(v);
-      if (s === "trunk_username" || s.toLowerCase() === "trunk user name")
-        return "Trunk User Name";
-      if (s === "extension_number" || s.toLowerCase() === "extension number")
-        return "Extension Number";
-      return "Trunk User Name";
-    };
-
-    const parseSelectedCodecs = (codecsObj) => {
-      if (!codecsObj || typeof codecsObj !== "object") return "";
-      const selected = Object.entries(codecsObj)
-        .filter(([, enabled]) => !!enabled)
-        .map(([codec]) => codec);
-      return selected.join(",");
-    };
-
-    const deriveUiRegister = (registerVal, expireSecondsVal) => {
-      // Backend may send boolean `register: true/false` or string.
-      // Prefer `register` when provided; otherwise infer from expire seconds.
-      const regBool = toBool(registerVal);
-      if (regBool) return "Yes";
-
-      const exp = expireSecondsVal == null ? "" : String(expireSecondsVal);
-      // If expire is non-zero, treat as registered.
-      return exp === "0" || exp === "" ? "No" : "Yes";
-    };
-
-    const items = Array.isArray(apiData) ? apiData : [];
-    return items.map((item, index) => {
-      const trunkId = item?.trunk_id ?? item?.trunkId ?? "";
-
-      const codecsObj = item?.codecs || {};
-      const allow_codecs = parseSelectedCodecs(codecsObj);
-
-      const expireSeconds = item?.expire_seconds ?? item?.expire_in_sec ?? "";
-      const ui_register = deriveUiRegister(item?.register, expireSeconds);
-      const expire_in_sec =
-        ui_register === "No" ? "0" : String(expireSeconds ?? "");
-
-      const eth_port = mapEthPort(item?.eth_port ?? "");
-
-      const ui_country = item?.country ?? "General";
-      const ui_transport = normalizeTransport(item?.transport ?? "udp");
-      const ui_enable_srtp = toBool(item?.enable_srtp);
-      const ui_match_username = toYesNo(item?.match_username);
-      // Backend may send enable_proxy/proxy_ip either at root or inside `advance`
-      // Backend responses sometimes use `outbound_proxy` instead of `proxy_ip`
-      // and may omit `enable_proxy` even when a proxy exists.
-      const outboundProxyVal =
-        item?.proxy_ip ??
-        item?.advance?.proxy_ip ??
-        item?.advance?.proxyIp ??
-        item?.outbound_proxy ??
-        item?.advance?.outbound_proxy ??
-        "";
-
-      const ui_enable_proxy =
-        toBool(item?.enable_proxy ?? item?.advance?.enable_proxy) ||
-        (outboundProxyVal != null &&
-          String(outboundProxyVal).trim() !== "" &&
-          String(outboundProxyVal).trim().toLowerCase() !== "none");
-
-      const ui_outbound_cid_source = mapOutboundCallerIdSource(
-        item?.outbound_callerid ?? "",
-      );
-      const ui_show_outbound_cid_name = toBool(item?.show_outbound_cid_name);
-
-      const ui_record = mapRecording(item?.recording);
-      const ui_enabled = toYesNo(item?.enabled);
-
-      const advance = item?.advance || {};
-      const ui_contact_mode = mapContactMode(advance?.contact);
-
-      const ui_send_privacy_id =
-        String(advance?.send_privacy_id ?? "").toLowerCase() === "yes"
-          ? "Yes"
-          : "No";
-      const ui_enable_early_session =
-        String(advance?.enable_early_session ?? "").toLowerCase() === "yes"
-          ? "Yes"
-          : "No";
-      const ui_enable_early_media =
-        String(advance?.enable_early_media ?? "").toLowerCase() === "yes"
-          ? "Yes"
-          : "No";
-
-      const registerStatus =
-        item?.registration_status ?? item?.register_status ?? "";
-
-      const dodRows = Array.isArray(item?.dod)
-        ? item.dod.map((d) => ({
-            dodName: d?.dod_name ?? d?.dodName ?? "",
-            dodNumber: d?.dod_number ?? d?.dodNumber ?? "",
-            bindExtensions: Array.isArray(d?.extensions)
-              ? d.extensions.map(String)
-              : Array.isArray(d?.extension)
-                ? d.extension.map(String)
-                : [],
-          }))
-        : [];
-
-      const adaptRows = Array.isArray(item?.adapt_callerid)
-        ? item.adapt_callerid.map((a) => ({
-            matchMode: a?.match_mode ?? a?.matchMode ?? "",
-            strip: a?.strip ?? "",
-            prepend: a?.prepend ?? "",
-          }))
-        : [{ matchMode: "", strip: "", prepend: "" }];
-
-      const result = {
-        index: (index + 1).toString(),
-
-        // Table fields (legacy list rendering)
-        trunk_id: trunkId,
-        username: item?.username ?? "",
-        context: item?.context ?? "",
-        allow_codecs,
-        expire_in_sec,
-        provider: stripSipPrefix(item?.trunk_ip_domain ?? item?.provider ?? ""),
-        password: item?.password ?? "",
-        sip_header: stripSipPrefix(item?.sip_header ?? ""),
-        "Domain name": item?.["Domain name"] ?? item?.from_domain ?? "",
-        "Contact User": item?.["Contact User"] ?? item?.contact_user ?? "",
-        "Outbound Proxy": stripSipPrefix(
-          item?.["Outbound Proxy"] ?? item?.outbound_proxy ?? "",
-        ),
-        server_domain: stripSipPrefix(item?.server_domain ?? ""),
-        client_domain: stripSipPrefix(item?.client_domain ?? ""),
-        auth_username:
-          item?.auth_username ?? item?.auth_user ?? item?.authUser ?? "",
-        // Keep From User bound to backend `from_user` only.
-        // `auth_username` is a different server field and should not auto-fill this UI input.
-        from_user: item?.from_user ?? "",
-        identity_ip: item?.identity_ip ?? "",
-        registerStatus: registerStatus || "",
-
-        // Modal/UI fields
-        ui_country,
-        ui_transport,
-        ui_enable_srtp,
-        ui_register,
-        ui_reg_fail_retry: String(item?.reg_fail_retry ?? ""),
-        ui_match_username,
-        ui_enable_proxy,
-        ui_proxy_ip: stripSipPrefix(outboundProxyVal),
-        ui_outbound_cid_source,
-        ui_show_outbound_cid_name,
-        ui_outbound_cid_name: item?.outbound_cid_name ?? "",
-        ui_outbound_cid_number: item?.outbound_cid_number ?? "",
-        ui_record,
-        ui_enabled,
-        ui_eth_port: eth_port,
-
-        // Basic form fields
-        ui_trunk_type: item?.trunk_type ?? "sip",
-
-        // Advance form fields
-        ui_get_called_id_type: advance?.get_called_id_type ?? "",
-        ui_options_interval: advance?.options_interval_s ?? "",
-        ui_tx_volume: String(advance?.tx_volume ?? "0"),
-        ui_rx_volume: String(advance?.rx_volume ?? "0"),
-        ui_send_privacy_id,
-        ui_sip_force_contact: advance?.sip_force_contact ?? "",
-        ui_p_preferred_identity: advance?.p_preferred_identity ?? "None",
-        ui_p_asserted_identity: advance?.p_asserted_identity ?? "None",
-        ui_remote_party_id: advance?.remote_party_id ?? "None",
-        ui_contact_mode,
-        ui_limit_max_calls: String(advance?.limit_max_calls ?? "0"),
-        ui_enable_early_session,
-        ui_enable_early_media,
-        ui_user_phone: toBool(advance?.user_phone),
-        ui_call_timeout: String(advance?.call_timeout_s ?? "30"),
-        ui_max_call_duration: String(advance?.max_call_duration_s ?? "6000"),
-        ui_dnis: toBool(advance?.dnis),
-        ui_dtmf_transmit: advance?.dtmf_transmit_mode ?? "RFC2833",
-
-        // Complex sections
-        dodRows,
-        adaptRows,
-      };
-
-      return result;
-    });
-  };
-
-  // Transform UI data to API format
-  const transformUiToApi = (uiData) => {
-    const toLowerYesNo = (v) => (v === "Yes" ? "yes" : "no");
-    const toYesNoBool = (v) => v === "Yes";
-
-    const selectedCodecsSet = new Set(
-      (uiData.allow_codecs || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-    );
-
-    const codecs = {};
-    SIP_REGISTER_CODEC_OPTIONS.forEach((c) => {
-      codecs[c.value] = selectedCodecsSet.has(c.value);
-    });
-
-    const outboundCallerId =
-      uiData.ui_outbound_cid_source === "Register Name"
-        ? "register_name"
-        : "transparent_caller";
-
-    const contact =
-      uiData.ui_contact_mode === "Trunk User Name"
-        ? "trunk_username"
-        : "extension_number";
-
-    const advance = {
-      get_called_id_type: uiData.ui_get_called_id_type ?? "",
-      options_interval_s: uiData.ui_options_interval ?? "",
-      tx_volume: uiData.ui_tx_volume ?? "0",
-      rx_volume: uiData.ui_rx_volume ?? "0",
-      send_privacy_id: toLowerYesNo(uiData.ui_send_privacy_id),
-      sip_force_contact: uiData.ui_sip_force_contact ?? "",
-      p_preferred_identity: uiData.ui_p_preferred_identity ?? "None",
-      p_asserted_identity: uiData.ui_p_asserted_identity ?? "None",
-      remote_party_id: uiData.ui_remote_party_id ?? "None",
-      contact,
-      limit_max_calls: uiData.ui_limit_max_calls ?? "0",
-      enable_early_session: toLowerYesNo(uiData.ui_enable_early_session),
-      enable_early_media: toLowerYesNo(uiData.ui_enable_early_media),
-      user_phone: !!uiData.ui_user_phone,
-      call_timeout_s: uiData.ui_call_timeout ?? "30",
-      max_call_duration_s: uiData.ui_max_call_duration ?? "6000",
-      dnis: !!uiData.ui_dnis,
-      dtmf_transmit_mode: uiData.ui_dtmf_transmit ?? "RFC2833",
-    };
-
-    const dod = (dodRows || []).map((row) => ({
-      dod_name: row.dodName ?? "",
-      dod_number: row.dodNumber ?? "",
-      extensions: Array.isArray(row.bindExtensions)
-        ? row.bindExtensions.map(String)
-        : [],
-    }));
-
-    const adapt_callerid = (adaptRows || []).map((row) => ({
-      match_mode: row.matchMode ?? "",
-      strip: row.strip ?? "",
-      prepend: row.prepend ?? "",
-    }));
-
-    return {
-      trunk_id: uiData.trunk_id,
-      trunk_name: uiData.trunk_id, // UI currently edits trunk_id only; reuse for trunk_name
-      country: uiData.ui_country,
-      transport: String(uiData.ui_transport || "udp").toUpperCase(),
-      enable_srtp: !!uiData.ui_enable_srtp,
-      register: uiData.ui_register === "Yes" ? "yes" : "no",
-      username: uiData.username ?? "",
-      auth_username: uiData.auth_username ?? "",
-      password: uiData.password ?? "",
-      reg_fail_retry: uiData.ui_reg_fail_retry ?? 30,
-      expire_seconds:
-        uiData.ui_register === "No" ? 0 : (uiData.expire_in_sec ?? 1800),
-      match_username: toYesNoBool(uiData.ui_match_username),
-      enable_proxy: !!uiData.ui_enable_proxy,
-      proxy_ip: uiData.ui_proxy_ip ?? "",
-      trunk_ip_domain: uiData.provider ?? "",
-      outbound_callerid: outboundCallerId,
-      show_outbound_cid_name: !!uiData.ui_show_outbound_cid_name,
-      outbound_cid_name: uiData.ui_outbound_cid_name ?? "",
-      outbound_cid_number: uiData.ui_outbound_cid_number ?? "",
-      recording: toLowerYesNo(uiData.ui_record),
-      enabled: uiData.ui_enabled === "Yes",
-      eth_port: uiData.ui_eth_port ?? "ETH0",
-      context: uiData.context ?? "",
-      from_user: uiData.from_user ?? "",
-
-      codecs,
-      advance,
-      dod,
-      adapt_callerid,
-    };
-  };
-
-  // Load trunks from API
-  const loadTrunks = async (isRefresh = false) => {
-    // Prevent concurrent calls
-    if (loading.fetch) {
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, fetch: true }));
-    try {
-      console.log("Attempting to load SIP trunks...");
-      const response = await listSipTrunks();
-      console.log("SIP trunks response:", response);
-      if (response.response && response.message) {
-        const transformedTrunks = transformApiToUi(response.message);
-        console.log("Transformed trunks:", transformedTrunks);
-        setTrunks(transformedTrunks);
-      } else {
-        console.log("Invalid response format:", response);
-        showMessage("error", "Failed to load SIP trunks");
-      }
-    } catch (error) {
-      console.error("Error loading SIP trunks:", error);
-      if (!isRefresh) {
-        // Only show error on initial load, not on refresh after operations
-        if (error.message === "Network Error") {
-          showMessage("error", "Network error. Please check your connection.");
-        } else if (error.response?.status === 500) {
-          showMessage(
-            "error",
-            "Server error. The list endpoint may have issues.",
-          );
-        } else {
-          showMessage("error", error.message || "Failed to load SIP trunks");
-        }
-      } else {
-        // For refresh errors, just log them - don't disturb the user
-        console.warn("Refresh failed, keeping existing data:", error.message);
-      }
-      // Only set empty array on initial load failure, not on refresh
-      if (!isRefresh) {
-        setTrunks([]);
-      }
-    } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
-      setIsInitialLoad(false);
-    }
-  };
-  // Modal logic
-  const handleOpenModal = (row = null, idx = null) => {
-    setModalTab("basic");
-    setDodSelected([]);
-    setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
-    setDnisRows([{ dnisNumber: "", dnisName: "" }]);
-    setValidationErrors({});
-    if (row && idx !== null) {
-      const uiReg =
-        row.ui_register ??
-        (String(row.expire_in_sec ?? "") === "0" ? "No" : "Yes");
-      setForm({
-        ...SIP_REGISTER_INITIAL_FORM,
-        ...row,
-        ui_register: uiReg,
-        ui_replace_cid:
-          row.ui_replace_cid ??
-          (Array.isArray(row.dnisRows) && row.dnisRows[0]?.replaceCid) ??
-          "No",
-        allow_codecs: row.allow_codecs || "ulaw,alaw",
-      });
-      setEditIndex(idx);
-      setDodRows(Array.isArray(row.dodRows) ? row.dodRows : []);
-      setAdaptRows(
-        Array.isArray(row.adaptRows) && row.adaptRows.length
-          ? row.adaptRows
-          : [{ matchMode: "", strip: "", prepend: "" }],
-      );
-      setDnisRows(
-        Array.isArray(row.dnisRows) && row.dnisRows.length
-          ? row.dnisRows.map((r) => ({
-              dnisNumber: r.dnisNumber ?? "",
-              dnisName: r.dnisName ?? "",
-            }))
-          : [{ dnisNumber: "", dnisName: "" }],
-      );
-    } else {
-      const nextIndex = trunks.length.toString();
-      setForm({
-        ...SIP_REGISTER_INITIAL_FORM,
-        index: nextIndex,
-      });
-      setEditIndex(null);
-      setDodRows([]);
-    }
-    setShowDodAddModal(false);
-    resetDodAddForm();
-    setShowModal(true);
-  };
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditIndex(null);
-    setModalTab("basic");
-    setShowDodAddModal(false);
-    resetDodAddForm();
-    setDodRows([]);
-    setDodSelected([]);
-    setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
-    setDnisRows([{ dnisNumber: "", dnisName: "" }]);
-    setShowPassword(false); // Reset password visibility when closing modal
-    setValidationErrors({}); // Clear validation errors when closing modal
-  };
-  const handleChange = (key, value) => {
-    setForm((prev) => {
-      const next = { ...prev, [key]: value };
-      if (key === "ui_register") {
-        if (value === "Yes") {
-          // Default expire when switching Register=Yes (matches screenshot)
-          if (!next.expire_in_sec || String(next.expire_in_sec).trim() === "")
-            next.expire_in_sec = "1800";
-        } else {
-          // When Register=No, expire is forced to 0 for save payload.
-          next.expire_in_sec = "0";
-        }
-      }
-      return next;
-    });
-
-    // Clear validation error for this field when user starts typing
-    if (validationErrors[key]) {
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[key];
-        return newErrors;
-      });
-    }
-
-    // Real-time validation for specific fields
-    let error = null;
-    switch (key) {
-      case "trunk_id":
-        error = validateTrunkId(value);
-        break;
-      case "username":
-        error = validateUsername(value);
-        break;
-      case "password":
-        error = validatePassword(value);
-        break;
-      case "context":
-        error = validateContext(value);
-        break;
-      case "allow_codecs":
-        error = validateAllowCodecs(value);
-        break;
-      case "expire_in_sec":
-        error = validateExpireInSec(value);
-        break;
-      case "provider":
-        error = validateProvider(value);
-        break;
-      case "sip_header":
-        error = validateSipHeader(value);
-        break;
-      case "server_domain":
-        error = validateServerDomain(value);
-        break;
-      case "client_domain":
-        error = validateClientDomain(value);
-        break;
-      case "identity_ip":
-        error = validateIdentityIp(value);
-        break;
-      case "ui_reg_fail_retry":
-        if (!value || String(value).trim() === "")
-          error = "RegFail Retry is required";
-        else if (!/^\d+$/.test(String(value).trim()))
-          error = "RegFail Retry must be a number";
-        break;
-      case "ui_proxy_ip":
-        if (form.ui_enable_proxy && (!value || String(value).trim() === ""))
-          error = "Proxy IP is required";
-        break;
-      case "ui_match_username":
-        if (value !== "Yes" && value !== "No")
-          error = "Match Username must be Yes or No";
-        break;
-      case "ui_country":
-        if (!value || String(value).trim() === "")
-          error = "Country is required";
-        break;
-      default:
-        break;
-    }
-
-    if (error) {
-      setValidationErrors((prev) => ({ ...prev, [key]: error }));
-    }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // Validation functions
-  const validateTrunkId = (trunkId) => {
-    if (!trunkId || trunkId.trim() === "") {
-      return "Trunk ID is required";
-    }
-    return null;
-  };
-
-  const validateUsername = (username) => {
-    if (!username || username.trim() === "") {
-      return "Username is required";
-    }
-    return null;
-  };
-
-  const validatePassword = (password) => {
-    if (!password || password.trim() === "") {
-      return "Password is required";
-    }
-    return null;
-  };
-
-  const validateContext = (context) => {
-    if (!context || context.trim() === "") {
-      return "Context is required";
-    }
-    return null;
-  };
-
-  const validateExpireInSec = (expireInSec) => {
-    const valueStr = expireInSec == null ? "" : String(expireInSec);
-    if (valueStr.trim() === "") return "Expire In Sec is required";
-    // Optional: ensure it is a positive integer
-    if (!/^\d+$/.test(valueStr)) return "Expire In Sec must be a number";
-    return null;
-  };
-
-  const validateProvider = (provider) => {
-    if (!provider || provider.trim() === "") {
-      return "Provider is required (e.g., example.com:5060)";
-    }
-    return null;
-  };
-
-  const validateSipHeader = (sipHeader) => {
-    if (!sipHeader || sipHeader.trim() === "") {
-      return "SIP Header is required (e.g., example.com)";
-    }
-    return null;
-  };
-
-  const validateServerDomain = (serverDomain) => {
-    if (!serverDomain || serverDomain.trim() === "") {
-      return "Server Domain is required (e.g., sip.domain.in)";
-    }
-    return null;
-  };
-
-  const validateClientDomain = (clientDomain) => {
-    if (!clientDomain || clientDomain.trim() === "") {
-      return "Client Domain is required (e.g., +91XXXXXXXXXX@sip.domain.in)";
-    }
-    return null;
-  };
-
-  const validateIdentityIp = (identityIp) => {
-    if (!identityIp || identityIp.trim() === "") {
-      return "Identity IP is required (e.g., 15.158.34.15)";
-    }
-    return null;
-  };
-
-  const validateForm = (data = form) => {
-    const errors = {};
-
-    const merged = {
-      ...data,
-      expire_in_sec:
-        data.ui_register === "No" ? "0" : data.expire_in_sec || "3600",
-    };
-
-    const isNonEmpty = (v) =>
-      v !== undefined && v !== null && String(v).trim() !== "";
-
-    const trunkIdError = validateTrunkId(merged.trunk_id);
-    if (trunkIdError) errors.trunk_id = trunkIdError;
-
-    if (!merged.ui_country || String(merged.ui_country).trim() === "") {
-      errors.ui_country = "Country is required";
-    }
-
-    const allowCodecsError = validateAllowCodecs(merged.allow_codecs);
-    if (allowCodecsError) errors.allow_codecs = allowCodecsError;
-
-    const providerError = validateProvider(merged.provider);
-    if (providerError) errors.provider = providerError;
-
-    if (merged.ui_register === "Yes") {
-      const usernameError = validateUsername(merged.username);
-      if (usernameError) errors.username = usernameError;
-
-      const passwordError = validatePassword(merged.password);
-      if (passwordError) errors.password = passwordError;
-
-      const expireInSecError = validateExpireInSec(merged.expire_in_sec);
-      if (expireInSecError) errors.expire_in_sec = expireInSecError;
-
-      const regFailRetry = merged.ui_reg_fail_retry;
-      if (!regFailRetry || String(regFailRetry).trim() === "") {
-        errors.ui_reg_fail_retry = "RegFail Retry is required";
-      } else if (!/^\d+$/.test(String(regFailRetry).trim())) {
-        errors.ui_reg_fail_retry = "RegFail Retry must be a number";
-      }
-
-      if (
-        merged.ui_match_username !== "Yes" &&
-        merged.ui_match_username !== "No"
-      ) {
-        errors.ui_match_username = "Match Username must be Yes or No";
-      }
-
-      if (merged.ui_enable_proxy) {
-        const proxyIp = merged.ui_proxy_ip;
-        if (!proxyIp || String(proxyIp).trim() === "") {
-          errors.ui_proxy_ip = "Proxy IP is required";
-        }
-      }
-    }
-
-    // These fields are part of the previous "SIP registration" UI.
-    // Since the UI no longer shows them (to match your screenshot),
-    // they should be optional for save.
-    if (isNonEmpty(merged.sip_header)) {
-      const sipHeaderError = validateSipHeader(merged.sip_header);
-      if (sipHeaderError) errors.sip_header = sipHeaderError;
-    }
-
-    if (isNonEmpty(merged.server_domain)) {
-      const serverDomainError = validateServerDomain(merged.server_domain);
-      if (serverDomainError) errors.server_domain = serverDomainError;
-    }
-
-    if (isNonEmpty(merged.client_domain)) {
-      const clientDomainError = validateClientDomain(merged.client_domain);
-      if (clientDomainError) errors.client_domain = clientDomainError;
-    }
-
-    if (isNonEmpty(merged.identity_ip)) {
-      const identityIpError = validateIdentityIp(merged.identity_ip);
-      if (identityIpError) errors.identity_ip = identityIpError;
-    }
-
-    return errors;
-  };
-
-  const buildMergedFormForSave = () => ({
-    ...form,
-    context: form.context || "sip1",
-    expire_in_sec:
-      form.ui_register === "No" ? "0" : form.expire_in_sec || "3600",
-  });
-
-  const handleSave = async () => {
-    const mergedForm = buildMergedFormForSave();
-    const validationErrors = validateForm(mergedForm);
-
-    if (Object.keys(validationErrors).length > 0) {
-      const firstKey = Object.keys(validationErrors)[0];
-      if (
-        [
-          "sip_header",
-          "server_domain",
-          "client_domain",
-          "identity_ip",
-          "Outbound Proxy",
-        ].includes(firstKey)
-      ) {
-        setModalTab("advance");
-      } else if (firstKey === "allow_codecs") {
-        setModalTab("codec");
-      } else {
-        setModalTab("basic");
-      }
-      showMessage("error", validationErrors[firstKey]);
-      return;
-    }
-
-    // Prevent duplicate registration: same Trunk ID (name) + Username
-    // (case-insensitive, trimmed). Allow when editing the same row.
-    if (mergedForm.ui_register === "Yes") {
-      const norm = (v) =>
-        String(v ?? "")
-          .trim()
-          .toLowerCase();
-      const nextTrunkId = norm(mergedForm.trunk_id);
-      const nextUsername = norm(mergedForm.username);
-      const duplicateIndex = trunks.findIndex((t, idx) => {
-        if (editIndex !== null && idx === editIndex) return false;
-        return (
-          norm(t?.trunk_id) === nextTrunkId &&
-          norm(t?.username) === nextUsername
-        );
-      });
-
-      if (nextTrunkId && nextUsername && duplicateIndex !== -1) {
-        showMessage(
-          "error",
-          "Duplicate trunk not allowed: same Trunk ID and Username already exists.",
-        );
-        setModalTab("basic");
-        return;
-      }
-    }
-
-    setLoading((prev) => ({ ...prev, save: true }));
-    const closeModalAfterSuccess = () => {
-      setShowModal(false);
-      setEditIndex(null);
-      setModalTab("basic");
-      setDodRows([]);
-      setDodSelected([]);
-      setAdaptRows([{ matchMode: "", strip: "", prepend: "" }]);
-      setDnisRows([{ dnisNumber: "", dnisName: "" }]);
-      setShowPassword(false);
-      setValidationErrors({});
-    };
-
-    try {
-      const apiData = transformUiToApi(mergedForm);
-
-      if (editIndex !== null) {
-        console.log("Updating SIP trunk with data:", apiData);
-        const response = await updateSipTrunk(apiData);
-        console.log("Update response:", response);
-        if (response.response) {
-          showMessage(
-            "success",
-            response.message || "Trunk updated successfully",
-          );
-          setForm((prev) => ({ ...prev, ...mergedForm }));
-          try {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            await loadTrunks(true);
-          } catch (reloadError) {
-            console.warn("Failed to reload trunks after update:", reloadError);
-            setTrunks((prev) =>
-              prev.map((trunk, idx) =>
-                idx === editIndex
-                  ? { ...trunk, ...mergedForm, registerStatus: "registered" }
-                  : trunk,
-              ),
-            );
-          }
-          closeModalAfterSuccess();
-        } else {
-          showMessage("error", "Failed to update trunk");
-        }
-      } else {
-        console.log("Creating SIP trunk with data:", apiData);
-        const response = await createSipTrunk(apiData);
-        console.log("Create response:", response);
-        if (response.response) {
-          showMessage(
-            "success",
-            response.message || "Trunk created successfully",
-          );
-          setForm((prev) => ({ ...prev, ...mergedForm }));
-          try {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            await loadTrunks(true);
-          } catch (reloadError) {
-            console.warn(
-              "Failed to reload trunks after creation:",
-              reloadError,
-            );
-            setTrunks((prev) => {
-              const newTrunk = {
-                index: prev.length.toString(),
-                trunk_id: mergedForm.trunk_id,
-                username: mergedForm.username,
-                context: mergedForm.context,
-                allow_codecs: mergedForm.allow_codecs,
-                expire_in_sec: mergedForm.expire_in_sec,
-                provider: mergedForm.provider,
-                sip_header: mergedForm.sip_header,
-                registerStatus: "registered",
-              };
-              return [...prev, newTrunk];
-            });
-          }
-          closeModalAfterSuccess();
-        } else if (response.limit_exceeded) {
-          showMessage(
-            "error",
-            `Maximum trunk limit (${response.limit}) reached. Please upgrade your license.`,
-          );
-        } else {
-          showMessage("error", response.message || "Failed to create trunk");
-        }
-      }
-    } catch (error) {
-      console.error("Error saving SIP trunk:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to save trunk");
-      }
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
-  // Table selection logic (trunk_id based)
-  const allPageSelected =
-    pagedRows.length > 0 &&
-    pagedRows
-      .map((r) => r.trunk_id)
-      .filter(Boolean)
-      .every((id) => selectedIds.includes(id));
-  const somePageSelected =
-    pagedRows.some((r) => r.trunk_id && selectedIds.includes(r.trunk_id)) &&
-    !allPageSelected;
-
-  const handleToggleRow = (trunk_id) => {
-    if (!trunk_id) return;
-    setSelectedIds((prev) =>
-      prev.includes(trunk_id)
-        ? prev.filter((id) => id !== trunk_id)
-        : [...prev, trunk_id],
-    );
-  };
-  const handleToggleAll = () => {
-    const pageIds = pagedRows.map((r) => r.trunk_id).filter(Boolean);
-    if (!pageIds.length) return;
-    setSelectedIds((prev) =>
-      allPageSelected
-        ? prev.filter((id) => !pageIds.includes(id))
-        : Array.from(new Set([...prev, ...pageIds])),
-    );
-  };
-  const handleInverse = () => {
-    const allIds = trunks.map((t) => t.trunk_id).filter(Boolean);
-    setSelectedIds(allIds.filter((id) => !selectedIds.includes(id)));
-  };
-  const handleDelete = async () => {
-    if (selectedIds.length === 0) {
-      showMessage("error", "Please select trunks to delete");
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selectedIds.length} trunk(s)?`,
-      )
-    )
-      return;
-
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const deletePromises = selectedIds.map(
-        async (id) => await deleteSipTrunk(id),
-      );
-      const results = await Promise.allSettled(deletePromises);
-      const successCount = results.filter(
-        (result) => result.status === "fulfilled" && result.value.response,
-      ).length;
-      const failCount = results.length - successCount;
-
-      if (successCount > 0) {
-        showMessage("success", `${successCount} trunk(s) deleted successfully`);
-        try {
-          await loadTrunks(true);
-        } catch {
-          setTrunks((prev) =>
-            prev.filter((t) => !selectedIds.includes(t.trunk_id)),
-          );
-        }
-        setSelectedIds([]);
-      }
-
-      if (failCount > 0) {
-        showMessage("error", `Failed to delete ${failCount} trunk(s)`);
-      }
-    } catch (error) {
-      showMessage("error", error.message || "Failed to delete trunks");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-  const handleClearAll = async () => {
-    if (trunks.length === 0) {
-      showMessage("info", "No trunks to clear");
-      return;
-    }
-
-    if (
-      !window.confirm(
-        "Are you sure you want to delete ALL SIP trunks? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      console.log(
-        "Clearing all trunks:",
-        trunks.map((t) => t.trunk_id),
-      );
-      const deletePromises = trunks.map(async (trunk) => {
-        console.log("Deleting trunk:", trunk.trunk_id);
-        return await deleteSipTrunk(trunk.trunk_id);
-      });
-
-      const results = await Promise.allSettled(deletePromises);
-      const successCount = results.filter(
-        (result) => result.status === "fulfilled" && result.value.response,
-      ).length;
-      const failCount = results.length - successCount;
-
-      if (successCount > 0) {
-        showMessage(
-          "success",
-          `All ${successCount} trunk(s) deleted successfully`,
-        );
-
-        // Try to reload data, but don't fail if it doesn't work
-        try {
-          await loadTrunks(true); // Reload trunks to get fresh data
-        } catch (reloadError) {
-          console.warn(
-            "Failed to reload after clear all, clearing local state:",
-            reloadError,
-          );
-          // Clear all items from local state as fallback
-          setTrunks([]);
-        }
-        setSelectedIds([]);
-        setPage(1);
-      }
-
-      if (failCount > 0) {
-        showMessage("error", `Failed to delete ${failCount} trunk(s)`);
-      }
-    } catch (error) {
-      showMessage("error", error.message || "Failed to clear all trunks");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-  const handlePageChange = (newPage) => {
-    setPage(Math.max(1, Math.min(totalPages, newPage)));
-  };
-
-  const dodAvailableEmptyText =
-    dodAvailableExtensions.length === 0 && !dodHasLoadedExtensionsRef.current
-      ? "Loading extensions..."
-      : "No extensions";
+  const vm = useSipRegisterPage();
+  const {
+    isCompact,
+    message,
+    setMessage,
+    isInitialLoad,
+    filteredRows,
+    page,
+    totalPages,
+    pagedRows,
+    handlePageChange,
+    selected,
+    selectedIds,
+    loading,
+    trunks,
+    handleInverse,
+    handleClearAll,
+    handleDelete,
+    handleOpenModal,
+    dataEmpty,
+    tableScrollRef,
+    allowHorizontalScroll,
+    tableMinWidth,
+    allPageSelected,
+    somePageSelected,
+    handleToggleAll,
+    itemsPerPage,
+    handleToggleRow,
+    showModal,
+    handleCloseModal,
+    editIndex,
+    modalTab,
+    setModalTab,
+    modalScrollRef,
+    handleSave,
+    form,
+    validationErrors,
+    handleChange,
+    ethPortOptions,
+    showPassword,
+    togglePasswordVisibility,
+    selectedCodecList,
+    updateCodecList,
+    getCodecLabel,
+    dnisRows,
+    setDnisRows,
+    PREFERRED_ASSERTED_IDENTITY_OPTIONS,
+    REMOTE_PARTY_ID_OPTIONS,
+    CONTACT_MODE_OPTIONS,
+    dodRows,
+    setDodRows,
+    dodSelected,
+    setDodSelected,
+    showDodAddModal,
+    setShowDodAddModal,
+    dodAddName,
+    setDodAddName,
+    dodAddNumber,
+    setDodAddNumber,
+    dodMemberExtensions,
+    setDodMemberExtensions,
+    dodAvailableExtensions,
+    dodAvailableEmptyText,
+    getDodExtLabel,
+    handleOpenDodAddModal,
+    handleConfirmDodAdd,
+    resetDodAddForm,
+    showMessage,
+    adaptRows,
+    setAdaptRows,
+  } = vm;
 
   return (
     <div
@@ -2111,416 +2212,35 @@ const SipRegisterPage = () => {
         <SipRegisterBreadcrumb section="Trunks" current="SIP Register" />
 
         <div style={sipRegisterCardStyle}>
-          <div
-            style={{
-              ...sipRegisterToolbarStyle,
-              ...(isCompact
-                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
-                : {}),
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {selected.length > 0 && (
-                <span style={sipRegisterSelectedBadgeStyle}>
-                  {selected.length} selected
-                </span>
-              )}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <Btn
-                variant="cancel"
-                onClick={handleInverse}
-                disabled={
-                  loading.delete || loading.fetch || trunks.length === 0
-                }
-                style={sipRegisterCancelBtnStyle}
-              >
-                Inverse
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleClearAll}
-                disabled={loading.delete || trunks.length === 0}
-                style={sipRegisterCancelBtnStyle}
-              >
-                Clear All
-              </Btn>
-              <Btn
-                variant="cancel"
-                onClick={handleDelete}
-                disabled={loading.delete || selectedIds.length === 0}
-                style={sipRegisterCancelBtnStyle}
-              >
-                {loading.delete ? (
-                  <CircularProgress size={12} color="inherit" />
-                ) : (
-                  <>
-                    <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
-                    Delete
-                  </>
-                )}
-              </Btn>
-              <Btn
-                variant="primary"
-                onClick={() => handleOpenModal()}
-                disabled={loading.fetch}
-                style={sipRegisterPrimaryBtnStyle}
-              >
-                + Add New
-              </Btn>
-            </div>
-          </div>
+          <SipRegisterToolbar
+            isCompact={isCompact}
+            selected={selected}
+            selectedIds={selectedIds}
+            loading={loading}
+            trunks={trunks}
+            handleInverse={handleInverse}
+            handleClearAll={handleClearAll}
+            handleDelete={handleDelete}
+            handleOpenModal={handleOpenModal}
+          />
 
-          <div style={{ position: "relative" }}>
-            {isInitialLoad ? (
-              <SipRegisterTableListLoading />
-            ) : dataEmpty ? (
-              <SipRegisterTableListEmptyState
-                message="No SIP register trunks found."
-                onAddNew={() => handleOpenModal()}
-              />
-            ) : (
-              <>
-                <div
-                  ref={tableScrollRef}
-                  className={TRUNK_TABLE_SCROLL_CLASS}
-                  style={{
-                    ...trunkTableScrollStyle,
-                    overflowX: allowHorizontalScroll ? "auto" : "hidden",
-                    borderBottom: "none",
-                  }}
-                >
-                  <div
-                    style={{
-                      ...trunkTableInnerStyle,
-                      minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
-                      width: allowHorizontalScroll ? tableMinWidth : "100%",
-                      borderBottom: "none",
-                    }}
-                  >
-                    <table
-                      style={{
-                        width: allowHorizontalScroll ? tableMinWidth : "100%",
-                        borderCollapse: "separate",
-                        borderSpacing: 0,
-                        tableLayout: allowHorizontalScroll ? "auto" : "fixed",
-                        minWidth: allowHorizontalScroll
-                          ? tableMinWidth
-                          : "100%",
-                      }}
-                    >
-                      <colgroup>
-                        <col
-                          style={{
-                            width: allowHorizontalScroll ? 40 : "3%",
-                          }}
-                        />
-                        <col
-                          style={{
-                            width: allowHorizontalScroll ? 44 : "3%",
-                          }}
-                        />
-                        {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
-                          <col
-                            key={field.name}
-                            style={{
-                              width: allowHorizontalScroll
-                                ? sipRegisterFieldColumnWidths[field.name]
-                                : sipRegisterFieldColumnPercents[field.name],
-                            }}
-                          />
-                        ))}
-                        <col
-                          style={{
-                            width: allowHorizontalScroll ? 118 : "10%",
-                          }}
-                        />
-                        <col
-                          style={{
-                            width: allowHorizontalScroll ? 72 : "6%",
-                          }}
-                        />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <TH
-                            style={{
-                              ...sipRegisterFixedCellStyle(
-                                sipRegisterCheckboxCellStyle,
-                                allowHorizontalScroll,
-                              ),
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 10,
-                            }}
-                          >
-                            <div style={sipRegisterCheckboxWrapStyle}>
-                              <Checkbox
-                                size="small"
-                                checked={allPageSelected}
-                                indeterminate={somePageSelected}
-                                onChange={handleToggleAll}
-                                sx={sipRegisterTableCheckboxSx}
-                              />
-                            </div>
-                          </TH>
-                          <TH
-                            style={{
-                              ...sipRegisterFixedCellStyle(
-                                sipRegisterIdCellStyle,
-                                allowHorizontalScroll,
-                              ),
-                              textAlign: "center",
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 10,
-                            }}
-                          >
-                            <div style={sipRegisterIdCenterWrapStyle}>ID</div>
-                          </TH>
-                          {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
-                            <TH
-                              key={field.name}
-                              title={field.label}
-                              style={getSipRegisterHeaderCellStyle(
-                                allowHorizontalScroll,
-                              )}
-                            >
-                              {SIP_REGISTER_TABLE_HEADER_LABELS[field.name] ??
-                                field.label}
-                            </TH>
-                          ))}
-                          <TH
-                            style={{
-                              ...sipRegisterFixedCellStyle(
-                                sipRegisterStatusCellStyle,
-                                allowHorizontalScroll,
-                              ),
-                              ...getSipRegisterHeaderCellStyle(
-                                allowHorizontalScroll,
-                              ),
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 10,
-                            }}
-                          >
-                            <div style={sipRegisterIdCenterWrapStyle}>
-                              Status
-                            </div>
-                          </TH>
-                          <TH
-                            style={{
-                              ...sipRegisterFixedCellStyle(
-                                sipRegisterModifyCellStyle,
-                                allowHorizontalScroll,
-                              ),
-                              ...getSipRegisterHeaderCellStyle(
-                                allowHorizontalScroll,
-                              ),
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 10,
-                            }}
-                          >
-                            Modify
-                          </TH>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pagedRows.map((trunk, idx) => {
-                          const realIdx = (page - 1) * itemsPerPage + idx;
-                          const isSelected =
-                            trunk.trunk_id &&
-                            selectedIds.includes(trunk.trunk_id);
-                          const isLastRow = idx === pagedRows.length - 1;
-                          const rowBg = isSelected
-                            ? "#f0f9ff"
-                            : idx % 2 === 1
-                              ? "#f8fafc"
-                              : "#ffffff";
-                          const lastRowCellStyle = isLastRow
-                            ? { borderBottom: "none" }
-                            : {};
-                          const { bg: statusBg, color: statusColor } =
-                            getSipRegisterStatusStyle(trunk.registerStatus);
-                          return (
-                            <tr
-                              key={trunk.trunk_id || idx}
-                              style={{
-                                background: rowBg,
-                                transition: "background-color 0.15s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!isSelected)
-                                  e.currentTarget.style.background = "#f1f5f9";
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!isSelected)
-                                  e.currentTarget.style.background = rowBg;
-                              }}
-                            >
-                              <td
-                                style={{
-                                  ...tdStyle,
-                                  ...sipRegisterFixedCellStyle(
-                                    sipRegisterCheckboxCellStyle,
-                                    allowHorizontalScroll,
-                                  ),
-                                  background: rowBg,
-                                  ...lastRowCellStyle,
-                                }}
-                              >
-                                <div style={sipRegisterCheckboxWrapStyle}>
-                                  <Checkbox
-                                    size="small"
-                                    disabled={!trunk.trunk_id}
-                                    checked={
-                                      !!trunk.trunk_id &&
-                                      selectedIds.includes(trunk.trunk_id)
-                                    }
-                                    onChange={() =>
-                                      handleToggleRow(trunk.trunk_id)
-                                    }
-                                    sx={sipRegisterTableCheckboxSx}
-                                  />
-                                </div>
-                              </td>
-                              <td
-                                style={{
-                                  ...tdStyle,
-                                  ...sipRegisterFixedCellStyle(
-                                    sipRegisterIdCellStyle,
-                                    allowHorizontalScroll,
-                                  ),
-                                  background: rowBg,
-                                  ...lastRowCellStyle,
-                                }}
-                              >
-                                <div style={sipRegisterIdCenterWrapStyle}>
-                                  {(page - 1) * itemsPerPage + idx + 1}
-                                </div>
-                              </td>
-                              {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map(
-                                (field) => {
-                                  const value = trunk[field.name];
-                                  const hasValue =
-                                    value !== undefined &&
-                                    value !== null &&
-                                    value !== "";
-                                  const displayValue =
-                                    hasValue &&
-                                    SIP_PREFIX_FIELDS.includes(field.name)
-                                      ? `sip:${value}`
-                                      : hasValue
-                                        ? value
-                                        : "—";
-                                  return (
-                                    <td
-                                      key={field.name}
-                                      title={String(displayValue)}
-                                      style={{
-                                        ...tdStyle,
-                                        background: rowBg,
-                                        fontWeight:
-                                          field.name === "trunk_id" ? 600 : 400,
-                                        ...getSipRegisterDataCellStyle(
-                                          allowHorizontalScroll,
-                                        ),
-                                        ...lastRowCellStyle,
-                                      }}
-                                    >
-                                      {displayValue}
-                                    </td>
-                                  );
-                                },
-                              )}
-                              <td
-                                style={{
-                                  ...tdStyle,
-                                  ...sipRegisterFixedCellStyle(
-                                    sipRegisterStatusCellStyle,
-                                    allowHorizontalScroll,
-                                  ),
-                                  background: rowBg,
-                                  ...lastRowCellStyle,
-                                }}
-                              >
-                                <div style={sipRegisterIdCenterWrapStyle}>
-                                  {trunk.registerStatus ? (
-                                    <Pill
-                                      text={formatSipRegisterStatusLabel(
-                                        trunk.registerStatus,
-                                      )}
-                                      bg={statusBg}
-                                      color={statusColor}
-                                    />
-                                  ) : (
-                                    <span style={{ color: C.mutedText }}>
-                                      —
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td
-                                style={{
-                                  ...tdStyle,
-                                  ...sipRegisterFixedCellStyle(
-                                    sipRegisterModifyCellStyle,
-                                    allowHorizontalScroll,
-                                  ),
-                                  background: rowBg,
-                                  ...lastRowCellStyle,
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <EditDocumentIcon
-                                    titleAccess="Edit"
-                                    style={{
-                                      cursor: loading.delete
-                                        ? "not-allowed"
-                                        : "pointer",
-                                      color: "#2563eb",
-                                      fontSize: 22,
-                                      opacity: loading.delete ? 0.4 : 0.7,
-                                      transition: "opacity 0.15s ease",
-                                    }}
-                                    onClick={() =>
-                                      !loading.delete &&
-                                      handleOpenModal(trunk, realIdx)
-                                    }
-                                    onMouseEnter={(e) => {
-                                      if (!loading.delete)
-                                        e.currentTarget.style.opacity = "1";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!loading.delete)
-                                        e.currentTarget.style.opacity = "0.7";
-                                    }}
-                                  />
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <SipRegisterTable
+            isInitialLoad={isInitialLoad}
+            dataEmpty={dataEmpty}
+            tableScrollRef={tableScrollRef}
+            allowHorizontalScroll={allowHorizontalScroll}
+            tableMinWidth={tableMinWidth}
+            allPageSelected={allPageSelected}
+            somePageSelected={somePageSelected}
+            handleToggleAll={handleToggleAll}
+            pagedRows={pagedRows}
+            page={page}
+            itemsPerPage={itemsPerPage}
+            selectedIds={selectedIds}
+            handleToggleRow={handleToggleRow}
+            loading={loading}
+            handleOpenModal={handleOpenModal}
+          />
 
           {!isInitialLoad && filteredRows.length > 0 && (
             <SipRegisterPagination
@@ -2533,7 +2253,6 @@ const SipRegisterPage = () => {
         </div>
       </div>
 
-      {/* Modal */}
       <Dialog
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
@@ -2639,1546 +2358,61 @@ const SipRegisterPage = () => {
 
           <div className="sip-reg" style={trunkModalFormPanelStyle}>
             {modalTab === "basic" && (
-              <div className="p-3 sm:p-5">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-0">
-                  <div className="space-y-0.5">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel>Trunk Type</TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <RadioGroup
-                          row
-                          value={form.ui_trunk_type}
-                          onChange={(e) =>
-                            handleChange("ui_trunk_type", e.target.value)
-                          }
-                        >
-                          <FormControlLabel
-                            value="sip"
-                            control={<Radio size="small" />}
-                            label="SIP"
-                          />
-                        </RadioGroup>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="trunk_name" required>
-                        Trunk Name
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.trunk_id || ""}
-                          onChange={(e) =>
-                            handleChange("trunk_id", e.target.value)
-                          }
-                          error={!!validationErrors.trunk_id}
-                          placeholder="Trunk Name"
-                          disabled={editIndex !== null}
-                        />
-                        {validationErrors.trunk_id && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.trunk_id}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="select_country" required>
-                        Select Country
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl
-                          fullWidth
-                          size="small"
-                          error={!!validationErrors.ui_country}
-                        >
-                          <MuiSelect
-                            value={form.ui_country}
-                            onChange={(e) =>
-                              handleChange("ui_country", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_COUNTRY_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                        {validationErrors.ui_country && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.ui_country}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="transport">
-                        Transport
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_transport}
-                            onChange={(e) =>
-                              handleChange("ui_transport", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_TRANSPORT_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="enable_srtp">
-                        Enable SRTP
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0 flex items-center justify-start">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={!!form.ui_enable_srtp}
-                              onChange={(e) =>
-                                handleChange("ui_enable_srtp", e.target.checked)
-                              }
-                              size="small"
-                              sx={sipRegisterTableCheckboxSx}
-                            />
-                          }
-                          label=""
-                          sx={trunkFormCheckboxLabelSx}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="register" required>
-                        Register
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_register}
-                            onChange={(e) =>
-                              handleChange("ui_register", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    {form.ui_register === "Yes" && (
-                      <>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="username" required>
-                            Username
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              size="small"
-                              fullWidth
-                              value={form.username || ""}
-                              onChange={(e) =>
-                                handleChange("username", e.target.value)
-                              }
-                              error={!!validationErrors.username}
-                              placeholder="Username"
-                            />
-                            {validationErrors.username && (
-                              <div className="text-red-500 text-xs mt-0.5">
-                                {validationErrors.username}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="auth_username">
-                            Auth Username
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              size="small"
-                              fullWidth
-                              value={form.auth_username || ""}
-                              onChange={(e) =>
-                                handleChange("auth_username", e.target.value)
-                              }
-                              placeholder="Auth Username"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="reg_fail_retry" required>
-                            RegFail Retry
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              size="small"
-                              fullWidth
-                              value={form.ui_reg_fail_retry || ""}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_reg_fail_retry",
-                                  e.target.value,
-                                )
-                              }
-                              error={!!validationErrors.ui_reg_fail_retry}
-                              placeholder="30"
-                            />
-                            {validationErrors.ui_reg_fail_retry && (
-                              <div className="text-red-500 text-xs mt-0.5">
-                                {validationErrors.ui_reg_fail_retry}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="outbound_cid_source">
-                        Outbound CallerId Source
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_outbound_cid_source}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_outbound_cid_source",
-                                e.target.value,
-                              )
-                            }
-                            displayEmpty
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_OUTBOUND_CID_SOURCE_OPTIONS.map(
-                              (c) => (
-                                <MenuItem key={c || "_empty"} value={c}>
-                                  {c || <em>—</em>}
-                                </MenuItem>
-                              ),
-                            )}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="record">
-                        Record
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_record}
-                            onChange={(e) =>
-                              handleChange("ui_record", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="enabled" required>
-                        Enabled
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_enabled}
-                            onChange={(e) =>
-                              handleChange("ui_enabled", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="eth_port" required>
-                        Eth Port
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_eth_port}
-                            onChange={(e) =>
-                              handleChange("ui_eth_port", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {(ethPortOptions.length
-                              ? ethPortOptions
-                              : SIP_REGISTER_ETH_PORT_OPTIONS.map((v) => ({
-                                  value: v,
-                                  label: v,
-                                }))
-                            ).map((opt) => (
-                              <MenuItem key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="trunk_ip_domain" required>
-                        Trunk IP/Domain
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.provider || ""}
-                          onChange={(e) =>
-                            handleChange("provider", e.target.value)
-                          }
-                          error={!!validationErrors.provider}
-                          placeholder="host:port or domain"
-                        />
-                        {validationErrors.provider && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.provider}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="w-full">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                        <TrunkFieldLabel tooltipKey="show_outbound_cid_name">
-                          Show Outbound CallerID Name
-                        </TrunkFieldLabel>
-                        <div className="flex-1 min-w-0 flex items-center justify-start">
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                checked={!!form.ui_show_outbound_cid_name}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_show_outbound_cid_name",
-                                    e.target.checked,
-                                  )
-                                }
-                                size="small"
-                                sx={sipRegisterTableCheckboxSx}
-                              />
-                            }
-                            label=""
-                            sx={trunkFormCheckboxLabelSx}
-                          />
-                        </div>
-                      </div>
-                      {form.ui_show_outbound_cid_name && (
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="outbound_cid_name">
-                            Outbound CallerId Name
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              size="small"
-                              fullWidth
-                              value={form.ui_outbound_cid_name}
-                              onChange={(e) =>
-                                handleChange(
-                                  "ui_outbound_cid_name",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="outbound_cid_number">
-                        Outbound CallerId Number
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.ui_outbound_cid_number}
-                          onChange={(e) =>
-                            handleChange(
-                              "ui_outbound_cid_number",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {form.ui_register === "Yes" && (
-                      <>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="password" required>
-                            Password
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              type={showPassword ? "text" : "password"}
-                              size="small"
-                              fullWidth
-                              value={form.password || ""}
-                              onChange={(e) =>
-                                handleChange("password", e.target.value)
-                              }
-                              error={!!validationErrors.password}
-                              InputProps={{
-                                endAdornment: (
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      size="small"
-                                      onClick={togglePasswordVisibility}
-                                      edge="end"
-                                    >
-                                      {showPassword ? (
-                                        <VisibilityOff fontSize="small" />
-                                      ) : (
-                                        <Visibility fontSize="small" />
-                                      )}
-                                    </IconButton>
-                                  </InputAdornment>
-                                ),
-                              }}
-                            />
-                            {validationErrors.password && (
-                              <div className="text-red-500 text-xs mt-0.5">
-                                {validationErrors.password}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="expire_in_sec" required>
-                            Expire Seconds
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <TextField
-                              size="small"
-                              fullWidth
-                              value={form.expire_in_sec || ""}
-                              onChange={(e) =>
-                                handleChange("expire_in_sec", e.target.value)
-                              }
-                              error={!!validationErrors.expire_in_sec}
-                            />
-                            {validationErrors.expire_in_sec && (
-                              <div className="text-red-500 text-xs mt-0.5">
-                                {validationErrors.expire_in_sec}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                          <TrunkFieldLabel tooltipKey="match_username" required>
-                            Match Username
-                          </TrunkFieldLabel>
-                          <div className="flex-1 min-w-0">
-                            <FormControl
-                              fullWidth
-                              size="small"
-                              error={!!validationErrors.ui_match_username}
-                            >
-                              <MuiSelect
-                                value={form.ui_match_username || "Yes"}
-                                onChange={(e) =>
-                                  handleChange(
-                                    "ui_match_username",
-                                    e.target.value,
-                                  )
-                                }
-                                sx={sipRegisterModalSelectSx}
-                              >
-                                {SIP_REGISTER_YES_NO.map((c) => (
-                                  <MenuItem key={c} value={c}>
-                                    {c}
-                                  </MenuItem>
-                                ))}
-                              </MuiSelect>
-                            </FormControl>
-                            {validationErrors.ui_match_username && (
-                              <div className="text-red-500 text-xs mt-0.5">
-                                {validationErrors.ui_match_username}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="w-full">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                            <TrunkFieldLabel tooltipKey="enable_proxy">
-                              Enable Proxy
-                            </TrunkFieldLabel>
-                            <div className="flex-1 min-w-0 flex items-center justify-start">
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={!!form.ui_enable_proxy}
-                                    onChange={(e) =>
-                                      handleChange(
-                                        "ui_enable_proxy",
-                                        e.target.checked,
-                                      )
-                                    }
-                                    size="small"
-                                    sx={sipRegisterTableCheckboxSx}
-                                  />
-                                }
-                                label=""
-                                sx={trunkFormCheckboxLabelSx}
-                              />
-                            </div>
-                          </div>
-
-                          {form.ui_enable_proxy && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                              <TrunkFieldLabel tooltipKey="proxy_ip" required>
-                                Proxy IP
-                              </TrunkFieldLabel>
-                              <div className="flex-1 min-w-0">
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={form.ui_proxy_ip || ""}
-                                  onChange={(e) =>
-                                    handleChange("ui_proxy_ip", e.target.value)
-                                  }
-                                  error={!!validationErrors.ui_proxy_ip}
-                                />
-                                {validationErrors.ui_proxy_ip && (
-                                  <div className="text-red-500 text-xs mt-0.5">
-                                    {validationErrors.ui_proxy_ip}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <SipRegisterBasicTab
+                form={form}
+                validationErrors={validationErrors}
+                handleChange={handleChange}
+                editIndex={editIndex}
+                ethPortOptions={ethPortOptions}
+                showPassword={showPassword}
+                togglePasswordVisibility={togglePasswordVisibility}
+              />
             )}
-
             {modalTab === "codec" && (
-              <div className="p-3 sm:p-5">
-                <TrunkModalSectionHeading title="CODEC Priority" isFirst />
-                <SipRegisterCodecDualList
-                  allOptions={SIP_REGISTER_CODEC_OPTIONS}
-                  selected={selectedCodecList}
-                  onChange={updateCodecList}
-                  getLabel={getCodecLabel}
-                  style={{ maxWidth: 720, margin: "0 auto" }}
-                />
-                {validationErrors.allow_codecs && (
-                  <div className="text-red-500 text-xs mt-3 text-center">
-                    {validationErrors.allow_codecs}
-                  </div>
-                )}
-              </div>
+              <SipRegisterCodecTab
+                selectedCodecList={selectedCodecList}
+                updateCodecList={updateCodecList}
+                getCodecLabel={getCodecLabel}
+                validationErrors={validationErrors}
+              />
             )}
-
             {modalTab === "advance" && (
-              <div className="p-3 sm:p-5 space-y-6">
-                <div className="hidden">
-                  <h3 className="text-base font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-1">
-                    SIP registration
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                        SIP Header
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.sip_header || ""}
-                          onChange={(e) =>
-                            handleChange("sip_header", e.target.value)
-                          }
-                          error={!!validationErrors.sip_header}
-                          placeholder="+91...@sip.domain"
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
-                                  sip:
-                                </span>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        {validationErrors.sip_header && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.sip_header}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                        Server Domain
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.server_domain || ""}
-                          onChange={(e) =>
-                            handleChange("server_domain", e.target.value)
-                          }
-                          error={!!validationErrors.server_domain}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
-                                  sip:
-                                </span>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        {validationErrors.server_domain && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.server_domain}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                        Client Domain
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.client_domain || ""}
-                          onChange={(e) =>
-                            handleChange("client_domain", e.target.value)
-                          }
-                          error={!!validationErrors.client_domain}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
-                                  sip:
-                                </span>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        {validationErrors.client_domain && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.client_domain}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                        Outbound Proxy
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form["Outbound Proxy"] || ""}
-                          onChange={(e) =>
-                            handleChange("Outbound Proxy", e.target.value)
-                          }
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <span className="text-sm text-gray-600">
-                                  sip:
-                                </span>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-1">
-                      <label className="text-[13px] font-semibold text-[#3E5475] sm:w-[11rem] sm:text-right shrink-0 pt-1.5">
-                        Identifier IP
-                      </label>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.identity_ip || ""}
-                          onChange={(e) =>
-                            handleChange("identity_ip", e.target.value)
-                          }
-                          error={!!validationErrors.identity_ip}
-                        />
-                        {validationErrors.identity_ip && (
-                          <div className="text-red-500 text-xs mt-0.5">
-                            {validationErrors.identity_ip}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <TrunkModalSectionHeading title="VoIP Settings" isFirst />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    {[
-                      [
-                        "Get CalledID Type",
-                        "ui_get_called_id_type",
-                        "get_called_id_type",
-                      ],
-                      [
-                        "OPTIONS Interval (s)",
-                        "ui_options_interval",
-                        "options_interval",
-                      ],
-                      ["TX Volume", "ui_tx_volume", "tx_volume"],
-                      ["RX Volume", "ui_rx_volume", "rx_volume"],
-                      ["From User", "from_user", "from_user"],
-                      ["From Domain", "Domain name", "from_domain"],
-                    ].map(([lbl, key, tooltipKey]) => (
-                      <div
-                        key={key}
-                        className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1"
-                      >
-                        <TrunkFieldLabel tooltipKey={tooltipKey}>
-                          {lbl}
-                        </TrunkFieldLabel>
-                        <div className="flex-1 min-w-0">
-                          <TextField
-                            size="small"
-                            fullWidth
-                            value={form[key] || ""}
-                            onChange={(e) => handleChange(key, e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="send_privacy_id">
-                        Send Privacy ID
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_send_privacy_id}
-                            onChange={(e) =>
-                              handleChange("ui_send_privacy_id", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="sip_force_contact">
-                        Sip Force Contact
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_sip_force_contact || ""}
-                            displayEmpty
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_sip_force_contact",
-                                e.target.value,
-                              )
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            <MenuItem value="">
-                              <em>—</em>
-                            </MenuItem>
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <TrunkModalSectionHeading title="Outbound parameters" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="p_preferred_identity">
-                        P-Preferred-Identity
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_p_preferred_identity || "None"}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_p_preferred_identity",
-                                e.target.value,
-                              )
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="remote_party_id">
-                        Remote-Party-ID
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_remote_party_id || "None"}
-                            onChange={(e) =>
-                              handleChange("ui_remote_party_id", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {REMOTE_PARTY_ID_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="p_asserted_identity">
-                        P-Asserted-Identity
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_p_asserted_identity || "None"}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_p_asserted_identity",
-                                e.target.value,
-                              )
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {PREFERRED_ASSERTED_IDENTITY_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="contact">
-                        Contact
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_contact_mode || "Trunk User Name"}
-                            onChange={(e) =>
-                              handleChange("ui_contact_mode", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {CONTACT_MODE_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <TrunkModalSectionHeading title="Other Settings" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="limit_max_calls">
-                        Limit Max Calls
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.ui_limit_max_calls}
-                          onChange={(e) =>
-                            handleChange("ui_limit_max_calls", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="enable_early_session">
-                        Enable Early Session
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_enable_early_session}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_enable_early_session",
-                                e.target.value,
-                              )
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="enable_early_media">
-                        Enable Early Media
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_enable_early_media}
-                            onChange={(e) =>
-                              handleChange(
-                                "ui_enable_early_media",
-                                e.target.value,
-                              )
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_YES_NO.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="user_phone">
-                        User Phone
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0 flex items-center justify-start">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={!!form.ui_user_phone}
-                              onChange={(e) =>
-                                handleChange("ui_user_phone", e.target.checked)
-                              }
-                              size="small"
-                              sx={sipRegisterTableCheckboxSx}
-                            />
-                          }
-                          label=""
-                          sx={trunkFormCheckboxLabelSx}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="call_timeout">
-                        Call Timeout(s)
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.ui_call_timeout}
-                          onChange={(e) =>
-                            handleChange("ui_call_timeout", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="dtmf_transmit">
-                        DTMF Transmit Mode
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <FormControl fullWidth size="small">
-                          <MuiSelect
-                            value={form.ui_dtmf_transmit}
-                            onChange={(e) =>
-                              handleChange("ui_dtmf_transmit", e.target.value)
-                            }
-                            sx={sipRegisterModalSelectSx}
-                          >
-                            {SIP_REGISTER_DTMF_OPTIONS.map((c) => (
-                              <MenuItem key={c} value={c}>
-                                {c}
-                              </MenuItem>
-                            ))}
-                          </MuiSelect>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="max_call_duration">
-                        Max Call Duration (s)
-                      </TrunkFieldLabel>
-                      <div className="flex-1 min-w-0">
-                        <TextField
-                          size="small"
-                          fullWidth
-                          value={form.ui_max_call_duration}
-                          onChange={(e) =>
-                            handleChange("ui_max_call_duration", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="w-full">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-h-[40px] py-1">
-                      <TrunkFieldLabel tooltipKey="dnis">DNIS</TrunkFieldLabel>
-                      <div className="flex-1 min-w-0 flex items-center justify-start">
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={!!form.ui_dnis}
-                              onChange={(e) =>
-                                handleChange("ui_dnis", e.target.checked)
-                              }
-                              size="small"
-                              sx={sipRegisterTableCheckboxSx}
-                            />
-                          }
-                          label=""
-                          sx={trunkFormCheckboxLabelSx}
-                        />
-                      </div>
-                    </div>
-                    {form.ui_dnis && (
-                      <div className="mt-2 rounded-md border border-gray-200 bg-white p-3 sm:p-5">
-                        <TrunkModalSectionHeading
-                          title="DNIS Settings"
-                          isFirst
-                          labelBackground="#ffffff"
-                          titleLeft={0}
-                        />
-
-                        <div
-                          className="grid gap-2 items-center border-b border-gray-200 pb-2 mb-3"
-                          style={{
-                            gridTemplateColumns: trunkDnisRowGridColumns,
-                          }}
-                        >
-                          <SipRegisterFieldLabel tooltipKey="dnis_number">
-                            DNIS Number
-                          </SipRegisterFieldLabel>
-                          <SipRegisterFieldLabel tooltipKey="dnis_name">
-                            DNIS Name
-                          </SipRegisterFieldLabel>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              setDnisRows((r) => [
-                                ...r,
-                                { dnisNumber: "", dnisName: "" },
-                              ])
-                            }
-                            sx={trunkAdaptRowActionBtnSx}
-                            aria-label="add dnis row"
-                          >
-                            <AddIcon fontSize="small" />
-                          </IconButton>
-                        </div>
-
-                        <div className="space-y-2">
-                          {dnisRows.map((row, i) => (
-                            <div
-                              key={i}
-                              className="grid gap-2 items-center"
-                              style={{
-                                gridTemplateColumns: trunkDnisRowGridColumns,
-                              }}
-                            >
-                              <TextField
-                                size="small"
-                                placeholder="DNIS Number"
-                                value={row.dnisNumber}
-                                onChange={(e) =>
-                                  setDnisRows((prev) =>
-                                    prev.map((x, j) =>
-                                      j === i
-                                        ? {
-                                            ...x,
-                                            dnisNumber: e.target.value,
-                                          }
-                                        : x,
-                                    ),
-                                  )
-                                }
-                                sx={trunkAdaptTextFieldSx}
-                              />
-                              <div className="flex items-center gap-1 min-w-0">
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  placeholder="DNIS Name"
-                                  value={row.dnisName}
-                                  onChange={(e) =>
-                                    setDnisRows((prev) =>
-                                      prev.map((x, j) =>
-                                        j === i
-                                          ? {
-                                              ...x,
-                                              dnisName: e.target.value,
-                                            }
-                                          : x,
-                                      ),
-                                    )
-                                  }
-                                  sx={trunkAdaptTextFieldSx}
-                                />
-                                {dnisRows.length > 1 ? (
-                                  <IconButton
-                                    size="small"
-                                    onClick={() =>
-                                      setDnisRows((r) =>
-                                        r.filter((_, j) => j !== i),
-                                      )
-                                    }
-                                    sx={trunkAdaptRowActionBtnSx}
-                                    aria-label="remove dnis row"
-                                  >
-                                    <CloseIcon fontSize="small" />
-                                  </IconButton>
-                                ) : null}
-                              </div>
-                              <span aria-hidden="true" />
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-3 pt-3 border-t border-gray-200">
-                          <SipRegisterFieldLabel
-                            tooltipKey="replace_cid"
-                            style={{ minWidth: "6.5rem", flexShrink: 0 }}
-                          >
-                            Replace CID
-                          </SipRegisterFieldLabel>
-                          <FormControl size="small" sx={{ width: 160 }}>
-                            <MuiSelect
-                              value={form.ui_replace_cid || "No"}
-                              onChange={(e) =>
-                                handleChange("ui_replace_cid", e.target.value)
-                              }
-                              sx={sipRegisterModalSelectSx}
-                            >
-                              {SIP_REGISTER_YES_NO.map((c) => (
-                                <MenuItem key={c} value={c}>
-                                  {c}
-                                </MenuItem>
-                              ))}
-                            </MuiSelect>
-                          </FormControl>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <SipRegisterAdvanceTab
+                form={form}
+                validationErrors={validationErrors}
+                handleChange={handleChange}
+                dnisRows={dnisRows}
+                setDnisRows={setDnisRows}
+                PREFERRED_ASSERTED_IDENTITY_OPTIONS={PREFERRED_ASSERTED_IDENTITY_OPTIONS}
+                REMOTE_PARTY_ID_OPTIONS={REMOTE_PARTY_ID_OPTIONS}
+                CONTACT_MODE_OPTIONS={CONTACT_MODE_OPTIONS}
+              />
             )}
-
             {modalTab === "dod" && (
-              <div className="p-3 sm:p-5">
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {["ADD", "DELETE", "IMPORT", "EXPORT"].map((lbl) => (
-                    <Btn
-                      key={lbl}
-                      type="button"
-                      variant="cancel"
-                      style={trunkDodToolbarBtnStyle}
-                      onClick={() => {
-                        if (lbl === "ADD") handleOpenDodAddModal();
-                        else if (lbl === "DELETE") {
-                          if (!dodSelected.length) {
-                            showMessage("error", "Select DOD rows to delete");
-                            return;
-                          }
-                          setDodRows((rows) =>
-                            rows.filter((_, i) => !dodSelected.includes(i)),
-                          );
-                          setDodSelected([]);
-                        } else
-                          showMessage(
-                            "info",
-                            `${lbl} is not connected to the API yet.`,
-                          );
-                      }}
-                    >
-                      {lbl}
-                    </Btn>
-                  ))}
-                </div>
-
-                {showDodAddModal ? (
-                  <div className="mt-2 bg-white border border-gray-200 rounded-md p-3 sm:p-4 shadow-sm">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 mb-4 w-full">
-                      <div className="flex items-center gap-8 min-w-0">
-                        <TrunkFieldLabel
-                          tooltipKey="dod_name"
-                          required
-                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
-                          style={{ width: 110 }}
-                        >
-                          DOD Name
-                        </TrunkFieldLabel>
-                        <input
-                          className="flex-1 min-w-0"
-                          style={trunkDodCompactInputStyle}
-                          value={dodAddName}
-                          onChange={(e) => setDodAddName(e.target.value)}
-                          {...nativeFieldInteraction}
-                        />
-                      </div>
-                      <div className="flex items-center gap-8 min-w-0">
-                        <TrunkFieldLabel
-                          tooltipKey="dod_number"
-                          required
-                          className="text-[13px] font-semibold text-[#3E5475] whitespace-nowrap shrink-0"
-                          style={{ width: 110 }}
-                        >
-                          DOD Number
-                        </TrunkFieldLabel>
-                        <input
-                          className="flex-1 min-w-0"
-                          style={trunkDodCompactInputStyle}
-                          value={dodAddNumber}
-                          onChange={(e) => setDodAddNumber(e.target.value)}
-                          {...nativeFieldInteraction}
-                        />
-                      </div>
-                    </div>
-
-                    <div style={{ marginTop: 4 }}>
-                      <SipRegisterCodecDualList
-                        hideReorder
-                        allOptions={dodAvailableExtensions}
-                        selected={dodMemberExtensions}
-                        onChange={setDodMemberExtensions}
-                        getLabel={getDodExtLabel}
-                        emptyTextAvailable={dodAvailableEmptyText}
-                        emptyTextSelected="No selected extensions"
-                      />
-                    </div>
-
-                    <div className="flex justify-center gap-4 mt-4">
-                      <Btn
-                        type="button"
-                        variant="primary"
-                        onClick={handleConfirmDodAdd}
-                        style={trunkDodToolbarBtnStyle}
-                      >
-                        ENSURE
-                      </Btn>
-                      <Btn
-                        type="button"
-                        variant="cancel"
-                        onClick={() => {
-                          setShowDodAddModal(false);
-                          resetDodAddForm();
-                        }}
-                        style={trunkDodToolbarBtnStyle}
-                      >
-                        CANCEL
-                      </Btn>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto border border-gray-200 rounded">
-                    <table className="w-full min-w-[480px] text-sm">
-                      <thead>
-                        <tr className="bg-gray-50 text-gray-600 border-b border-gray-200">
-                          <th className="p-2 w-10 text-left">
-                            <input
-                              type="checkbox"
-                              aria-label="select all dod"
-                              onChange={(e) =>
-                                e.target.checked
-                                  ? setDodSelected(dodRows.map((_, i) => i))
-                                  : setDodSelected([])
-                              }
-                              checked={
-                                dodRows.length > 0 &&
-                                dodSelected.length === dodRows.length
-                              }
-                            />
-                          </th>
-                          <th className="p-2 text-left font-medium">
-                            DOD Number
-                          </th>
-                          <th className="p-2 text-left font-medium">
-                            DOD Name
-                          </th>
-                          <th className="p-2 text-left font-medium">
-                            Bind Extension
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dodRows.length === 0 ? (
-                          <tr>
-                            <td
-                              colSpan={4}
-                              className="p-6 text-center text-gray-400"
-                            >
-                              No DOD entries. Click ADD to add a row.
-                            </td>
-                          </tr>
-                        ) : (
-                          dodRows.map((row, i) => (
-                            <tr key={i} className="border-b border-gray-100">
-                              <td className="p-2">
-                                <input
-                                  type="checkbox"
-                                  checked={dodSelected.includes(i)}
-                                  onChange={() =>
-                                    setDodSelected((s) =>
-                                      s.includes(i)
-                                        ? s.filter((x) => x !== i)
-                                        : [...s, i],
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td className="p-1">
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={row.dodNumber}
-                                  onChange={(e) =>
-                                    setDodRows((rows) =>
-                                      rows.map((x, j) =>
-                                        j === i
-                                          ? {
-                                              ...x,
-                                              dodNumber: e.target.value,
-                                            }
-                                          : x,
-                                      ),
-                                    )
-                                  }
-                                  sx={sipRegisterModalTextFieldSx}
-                                />
-                              </td>
-                              <td className="p-1">
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={row.dodName}
-                                  onChange={(e) =>
-                                    setDodRows((rows) =>
-                                      rows.map((x, j) =>
-                                        j === i
-                                          ? { ...x, dodName: e.target.value }
-                                          : x,
-                                      ),
-                                    )
-                                  }
-                                  sx={sipRegisterModalTextFieldSx}
-                                />
-                              </td>
-                              <td className="p-1">
-                                <TextField
-                                  size="small"
-                                  fullWidth
-                                  value={
-                                    Array.isArray(row.bindExtensions)
-                                      ? row.bindExtensions.join(", ")
-                                      : row.bindExtension || ""
-                                  }
-                                  onChange={(e) => {
-                                    const raw = e.target.value || "";
-                                    const list = raw
-                                      .split(",")
-                                      .map((s) => s.trim())
-                                      .filter(Boolean);
-                                    setDodRows((rows) =>
-                                      rows.map((x, j) =>
-                                        j === i
-                                          ? {
-                                              ...x,
-                                              bindExtensions: list,
-                                              bindExtension: raw,
-                                            }
-                                          : x,
-                                      ),
-                                    );
-                                  }}
-                                  sx={sipRegisterModalTextFieldSx}
-                                />
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
+              <SipRegisterDodTab
+                dodRows={dodRows}
+                setDodRows={setDodRows}
+                dodSelected={dodSelected}
+                setDodSelected={setDodSelected}
+                showDodAddModal={showDodAddModal}
+                setShowDodAddModal={setShowDodAddModal}
+                dodAddName={dodAddName}
+                setDodAddName={setDodAddName}
+                dodAddNumber={dodAddNumber}
+                setDodAddNumber={setDodAddNumber}
+                dodMemberExtensions={dodMemberExtensions}
+                setDodMemberExtensions={setDodMemberExtensions}
+                dodAvailableExtensions={dodAvailableExtensions}
+                dodAvailableEmptyText={dodAvailableEmptyText}
+                getDodExtLabel={getDodExtLabel}
+                handleOpenDodAddModal={handleOpenDodAddModal}
+                handleConfirmDodAdd={handleConfirmDodAdd}
+                resetDodAddForm={resetDodAddForm}
+                showMessage={showMessage}
+              />
             )}
-
             {modalTab === "adapt" && (
-              <div className="p-3 sm:p-5">
-                <div
-                  className="grid gap-2 items-center text-[12px] font-semibold border-b border-gray-200 pb-2 mb-3"
-                  style={{
-                    gridTemplateColumns: trunkAdaptRowGridColumns,
-                  }}
-                >
-                  <SipRegisterFieldLabel tooltipKey="match_mode">
-                    Match Mode
-                  </SipRegisterFieldLabel>
-                  <SipRegisterFieldLabel tooltipKey="strip">
-                    Strip
-                  </SipRegisterFieldLabel>
-                  <SipRegisterFieldLabel tooltipKey="prepend">
-                    Prepend
-                  </SipRegisterFieldLabel>
-                  <SipRegisterAdaptRowActionBtn
-                    onClick={() =>
-                      setAdaptRows((r) => [
-                        ...r,
-                        { matchMode: "", strip: "", prepend: "" },
-                      ])
-                    }
-                    aria-label="add adapt row"
-                  >
-                    <AddIcon sx={sipRegisterAdaptRowIconSx} />
-                  </SipRegisterAdaptRowActionBtn>
-                </div>
-                <div className="space-y-2">
-                  {adaptRows.map((row, i) => (
-                    <div
-                      key={i}
-                      className="grid gap-2 items-center"
-                      style={{
-                        gridTemplateColumns: trunkAdaptRowGridColumns,
-                      }}
-                    >
-                      <TextField
-                        size="small"
-                        placeholder="Match"
-                        value={row.matchMode}
-                        onChange={(e) =>
-                          setAdaptRows((r) =>
-                            r.map((x, j) =>
-                              j === i ? { ...x, matchMode: e.target.value } : x,
-                            ),
-                          )
-                        }
-                        sx={trunkAdaptTextFieldSx}
-                      />
-                      <TextField
-                        size="small"
-                        placeholder="Strip"
-                        value={row.strip}
-                        onChange={(e) =>
-                          setAdaptRows((r) =>
-                            r.map((x, j) =>
-                              j === i ? { ...x, strip: e.target.value } : x,
-                            ),
-                          )
-                        }
-                        sx={trunkAdaptTextFieldSx}
-                      />
-                      <TextField
-                        size="small"
-                        placeholder="Prepend"
-                        value={row.prepend}
-                        onChange={(e) =>
-                          setAdaptRows((r) =>
-                            r.map((x, j) =>
-                              j === i ? { ...x, prepend: e.target.value } : x,
-                            ),
-                          )
-                        }
-                        sx={trunkAdaptTextFieldSx}
-                      />
-                      {adaptRows.length > 1 ? (
-                        <SipRegisterAdaptRowActionBtn
-                          onClick={() =>
-                            setAdaptRows((r) => r.filter((_, j) => j !== i))
-                          }
-                          aria-label="remove adapt row"
-                        >
-                          <CloseIcon sx={sipRegisterAdaptRowIconSx} />
-                        </SipRegisterAdaptRowActionBtn>
-                      ) : (
-                        <span aria-hidden="true" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <SipRegisterAdaptTab adaptRows={adaptRows} setAdaptRows={setAdaptRows} />
             )}
           </div>
         </DialogContent>
