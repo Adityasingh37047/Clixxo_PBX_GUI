@@ -46,7 +46,7 @@ function ImportDialog(props) {
             display: "flex",
             flexDirection: "column",
             p: 0,
-            borderRadius: "8px",
+            borderRadius: "4px",
             overflow: "hidden",
           },
         }}

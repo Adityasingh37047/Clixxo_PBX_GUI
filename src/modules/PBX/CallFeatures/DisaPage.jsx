@@ -84,7 +84,7 @@ const C = {
 // ── Local page UI ──
 
 
-const DISA_TABLE_CARD_RADIUS = 10;
+const DISA_TABLE_CARD_RADIUS = 4;
 
 const disaPaginationStyle = {
   display: "flex",
@@ -214,8 +214,8 @@ const disaModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const disaModalSectionStyle = {
@@ -225,7 +225,7 @@ const disaModalSectionStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: "20px 24px 24px",
   marginTop: 24,
 };
@@ -261,8 +261,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -1165,7 +1165,7 @@ const DisaPage = () => {
         onClose={loading.save || loading.get ? null : handleCloseModal}
         maxWidth={false}
         sx={disaModalDialogContainerSx}
-        PaperProps={{ sx: disaModalPaperSx }}
+        PaperProps={{ sx: { ...disaModalPaperSx, borderRadius: editId == null ? "4px" : disaModalPaperSx.borderRadius } }}
       >
         <DialogTitle style={disaModalTitleStyle}>
           {editId != null ? `Edit ${DISA_TITLE}` : `Add ${DISA_TITLE}`}

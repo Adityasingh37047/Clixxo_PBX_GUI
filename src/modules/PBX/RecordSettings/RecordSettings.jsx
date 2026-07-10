@@ -47,7 +47,7 @@ const C = {
 };
 
 
-const RECORD_SETTINGS_CARD_RADIUS = 10;
+const RECORD_SETTINGS_CARD_RADIUS = 4;
 
 const recordSettingsFormBodyStyle = {
   width: "100%",

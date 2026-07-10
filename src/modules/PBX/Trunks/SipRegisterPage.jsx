@@ -363,7 +363,7 @@ const trunkModalPaperSx = {
   display: "flex",
   flexDirection: "column",
   p: 0,
-  borderRadius: "8px",
+  borderRadius: "4px",
   overflow: "hidden",
   boxShadow:
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
@@ -382,8 +382,8 @@ const trunkModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const trunkModalFormPanelStyle = {
@@ -393,7 +393,7 @@ const trunkModalFormPanelStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   paddingTop: 0,
   paddingBottom: 0,
   boxSizing: "border-box",
@@ -410,8 +410,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -550,7 +550,7 @@ const trunkDodToolbarBtnStyle = {
   height: 30,
   fontSize: 12,
   padding: "6px 14px",
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const Pill = ({ text, bg, color }) => (

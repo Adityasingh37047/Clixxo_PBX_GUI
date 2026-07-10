@@ -49,7 +49,7 @@ const ExtensionsPage = () => {
               padding: "24px 32px",
               border: `1px solid ${C.cardBorder}`,
               boxShadow: "0 4px 16px rgba(15, 23, 42, 0.12)",
-              borderRadius: 10,
+              borderRadius: 4,
             }}
           >
             <CircularProgress size={50} sx={{ color: C.accent }} />

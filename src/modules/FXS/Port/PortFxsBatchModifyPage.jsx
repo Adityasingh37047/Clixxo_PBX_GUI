@@ -10,7 +10,7 @@ import {
   PORT_FXS_BATCH_MODIFY_FIELD_TOOLTIPS,
 } from "../../../constants/PortFxsPageConstants";
 import { saveFxsBatch } from "../../../api/apiService";
-import { Alert, Checkbox, Tooltip } from "@mui/material";
+  import { Alert, Checkbox, Tooltip } from "@mui/material";
 
 // ── Page-local field label tooltip UI (not shared) ──
 const FIELD_LABEL_COLOR = "#3E5475";
@@ -90,7 +90,7 @@ const C = {
   amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 
 const addNewModalFooterStyle = {
   display: "flex",

@@ -91,7 +91,7 @@ const C = {
   fieldBg: "#ffffff",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 8;
 
 const Btn = ({

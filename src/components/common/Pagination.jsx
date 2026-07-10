@@ -1,7 +1,7 @@
 import { C } from "../../theme/pbxTokens";
 import { Btn } from "./Button";
 
-const EXTENSION_TABLE_CARD_RADIUS = 10;
+const EXTENSION_TABLE_CARD_RADIUS = 4;
 
 const extensionPaginationStyle = {
   display: "flex",

@@ -49,7 +49,7 @@ const C = {
   sectionHeading: "#30415A",
 };
 
-const VOICEMAIL_CARD_RADIUS = 10;
+const VOICEMAIL_CARD_RADIUS = 4;
 const VOICEMAIL_FORM_HORIZONTAL_PADDING = 24;
 const VOICEMAIL_FIELD_LABEL_WIDTH = 260;
 const VOICEMAIL_INPUT_WIDTH = 150;
@@ -83,7 +83,7 @@ const pageFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

@@ -110,8 +110,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -380,11 +380,11 @@ const outboundRestrictionModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
-const OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS = 10;
+const OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS = 4;
 
 const outboundRestrictionPaginationStyle = {
   display: "flex",
@@ -591,7 +591,7 @@ const outboundRestrictionModalFormStyle = {
   overflow: "hidden",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -1390,7 +1390,7 @@ const OutboundRestrictions = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: outboundRestrictionModalPaperSx }}
+        PaperProps={{ sx: { ...outboundRestrictionModalPaperSx, borderRadius: editId == null ? "4px" : outboundRestrictionModalPaperSx.borderRadius } }}
         disableRestoreFocus
         disableEnforceFocus
       >

@@ -70,7 +70,7 @@ const C = {
 // ── Local page UI ──
 
 
-const PAGING_TABLE_CARD_RADIUS = 10;
+const PAGING_TABLE_CARD_RADIUS = 4;
 
 const pagingPaginationStyle = {
   display: "flex",
@@ -200,14 +200,14 @@ const pagingModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const pagingModalSectionStyle = {
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -222,8 +222,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -1073,7 +1073,7 @@ const Paging = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: pagingModalPaperSx }}
+        PaperProps={{ sx: { ...pagingModalPaperSx, borderRadius: editId == null ? "4px" : pagingModalPaperSx.borderRadius } }}
       >
         <DialogTitle style={pagingModalTitleStyle}>
           {editId != null ? `Edit ${PAGING_TITLE}` : `Add ${PAGING_TITLE}`}

@@ -47,8 +47,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -164,7 +164,7 @@ const ExtensionModalSectionHeading = ({
   );
 };
 
-const EXTENSION_TABLE_CARD_RADIUS = 10;
+const EXTENSION_TABLE_CARD_RADIUS = 4;
 
 const extensionCardStyle = {
   background: "#ffffff",

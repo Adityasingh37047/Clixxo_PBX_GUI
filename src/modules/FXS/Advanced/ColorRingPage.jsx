@@ -102,7 +102,7 @@ const C = {
   amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 
 const Btn = ({
   children,

@@ -107,7 +107,7 @@ const C = {
 
 
 
-const AUTO_PROVISION_TABLE_CARD_RADIUS = 10;
+const AUTO_PROVISION_TABLE_CARD_RADIUS = 4;
 
 const autoProvisionPaginationStyle = {
   display: "flex",

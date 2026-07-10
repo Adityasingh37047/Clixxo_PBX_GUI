@@ -70,7 +70,7 @@ const C = {
 // ── Local page UI ──
 
 
-const PRIVATE_GROUP_TABLE_CARD_RADIUS = 10;
+const PRIVATE_GROUP_TABLE_CARD_RADIUS = 4;
 
 const privateGroupPaginationStyle = {
   display: "flex",
@@ -200,14 +200,14 @@ const privateGroupModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const privateGroupModalSectionStyle = {
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -222,8 +222,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -1038,7 +1038,7 @@ const PrivateGroup = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: privateGroupModalPaperSx }}
+        PaperProps={{ sx: { ...privateGroupModalPaperSx, borderRadius: editId == null ? "4px" : privateGroupModalPaperSx.borderRadius } }}
       >
         <DialogTitle style={privateGroupModalTitleStyle}>
           {editId != null ? `Edit ${PRIVATE_GROUP_TITLE}` : `Add ${PRIVATE_GROUP_TITLE}`}

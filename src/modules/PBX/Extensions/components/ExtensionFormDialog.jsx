@@ -49,7 +49,7 @@ function ExtensionFormDialog(props) {
             display: "flex",
             flexDirection: "column",
             p: 0,
-            borderRadius: "8px",
+            borderRadius: "4px",
             overflow: "hidden",
           },
         }}
@@ -62,8 +62,8 @@ function ExtensionFormDialog(props) {
             fontSize: 16,
             padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
           }}
         >
           {formMode === "bulk"
@@ -100,7 +100,7 @@ function ExtensionFormDialog(props) {
               width: "100%",
               background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
+              borderRadius: 4,
               padding: 20,
             }}
           >

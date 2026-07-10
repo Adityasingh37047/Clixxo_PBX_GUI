@@ -85,8 +85,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -114,7 +114,7 @@ const callBackModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const CALL_BACK_TABLE_CARD_RADIUS = 10;
+const CALL_BACK_TABLE_CARD_RADIUS = 4;
 
 const callBackPaginationStyle = {
   display: "flex",
@@ -244,8 +244,8 @@ const callBackModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const callBackModalFormStyle = {
@@ -258,7 +258,7 @@ const callBackModalFormStyle = {
   overflow: "hidden",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -1094,7 +1094,7 @@ const CallBackPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: callBackModalPaperSx }}
+        PaperProps={{ sx: { ...callBackModalPaperSx, borderRadius: editId == null ? "4px" : callBackModalPaperSx.borderRadius } }}
          sx={{
           "& .MuiDialog-container": {
             alignItems: "center",
