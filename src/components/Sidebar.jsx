@@ -690,7 +690,7 @@ const Sidebar = ({
         />
       )}
 
-      {/* Full-height sidebar backdrop */}
+      {/* Full-height backdrop — left rail color fills all free space below menus */}
       <div
         aria-hidden
         style={{
@@ -706,21 +706,22 @@ const Sidebar = ({
         }}
       />
 
-      {/* Sidebar wrapper */}
+      {/* Sidebar wrapper — content height only; backdrop fills the rest */}
       <div
         style={{
           position: "fixed",
           top: `${navbarHeight}px`,
           left: sidebarLeft,
-          height: `calc(100vh - ${navbarHeight}px)`,
+          height: "auto",
+          maxHeight: `calc(100vh - ${navbarHeight}px)`,
           display: "flex",
           flexDirection: "row",
+          alignItems: "flex-start",
           width: sidebarWidth,
           zIndex: 40,
           borderTop: `1px solid ${SIDEBAR_BORDER}`,
           transition: isMobile ? "left 0.3s ease" : "width 0.2s ease",
           overscrollBehavior: "contain",
-          overflow: "hidden",
         }}
       >
         {/* LEFT MENU */}
@@ -731,9 +732,10 @@ const Sidebar = ({
           style={{
             minWidth: LEFT_W,
             width: LEFT_W,
-            height: "100%",
+            height: "auto",
+            maxHeight: `calc(100vh - ${navbarHeight}px)`,
             flexShrink: 0,
-            background: SIDEBAR_RAIL_BG,
+            background: "transparent",
             overflowY: "auto",
             overflowX: "hidden",
             WebkitOverflowScrolling: "touch",
@@ -751,9 +753,11 @@ const Sidebar = ({
             className="sidebar-submenu-panel sidebar-slim-scrollbar"
             style={{
               width: RIGHT_W,
-              height: "100%",
+              height: "auto",
+              maxHeight: `calc(100vh - ${navbarHeight}px)`,
               flex: "0 0 auto",
               minWidth: 0,
+              alignSelf: "flex-start",
               background: SIDEBAR_PANEL_BG,
               overflowY: "auto",
               overflowX: "hidden",
