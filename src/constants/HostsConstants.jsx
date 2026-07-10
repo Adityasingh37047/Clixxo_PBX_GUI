@@ -28,18 +28,20 @@ export const HOSTS_CANCEL_BTN_STYLE = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 export const HOSTS_PRIMARY_BTN_STYLE = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 export const HOSTS_MODAL_BTN_STYLE = {
   height: 30,
   minWidth: 100,
+  borderRadius: 4,
 };
 
 export const HOSTS_TABLE_HEADERS = {

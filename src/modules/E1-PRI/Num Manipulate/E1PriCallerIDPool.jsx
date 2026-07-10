@@ -139,7 +139,7 @@ const C = {
   amber: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_MARGIN = 24;
 const NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
 
@@ -241,7 +241,7 @@ const addHostFormPanelStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: FIELD_RADIUS,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -329,15 +329,15 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -466,7 +466,7 @@ const Btn = ({
           variant === "primary" || variant === "cancel"
             ? "8px 32px"
             : "6px 14px",
-        borderRadius: 8,
+        borderRadius: 4,
         fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -731,7 +731,7 @@ const CallerIDPool = () => {
                 variant="cancel"
                 onClick={onDelete}
                 disabled={checkedItems.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 {NUM_MANIPULATE_CALLERID_POOL_DELETE_LABEL}
@@ -740,14 +740,14 @@ const CallerIDPool = () => {
                 variant="cancel"
                 onClick={onClear}
                 disabled={rows.length === 0}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {NUM_MANIPULATE_CALLERID_POOL_CLEAR_ALL_LABEL}
               </Btn>
               <Btn
                 variant="primary"
                 onClick={onAddNew}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {NUM_MANIPULATE_CALLERID_POOL_ADD_NEW_LABEL}
               </Btn>

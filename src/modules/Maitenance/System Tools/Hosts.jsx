@@ -25,7 +25,7 @@ import {
 
 const HOSTS_FORM_PAD_X = 28;
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const C = {
@@ -255,7 +255,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -310,7 +310,7 @@ const modalOverlayStyle = {
 const modalStyle = {
   background: "#ffffff",
   border: `none`,
-  borderRadius: 8,
+  borderRadius: 4,
   width: 500,
   maxWidth: "95vw",
   maxHeight: "calc(100vh - 120px)",
@@ -327,8 +327,8 @@ const modalHeaderStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
@@ -1158,7 +1158,7 @@ const Hosts = () => {
                   gap: 14,
                   background: "#f8fafc",
                   border: `1px solid ${C.cardBorder}`,
-                  borderRadius: 8,
+                  borderRadius: 4,
                   padding: 20,
                 }}
               >

@@ -214,7 +214,7 @@ const Btn = ({
           variant === "primary" || variant === "cancel"
             ? "8px 32px"
             : "6px 14px",
-        borderRadius: variant === "primary" || variant === "cancel" ? 8 : 8,
+        borderRadius: 4,
         fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",

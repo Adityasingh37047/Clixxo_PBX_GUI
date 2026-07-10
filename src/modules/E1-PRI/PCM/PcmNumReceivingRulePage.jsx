@@ -53,7 +53,7 @@ const PCM_NUM_RECEIVING_RULE_ADD_NEW_DIALOG_PAPER_SX = {
   width: 500,
   maxWidth: "95vw",
   p: 0,
-  borderRadius: "8px",
+  borderRadius: "4px",
   overflow: "hidden",
   boxShadow:
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
@@ -271,7 +271,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -392,8 +392,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -667,7 +667,7 @@ const pcmNumReceivingRuleModalFormPanelStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -1391,8 +1391,8 @@ const PcmNumReceivingRulePage = () => {
             fontSize: 16,
             padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
             flexShrink: 0,
           }}
         >

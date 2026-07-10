@@ -50,7 +50,7 @@ const C = {
   gridHeaderBg: "#F8FAFC",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 // ── Local field UI (matches Network.jsx design language) ──
@@ -144,7 +144,7 @@ const addHostFormPanelStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -182,7 +182,7 @@ const modalOverlayStyle = {
 const modalStyle = {
   background: "#ffffff",
   border: `none`,
-  borderRadius: 8,
+  borderRadius: 4,
   width: 500,
   maxWidth: "95vw",
   maxHeight: "calc(100vh - 120px)",
@@ -199,8 +199,8 @@ const modalHeaderStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
   borderBottom: `1px solid ${C.divider}`,
 };
 const modalBodyStyle = {
@@ -234,8 +234,8 @@ const modalFooterStyle = {
   padding: "10px 16px",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 const tableContainerStyle = {
   width: "100%",
@@ -862,7 +862,7 @@ const AccountManage = () => {
             ...tableContainerStyle,
             background: C.cardBg,
             border: `1px solid ${C.cardBorder}`,
-            borderRadius: 10,
+            borderRadius: CARD_RADIUS,
           }}
         >
           <div style={blueBarStyle}>

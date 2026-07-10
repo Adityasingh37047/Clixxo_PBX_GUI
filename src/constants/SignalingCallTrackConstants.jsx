@@ -40,7 +40,7 @@ export const SIGNALING_CALL_TRACK_BUTTON_STYLE = {
   minWidth: 100,
   height: 30,
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   padding: '6px 14px',
 };
 

@@ -48,7 +48,7 @@ const C = {
   sectionHeading: SIGNALING_CALL_TEST_SECTION_HEADING_COLOR,
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;  
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -325,7 +325,7 @@ const PanelTitle = ({ title }) => (
   >
     {title}
   </span>
-);
+);  
 
 const sctBodyStyle = {
   display: "flex",
@@ -339,7 +339,7 @@ const sctBodyStyle = {
 const sctConfigPanelStyle = {
   background: "#ffffff",
   border: `1px solid ${C.divider}`,
-  borderRadius: 8,
+  borderRadius: 4,
   overflow: "hidden",
 };
 
@@ -382,7 +382,7 @@ const sctFieldsColumnStyle = {
 
 const sctOutputPanelStyle = {
   border: `1px solid ${C.divider}`,
-  borderRadius: 8,
+  borderRadius: 4,
   overflow: "hidden",
   background: "#ffffff",
 };

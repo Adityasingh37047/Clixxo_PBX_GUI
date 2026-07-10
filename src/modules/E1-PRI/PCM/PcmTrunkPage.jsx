@@ -44,7 +44,7 @@ const PCM_TRUNK_ADD_NEW_DIALOG_PAPER_SX = {
   width: 600,
   maxWidth: "95vw",
   p: 0,
-  borderRadius: "8px",
+  borderRadius: "4px",
   overflow: "hidden",
   boxShadow:
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
@@ -125,7 +125,7 @@ const C = {
   accent: "#3E5475",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 
 const Btn = ({
   children,
@@ -179,7 +179,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -415,7 +415,7 @@ const pcmTrunkModalFormPanelStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -430,15 +430,15 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -670,11 +670,11 @@ const PcmTrunkPage = () => {
               <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 + Add New
               </Btn>
-              <Btn variant="cancel" style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}>
+              <Btn variant="cancel" style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}>
                 Batch Add
               </Btn>
             </div>
@@ -725,7 +725,7 @@ const PcmTrunkPage = () => {
                   variant="cancel"
                   onClick={handleInverse}
                   disabled={trunks.length === 0}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   Inverse
                 </Btn>
@@ -733,7 +733,7 @@ const PcmTrunkPage = () => {
                   variant="cancel"
                   onClick={handleDelete}
                   disabled={selected.length === 0}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                   Delete
@@ -742,14 +742,14 @@ const PcmTrunkPage = () => {
                   variant="cancel"
                   onClick={handleClearAll}
                   disabled={trunks.length === 0}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   Clear All
                 </Btn>
                 <Btn
                   variant="primary"
                   onClick={() => handleOpenModal()}
-                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                  style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
                 >
                   + Add New
                 </Btn>
@@ -921,8 +921,8 @@ const PcmTrunkPage = () => {
             fontSize: 16,
             padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
             flexShrink: 0,
           }}
         >

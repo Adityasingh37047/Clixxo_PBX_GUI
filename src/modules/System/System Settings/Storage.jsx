@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { TH, tdStyle } from "../../../components/common/tableKit";
+import { useEffect } from "react";
+import { getStorageUsage,
+  getStorageSettings,
+  updateStorageSettings,
+  resetStorageSettings,
+
+ } from "../../../api/apiService";
 import {
   TextField,
   Select,
@@ -24,6 +32,17 @@ import {
   STORAGE_AUTO_CLEANUP_SECTIONS,
   STORAGE_BACKUP_FIELDS,
   STORAGE_LABEL_START_TIME,
+  STORAGE_TAB_STATUS_ID,
+  STORAGE_SECTION_STATUS,
+  STORAGE_SECTION_DEVICES,
+  STORAGE_STATUS_COL_COUNT,
+  STORAGE_STATUS_COL_SIZE,
+  STORAGE_TABLE_COL_STORAGE,
+  STORAGE_TABLE_COL_TOTAL_CAPACITY,
+  STORAGE_TABLE_COL_USED_SPACE,
+  STORAGE_TABLE_COL_AVAILABLE_SPACE,
+  STORAGE_TABLE_COL_USAGE,
+  STORAGE_DEVICE_LOCAL_DISK,
 } from "../../../constants/StorageConstants";
 
 const STORAGE_COMPACT_MQ = "(max-width: 768px)";
@@ -54,7 +73,7 @@ const C = {
   sectionHeading: "#30415A",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -149,6 +168,20 @@ const modalTextFieldSx = {
   width: "100%",
   maxWidth: "100%",
   minWidth: 0,
+  "& .MuiOutlinedInput-root": {
+    ...storageOutlinedInputRootSx,
+    minHeight: 34,
+    width: "100%",
+    maxWidth: "100%",
+  },
+};
+
+const storageStatusTextFieldSx = {
+  ...storageTextFieldSx,
+  width: 180, // ya 200, jitni width chahiye
+  minWidth: 180,
+  maxWidth: 180,
+
   "& .MuiOutlinedInput-root": {
     ...storageOutlinedInputRootSx,
     minHeight: 34,
@@ -277,7 +310,7 @@ const Btn = ({
           variant === "primary" || variant === "cancel"
             ? "8px 32px"
             : "6px 14px",
-        borderRadius: 8,
+        borderRadius: 4,
         fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -319,7 +352,7 @@ const storageFormBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -539,9 +572,97 @@ const storageSingleColumnStyle = (isCompact) => ({
 const storageBackupContentStyle = {
   width: "100%",
   maxWidth: STORAGE_BACKUP_CONTENT_MAX_WIDTH,
-  margin: "0 auto",
+  margin: "0 0 20px 0",
 };
 
+const storageDevicesTableShellStyle = {
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: CARD_RADIUS,
+  overflow: "hidden",
+  background: C.cardBg,
+};
+
+const getStorageDeviceRowBg = (idx) =>
+  idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+
+const StorageTableTD = ({
+  children,
+  isLastCol = false,
+  isLastRow = false,
+  rowBg,
+}) => (
+  <td
+    style={{
+      ...tdStyle,
+      background: rowBg,
+      ...(isLastRow ? { borderBottom: "none" } : {}),
+      borderRight: isLastCol ? "none" : `1px solid ${C.divider}`,
+    }}
+  >
+    {children}
+  </td>
+);
+
+const StorageDevicesTable = ({ disk }) => {
+  console.log("StorageDevicesTable disk:", disk);
+
+  const rowBg = getStorageDeviceRowBg(0);
+
+  return (
+    <div style={storageDevicesTableShellStyle}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "separate",
+          borderSpacing: 0,
+          tableLayout: "auto",
+          fontSize: 13,
+        }}
+      >
+        <thead>
+          <tr>
+            <TH>{STORAGE_TABLE_COL_STORAGE}</TH>
+            <TH>{STORAGE_TABLE_COL_TOTAL_CAPACITY}</TH>
+            <TH>{STORAGE_TABLE_COL_USED_SPACE}</TH>
+            <TH>{STORAGE_TABLE_COL_AVAILABLE_SPACE}</TH>
+            <TH style={{ borderRight: "none" }}>
+              {STORAGE_TABLE_COL_USAGE}
+            </TH>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            style={{
+              background: rowBg,
+              transition: "background 0.15s ease",
+            }}
+          >
+            <StorageTableTD rowBg={rowBg} isLastRow>
+              {STORAGE_DEVICE_LOCAL_DISK}
+            </StorageTableTD>
+
+            <StorageTableTD rowBg={rowBg} isLastRow>
+              {disk?.total?.human || "-"}
+            </StorageTableTD>
+
+            <StorageTableTD rowBg={rowBg} isLastRow>
+              {disk?.used?.human || "-"}
+            </StorageTableTD>
+
+            <StorageTableTD rowBg={rowBg} isLastRow>
+              {disk?.avail?.human || "-"}
+            </StorageTableTD>
+
+            <StorageTableTD rowBg={rowBg} isLastCol isLastRow>
+              {disk?.used_pct !== undefined ? `${disk.used_pct}%` : "-"}
+            </StorageTableTD>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+};
 const StoragePageShell = ({ children }) => (
   <div style={storagePageWrapStyle} data-native-scroll>
     <div style={storagePageInnerStyle}>{children}</div>
@@ -692,21 +813,187 @@ const backupsInitial = buildInitialForm([{ fields: STORAGE_BACKUP_FIELDS }]);
 
 const Storage = () => {
   const isCompact = useMediaQuery(STORAGE_COMPACT_MQ);
+
   const labelColWidth = isCompact ? 160 : STORAGE_LABEL_COL_WIDTH;
+
   const backupLabelColWidth = isCompact
     ? 180
     : STORAGE_BACKUP_LABEL_COL_WIDTH;
+
   const backupControlColWidth = isCompact
     ? 240
     : STORAGE_BACKUP_CONTROL_COL_WIDTH;
+
   const backupFieldRowOptions = {
     labelColWidth: backupLabelColWidth,
     controlColWidth: backupControlColWidth,
     fieldColGap: STORAGE_BACKUP_FIELD_COL_GAP,
   };
-  const [activeTab, setActiveTab] = useState(STORAGE_TAB_AUTO_CLEANUP_ID);
+  const [storageStatus, setStorageStatus] = useState({
+    cdr: {
+      count: "",
+      size: "",
+    },
+  
+    voicemail: {
+      count: "",
+      size: "",
+    },
+  
+    recordings: {
+      count: "",
+      size: "",
+    },
+  
+    disk: {
+      total: {
+        human: "",
+      },
+      used: {
+        human: "",
+      },
+      avail: {
+        human: "",
+      },
+      used_pct: "",
+    },
+  });
+  const [activeTab, setActiveTab] = useState(STORAGE_TAB_STATUS_ID);
   const [autoCleanupForm, setAutoCleanupForm] = useState(autoCleanupInitial);
   const [backupsForm, setBackupsForm] = useState(backupsInitial);
+  const [errors, setErrors] = useState({}); 
+
+  const loadStorageUsage = async () => {
+    try {
+      const res = await getStorageUsage();
+  
+      console.log("FULL RESPONSE:", res);
+  
+      const data = res.message;
+  
+      setStorageStatus({
+        cdr: {
+          count: data.cdr.count,
+          size: data.cdr.size.human,
+        },
+  
+        voicemail: {
+          count: data.voicemail.files,
+          size: data.voicemail.size.human,
+        },
+  
+        recordings: {
+          count: data.recordings.count,
+          size: data.recordings.size.human,
+        },
+  
+        disk: data.disk,
+      });
+    } catch (err) {
+      console.error("Storage Usage Error:", err);
+    }
+  };
+
+// AUTO CLEANUP FUNCTIONS
+const loadStorageSettings = async () => {
+  try {
+    const res = await getStorageSettings();
+
+    console.log("Storage Settings:", res);
+
+    const data = res.message;
+
+    setAutoCleanupForm({
+      maxCdr: data.cdr_max_count,
+      cdrPreservationDuration: data.cdr_max_days,
+
+      maxVoicemailFiles: data.vm_max_files,
+      voicemailPreservationDuration: data.vm_max_days,
+
+      maxDeviceUsage: data.rec_max_usage_pct,
+      recPreservationDuration: data.rec_max_days,
+
+      maxLogSize: data.log_max_size_mb,
+      logsPreservationDuration: data.log_max_days,
+
+      maxLogs: data.log_max_per_day,
+    });
+    
+    setErrors({});
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+
+const handleRefresh = async () => {
+  if (activeTab === STORAGE_TAB_STATUS_ID) {
+    await loadStorageUsage();
+  } else if (activeTab === STORAGE_TAB_AUTO_CLEANUP_ID) {
+    await loadStorageSettings();
+  }
+};
+  useEffect(() => {
+    if (activeTab === STORAGE_TAB_STATUS_ID) {
+      loadStorageUsage();
+    }
+
+  if (activeTab === STORAGE_TAB_AUTO_CLEANUP_ID) {
+    loadStorageSettings();
+  }
+  }, [activeTab]);
+
+  const handleSaveStorageSettings = async () => {
+    const newErrors = {};
+    newErrors.maxDeviceUsage = "Value must be between 30 and 90.";
+    if (
+      Number(autoCleanupForm.maxDeviceUsage) < 30 ||
+      Number(autoCleanupForm.maxDeviceUsage) > 90
+    ) {
+      newErrors.maxDeviceUsage =
+        "Value must be between 30 and 90.";
+    }
+  
+    if (Object.keys(newErrors).length) {
+      setErrors(newErrors);
+      return;
+    }
+  
+    setErrors({});
+    
+    
+    try {
+      const payload = {
+        cdr_max_count: autoCleanupForm.maxCdr,
+        cdr_max_days: autoCleanupForm.cdrPreservationDuration,
+  
+        vm_max_files: autoCleanupForm.maxVoicemailFiles,
+        vm_max_days: autoCleanupForm.voicemailPreservationDuration,
+  
+        rec_max_usage_pct: autoCleanupForm.maxDeviceUsage,
+        rec_max_days: autoCleanupForm.recPreservationDuration,
+  
+        log_max_size_mb: autoCleanupForm.maxLogSize,
+        log_max_days: autoCleanupForm.logsPreservationDuration,
+  
+        log_max_per_day: autoCleanupForm.maxLogs,
+      };
+  
+      console.log("Save Payload:", payload);
+  
+      const res = await updateStorageSettings(payload);
+
+      console.log("Save Response:", res);
+      
+      setErrors({}); 
+      
+      loadStorageSettings();
+    } catch (err) {
+      console.error("Save Error:", err);
+    }
+  };
+
 
   const handleAutoCleanupChange = (name, value) =>
     setAutoCleanupForm((prev) => ({ ...prev, [name]: value }));
@@ -714,15 +1001,28 @@ const Storage = () => {
   const handleBackupsChange = (name, value) =>
     setBackupsForm((prev) => ({ ...prev, [name]: value }));
 
-  const renderTextField = (value, onChange, type = "text") => (
+  const renderTextField = (
+    value,
+    onChange,
+    type = "text",
+    max = null
+  ) => (
     <TextField
       type={type}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        const val = e.target.value;
+  
+        if (max === null || val === "" || Number(val) <= max) {
+          onChange(val);
+        }
+      }}
       size="small"
       fullWidth
       variant="outlined"
       inputProps={{
+        min: 0,
+        max,
         style: {
           fontSize: 13,
           height: 32,
@@ -817,7 +1117,31 @@ const Storage = () => {
           ? renderSelect(value, (v) => onChange(field.name, v), field.options)
           : field.type === "radio"
             ? renderRadio(value, (v) => onChange(field.name, v), field.options)
-            : renderTextField(value, (v) => onChange(field.name, v), field.type)}
+            : (
+              <div style={{ position: "relative", width: "100%" }}>
+              {errors[field.name] && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -18,
+                    left: 0,
+                    color: C.errorRed,
+                    fontSize: 11,
+                  }}
+                >
+                  {errors[field.name]}
+                </div>
+              )}
+            
+            
+                {renderTextField(
+                  value,
+                  (v) => onChange(field.name, v),
+                  field.type,
+                  field.max
+                )}
+              </div>
+            )}
       </StorageFieldRow>
     );
   };
@@ -843,9 +1167,14 @@ const Storage = () => {
                 </Btn>
               ))}
             </div>
-            <Btn variant="cancel" type="button" style={storageHeaderBtnStyle}>
-              {STORAGE_BTN_REFRESH}
-            </Btn>
+            <Btn
+  variant="cancel"
+  type="button"
+  style={storageHeaderBtnStyle}
+  onClick={handleRefresh}
+>
+  {STORAGE_BTN_REFRESH}
+</Btn>
           </div>
 
           <div style={{ padding: 0, boxSizing: "border-box" }}>
@@ -855,6 +1184,138 @@ const Storage = () => {
             className="flex flex-col"
             style={{ width: "100%" }}
           >
+            {activeTab === STORAGE_TAB_STATUS_ID && (
+              <div style={storageSingleColumnStyle(isCompact)}>
+                <div style={storageBackupContentStyle}>
+                  <SectionHeading title={STORAGE_SECTION_STATUS} isFirst />
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
+                      columnGap: 12,
+                      alignItems: "center",
+                      marginBottom: 12,
+                      color: C.labelText,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <div />
+                    <div>{STORAGE_STATUS_COL_COUNT}</div>
+                    <div>{STORAGE_STATUS_COL_SIZE}</div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
+                      columnGap: 12,
+                      alignItems: "center",
+                      marginBottom: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      CDR
+                    </div>
+
+                    <TextField
+                      size="small"
+                      value={storageStatus.cdr.count}
+                      InputProps={{ readOnly: true }}
+                      sx={storageStatusTextFieldSx}
+                    />
+
+                    <TextField
+                      size="small"
+                      value={storageStatus.cdr.size}
+                      InputProps={{ readOnly: true }}
+                      sx={storageStatusTextFieldSx}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
+                      columnGap: 12,
+                      alignItems: "center",
+                      marginBottom: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      Voicemail
+                    </div>
+
+                    <TextField
+                      size="small"
+                      value={storageStatus.voicemail.count}
+                      InputProps={{ readOnly: true }}
+                      sx={storageStatusTextFieldSx}
+                    />
+
+                    <TextField
+                      size="small"
+                      value={storageStatus.voicemail.size}
+                      InputProps={{ readOnly: true }}
+                      sx={storageStatusTextFieldSx}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
+                      columnGap: 12,
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: C.labelText,
+                      }}
+                    >
+                      Recordings
+                    </div>
+
+                    <TextField
+                      size="small"
+                      value={storageStatus.recordings.count}
+                      InputProps={{ readOnly: true }}
+                      sx={storageStatusTextFieldSx}
+                    />
+
+                    <TextField
+                      size="small"
+                      value={storageStatus.recordings.size}
+                      InputProps={{ readOnly: true }}
+                      sx={storageStatusTextFieldSx}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-0" style={{ width: "100%" }}>
+                  <SectionHeading title={STORAGE_SECTION_DEVICES} />
+                  <div style={{ overflowX: "auto" }}>
+                    <StorageDevicesTable disk={storageStatus.disk} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === STORAGE_TAB_AUTO_CLEANUP_ID && (
               <div
                 className="settings-dashboard-grid"
@@ -1026,16 +1487,19 @@ const Storage = () => {
           </form>
           </div>
 
-          <div style={advancedFormInlineFooterStyle}>
-            <Btn
-              variant="primary"
-              type="submit"
-              form="storage-settings-form"
-              style={storageFormBtnStyle}
-            >
-              {STORAGE_BTN_SAVE}
-            </Btn>
-          </div>
+          {activeTab !== STORAGE_TAB_STATUS_ID && (
+  <div style={advancedFormInlineFooterStyle}>
+    <Btn
+      variant="primary"
+      type="submit"
+      form="storage-settings-form"
+      onClick={handleSaveStorageSettings}
+      style={storageFormBtnStyle}
+    >
+      {STORAGE_BTN_SAVE}
+    </Btn>
+  </div>
+)}
         </div>
     </StoragePageShell>
   );

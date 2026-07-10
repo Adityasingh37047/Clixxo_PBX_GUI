@@ -81,7 +81,7 @@ const C = {
   errorRed: "#dc2626",
 };
 
-const SIP_TRUNK_TABLE_CARD_RADIUS = 10;
+const SIP_TRUNK_TABLE_CARD_RADIUS = 4;
 
 const systemSettingsTdStyle = {
   padding: "7px 14px",
@@ -195,7 +195,7 @@ const SystemSettingsBtn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -323,7 +323,7 @@ const systemSettingsPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const addNewModalFooterStyle = {
@@ -337,15 +337,15 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -1172,7 +1172,7 @@ const SipTrunkPage = () => {
                   onClick={() => handleOpenModal()}
                   variant="cancel"
                   disabled={loading.save}
-                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+                  style={{ padding: "8px 24px", fontSize: 12, borderRadius: 4 }}
                 >
                   {GLOBAL_SIP_BTN_ADD_NEW}
                 </SystemSettingsBtn>
@@ -1383,7 +1383,7 @@ const SipTrunkPage = () => {
             maxWidth: "96vw",
             mx: "auto",
             p: 0,
-            borderRadius: "8px",
+            borderRadius: "4px",
             overflow: "hidden",
           },
         }}
@@ -1398,8 +1398,8 @@ const SipTrunkPage = () => {
             fontSize: 16,
             padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
           }}
         >
           {editIndex !== null
@@ -1420,7 +1420,7 @@ const SipTrunkPage = () => {
               gap: 14,
               background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
+              borderRadius: 4,
               padding: 20,
               marginTop: 0,
             }}

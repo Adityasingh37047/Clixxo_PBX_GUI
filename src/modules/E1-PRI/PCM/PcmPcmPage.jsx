@@ -108,7 +108,7 @@ const C = {
   accent: "#3E5475",
 };
 
-const PCM_PCM_CARD_RADIUS = 10;
+const PCM_PCM_CARD_RADIUS = 4;
 
 const pcmPcmPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -154,7 +154,7 @@ const pcmPcmModalFormPanelStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -169,15 +169,15 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -334,7 +334,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -572,7 +572,7 @@ const PcmPcmPage = () => {
                 maxWidth: "95vw",
                 maxHeight: "calc(100vh - 128px)",
                 background: C.cardBg,
-                borderRadius: 8,
+                borderRadius: 4,
                 overflow: "hidden",
                 boxShadow:
                   "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",

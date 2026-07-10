@@ -71,7 +71,7 @@ const C = {
   errorRed: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -236,14 +236,14 @@ const vpnToolbarBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const vpnSaveBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -271,7 +271,7 @@ const vpnChooseFileLabelStyle = {
   padding: "6px 14px",
   background: "#cbd5e1",
   border: "1px solid #cbd5e1",
-  borderRadius: 10,
+  borderRadius: 4,
   fontSize: 12,
   fontWeight: 600,
   color: "#374151",
@@ -465,7 +465,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",

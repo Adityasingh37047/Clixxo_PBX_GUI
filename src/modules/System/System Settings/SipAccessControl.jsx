@@ -175,7 +175,7 @@ const systemModalSelectSx = {
   },
 };
 
-const SIP_ACCESS_TABLE_CARD_RADIUS = 10;
+const SIP_ACCESS_TABLE_CARD_RADIUS = 4;
 
 const sipAccessPageWrapStyle = {
   backgroundColor: C.pageBg,
@@ -246,7 +246,7 @@ const sipAccessPrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const sipAccessFixedAlertSx = {
@@ -277,7 +277,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -483,7 +483,7 @@ const SipAccessTableEmptyState = ({
       variant="cancel"
       onClick={onAddNew}
       disabled={disabled}
-      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 4 }}
     >
       {buttonLabel}
     </Btn>
@@ -581,7 +581,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",

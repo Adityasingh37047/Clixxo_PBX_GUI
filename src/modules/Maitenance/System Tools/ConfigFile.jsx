@@ -19,7 +19,7 @@ import { Alert, CircularProgress, useMediaQuery } from "@mui/material";
 
 const CONFIG_FILE_COMPACT_MQ = "(max-width: 768px)";
 const CONFIG_FILE_FORM_PAD_X = 28;
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const C = {

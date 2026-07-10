@@ -27,7 +27,7 @@ export const SQL_UPLOAD_BUTTON_STYLE = {
   height: 30,
   minWidth: 100,
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   padding: '6px 14px',
 };
 
@@ -35,7 +35,7 @@ export const SQL_UPLOAD_UPLOAD_BUTTON_STYLE = {
   ...SQL_UPLOAD_BUTTON_STYLE,
   width: '100%',
   height: 36,
-  minHeight: 36,
+  minHeight: 36,  borderRadius: 4,
   padding: '8px 14px',
 };
 

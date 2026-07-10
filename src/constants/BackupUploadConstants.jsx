@@ -31,7 +31,7 @@ export const BACKUP_UPLOAD_BUTTON_STYLE = {
   height: 30,
   minWidth: 100,
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   padding: '6px 14px',
 };
 

@@ -55,7 +55,7 @@ const C = {
   gridHeaderBg: "#F8FAFC",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4; 
 const FIELD_RADIUS = 6;
 
 // ── Local field UI (matches SignalingCapture) ──

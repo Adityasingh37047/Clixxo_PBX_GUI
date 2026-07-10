@@ -3,17 +3,35 @@ export const STORAGE_PAGE_BREADCRUMB_SECTION = "System Settings";
 export const STORAGE_PAGE_TITLE = "Storage";
 export const STORAGE_CARD_TITLE = "Storage";
 
+export const STORAGE_TAB_STATUS = "Status";
 export const STORAGE_TAB_AUTO_CLEANUP = "Auto Cleanup";
 export const STORAGE_TAB_BACKUPS = "Backups";
+export const STORAGE_TAB_STATUS_ID = "status";
 export const STORAGE_TAB_AUTO_CLEANUP_ID = "autoCleanup";
 export const STORAGE_TAB_BACKUPS_ID = "backups";
 
+
 export const STORAGE_TABS = [
+  { id: STORAGE_TAB_STATUS_ID, label: STORAGE_TAB_STATUS },
   { id: STORAGE_TAB_AUTO_CLEANUP_ID, label: STORAGE_TAB_AUTO_CLEANUP },
   { id: STORAGE_TAB_BACKUPS_ID, label: STORAGE_TAB_BACKUPS },
+  
 ];
 
+export const STORAGE_SECTION_STATUS = "Storage Status";
+export const STORAGE_SECTION_DEVICES = "Storage Devices";
 export const STORAGE_SECTION_RECORD_BACKUP = "Record Backup";
+
+export const STORAGE_STATUS_COL_COUNT = "Count";
+export const STORAGE_STATUS_COL_SIZE = "Size";
+
+export const STORAGE_TABLE_COL_STORAGE = "Storage";
+export const STORAGE_TABLE_COL_TOTAL_CAPACITY = "Total Capacity";
+export const STORAGE_TABLE_COL_USED_SPACE = "Used Space";
+export const STORAGE_TABLE_COL_AVAILABLE_SPACE = "Available Space";
+export const STORAGE_TABLE_COL_USAGE = "Usage";
+
+export const STORAGE_DEVICE_LOCAL_DISK = "Local Disk";
 
 export const STORAGE_BTN_SAVE = "Save";
 export const STORAGE_BTN_REFRESH = "Refresh";
@@ -31,22 +49,16 @@ export const STORAGE_AUTO_CLEANUP_SECTIONS = [
         tooltip:
           "Set the maximum number of CDR that should be retained. The default is '100000'. The oldest CDR will be deleted when the threshold is reached.",
         type: "text",
-        defaultValue: "200000",
+        max: 200000,
       },
       {
         name: "cdrPreservationDuration",
         label: "CDR Preservation Duration",
         tooltip: `Set the maximum numbers of days that CDr should be retained. The default is "0".`,
         type: "text",
-        defaultValue: "0",
+        max:2000,
       },
-      {
-        name: "maxConferenceSessions",
-        label: "Max Number of Conference Sessions",
-        tooltip: `Set the maximum number of conference sessions that should be retained. The default is '5000'. The oldest conference session will be deleted when the threshold is reached.`,
-        type: "text",
-        defaultValue: "5000",
-      },
+      
     ],
   },
   {
@@ -57,22 +69,16 @@ export const STORAGE_AUTO_CLEANUP_SECTIONS = [
         label: "Max Number of Files",
         tooltip: `Set the maximum number of voice mail files that should be retained. The default is '300'. The oldest voice mail file will be deleted when the threshold is reached.`,
         type: "text",
-        defaultValue: "300",
+       max: 10000,
       },
       {
         name: "voicemailPreservationDuration",
         label: "Preservation Duration",
         tooltip: `Set the maximum numbers of days that voice mail files should be retained. "0" for no limitation.`,
         type: "text",
-        defaultValue: "0",
+        max: 2000,
       },
-      {
-        name: "voicemailFilesPreservationDuration",
-        label: "Files Preservation Duration",
-        tooltip: `Set the maximum numbers of minutes that voicemail and touch recording files should be retained respectively for each extension. "0" for no limitation.`,
-        type: "text",
-        defaultValue: "0",
-      },
+      
     ],
   },
   {
@@ -83,14 +89,15 @@ export const STORAGE_AUTO_CLEANUP_SECTIONS = [
         label: "Max Usage of Device(%)",
         tooltip: `Set the maximum storage percentage the device is allowed to store. The default is "80" (30~90). The oldest recordings will be deleted when the threshold is reached.`,
         type: "text",
-        defaultValue: "80",
+        min: 30,
+max: 90,
       },
       {
         name: "recPreservationDuration",
         label: "Rec Preservation Duration",
         tooltip: `Set the maximum numbers of days that recordings should be retained. The default is "0".`,
         type: "text",
-        defaultValue: "0",
+        max: 2000,
       },
     ],
   },
@@ -102,21 +109,21 @@ export const STORAGE_AUTO_CLEANUP_SECTIONS = [
         label: "Max Size of Total Logs",
         tooltip: `Limit the max size of each log. The default size is 50 MB, 0 for no limitation. The older logs will be deleted when the threshold is reached.`,
         type: "text",
-        defaultValue: "50",
+        max: 1000,
       },
       {
         name: "logsPreservationDuration",
         label: "Logs Preservation Duration",
         tooltip: `Set the maximum numbers of days that logs should be retained. The default is "7". "0" for no limitation.`,
         type: "text",
-        defaultValue: "7",
+        max: 1000,
       },
       {
         name: "maxLogs",
         label: "Max Number of Logs",
         tooltip: `The maximum number of log files saved per day. The default value is 3 and the minimum value is 1.`,
         type: "text",
-        defaultValue: "3",
+        max: 1000,
       },
     ],
   },

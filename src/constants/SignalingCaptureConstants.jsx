@@ -43,7 +43,7 @@ export const SIGNALING_CAPTURE_PRIMARY_BUTTON_STYLE = {
   height: 30,
   padding: '6px 14px',
   fontSize: 12,
-  borderRadius: 10,
+      borderRadius: 4,
 };
 
 export const SIGNALING_CAPTURE_CANCEL_BUTTON_STYLE = {
@@ -52,13 +52,14 @@ export const SIGNALING_CAPTURE_CANCEL_BUTTON_STYLE = {
   color: '#374151',
   border: '1px solid #cbd5e1',
   boxShadow: '0 1px 2px rgba(15, 23, 42, 0.08)',
-};
+  borderRadius: 4,
+  };
 
 export const SIGNALING_CAPTURE_FOOTER_BUTTON_STYLE = {
   height: 30,
   minWidth: 100,
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   padding: '6px 14px',
   margin: 0,
   boxSizing: 'border-box',

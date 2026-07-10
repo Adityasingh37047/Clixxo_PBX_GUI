@@ -37,7 +37,7 @@ import {
 } from "../../../api/apiService";
 
 const AUTH_COMPACT_MQ = "(max-width: 768px)";
-const AUTH_CARD_RADIUS = 10;
+const AUTH_CARD_RADIUS = 4;
 const AUTH_FORM_MAX_WIDTH = 720;
 const AUTH_FORM_HORIZONTAL_PADDING = 24;
 const AUTH_FIELD_LABEL_WIDTH = 260;
@@ -197,7 +197,7 @@ const authorizationFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

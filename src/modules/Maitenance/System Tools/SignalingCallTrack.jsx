@@ -43,7 +43,7 @@ const C = {
   sectionHeading: SIGNALING_CALL_TRACK_SECTION_HEADING_COLOR,
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";
@@ -272,7 +272,7 @@ const sctrackToolbarRowStyle = {
 
 const sctrackOutputPanelStyle = {
   border: `1px solid ${C.divider}`,
-  borderRadius: 8,
+  borderRadius: 4,
   overflow: "hidden",
   background: "#ffffff",
 };

@@ -41,7 +41,7 @@ const C = {
   errorRed: "#dc2626",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;   
 const FIELD_RADIUS = 6;
 
 const OUTLINED_BORDER = "#d1d5db";

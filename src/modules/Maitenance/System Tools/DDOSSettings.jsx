@@ -42,7 +42,7 @@ const DDOS_GRID_TWO_COL_MQ = "(min-width: 1100px)";
 const DDOS_LABEL_COL_WIDTH = 188;
 const DDOS_FIELD_COL_GAP = 16;
 const DDOS_FORM_PAD_X = 28;
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const C = {
@@ -173,7 +173,7 @@ const ddosFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

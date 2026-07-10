@@ -17,7 +17,7 @@ import { postLinuxCmd } from "../../../api/apiService";
 
 const MODIFICATION_RECORD_COMPACT_MQ = "(max-width: 768px)";
 const MODIFICATION_RECORD_FORM_PAD_X = 28;
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 
 const C = {
   pageBg: "#f8fafc",

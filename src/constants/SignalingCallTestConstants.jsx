@@ -50,7 +50,7 @@ export const SIGNALING_CALL_TEST_BUTTON_STYLE = {
   height: 30,
   padding: '6px 14px',
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

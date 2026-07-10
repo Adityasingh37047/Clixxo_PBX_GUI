@@ -45,7 +45,7 @@ const C = {
   gridHeaderBg: "#F8FAFC",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 // ── Local field UI (matches Network.jsx design language) ──
@@ -406,7 +406,7 @@ const signalingCaptureFooterStyle = {
   marginTop: 20,
   padding: "10px 20px",
   border: `1.5px solid ${C.cardBorder}`,
-  borderRadius: 10,
+  borderRadius: 4,
   boxSizing: "border-box",
   background: C.cardBg,
   boxShadow: C.cardShadow,

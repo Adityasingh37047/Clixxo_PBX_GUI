@@ -855,6 +855,46 @@ export const saveNetworkSettings = async (data)=>{
   }
 };
 
+export const getStorageUsage = async () => {
+  try {
+    const response = await axiosInstance.post("/storage-settings", {
+      type: "get_usage",
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching storage usage:", error);
+    throw error;
+  }
+};
+
+export const getStorageSettings = async () => {
+  const response = await axiosInstance.post("/storage-settings", {
+    type: "get",
+  });
+
+  return response.data;
+};
+
+export const updateStorageSettings = async (data) => {
+  const response = await axiosInstance.post("/storage-settings", {
+    type: "update",
+    data,
+  });
+
+  return response.data;
+};
+
+export const resetStorageSettings = async () => {
+  const response = await axiosInstance.post("/storage-settings", {
+    type: "reset_defaults",
+  });
+
+  return response.data;
+};
+
+
+
 export const fetchLogin = async ({ username, password }) => {
   try {
     // 1. Generate a one-time session ID

@@ -58,7 +58,7 @@ export const ACCOUNT_MANAGE_BUTTON_STYLE = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -69,6 +69,7 @@ export const ACCOUNT_MANAGE_TOOLBAR_CANCEL_BUTTON_STYLE = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 /** Toolbar primary (+ Add New) — matches PBX extensionPrimaryBtnStyle */
@@ -76,7 +77,7 @@ export const ACCOUNT_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 export const ACCOUNT_MANAGE_TOOLTIPS = {

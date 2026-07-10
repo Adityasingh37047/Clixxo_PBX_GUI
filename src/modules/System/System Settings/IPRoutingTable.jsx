@@ -76,7 +76,7 @@ const OUTLINED_HOVER = "#9ca3af";
 const OUTLINED_FOCUS = "#3E5475";
 const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
-const IP_ROUTE_TABLE_CARD_RADIUS = 10;
+const IP_ROUTE_TABLE_CARD_RADIUS = 4;
 
 const ipRouteOutlinedInputRootSx = {
   backgroundColor: "#fff",
@@ -398,7 +398,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -455,7 +455,7 @@ const addNewModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -641,7 +641,7 @@ const ipRoutePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const IpRouteTableEmptyState = ({
@@ -675,7 +675,7 @@ const IpRouteTableEmptyState = ({
       variant="cancel"
       onClick={onAddNew}
       disabled={disabled}
-      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+      style={{ padding: "8px 24px", fontSize: 12, borderRadius: 4 }}
     >
       {buttonLabel}
     </Btn>

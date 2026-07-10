@@ -33,7 +33,7 @@ const IDS_FIELD_BG_READONLY = "#f1f5f9";
 const IDS_LABEL_COL_WIDTH = 188;
 const IDS_FIELD_COL_GAP = 16;
 const IDS_FORM_PAD_X = 28;
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const C = {
@@ -149,7 +149,7 @@ const idsFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

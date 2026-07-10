@@ -27,7 +27,7 @@ const RADIUS_COMPACT_MQ = "(max-width: 768px)";
 const RADIUS_GRID_TWO_COL_MQ = "(min-width: 900px)";
 const RADIUS_FORM_MAX_WIDTH = 960;
 const RADIUS_FORM_PAD_X = 28;
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 const C = {
@@ -310,7 +310,7 @@ const radiusFooterBtnStyle = {
   height: 30,
   minWidth: 100,
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const radiusFixedAlertSx = {

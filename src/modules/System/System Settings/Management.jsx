@@ -60,7 +60,7 @@ const C = {
   sectionHeading: MANAGEMENT_SECTION_HEADING_COLOR,
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
 // ── Local field UI (matches Network.jsx design language) ──
@@ -190,7 +190,7 @@ const advancedFormBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -290,7 +290,7 @@ const Btn = ({
           variant === "primary" || variant === "cancel"
             ? "8px 32px"
             : "6px 14px",
-        borderRadius: 8,
+        borderRadius: 4,
         fontSize: variant === "primary" || variant === "cancel" ? 14 : 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",

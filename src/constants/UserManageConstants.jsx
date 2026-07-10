@@ -405,7 +405,7 @@ export const USER_MANAGE_BUTTON_STYLE = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 
@@ -414,7 +414,7 @@ export const USER_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 /** Toolbar cancel — same box as + Add User; width matched in UserManage via sizer */
