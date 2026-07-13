@@ -1,4 +1,4 @@
-import React, {  useState, useEffect, useLayoutEffect, useRef , useMemo } from "react";
+import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -13,28 +13,13 @@ import {
   ListSubheader,
   MenuItem,
   Select as MuiSelect,
-  Tab,
-  Tabs,
   TextField,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
 import {
-  fetchCallQueues,
-  createCallQueue,
-  updateCallQueue,
-  deleteCallQueue,
-  listIvrDestinations,
-  listCustomPrompts,
-  listRingBackOptions,
-} from "../../../api/apiService";
-import {
-  CALL_QUEUE_FIELD_TOOLTIPS,
-  CALL_QUEUE_INITIAL_FORM,
-  CALL_QUEUE_MODAL_TABS,
-  RING_STRATEGY_OPTIONS,
   ACTION_OPTIONS,
   ANNOUNCE_FREQ_OPTIONS,
+  CALL_QUEUE_MODAL_TABS,
+  RING_STRATEGY_OPTIONS,
 } from "../../../constants/CallQueueConstants";
 import {
   Btn,
@@ -51,761 +36,81 @@ import {
   extensionCardStyle as callQueueCardStyle,
   extensionToolbarStyle as callQueueToolbarStyle,
   extensionSelectedBadgeStyle as callQueueSelectedBadgeStyle,
-  extensionCancelBtnStyle as callQueueCancelBtnStyle,
   extensionPrimaryBtnStyle as callQueuePrimaryBtnStyle,
   ExtensionCodecDualList as CallQueueCodecDualList,
 } from "../../../components/common";
-
-const CALL_QUEUE_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  placeholderText: "#94a3b8",
-};
-
-// ── Local page UI ──
-
-
-const CALL_QUEUE_TABLE_CARD_RADIUS = 4;
-
-const callQueuePaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: CALL_QUEUE_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: CALL_QUEUE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const callQueuePageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const callQueueEditIconStyle = {
-  cursor: "pointer",
-  color: "#2563eb",
-  fontSize: 22,
-  opacity: 0.7,
-  transition: "opacity 0.15s ease",
-};
-
-const handleCallQueueEditIconHover = (e, entering) => {
-  e.currentTarget.style.opacity = entering ? "1" : "0.7";
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const callQueueModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",  
-  borderRadius: 4,
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const callQueueOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const callQueueModalTextFieldFullSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...callQueueOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-  },
-};
-
-const callQueueModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...callQueueOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const callQueueModalPaperSx = {
-  width: 900,
-  maxWidth: "96vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const callQueueModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-
-const callQueueModalFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const callQueueModalDialogContentSx = {
-  maxHeight: "calc(100vh - 220px)",
-  overflowY: "auto",
-  WebkitOverflowScrolling: "touch",
-};
-
-const CALL_QUEUE_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatCallQueueTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const callQueueModalTabBarStyle = {
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-};
-
-const callQueueModalTabsSx = {
-  minHeight: 45,
-  "& .MuiTab-root": {
-    color: "#374151",
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 45,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: C.accent,
-    fontWeight: 700,
-  },
-};
-
-
-const CALL_QUEUE_MODAL_LABEL_WIDTH = 175;
-
-const CallQueueFieldLabel = ({ tooltipKey, children, style = {} }) => {
-  const tooltip = CALL_QUEUE_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip
-      title={formatCallQueueTooltipTitle(tooltip)}
-      {...CALL_QUEUE_TOOLTIP_PROPS}
-    >
-      {label}
-    </Tooltip>
-  );
-};
-
-const CallQueueFieldRow = ({
-  label,
-  tooltipKey,
-  children,
-  required = false,
-  alignTop = false,
-  labelWidth = CALL_QUEUE_MODAL_LABEL_WIDTH,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: alignTop ? "flex-start" : "center",
-      gap: 12,
-      minHeight: alignTop ? undefined : 32,
-    }}
-  >
-    <CallQueueFieldLabel
-      tooltipKey={tooltipKey}
-      style={{
-        width: labelWidth,
-        flexShrink: 0,
-        marginTop: alignTop ? 4 : 0,
-      }}
-    >
-      {label}
-      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
-    </CallQueueFieldLabel>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const CALL_QUEUE_MODAL_SECTION_BG = "#f8fafc";
-
-const CallQueueSectionHeading = ({
-  title,
-  isFirst = false,
-  required = false,
-}) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  return (
-  <div
-    style={{
-      margin: isFirst
-        ? isLaptopNarrow
-          ? "16px 0 24px 0"
-          : "0 0 24px 0"
-        : "28px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.divider}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: isLaptopNarrow ? 0 : -6,
-        background: CALL_QUEUE_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: "#30415A",
-      }}
-    >
-      {title}
-      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
-    </span>
-  </div>
-  );
-};
+import { useCallQueuePage } from "./hooks/useCallQueuePage";
+import {
+  C,
+  callQueueEditIconStyle,
+  callQueuePageBadgeStyle,
+  callQueuePaginationStyle,
+  handleCallQueueEditIconHover,
+} from "./CallQueueTableHelpers";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  CALL_QUEUE_MODAL_LABEL_WIDTH,
+  callQueueModalCancelBtnStyle,
+  callQueueModalDialogContentSx,
+  callQueueModalFormStyle,
+  callQueueModalPaperSx,
+  callQueueModalSelectSx,
+  callQueueModalTextFieldFullSx,
+  callQueueModalTitleStyle,
+  CallQueueFieldLabel,
+  CallQueueFieldRow,
+  SectionCard,
+} from "./CallQueueFormFields";
 
 const CallQueue = () => {
-  const isCompact = useMediaQuery(CALL_QUEUE_COMPACT_MQ);
-  const [queues, setQueues] = useState([]);
-  const [form, setForm] = useState({ ...CALL_QUEUE_INITIAL_FORM });
-  const [showModal, setShowModal] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
-  const [activeTab, setActiveTab] = useState("basic");
-  const [selected, setSelected] = useState([]);
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const [loading, setLoading] = useState({
-    fetch: false,
-    save: false,
-    delete: false,
-  });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [page, setPage] = useState(1);
-  const [destinations, setDestinations] = useState({});
-  const [voicePrompts, setVoicePrompts] = useState([]);
-  const [ringBackOptions, setRingBackOptions] = useState({
-    moh_categories: [],
-    custom_prompts: [],
-    country_tones: [],
-  });
-  const hasInitialLoadRef = useRef(false);
-  const modalScrollRef = useRef(null);
-
-  const itemsPerPage = 20;
-  const totalPages = Math.max(1, Math.ceil(queues.length / itemsPerPage));
-  const pagedQueues = queues.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  const showMsg = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const handleChange = (field, value) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
-
-  const loadQueues = async () => {
-    if (loading.fetch) return;
-    setLoading((prev) => ({ ...prev, fetch: true }));
-    try {
-      const res = await fetchCallQueues();
-      if (res?.response && res?.message) {
-        const list = Array.isArray(res.message) ? res.message : [];
-        setQueues(list.map((q, i) => ({ ...q, _idx: i + 1 })));
-      }
-    } catch (e) {
-      showMsg("error", e.message || "Failed to load queues");
-    } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  const ACTION_TO_DEST_KEY = {
-    extensions: "Extensions",
-    voicemail: "Voicemails",
-    ivr_menus: "IVR",
-    conference_rooms: "ConferenceRooms",
-    ring_groups: "RingGroups",
-    disa: "DISA",
-    call_queue: "CallQueue",
-    callbacks: "Callbacks",
-    faxtoemail: "FaxToMail",
-    other: "Other",
-  };
-
-  const getDestOptions = (action) => {
-    if (!action) return [];
-    const key = ACTION_TO_DEST_KEY[action];
-    return key ? destinations[key] || [] : [];
-  };
-
-  const loadDestinations = async () => {
-    try {
-      const res = await listIvrDestinations();
-      if (res?.response && res?.message) {
-        setDestinations(res.message);
-      }
-    } catch (_) {}
-  };
-
-  const loadVoicePrompts = async () => {
-    try {
-      const res = await listCustomPrompts();
-      if (res?.response) {
-        const list = Array.isArray(res.message) ? res.message : [];
-        setVoicePrompts(
-          list
-            .map((it) => ({
-              value: String(
-                it?.filename ||
-                  it?.file_name ||
-                  it?.file ||
-                  it?.recording_name ||
-                  "",
-              ).replace(/\.[^/.]+$/, ""),
-              label: String(
-                it?.recording_name || it?.name || it?.filename || "",
-              ).replace(/\.[^/.]+$/, ""),
-            }))
-            .filter((it) => it.value),
-        );
-      }
-    } catch (_) {}
-  };
-
-  const loadRingBackOpts = async () => {
-    try {
-      const res = await listRingBackOptions();
-      if (res?.response === false) return;
-      const msg = res?.message;
-      const normalized =
-        msg && typeof msg === "object" && !Array.isArray(msg) ? msg : {};
-      setRingBackOptions({
-        moh_categories: Array.isArray(normalized.moh_categories)
-          ? normalized.moh_categories
-          : [],
-        custom_prompts: Array.isArray(normalized.custom_prompts)
-          ? normalized.custom_prompts
-          : [],
-        country_tones: Array.isArray(normalized.country_tones)
-          ? normalized.country_tones
-          : [],
-      });
-    } catch (_) {}
-  };
-
-  useEffect(() => {
-    if (!hasInitialLoadRef.current) {
-      hasInitialLoadRef.current = true;
-      loadQueues();
-      loadDestinations();
-      loadVoicePrompts();
-      loadRingBackOpts();
-    }
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!showModal || !modalScrollRef.current) return;
-    modalScrollRef.current.scrollTop = 0;
-  }, [showModal, activeTab]);
-
-  const apiToForm = (q) => ({
-    ...CALL_QUEUE_INITIAL_FORM,
-    _id: q.id,
-    queue_name: q.name || "",
-    queue_number: String(q.queue_number || ""),
-    pin: q.pin_required ? "yes" : "no",
-    agent_password: q.dynamic_pin || "",
-    ring_strategy: q.ring_strategy || "ring_all",
-    timeout_action: q.timeout_dest_type || "",
-    timeout_action_dest: q.timeout_dest_value || "",
-    caller_id_prefix: q.cid_name_prefix || "",
-    overflow_action: q.overflow_dest_type || "",
-    overflow_action_dest: q.overflow_dest_value || "",
-    agents_initial_status: q.agents_initial_status || "logged_in",
-    agent_call_timeout: q.agent_timeout ?? 15,
-    agent_announcement: q.agent_announcement || "",
-    agent_retry_time: q.agent_retry ?? 30,
-    wrap_up_time: q.wrapup_time ?? 30,
-    max_no_answer: q.max_no_answer ?? 0,
-    discard_abandoned_after: q.discard_abandoned_after ?? 0,
-    max_wait_time: q.max_wait_time ?? 0,
-    max_queue_length: q.max_queue_length ?? 20,
-    alert_info: q.alert_info || "",
-    music_on_hold:
-      q.moh_mode === "default" ? "default" : q.moh_value || "default",
-    max_wait_no_agent: q.max_wait_no_agent_sec ?? 90,
-    queue_busy_resume: q.queue_busy_resume ? "enable" : "disable",
-    transfer_prompt: q.transfer_prompt || "",
-    agent_busy_announce: q.agent_busy_announce || "",
-    answer_announce: q.answer_announce_caller || "",
-    join_when_no_agent: !!q.join_when_no_agent,
-    join_announce:
-      q.join_announce === "default"
-        ? "default"
-        : q.join_announce_custom || "default",
-    join_announce_playtime: q.join_announce_playtime ?? 0,
-    answer_type: q.answer_type || "answer",
-    no_agent_announce: q.no_agent_announce || "",
-    announce_position: q.announce_position !== false,
-    announce_hold_time: q.announce_hold_time !== false,
-    call_duration: q.call_duration_est_sec ?? 60,
-    announce_frequency: q.announce_position_frequency ?? 30,
-    periodic_sound: q.announce_sound || "default",
-    periodic_frequency: q.announce_sound_frequency ?? 0,
-    busy_callback: q.busy_callback_enabled ? "yes" : "no",
-    busy_callback_key: String(q.busy_callback_key ?? "2"),
-    busy_callback_announce: q.busy_callback_announce || "default",
-    selected_agents: Array.isArray(q.members) ? q.members.map(String) : [],
-  });
-
-  const getMohFields = (val) => {
-    if (!val || val === "default")
-      return { moh_mode: "default", moh_value: null };
-    if (ringBackOptions.moh_categories.includes(val))
-      return { moh_mode: "moh", moh_value: val };
-    if (ringBackOptions.custom_prompts.includes(val))
-      return { moh_mode: "custom", moh_value: val };
-    if (ringBackOptions.country_tones.includes(val))
-      return { moh_mode: "tone", moh_value: val };
-    return { moh_mode: "default", moh_value: null };
-  };
-
-  const nullIfEmpty = (v) => (v === "" || v == null ? null : v);
-
-  const buildPayload = (f) => ({
-    ...(f._id != null ? { id: f._id } : {}),
-    name: f.queue_name,
-    queue_number: Number(f.queue_number),
-    enabled: true,
-    pin_required: f.pin === "yes",
-    dynamic_pin: f.pin === "yes" ? f.agent_password : null,
-    ring_strategy: f.ring_strategy,
-    timeout_dest_type: f.timeout_action || null,
-    timeout_dest_value: nullIfEmpty(f.timeout_action_dest),
-    overflow_dest_type: f.overflow_action || null,
-    overflow_dest_value: nullIfEmpty(f.overflow_action_dest),
-    cid_name_prefix: nullIfEmpty(f.caller_id_prefix),
-    agents_initial_status: f.agents_initial_status,
-    agent_timeout: Number(f.agent_call_timeout),
-    agent_announcement: nullIfEmpty(f.agent_announcement),
-    agent_retry: Number(f.agent_retry_time),
-    wrapup_time: Number(f.wrap_up_time),
-    max_no_answer: Number(f.max_no_answer),
-    discard_abandoned_after: Number(f.discard_abandoned_after) || null,
-    max_wait_time: Number(f.max_wait_time),
-    max_queue_length: Number(f.max_queue_length),
-    alert_info: nullIfEmpty(f.alert_info),
-    ...getMohFields(f.music_on_hold),
-    max_wait_no_agent_sec: Number(f.max_wait_no_agent),
-    queue_busy_resume: f.queue_busy_resume === "enable",
-    transfer_prompt: nullIfEmpty(f.transfer_prompt),
-    agent_busy_announce: nullIfEmpty(f.agent_busy_announce),
-    answer_announce_caller: nullIfEmpty(f.answer_announce),
-    join_when_no_agent: !!f.join_when_no_agent,
-    join_announce: f.join_announce === "default" ? "default" : "custom",
-    join_announce_custom:
-      f.join_announce === "default" ? null : f.join_announce,
-    join_announce_playtime: Number(f.join_announce_playtime),
-    answer_type: f.answer_type,
-    no_agent_announce: nullIfEmpty(f.no_agent_announce),
-    announce_position: !!f.announce_position,
-    announce_hold_time: !!f.announce_hold_time,
-    call_duration_est_sec: Number(f.call_duration),
-    announce_position_frequency: Number(f.announce_frequency),
-    announce_sound: f.periodic_sound || "default",
-    announce_sound_frequency: Number(f.periodic_frequency),
-    busy_callback_enabled: f.busy_callback === "yes",
-    busy_callback_key: String(f.busy_callback_key),
-    busy_callback_announce: nullIfEmpty(f.busy_callback_announce),
-    members: f.selected_agents,
-  });
-
-  const handleOpenModal = (row = null, idx = null) => {
-    setForm(row ? apiToForm(row) : { ...CALL_QUEUE_INITIAL_FORM });
-    setEditIndex(idx);
-    setActiveTab("basic");
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditIndex(null);
-    setActiveTab("basic");
-  };
-
-  const handleSave = async () => {
-    if (!form.queue_name.trim()) {
-      showMsg("error", "Queue Name is required");
-      return;
-    }
-    if (!String(form.queue_number).trim()) {
-      showMsg("error", "Queue Number is required");
-      return;
-    }
-    if (form.pin === "yes" && form.agent_password.length < 2) {
-      showMsg("error", "Agent Password must be 2 to 4 digits");
-      return;
-    }
-    setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      const fn = editIndex !== null ? updateCallQueue : createCallQueue;
-      const res = await fn(buildPayload(form));
-      if (res?.response) {
-        showMsg(
-          "success",
-          editIndex !== null ? "Queue updated" : "Queue created",
-        );
-        handleCloseModal();
-        await loadQueues();
-      } else {
-        showMsg("error", res?.message || "Save failed");
-      }
-    } catch (e) {
-      showMsg("error", e.message || "Save failed");
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
-
-  const handleDelete = async () => {
-    if (selected.length === 0) {
-      showMsg("info", "No queues selected");
-      return;
-    }
-    if (!window.confirm(`Delete ${selected.length} queue(s)?`)) return;
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      for (const idx of selected) {
-        const q = queues.find((x) => x._idx === idx);
-        if (q) await deleteCallQueue(q.id);
-      }
-      showMsg("success", `${selected.length} queue(s) deleted`);
-      setSelected([]);
-      await loadQueues();
-    } catch (e) {
-      showMsg("error", e.message || "Delete failed");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  const handleInverse = () =>
-    setSelected(
-      pagedQueues.map((q) => q._idx).filter((i) => !selected.includes(i)),
-    );
-  const handleSelectRow = (idx) =>
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((x) => x !== idx) : [...prev, idx],
-    );
-
-  const pageIndices = pagedQueues.map((q) => q._idx);
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleAll = () => {
-    if (!pageIndices.length) return;
-    setSelected((prev) =>
-      allPageSelected
-        ? prev.filter((i) => !pageIndices.includes(i))
-        : Array.from(new Set([...prev, ...pageIndices])),
-    );
-  };
-
-  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-
-  const extensionsList = Array.isArray(destinations.Extensions)
-    ? destinations.Extensions
-    : [];
-
-  const allAgentOptions = useMemo(
-    () =>
-      extensionsList.map((e) => ({
-        value: String(e.value ?? e.extension ?? e.id ?? ""),
-        label: e.label || String(e.value ?? e.extension ?? e.id ?? ""),
-      })).filter((e) => e.value),
-    [extensionsList],
-  );
-
-  const agentLabelMap = useMemo(() => {
-    const map = new Map();
-    allAgentOptions.forEach((e) => map.set(e.value, e.label));
-    return map;
-  }, [allAgentOptions]);
-
-  const getAgentLabel = (id) => agentLabelMap.get(id) || id;
-
-  const ringStrategyLabel = (v) =>
-    RING_STRATEGY_OPTIONS.find((o) => o.value === v)?.label || v;
-
+  const vm = useCallQueuePage();
+  const {
+    isCompact,
+    queues,
+    form,
+    showModal,
+    editIndex,
+    activeTab,
+    selected,
+    message,
+    loading,
+    isInitialLoad,
+    page,
+    destinations,
+    voicePrompts,
+    ringBackOptions,
+    modalScrollRef,
+    itemsPerPage,
+    totalPages,
+    pagedQueues,
+    allPageSelected,
+    somePageSelected,
+    allAgentOptions,
+    setMessage,
+    setActiveTab,
+    getDestOptions,
+    getAgentLabel,
+    ringStrategyLabel,
+    handleChange,
+    handleOpenModal,
+    handleCloseModal,
+    handleSave,
+    handleDelete,
+    handleInverse,
+    handleSelectRow,
+    handleToggleAll,
+    handlePrev,
+    handleNext,
+  } = vm;
   return (
-    <div style={{ ...callQueuePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-        {/* Modal */}
+    <div
+      style={{
+        ...callQueuePageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+    >
+      {/* Modal */}
       <Dialog
         open={showModal}
         onClose={() => {
@@ -823,7 +128,13 @@ const CallQueue = () => {
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
-        PaperProps={{ sx: { ...callQueueModalPaperSx, borderRadius: editIndex === null ? "4px" : callQueueModalPaperSx.borderRadius } }}
+        PaperProps={{
+          sx: {
+            ...callQueueModalPaperSx,
+            borderRadius:
+              editIndex === null ? "4px" : callQueueModalPaperSx.borderRadius,
+          },
+        }}
         disableRestoreFocus
       >
         <DialogTitle sx={callQueueModalTitleStyle}>
@@ -856,7 +167,11 @@ const CallQueue = () => {
               >
                 <SectionCard title="Queue Settings" isFirst>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <CallQueueFieldRow label="Queue Name" tooltipKey="queue_name" required>
+                    <CallQueueFieldRow
+                      label="Queue Name"
+                      tooltipKey="queue_name"
+                      required
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -868,7 +183,10 @@ const CallQueue = () => {
                         sx={callQueueModalTextFieldFullSx}
                       />
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Agent Call Timeout (s)" tooltipKey="agent_call_timeout">
+                    <CallQueueFieldRow
+                      label="Agent Call Timeout (s)"
+                      tooltipKey="agent_call_timeout"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -878,11 +196,16 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("agent_call_timeout", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Queue Number" tooltipKey="queue_number" required>
+                    <CallQueueFieldRow
+                      label="Queue Number"
+                      tooltipKey="queue_number"
+                      required
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -894,7 +217,10 @@ const CallQueue = () => {
                         sx={callQueueModalTextFieldFullSx}
                       />
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Agent Announcement" tooltipKey="agent_announcement">
+                    <CallQueueFieldRow
+                      label="Agent Announcement"
+                      tooltipKey="agent_announcement"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.agent_announcement}
@@ -929,7 +255,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Agent Retry Time (s)" tooltipKey="agent_retry_time">
+                    <CallQueueFieldRow
+                      label="Agent Retry Time (s)"
+                      tooltipKey="agent_retry_time"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -939,12 +268,17 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("agent_retry_time", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
                     {form.pin === "yes" && (
-                      <CallQueueFieldRow label="Agent Password" tooltipKey="agent_password" required>
+                      <CallQueueFieldRow
+                        label="Agent Password"
+                        tooltipKey="agent_password"
+                        required
+                      >
                         <TextField
                           size="small"
                           fullWidth
@@ -956,11 +290,19 @@ const CallQueue = () => {
                               .slice(0, 4);
                             handleChange("agent_password", val);
                           }}
-                          sx={callQueueModalTextFieldFullSx} inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 4 }}
+                          sx={callQueueModalTextFieldFullSx}
+                          inputProps={{
+                            inputMode: "numeric",
+                            pattern: "[0-9]*",
+                            maxLength: 4,
+                          }}
                         />
                       </CallQueueFieldRow>
                     )}
-                    <CallQueueFieldRow label="Wrap Up Time (s)" tooltipKey="wrap_up_time">
+                    <CallQueueFieldRow
+                      label="Wrap Up Time (s)"
+                      tooltipKey="wrap_up_time"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -970,11 +312,16 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("wrap_up_time", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Ring Strategy" tooltipKey="ring_strategy" required>
+                    <CallQueueFieldRow
+                      label="Ring Strategy"
+                      tooltipKey="ring_strategy"
+                      required
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.ring_strategy}
@@ -991,7 +338,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Max No Answer" tooltipKey="max_no_answer">
+                    <CallQueueFieldRow
+                      label="Max No Answer"
+                      tooltipKey="max_no_answer"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1001,7 +351,8 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("max_no_answer", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
@@ -1075,7 +426,10 @@ const CallQueue = () => {
                         </div>
                       )}
                     </div>
-                    <CallQueueFieldRow label="Discard Abandoned After(s)" tooltipKey="discard_abandoned_after">
+                    <CallQueueFieldRow
+                      label="Discard Abandoned After(s)"
+                      tooltipKey="discard_abandoned_after"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1088,11 +442,15 @@ const CallQueue = () => {
                             e.target.value,
                           )
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Caller ID Name Prefix" tooltipKey="caller_id_prefix">
+                    <CallQueueFieldRow
+                      label="Caller ID Name Prefix"
+                      tooltipKey="caller_id_prefix"
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -1104,7 +462,10 @@ const CallQueue = () => {
                         sx={callQueueModalTextFieldFullSx}
                       />
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Max Wait Time (s)" tooltipKey="max_wait_time">
+                    <CallQueueFieldRow
+                      label="Max Wait Time (s)"
+                      tooltipKey="max_wait_time"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1114,7 +475,8 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("max_wait_time", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
@@ -1188,7 +550,10 @@ const CallQueue = () => {
                         </div>
                       )}
                     </div>
-                    <CallQueueFieldRow label="Max Queue Length" tooltipKey="max_queue_length">
+                    <CallQueueFieldRow
+                      label="Max Queue Length"
+                      tooltipKey="max_queue_length"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1198,11 +563,15 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("max_queue_length", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Agents Initial Status" tooltipKey="agents_initial_status">
+                    <CallQueueFieldRow
+                      label="Agents Initial Status"
+                      tooltipKey="agents_initial_status"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.agents_initial_status}
@@ -1219,7 +588,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Alert info" tooltipKey="alert_info">
+                    <CallQueueFieldRow
+                      label="Alert info"
+                      tooltipKey="alert_info"
+                    >
                       <TextField
                         size="small"
                         fullWidth
@@ -1238,7 +610,9 @@ const CallQueue = () => {
                   <CallQueueCodecDualList
                     allOptions={allAgentOptions}
                     selected={form.selected_agents || []}
-                    onChange={(agents) => handleChange("selected_agents", agents)}
+                    onChange={(agents) =>
+                      handleChange("selected_agents", agents)
+                    }
                     getLabel={getAgentLabel}
                     emptyTextAvailable="No extension"
                     emptyTextSelected="No agent selected"
@@ -1259,7 +633,11 @@ const CallQueue = () => {
               >
                 <SectionCard title="Caller Settings" isFirst>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <CallQueueFieldRow label="Music on Hold" tooltipKey="music_on_hold" required>
+                    <CallQueueFieldRow
+                      label="Music on Hold"
+                      tooltipKey="music_on_hold"
+                      required
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.music_on_hold}
@@ -1339,7 +717,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Join When No Agent" tooltipKey="join_when_no_agent">
+                    <CallQueueFieldRow
+                      label="Join When No Agent"
+                      tooltipKey="join_when_no_agent"
+                    >
                       <Checkbox
                         checked={!!form.join_when_no_agent}
                         onChange={(e) =>
@@ -1350,7 +731,10 @@ const CallQueue = () => {
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Max Wait Time No Agent (s)" tooltipKey="max_wait_no_agent">
+                    <CallQueueFieldRow
+                      label="Max Wait Time No Agent (s)"
+                      tooltipKey="max_wait_no_agent"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1360,10 +744,14 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("max_wait_no_agent", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Join Announce" tooltipKey="join_announce">
+                    <CallQueueFieldRow
+                      label="Join Announce"
+                      tooltipKey="join_announce"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.join_announce}
@@ -1390,7 +778,10 @@ const CallQueue = () => {
                       </FormControl>
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Queue Busy Resume Offer" tooltipKey="queue_busy_resume">
+                    <CallQueueFieldRow
+                      label="Queue Busy Resume Offer"
+                      tooltipKey="queue_busy_resume"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.queue_busy_resume}
@@ -1404,8 +795,11 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Join Announce Playtime" tooltipKey="join_announce_playtime">
-                        <TextField
+                    <CallQueueFieldRow
+                      label="Join Announce Playtime"
+                      tooltipKey="join_announce_playtime"
+                    >
+                      <TextField
                         type="number"
                         size="small"
                         fullWidth
@@ -1414,12 +808,16 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("join_announce_playtime", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Transfer Prompt" tooltipKey="transfer_prompt">
-                      <FormControl fullWidth size="small">  
+                    <CallQueueFieldRow
+                      label="Transfer Prompt"
+                      tooltipKey="transfer_prompt"
+                    >
+                      <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.transfer_prompt}
                           onChange={(e) =>
@@ -1445,7 +843,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Answer Type" tooltipKey="answer_type">
+                    <CallQueueFieldRow
+                      label="Answer Type"
+                      tooltipKey="answer_type"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.answer_type}
@@ -1460,7 +861,10 @@ const CallQueue = () => {
                       </FormControl>
                     </CallQueueFieldRow>
 
-                      <CallQueueFieldRow label="Agent Busy Announce" tooltipKey="agent_busy_announce">
+                    <CallQueueFieldRow
+                      label="Agent Busy Announce"
+                      tooltipKey="agent_busy_announce"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.agent_busy_announce}
@@ -1487,7 +891,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="No Agent Announce" tooltipKey="no_agent_announce">
+                    <CallQueueFieldRow
+                      label="No Agent Announce"
+                      tooltipKey="no_agent_announce"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.no_agent_announce}
@@ -1515,7 +922,10 @@ const CallQueue = () => {
                       </FormControl>
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Answer Announce To Caller" tooltipKey="answer_announce">
+                    <CallQueueFieldRow
+                      label="Answer Announce To Caller"
+                      tooltipKey="answer_announce"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.answer_announce}
@@ -1554,7 +964,10 @@ const CallQueue = () => {
 
                 <SectionCard title="Caller Position Announcements">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <CallQueueFieldRow label="Announce Position" tooltipKey="announce_position">
+                    <CallQueueFieldRow
+                      label="Announce Position"
+                      tooltipKey="announce_position"
+                    >
                       <Checkbox
                         checked={!!form.announce_position}
                         onChange={(e) =>
@@ -1564,7 +977,10 @@ const CallQueue = () => {
                         sx={callQueueTableCheckboxSx}
                       />
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Call Duration(s)" tooltipKey="call_duration">
+                    <CallQueueFieldRow
+                      label="Call Duration(s)"
+                      tooltipKey="call_duration"
+                    >
                       <TextField
                         type="number"
                         size="small"
@@ -1574,11 +990,15 @@ const CallQueue = () => {
                         onChange={(e) =>
                           handleChange("call_duration", e.target.value)
                         }
-                        sx={callQueueModalTextFieldFullSx} inputProps={{ min: 0 }}
+                        sx={callQueueModalTextFieldFullSx}
+                        inputProps={{ min: 0 }}
                       />
                     </CallQueueFieldRow>
 
-                    <CallQueueFieldRow label="Announce Hold Time" tooltipKey="announce_hold_time">
+                    <CallQueueFieldRow
+                      label="Announce Hold Time"
+                      tooltipKey="announce_hold_time"
+                    >
                       <Checkbox
                         checked={!!form.announce_hold_time}
                         onChange={(e) =>
@@ -1588,7 +1008,10 @@ const CallQueue = () => {
                         sx={callQueueTableCheckboxSx}
                       />
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Announce Frequency(s)" tooltipKey="announce_frequency_caller">
+                    <CallQueueFieldRow
+                      label="Announce Frequency(s)"
+                      tooltipKey="announce_frequency_caller"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.announce_frequency}
@@ -1610,7 +1033,10 @@ const CallQueue = () => {
 
                 <SectionCard title="Periodic Announcements">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <CallQueueFieldRow label="Announce Sound" tooltipKey="periodic_sound">
+                    <CallQueueFieldRow
+                      label="Announce Sound"
+                      tooltipKey="periodic_sound"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.periodic_sound}
@@ -1636,7 +1062,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Announce Frequency(s)" tooltipKey="announce_frequency_periodic">
+                    <CallQueueFieldRow
+                      label="Announce Frequency(s)"
+                      tooltipKey="announce_frequency_periodic"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.periodic_frequency}
@@ -1658,7 +1087,10 @@ const CallQueue = () => {
 
                 <SectionCard title="Busy Callback">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                    <CallQueueFieldRow label="Enable Busy Callback" tooltipKey="busy_callback">
+                    <CallQueueFieldRow
+                      label="Enable Busy Callback"
+                      tooltipKey="busy_callback"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.busy_callback}
@@ -1672,7 +1104,10 @@ const CallQueue = () => {
                         </MuiSelect>
                       </FormControl>
                     </CallQueueFieldRow>
-                    <CallQueueFieldRow label="Busy Callback Announce" tooltipKey="busy_callback_announce">
+                    <CallQueueFieldRow
+                      label="Busy Callback Announce"
+                      tooltipKey="busy_callback_announce"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.busy_callback_announce}
@@ -1702,7 +1137,10 @@ const CallQueue = () => {
                       </FormControl>
                     </CallQueueFieldRow>
 
-                      <CallQueueFieldRow label="Agent Busy Callback Key" tooltipKey="busy_callback_key">
+                    <CallQueueFieldRow
+                      label="Agent Busy Callback Key"
+                      tooltipKey="busy_callback_key"
+                    >
                       <FormControl fullWidth size="small">
                         <MuiSelect
                           value={form.busy_callback_key}
@@ -1797,7 +1235,12 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || queues.length === 0
                 }
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 4,
+                }}
               >
                 Inverse
               </Btn>
@@ -1807,7 +1250,12 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
+                style={{
+                  height: 30,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  borderRadius: 4,
+                }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1829,7 +1277,16 @@ const CallQueue = () => {
             </div>
           </div>
 
-          <div style={{ overflowX: "hidden", overflowY: "auto", flex: 1 , ...(isCompact ? { overflowX: "auto", WebkitOverflowScrolling: "touch" } : {}) }}>
+          <div
+            style={{
+              overflowX: "hidden",
+              overflowY: "auto",
+              flex: 1,
+              ...(isCompact
+                ? { overflowX: "auto", WebkitOverflowScrolling: "touch" }
+                : {}),
+            }}
+          >
             {isInitialLoad ? (
               <CallQueueTableListLoading />
             ) : queues.length === 0 ? (
@@ -1838,15 +1295,15 @@ const CallQueue = () => {
                 onAddNew={() => handleOpenModal()}
               />
             ) : (
-             <table
+              <table
                 style={{
                   width: "100%",
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
 
-                  minWidth: 700, ...(isCompact ? { minWidth: 720 } : {}),
-
+                  minWidth: 700,
+                  ...(isCompact ? { minWidth: 720 } : {}),
                 }}
               >
                 <thead>
@@ -1867,7 +1324,7 @@ const CallQueue = () => {
                         sx={callQueueTableCheckboxSx}
                       />
                     </TH>
-                    <TH style={{ width: 36 }}>#</TH>
+                    <TH style={{ width: 36 }}>ID</TH>
                     <TH>Queue Name</TH>
                     <TH>Queue Number</TH>
                     <TH>Ring Strategy</TH>
@@ -1902,7 +1359,6 @@ const CallQueue = () => {
                         }}
                       >
                         <td
-
                           style={{
                             ...tdStyle,
                             background: rowBg,
@@ -1912,7 +1368,6 @@ const CallQueue = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-
                           <Checkbox
                             size="small"
                             checked={isSelected}
@@ -1978,7 +1433,6 @@ const CallQueue = () => {
                           {Array.isArray(q.members) ? q.members.length : 0}
                         </td>
                         <td
-
                           style={{
                             ...tdStyle,
                             background: rowBg,
@@ -2020,7 +1474,7 @@ const CallQueue = () => {
                 <Btn
                   onClick={handlePrev}
                   disabled={loading.fetch || page <= 1}
-                  variant="outline" 
+                  variant="outline"
                   style={{ borderRadius: 4 }}
                 >
                   ← Prev
@@ -2044,12 +1498,5 @@ const CallQueue = () => {
     </div>
   );
 };
-
-const SectionCard = ({ title, children, isFirst = false }) => (
-  <div style={{ marginBottom: 8 }}>
-    <CallQueueSectionHeading title={title} isFirst={isFirst} />
-    <div>{children}</div>
-  </div>
-);
 
 export default CallQueue;

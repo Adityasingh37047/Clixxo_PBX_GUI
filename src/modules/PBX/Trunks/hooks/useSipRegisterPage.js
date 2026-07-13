@@ -13,7 +13,7 @@ import {
   deleteSipTrunk,
   fetchSystemInfo,
 } from "../../../../api/apiService";
-import { transformApiToUi, transformUiToApi } from "../utils/transformers";
+import { transformApiToUi, transformUiToApi } from "../utils/SipRegisterTransformers";
 import {
   validateAllowCodecs,
   validateTrunkId,
@@ -27,9 +27,9 @@ import {
   validateClientDomain,
   validateIdentityIp,
   validateForm,
-} from "../utils/validators";
-import { parseCodecList } from "../sipRegisterFormFields";
-import { SIP_REGISTER_ZOOM_TABLE_WIDTH } from "../sipRegisterTableHelpers";
+} from "../utils/SipRegisterValidators";
+import { parseCodecList } from "../SipRegisterFormFields";
+import { SIP_REGISTER_ZOOM_TABLE_WIDTH } from "../SipRegisterTableHelpers";
 
 const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
 

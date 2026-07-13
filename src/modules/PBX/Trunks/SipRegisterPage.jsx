@@ -60,7 +60,7 @@ import {
   extensionTableCheckboxSx as sipRegisterTableCheckboxSx,
 } from "../../../components/common";
 import { useSipRegisterPage } from "./hooks/useSipRegisterPage";
-import { SIP_PREFIX_FIELDS } from "./utils/transformers";
+import { SIP_PREFIX_FIELDS } from "./utils/SipRegisterTransformers";
 import {
   TRUNK_TABLE_SCROLL_CLASS,
   trunkTableScrollStyle,
@@ -80,7 +80,7 @@ import {
   sipRegisterFixedCellStyle,
   formatSipRegisterStatusLabel,
   getSipRegisterStatusStyle,
-} from "./sipRegisterTableHelpers";
+} from "./SipRegisterTableHelpers";
 import {
   Pill,
   TrunkFieldLabel,
@@ -104,7 +104,7 @@ import {
   addNewModalFooterBtnStyle,
   trunkModalCancelBtnStyle,
   TRUNK_FIELD_LABEL_COLOR,
-} from "./sipRegisterFormFields";
+} from "./SipRegisterFormFields";
 
 const SipRegisterToolbar = ({
   isCompact,

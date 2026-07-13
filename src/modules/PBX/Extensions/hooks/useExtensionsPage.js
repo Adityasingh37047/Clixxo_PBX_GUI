@@ -11,14 +11,14 @@ import {
   transformUiToApi,
   normalizeCallForwardMutex,
   CF_OTHER_FORWARD_RULES,
-} from "../utils/transformers";
+} from "../utils/ExtensionsTransformers";
 import {
   validateExtension,
   validateContext,
   validateAllowCodecs,
   validatePassword,
   validateForm,
-} from "../utils/validators";
+} from "../utils/ExtensionsValidators";
 import {
   fetchSipAccounts,
   createSipAccount,

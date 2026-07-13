@@ -1,5 +1,3 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -17,34 +15,15 @@ import {
   ListSubheader,
   MenuItem,
   Select as MuiSelect,
-  Tab,
-  Tabs,
   TextField,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
-import {
-  listIvrDestinations,
-  listIvrs,
-  listIvrOptions,
-  listIvrDirectOutboundOptions,
-  createIvr,
-  updateIvr,
-  deleteIvr,
-  getIvr,
-  setIvrKeys,
-} from "../../../api/apiService";
 import {
   IVR_CHECK_VOICEMAIL_OPTIONS,
   IVR_DIRECT_EXTENSION_OPTIONS,
-  IVR_EMPTY_PROMPT_OPTIONS,
-  IVR_EMPTY_RING_BACK_OPTIONS,
   IVR_ENABLE_OPTIONS,
-  IVR_FIELD_TOOLTIPS,
   IVR_FXO_FLASH_TRANSFER_OPTIONS,
   IVR_KEYS,
   IVR_MODAL_TABS,
-  IVR_TEXT_TARGET_TYPES,
   IVR_TITLE,
 } from "../../../constants/IVRConstants";
 import {
@@ -66,1144 +45,134 @@ import {
   extensionPrimaryBtnStyle as ivrPrimaryBtnStyle,
   ExtensionCodecDualList as IvrCodecDualList,
 } from "../../../components/common";
+import { useIVRPage } from "./hooks/useIVRPage";
+import {
+  C,
+  ivrEditIconStyle,
+  handleIvrEditIconHover,
+  ivrPageBadgeStyle,
+  ivrPaginationStyle,
+} from "./IVRTableHelpers";
+import {
+  IvrFieldRow,
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  ivrModalCancelBtnStyle,
+  ivrModalDialogContentSx,
+  ivrModalFormStyle,
+  ivrModalPaperSx,
+  ivrModalSelectMenuProps,
+  ivrModalSelectSx,
+  ivrModalTextFieldFullSx,
+  ivrModalTitleStyle,
+} from "./IVRFormFields";
+import { TEXT_TARGET_TYPES } from "./utils/IVRTransformers";
 
-const IVR_COMPACT_MQ = "(max-width: 768px)";
-
-const TEXT_TARGET_TYPES = new Set(IVR_TEXT_TARGET_TYPES);
-const EMPTY_PROMPT_OPTIONS = IVR_EMPTY_PROMPT_OPTIONS;
-const EMPTY_RING_BACK_OPTIONS = IVR_EMPTY_RING_BACK_OPTIONS;
 const KEYS = IVR_KEYS;
 
-const normalizeGreetShortUi = (v) => {
-  if (v == null || v === "") return "Null";
-  const s = String(v).trim().toLowerCase();
-  if (s === "null") return "Null";
-  return String(v);
-};
-
-const buildPromptOptions = (
-  section,
-  fallbackSystem,
-  normalizeValue = (v) => v,
-) => {
-  const systemRaw = Array.isArray(section?.system)
-    ? section.system
-    : fallbackSystem;
-  const customRaw = Array.isArray(section?.custom) ? section.custom : [];
-  const dedupe = (arr) => {
-    const seen = new Set();
-    const out = [];
-    arr.forEach((v) => {
-      const normalized = normalizeValue(String(v));
-      if (!normalized) return;
-      const key = normalized.toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      out.push(normalized);
-    });
-    return out;
-  };
-  return { system: dedupe(systemRaw), custom: dedupe(customRaw) };
-};
-
-const normalizeArrayFromApi = (res) => {
-  const root = res?.data ?? res;
-  const candidates = [
-    root,
-    root?.message,
-    root?.data,
-    root?.message?.message,
-    root?.message?.data,
-    root?.data?.message,
-    root?.data?.data,
-  ];
-  if (root?.message?.trunks) {
-    const t = root.message.trunks;
-    if (Array.isArray(t)) return t;
-    if (t && typeof t === "object") return [t];
-  }
-  for (const c of candidates) {
-    if (Array.isArray(c)) return c;
-    if (c && typeof c === "object") {
-      for (const key of [
-        "routes",
-        "route_list",
-        "outbound_routes",
-        "outboundRoutes",
-        "options",
-        "list",
-        "items",
-        "result",
-      ]) {
-        if (Array.isArray(c[key])) return c[key];
-      }
-    }
-  }
-  return [];
-};
-
-const normalizeDestinationOptions = (list) => {
-  if (!Array.isArray(list)) return [];
-  return list
-    .map((item) => {
-      if (item == null) return null;
-      if (typeof item === "string" || typeof item === "number")
-        return { value: String(item), label: String(item) };
-      const value = String(
-        item.value ?? item.id ?? item.extension ?? item.ivr_number ?? "",
-      ).trim();
-      const label = String(
-        item.label ?? item.display_name ?? item.name ?? value,
-      ).trim();
-      if (!value) return null;
-      return { value, label: label || value };
-    })
-    .filter(Boolean);
-};
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-};
-
-// ── Local page UI ──
-
-
-
-// ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
-const IVR_TABLE_CARD_RADIUS = 4;
-
-const ivrPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: IVR_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: IVR_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const ivrPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const ivrEditIconStyle = {
-  cursor: "pointer",
-  color: "#2563eb",
-  fontSize: 22,
-  opacity: 0.7,
-  transition: "opacity 0.15s ease",
-};
-
-const handleIvrEditIconHover = (e, entering) => {
-  e.currentTarget.style.opacity = entering ? "1" : "0.7";
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const ivrOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const ivrModalTextFieldFullSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...ivrOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-  },
-};
-
-const ivrModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...ivrOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const ivrModalSelectMenuProps = {
-  PaperProps: { sx: { maxHeight: 360 } },
-};
-
-const ivrModalPaperSx = {
-  width: 900,
-  maxWidth: "96vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const ivrModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-
-const ivrModalFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  overflow: "hidden",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-  marginTop: 24,
-};
-
-const ivrModalDialogContentSx = {
-  maxHeight: "calc(100vh - 220px)",
-  overflowY: "auto",
-  WebkitOverflowScrolling: "touch",
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const ivrModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)", 
-   borderRadius: 4,
-};
-
-const IVR_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatIvrTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const ivrModalTabBarStyle = {
-
-  background: "#ffffff",
-};
-
-const ivrModalTabsSx = {
-  minHeight: 45,
-  "& .MuiTab-root": {
-    color: "#374151",
-    fontSize: 12,
-    fontWeight: 500,
-    textTransform: "none",
-    minHeight: 45,
-  },
-  "& .MuiTab-root.Mui-selected": {
-    color: C.accent,
-    fontWeight: 700,
-  },
-};
-
-
-const IVR_MODAL_LABEL_WIDTH = 150;
-
-const IvrFieldLabel = ({ tooltipKey, children, style = {} }) => {
-  const tooltip = IVR_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip title={formatIvrTooltipTitle(tooltip)} {...IVR_TOOLTIP_PROPS}>
-      {label}
-    </Tooltip>
-  );
-};
-
-const IvrFieldRow = ({
-  label,
-  tooltipKey,
-  children,
-  required = false,
-  alignTop = false,
-  labelWidth = IVR_MODAL_LABEL_WIDTH,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: alignTop ? "flex-start" : "center",
-      gap: 12,
-      minHeight: alignTop ? undefined : 32,
-    }}
-  >
-    <IvrFieldLabel
-      tooltipKey={tooltipKey}
-      style={{
-        width: labelWidth,
-        flexShrink: 0,
-        marginTop: alignTop ? 4 : 0,
-      }}
-    >
-      {label}
-      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
-    </IvrFieldLabel>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 const IVRPage = () => {
-  const isCompact = useMediaQuery(IVR_COMPACT_MQ);
-  const navigate = useNavigate();
-  const [rows, setRows] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("basic"); // 'basic' | 'keypress'
-  const [loading, setLoading] = useState({
-    save: false,
-    delete: false,
-    outboundRoutes: false,
-    list: false,
-    ivrOptions: false,
-  });
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const hasLoadedOutboundRoutesRef = useRef(false);
-  const modalScrollRef = useRef(null);
-
-  // Search & Pagination
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  // Basic tab state
-  const [editId, setEditId] = useState(null);
-  const [name, setName] = useState("");
-  const [ivrNumber, setIvrNumber] = useState("");
-  const [greetLong, setGreetLong] = useState("Default");
-  const [greetShort, setGreetShort] = useState("Null");
-  const [responseTimeout, setResponseTimeout] = useState("10000");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [checkVoicemail, setCheckVoicemail] = useState("Disable");
-  const [directOutbound, setDirectOutbound] = useState(false);
-
-  const [interDigitTimeout, setInterDigitTimeout] = useState("3000");
-  const [maxFailures, setMaxFailures] = useState("3");
-  const [maxTimeouts, setMaxTimeouts] = useState("3");
-  const [digitLength, setDigitLength] = useState("4");
-  const [enabled, setEnabled] = useState("Yes");
-  const [directExtension, setDirectExtension] = useState("Disable");
-  const [fxoFlashTransfer, setFxoFlashTransfer] = useState("Disable");
-
-  // Advanced State
-  const [invalidSound, setInvalidSound] = useState("Default");
-  const [exitSound, setExitSound] = useState("Default");
-  const [ringBack, setRingBack] = useState("default");
-  const [callerIdNamePrefix, setCallerIdNamePrefix] = useState("");
-  const [exitActionType, setExitActionType] = useState("");
-  const [exitActionValue, setExitActionValue] = useState("");
-
-  // Outbound routes
-  const [allOutboundRoutes, setAllOutboundRoutes] = useState([]);
-  const [selectedOutboundRouteIds, setSelectedOutboundRouteIds] = useState([]);
-
-  // Key press events
-  const [keyDestinations, setKeyDestinations] = useState(() => {
-    const obj = {};
-    KEYS.forEach((k) => (obj[k] = ""));
-    return obj;
-  });
-  const [keyDestinationValues, setKeyDestinationValues] = useState(() => {
-    const obj = {};
-    KEYS.forEach((k) => (obj[k] = ""));
-    return obj;
-  });
-
-  const [destinationOptions, setDestinationOptions] = useState([]);
-  const [destinationMap, setDestinationMap] = useState({});
-  const [promptOptions, setPromptOptions] = useState({
-    greetLong: EMPTY_PROMPT_OPTIONS,
-    greetShort: { system: ["Null"], custom: [] },
-    invalidSound: EMPTY_PROMPT_OPTIONS,
-    exitSound: EMPTY_PROMPT_OPTIONS,
-  });
-  const [ringBackOptions, setRingBackOptions] = useState(
-    EMPTY_RING_BACK_OPTIONS,
-  );
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const handleGoToVoicePrompts = () => {
-    const ok = window.confirm(
-      "Are you sure you want to go to Voice Prompt page?",
-    );
-    if (!ok) return;
-    navigate("/voice-prompts");
-  };
-
-  const loadIvrPromptOptions = async () => {
-    setLoading((prev) => ({ ...prev, ivrOptions: true }));
-    try {
-      const res = await listIvrOptions();
-      const msg = res?.message ?? res?.data ?? {};
-      const rb = msg?.ring_back ?? {};
-      setPromptOptions({
-        greetLong: buildPromptOptions(msg?.greet_long, ["Default"]),
-        greetShort: buildPromptOptions(msg?.greet_short, ["Null"], (v) =>
-          v.trim().toLowerCase() === "null" ? "Null" : v,
-        ),
-        invalidSound: buildPromptOptions(msg?.invalid_sound, ["Default"]),
-        exitSound: buildPromptOptions(msg?.exit_sound, ["Default"]),
-      });
-      setRingBackOptions({
-        country_tones: Array.isArray(rb.country_tones)
-          ? rb.country_tones.map(String)
-          : [],
-        moh_categories: Array.isArray(rb.moh_categories)
-          ? rb.moh_categories.map(String)
-          : [],
-        custom_prompts: Array.isArray(rb.custom_prompts)
-          ? rb.custom_prompts.map(String)
-          : [],
-      });
-    } catch (err) {
-      setPromptOptions({
-        greetLong: { system: ["Default"], custom: [] },
-        greetShort: { system: ["Null"], custom: [] },
-        invalidSound: { system: ["Default"], custom: [] },
-        exitSound: { system: ["Default"], custom: [] },
-      });
-      setRingBackOptions(EMPTY_RING_BACK_OPTIONS);
-    } finally {
-      setLoading((prev) => ({ ...prev, ivrOptions: false }));
-    }
-  };
-
-  const loadOutboundRoutes = async () => {
-    setLoading((prev) => ({ ...prev, outboundRoutes: true }));
-    try {
-      const res = await listIvrDirectOutboundOptions();
-      const list = normalizeArrayFromApi(res);
-      const routes = list
-        .map((r) => ({
-          id: Number(
-            r?.id ??
-              r?.route_id ??
-              r?.routeId ??
-              r?.value ??
-              r?.trunk_id ??
-              r?.trunkId,
-          ),
-          name: String(
-            r?.name ??
-              r?.route_name ??
-              r?.routeName ??
-              r?.label ??
-              r?.display_name ??
-              r?.displayName ??
-              r?.text ??
-              r?.value ??
-              "",
-          ),
-        }))
-        .filter((r) => Number.isFinite(r.id))
-        .map((r) => ({ ...r, name: r.name || String(r.id) }));
-      setAllOutboundRoutes(routes);
-      hasLoadedOutboundRoutesRef.current = routes.length > 0;
-    } catch (err) {
-      setAllOutboundRoutes([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, outboundRoutes: false }));
-    }
-  };
-
-  const fetchInitialData = async () => {
-    setLoading((prev) => ({ ...prev, list: true }));
-    try {
-      await loadIvrPromptOptions();
-      const ivrRes = await listIvrs();
-      const ivrList = Array.isArray(ivrRes?.message)
-        ? ivrRes.message
-        : Array.isArray(ivrRes?.data)
-          ? ivrRes.data
-          : [];
-      setRows(
-        ivrList.map((item) => ({
-          id: item.id,
-          name: item.name,
-          ivrNumber: item.ivr_number,
-          greetLong: item.greet_long,
-          greetShort: normalizeGreetShortUi(item.greet_short),
-          responseTimeout: String(item.response_timeout_ms),
-          password: item.password || "",
-          checkVoicemail: item.check_voicemail ? "Enable" : "Disable",
-          directOutbound: !!item.direct_outbound,
-          interDigitTimeout: String(item.inter_digit_timeout_ms),
-          maxFailures: String(item.max_failures),
-          maxTimeouts: String(item.max_timeouts),
-          digitLength: String(item.digit_length),
-          enabled: item.enabled ? "Yes" : "No",
-          directExtension: item.direct_extension ? "Enable" : "Disable",
-          fxoFlashTransfer: item.fxo_flash_transfer ? "Enable" : "Disable",
-          invalidSound: item.invalid_sound || "Default",
-          exitSound: item.exit_sound || "Default",
-          exitActionType: item.exit_action_type || "",
-          exitActionValue: item.exit_action_value || "",
-          ringBack: item.ring_back || "default",
-          callerIdNamePrefix: item.callerid_prefix || "",
-          memberOutboundIds: Array.isArray(item.direct_outbound_routes)
-            ? item.direct_outbound_routes
-                .map((x) => Number(x))
-                .filter((n) => Number.isFinite(n))
-            : Array.isArray(item.outbound_routes)
-              ? item.outbound_routes
-                  .map((x) => Number(x))
-                  .filter((n) => Number.isFinite(n))
-              : [],
-        })),
-      );
-
-      try {
-        const obRes = await listIvrDirectOutboundOptions();
-        const obList = normalizeArrayFromApi(obRes);
-        const routes = obList
-          .map((r) => ({
-            id: Number(r?.id ?? r?.route_id ?? r?.value ?? r?.trunk_id),
-            name: String(
-              r?.name ??
-                r?.route_name ??
-                r?.label ??
-                r?.display_name ??
-                r?.text ??
-                r?.value ??
-                "",
-            ),
-          }))
-          .filter((r) => Number.isFinite(r.id))
-          .map((r) => ({ ...r, name: r.name || String(r.id) }));
-        setAllOutboundRoutes(routes);
-        hasLoadedOutboundRoutesRef.current = routes.length > 0;
-      } catch {
-        setAllOutboundRoutes([]);
-      }
-
-      const destRes = await listIvrDestinations();
-      const destMessage = destRes?.message ?? destRes?.data ?? destRes;
-      if (
-        destMessage &&
-        typeof destMessage === "object" &&
-        !Array.isArray(destMessage)
-      ) {
-        const normalizedMap = {};
-        Object.entries(destMessage).forEach(([type, options]) => {
-          normalizedMap[type] = normalizeDestinationOptions(options);
-        });
-        setDestinationMap(normalizedMap);
-        setDestinationOptions(Object.keys(normalizedMap));
-      } else {
-        setDestinationMap({});
-        setDestinationOptions([]);
-      }
-    } catch (err) {
-      showMessage("error", err?.message || "Failed to load IVR data.");
-    } finally {
-      setLoading((prev) => ({ ...prev, list: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (!showModal) return;
-    if (!directOutbound) return;
-    if (loading.outboundRoutes) return;
-    if (allOutboundRoutes.length > 0) return;
-    loadOutboundRoutes();
-  }, [showModal, directOutbound]);
-
-  useLayoutEffect(() => {
-    if (!showModal || !modalScrollRef.current) return;
-    modalScrollRef.current.scrollTop = 0;
-  }, [showModal, activeTab]);
-
-  // ── Search & Pagination ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name, r.ivrNumber].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
-      ),
-    );
-  }, [filteredRows.length]);
-
-  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-
-  // ── Selection Logic ──
-  const pageIndices = pagedRows.map(
-    (_, idx) => (page - 1) * itemsPerPage + idx,
-  );
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleRow = (idx) =>
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-  const handleToggleAll = () => {
-    if (!pageIndices.length) return;
-    setSelected((prev) =>
-      allPageSelected
-        ? prev.filter((i) => !pageIndices.includes(i))
-        : Array.from(new Set([...prev, ...pageIndices])),
-    );
-  };
-
-  // ── Form Modal Handlers ──
-  const resetForm = () => {
-    setEditId(null);
-    setName("");
-    setIvrNumber("");
-    setGreetLong("Default");
-    setGreetShort("Null");
-    setResponseTimeout("10000");
-    setPassword("");
-    setShowPassword(false);
-    setCheckVoicemail("Disable");
-    setDirectOutbound(false);
-    setInterDigitTimeout("3000");
-    setMaxFailures("3");
-    setMaxTimeouts("3");
-    setDigitLength("4");
-    setEnabled("Yes");
-    setDirectExtension("Disable");
-    setFxoFlashTransfer("Disable");
-    setInvalidSound("Default");
-    setExitSound("Default");
-    setExitActionType("");
-    setExitActionValue("");
-    setRingBack("default");
-    setCallerIdNamePrefix("");
-    setSelectedOutboundRouteIds([]);
-    const obj = {};
-    KEYS.forEach((k) => (obj[k] = ""));
-    setKeyDestinations(obj);
-    const objVals = {};
-    KEYS.forEach((k) => (objVals[k] = ""));
-    setKeyDestinationValues(objVals);
-    setActiveTab("basic");
-  };
-
-  const handleOpenAddModal = async () => {
-    resetForm();
-    setShowModal(true);
-    await loadIvrPromptOptions();
-    if (!hasLoadedOutboundRoutesRef.current) await loadOutboundRoutes();
-  };
-
-  const handleOpenEditModal = async (row) => {
-    setEditId(row.id);
-    setShowModal(true);
-    setShowPassword(false);
-    setActiveTab("basic");
-    await loadIvrPromptOptions();
-    if (!hasLoadedOutboundRoutesRef.current) await loadOutboundRoutes();
-
-    try {
-      const res = await getIvr(row.id);
-      const raw = res?.message ?? res?.data ?? res;
-      const item = Array.isArray(raw) ? raw[0] : raw;
-
-      setName(item?.name || "");
-      setIvrNumber(item?.ivr_number != null ? String(item.ivr_number) : "");
-      setGreetLong(item?.greet_long || "Default");
-      setGreetShort(normalizeGreetShortUi(item?.greet_short));
-      setResponseTimeout(
-        item?.response_timeout_ms != null
-          ? String(item.response_timeout_ms)
-          : "10000",
-      );
-      setPassword(item?.password != null ? String(item.password) : "");
-      setCheckVoicemail(item?.check_voicemail ? "Enable" : "Disable");
-      setDirectOutbound(!!item?.direct_outbound);
-      setInterDigitTimeout(
-        item?.inter_digit_timeout_ms != null
-          ? String(item.inter_digit_timeout_ms)
-          : "3000",
-      );
-      setMaxFailures(
-        item?.max_failures != null ? String(item.max_failures) : "3",
-      );
-      setMaxTimeouts(
-        item?.max_timeouts != null ? String(item.max_timeouts) : "3",
-      );
-      setDigitLength(
-        item?.digit_length != null ? String(item.digit_length) : "4",
-      );
-      setEnabled(item?.enabled ? "Yes" : "No");
-      setDirectExtension(item?.direct_extension ? "Enable" : "Disable");
-      setFxoFlashTransfer(item?.fxo_flash_transfer ? "Enable" : "Disable");
-      setInvalidSound(item?.invalid_sound || "Default");
-      setExitSound(item?.exit_sound || "Default");
-      setExitActionType(item?.exit_action_type || "");
-      setExitActionValue(item?.exit_action_value || "");
-      setRingBack(item?.ring_back || "default");
-      setCallerIdNamePrefix(item?.callerid_prefix || "");
-      setSelectedOutboundRouteIds(
-        Array.isArray(item?.direct_outbound_routes)
-          ? item.direct_outbound_routes
-              .map((x) => Number(x))
-              .filter((n) => Number.isFinite(n))
-          : [],
-      );
-
-      const keyActions = Array.isArray(item?.key_actions)
-        ? item.key_actions
-        : Array.isArray(item?.keyActions)
-          ? item.keyActions
-          : [];
-      const destObj = {};
-      const valObj = {};
-      KEYS.forEach((k) => {
-        destObj[k] = "";
-        valObj[k] = "";
-      });
-      keyActions.forEach((a) => {
-        const digit = String(a?.digit ?? "");
-        if (destObj[digit] == null) return;
-        destObj[digit] = a?.dest_type || "";
-        valObj[digit] = a?.dest_value != null ? String(a.dest_value) : "";
-      });
-      setKeyDestinations(destObj);
-      setKeyDestinationValues(valObj);
-    } catch {
-      setName(row.name || "");
-      setIvrNumber(row.ivrNumber || "");
-      setGreetLong(row.greetLong || "Default");
-      setGreetShort(normalizeGreetShortUi(row.greetShort));
-      setResponseTimeout(row.responseTimeout || "10000");
-      setPassword(row.password || "");
-      setCheckVoicemail(row.checkVoicemail || "Disable");
-      setDirectOutbound(!!row.directOutbound);
-      setInterDigitTimeout(row.interDigitTimeout || "3000");
-      setMaxFailures(row.maxFailures || "3");
-      setMaxTimeouts(row.maxTimeouts || "3");
-      setDigitLength(row.digitLength || "4");
-      setEnabled(row.enabled || "Yes");
-      setDirectExtension(row.directExtension || "Disable");
-      setFxoFlashTransfer(row.fxoFlashTransfer || "Disable");
-      setInvalidSound(row.invalidSound || "Default");
-      setExitSound(row.exitSound || "Default");
-      setExitActionType(row.exitActionType || "");
-      setExitActionValue(row.exitActionValue || "");
-      setRingBack(row.ringBack || "default");
-      setCallerIdNamePrefix(row.callerIdNamePrefix || "");
-      setSelectedOutboundRouteIds(
-        Array.isArray(row.memberOutboundIds) ? [...row.memberOutboundIds] : [],
-      );
-    }
-  };
-
-  const handleCloseModal = () => {
-    if (loading.save) return;
-    setShowModal(false);
-    resetForm();
-  };
-
-  // ── Save & Delete ──
-  const handleDelete = async () => {
-    if (selected.length === 0)
-      return showMessage("error", "Please select at least one row to delete.");
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selected.length} records?`,
-      )
-    )
-      return;
-
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const rowsToDelete = filteredRows.filter((_, idx) =>
-        selected.includes(idx),
-      );
-      for (const row of rowsToDelete) {
-        if (row.id != null) await deleteIvr(row.id);
-      }
-      setSelected([]);
-      await fetchInitialData();
-      showMessage("success", "IVR(s) deleted successfully.");
-    } catch (err) {
-      showMessage("error", err?.message || "Failed to delete IVR(s).");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  const handleSave = async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return showMessage("error", "Name is required.");
-    if (!ivrNumber.trim())
-      return showMessage("error", "IVR Number is required.");
-    if (!/^[A-Za-z0-9_]+$/.test(trimmedName))
-      return showMessage(
-        "error",
-        "Name may contain only letters, numbers, and underscore.",
-      );
-
-    const ivrNumInt = parseInt(ivrNumber.trim(), 10);
-    if (Number.isNaN(ivrNumInt) || ivrNumInt < 6500 || ivrNumInt > 6599)
-      return showMessage(
-        "error",
-        "IVR Number must be an integer between 6500 and 6599.",
-      );
-
-    const respTimeoutInt = parseInt(responseTimeout, 10);
-    if (
-      Number.isNaN(respTimeoutInt) ||
-      respTimeoutInt < 1000 ||
-      respTimeoutInt > 60000
-    )
-      return showMessage(
-        "error",
-        "Response Timeout must be between 1000 and 60000 ms.",
-      );
-
-    const interDigitInt = parseInt(interDigitTimeout, 10);
-    if (
-      Number.isNaN(interDigitInt) ||
-      interDigitInt < 500 ||
-      interDigitInt > 10000
-    )
-      return showMessage(
-        "error",
-        "Inter-Digit Timeout must be between 500 and 10000 ms.",
-      );
-
-    const digitLengthInt = parseInt(digitLength, 10);
-    if (
-      Number.isNaN(digitLengthInt) ||
-      digitLengthInt < 1 ||
-      digitLengthInt > 20
-    )
-      return showMessage("error", "Digit Length must be between 1 and 20.");
-
-    if (directOutbound && selectedOutboundRouteIds.length === 0)
-      return showMessage(
-        "error",
-        "Please select at least one outbound route when Direct Outbound is enabled.",
-      );
-
-    const keyActions = [];
-    let keyActionError = "";
-    KEYS.forEach((digit) => {
-      const destType = keyDestinations[digit] || "";
-      if (!destType) return;
-      const destValue = String(keyDestinationValues[digit] || "").trim();
-      const valueOptional = destType === "DialByName" || destType === "Other";
-      if (!valueOptional && !destValue) {
-        keyActionError = `Select destination for key digit "${digit}".`;
-        return;
-      }
-      const action = { digit, dest_type: destType };
-      if (destValue) action.dest_value = destValue;
-      keyActions.push(action);
-    });
-
-    if (keyActionError) return showMessage("error", keyActionError);
-
-    const payloadForApi = {
-      name: trimmedName,
-      ivr_number: ivrNumInt,
-      greet_long: normalizePromptForApi(greetLong, "default"),
-      greet_short:
-        String(greetShort).toLowerCase() === "null" ? null : greetShort,
-      response_timeout_ms: respTimeoutInt,
-      password: password.trim(),
-      check_voicemail: checkVoicemail === "Enable",
-      direct_outbound: !!directOutbound,
-      inter_digit_timeout_ms: interDigitInt,
-      max_failures: parseInt(maxFailures, 10) || 3,
-      max_timeouts: parseInt(maxTimeouts, 10) || 3,
-      digit_length: digitLengthInt,
-      enabled: enabled === "Yes",
-      direct_extension: directExtension === "Enable",
-      fxo_flash_transfer: fxoFlashTransfer === "Enable",
-      invalid_sound: normalizePromptForApi(invalidSound, "default"),
-      exit_sound: normalizePromptForApi(exitSound, "default"),
-      ring_back: ringBack,
-      callerid_prefix: callerIdNamePrefix ? callerIdNamePrefix : null,
-      exit_action_type: exitActionType || null,
-      exit_action_value: exitActionType ? exitActionValue || null : null,
-      direct_outbound_trunk: null,
-      direct_outbound_routes: directOutbound ? selectedOutboundRouteIds : [],
-    };
-
-    setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      if (editId != null) {
-        await updateIvr(editId, payloadForApi);
-        await setIvrKeys(editId, keyActions);
-      } else {
-        await createIvr({ ...payloadForApi, key_actions: keyActions });
-      }
-      await fetchInitialData();
-      handleCloseModal();
-      showMessage("success", "IVR saved successfully.");
-    } catch (err) {
-      showMessage("error", err?.message || "Failed to save IVR.");
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
-
-  // ── Dual Listbox Logic ──
-  const routeNameById = useMemo(() => {
-    const map = new Map();
-    allOutboundRoutes.forEach((r) => map.set(r.id, r.name));
-    return map;
-  }, [allOutboundRoutes]);
-
-  const getOutboundRouteLabel = (id) => routeNameById.get(id) || `ID:${id}`;
-
-  const allOutboundRouteOptions = useMemo(
-    () =>
-      allOutboundRoutes.map(({ id, name }) => ({
-        value: id,
-        label: name || String(id),
-      })),
-    [allOutboundRoutes],
-  );
-
-  // ── Keys Logic ──
-  const handleKeyDestinationChange = (key, value) =>
-    setKeyDestinations((prev) => ({ ...prev, [key]: value }));
-  const handleKeyDestinationValueChange = (key, value) =>
-    setKeyDestinationValues((prev) => ({ ...prev, [key]: value }));
-
-  const DEFAULT_ACTION_TYPES = [
-    "Extensions",
-    "Voicemails",
-    "IVR",
-    "ConferenceRooms",
-    "RingGroups",
-    "DISA",
-    "CallQueue",
-    "Callbacks",
-    "Custom",
-    "FaxToMail",
-    "Other",
-  ];
-  const actionTypeOptions = destinationOptions.length
-    ? destinationOptions
-    : DEFAULT_ACTION_TYPES;
-  const keyActionTypeOptions = actionTypeOptions;
-
-  const formatActionLabel = (type) => {
-    if (!type) return "";
-    switch (type) {
-      case "CallQueue":
-        return "Call Queue";
-      case "Callbacks":
-        return "CallBacks";
-      case "ConferenceRooms":
-        return "Conference Rooms";
-      case "FaxToMail":
-        return "Fax To Mail";
-      case "RingGroups":
-        return "Ring Groups";
-      case "FlashCustom":
-        return "Flash Custom";
-      case "DialByName":
-        return "Dial By Name";
-      default:
-        return type;
-    }
-  };
-
-  const getDestinationListForType = (type) => {
-    if (!type) return [];
-    if (!destinationMap) return [];
-    const list = destinationMap[type];
-    if (Array.isArray(list) && list.length > 0) return list;
-    if (
-      (type === "Voicemails" || type === "FaxToMail") &&
-      Array.isArray(destinationMap.Extensions)
-    )
-      return destinationMap.Extensions;
-    return [];
-  };
+  const vm = useIVRPage();
+  const {
+    isCompact,
+    rows,
+    selected,
+    showModal,
+    activeTab,
+    loading,
+    message,
+    isInitialLoad,
+    modalScrollRef,
+    itemsPerPage,
+    page,
+    searchQuery,
+    searchFocused,
+    setSearchQuery,
+    setSearchFocused,
+    setPage,
+    editId,
+    name,
+    ivrNumber,
+    greetLong,
+    greetShort,
+    responseTimeout,
+    password,
+    showPassword,
+    checkVoicemail,
+    directOutbound,
+    interDigitTimeout,
+    maxFailures,
+    maxTimeouts,
+    digitLength,
+    enabled,
+    directExtension,
+    fxoFlashTransfer,
+    invalidSound,
+    exitSound,
+    ringBack,
+    callerIdNamePrefix,
+    exitActionType,
+    exitActionValue,
+    selectedOutboundRouteIds,
+    keyDestinations,
+    keyDestinationValues,
+    filteredRows,
+    totalPages,
+    pagedRows,
+    allPageSelected,
+    somePageSelected,
+    getOutboundRouteLabel,
+    allOutboundRouteOptions,
+    actionTypeOptions,
+    keyActionTypeOptions,
+    formatActionLabel,
+    getDestinationListForType,
+    greetLongOptions,
+    greetShortOptions,
+    invalidSoundOptions,
+    exitSoundOptions,
+    ringBackOptions,
+    ringBackAllValues,
+    setMessage,
+    setActiveTab,
+    setName,
+    setIvrNumber,
+    setGreetLong,
+    setGreetShort,
+    setResponseTimeout,
+    setPassword,
+    setShowPassword,
+    setCheckVoicemail,
+    setDirectOutbound,
+    setInterDigitTimeout,
+    setMaxFailures,
+    setMaxTimeouts,
+    setDigitLength,
+    setEnabled,
+    setDirectExtension,
+    setFxoFlashTransfer,
+    setInvalidSound,
+    setExitSound,
+    setRingBack,
+    setCallerIdNamePrefix,
+    setExitActionType,
+    setExitActionValue,
+    setSelectedOutboundRouteIds,
+    handleGoToVoicePrompts,
+    handlePrev,
+    handleNext,
+    handleToggleRow,
+    handleToggleAll,
+    handleOpenAddModal,
+    handleOpenEditModal,
+    handleCloseModal,
+    handleDelete,
+    handleSave,
+    handleKeyDestinationChange,
+    handleKeyDestinationValueChange,
+  } = vm;
 
   const renderDestinationSelect = (type, value, onChange) => {
-    if (!type)
+    if (!type) {
       return (
         <TextField
           size="small"
@@ -1213,6 +182,7 @@ const IVRPage = () => {
           inputProps={{ style: { fontSize: 13, padding: "6px 8px" } }}
         />
       );
+    }
     if (TEXT_TARGET_TYPES.has(type)) {
       return (
         <TextField
@@ -1253,70 +223,6 @@ const IVRPage = () => {
         </MuiSelect>
       </FormControl>
     );
-  };
-
-  const ensureOptionList = (items, fallback, currentValue) => {
-    const base = Array.isArray(items) && items.length > 0 ? items : [fallback];
-    return currentValue && !base.includes(currentValue)
-      ? [currentValue, ...base]
-      : base;
-  };
-  const greetLongOptions = useMemo(
-    () =>
-      ensureOptionList(
-        [...promptOptions.greetLong.system, ...promptOptions.greetLong.custom],
-        "Default",
-        greetLong,
-      ),
-    [promptOptions.greetLong, greetLong],
-  );
-  const greetShortOptions = useMemo(
-    () =>
-      ensureOptionList(
-        [
-          ...promptOptions.greetShort.system,
-          ...promptOptions.greetShort.custom,
-        ],
-        "Null",
-        greetShort,
-      ),
-    [promptOptions.greetShort, greetShort],
-  );
-  const invalidSoundOptions = useMemo(
-    () =>
-      ensureOptionList(
-        [
-          ...promptOptions.invalidSound.system,
-          ...promptOptions.invalidSound.custom,
-        ],
-        "Default",
-        invalidSound,
-      ),
-    [promptOptions.invalidSound, invalidSound],
-  );
-  const exitSoundOptions = useMemo(
-    () =>
-      ensureOptionList(
-        [...promptOptions.exitSound.system, ...promptOptions.exitSound.custom],
-        "Default",
-        exitSound,
-      ),
-    [promptOptions.exitSound, exitSound],
-  );
-  const ringBackAllValues = useMemo(
-    () => [
-      ...ringBackOptions.moh_categories,
-      ...ringBackOptions.custom_prompts,
-      ...ringBackOptions.country_tones,
-    ],
-    [ringBackOptions],
-  );
-
-  const normalizePromptForApi = (value, defaultKeyword) => {
-    if (value == null || value === "") return defaultKeyword;
-    if (String(value).toLowerCase() === String(defaultKeyword).toLowerCase())
-      return defaultKeyword;
-    return value;
   };
 
   return (
