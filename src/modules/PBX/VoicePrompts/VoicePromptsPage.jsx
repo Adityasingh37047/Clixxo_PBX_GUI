@@ -82,7 +82,7 @@ const C = {
   sectionHeading: "#30415A",
 };
 
-const VOICE_PROMPTS_CARD_RADIUS = 10;
+const VOICE_PROMPTS_CARD_RADIUS = 4;
 
 // ── Local page UI (inlined from pbxSharedUi) ──
 
@@ -97,8 +97,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -189,14 +189,14 @@ const voicePromptsChooseFileBtnStyle = {
 const voicePromptsPanelStyle = {
   background: "#f8fafc",
   padding: 16,
-  borderRadius: 8,
+  borderRadius: 4,
   border: `1px solid ${C.cardBorder}`,
 };
 
 const voicePromptsTableCardStyle = {
   overflowX: "auto",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   background: "#ffffff",
 };
 
@@ -341,7 +341,7 @@ const voicePromptsModalPaperSx = {
   display: "flex",
   flexDirection: "column",
   p: 0,
-  borderRadius: 2,
+  borderRadius: "4px",
   overflow: "hidden",
   boxShadow:
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
@@ -354,8 +354,8 @@ const voicePromptsModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
   margin: 0,
 };
 
@@ -373,7 +373,7 @@ const voicePromptsModalSectionStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 

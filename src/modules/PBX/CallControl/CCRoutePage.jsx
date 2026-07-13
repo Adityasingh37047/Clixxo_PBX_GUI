@@ -132,8 +132,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -396,12 +396,12 @@ const ccRouteModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
   flexShrink: 0,
 };
 
-const CC_ROUTE_TABLE_CARD_RADIUS = 10;
+const CC_ROUTE_TABLE_CARD_RADIUS = 4;
 
 const ccRoutePaginationStyle = {
 
@@ -484,7 +484,7 @@ const ccRouteModalFormStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -1045,7 +1045,7 @@ const CCRoutePage = () => {
             pt: 8,
           },
         }}
-        PaperProps={{ sx: ccRouteModalPaperSx }}
+        PaperProps={{ sx: { ...ccRouteModalPaperSx, borderRadius: editId == null ? "4px" : ccRouteModalPaperSx.borderRadius } }}
       >
         <DialogTitle style={ccRouteModalTitleStyle}>
           {editId != null ? "Edit CC Route" : "Add CC Route"}

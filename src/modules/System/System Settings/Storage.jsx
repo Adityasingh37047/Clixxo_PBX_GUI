@@ -176,18 +176,92 @@ const modalTextFieldSx = {
   },
 };
 
+const STORAGE_STATUS_VALUE_COL_WIDTH = 200;
+const STORAGE_STATUS_COL_GAP = 12;
+
 const storageStatusTextFieldSx = {
   ...storageTextFieldSx,
-  width: 180, // ya 200, jitni width chahiye
-  minWidth: 180,
-  maxWidth: 180,
-
+  width: "100%",
+  minWidth: 0,
+  maxWidth: "100%",
   "& .MuiOutlinedInput-root": {
     ...storageOutlinedInputRootSx,
     minHeight: 34,
+    height: 34,
     width: "100%",
     maxWidth: "100%",
+    backgroundColor: C.pageBg,
+    "& fieldset": {
+      borderColor: C.divider,
+    },
+    "&:hover fieldset": {
+      borderColor: C.divider,
+    },
+    "&.Mui-focused": {
+      boxShadow: "none",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: C.divider,
+      borderWidth: "1px",
+    },
+    "&.Mui-focused:hover fieldset": {
+      borderColor: C.divider,
+      borderWidth: "1px",
+    },
   },
+  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+    borderColor: C.divider,
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: C.divider,
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: C.divider,
+    borderWidth: "1px",
+  },
+  "& .MuiOutlinedInput-input": {
+    backgroundColor: C.pageBg,
+    fontSize: 13,
+    fontWeight: 500,
+    lineHeight: 1.35,
+    padding: "8px 12px",
+    color: C.valueText,
+    cursor: "default",
+  },
+};
+
+const storageStatusGridStyle = (labelColWidth) => ({
+  display: "grid",
+  gridTemplateColumns: `${labelColWidth}px ${STORAGE_STATUS_VALUE_COL_WIDTH}px ${STORAGE_STATUS_VALUE_COL_WIDTH}px`,
+  columnGap: STORAGE_STATUS_COL_GAP,
+  alignItems: "center",
+  width: "100%",
+  minWidth: 0,
+});
+
+const storageStatusLabelStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  lineHeight: 1.35,
+  wordBreak: "break-word",
+};
+
+const storageStatusColHeaderStyle = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: C.labelText,
+  lineHeight: 1.35,
+  paddingLeft: 12,
+  boxSizing: "border-box",
+};
+
+const storageStatusRowsStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: STORAGE_STATUS_COL_GAP,
+  width: "100%",
+  minWidth: 0,
 };
 
 const modalSelectSx = {
@@ -1189,121 +1263,64 @@ const handleRefresh = async () => {
                 <div style={storageBackupContentStyle}>
                   <SectionHeading title={STORAGE_SECTION_STATUS} isFirst />
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
-                      columnGap: 12,
-                      alignItems: "center",
-                      marginBottom: 12,
-                      color: C.labelText,
-                      fontWeight: 600,
-                    }}
-                  >
-                    <div />
-                    <div>{STORAGE_STATUS_COL_COUNT}</div>
-                    <div>{STORAGE_STATUS_COL_SIZE}</div>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
-                      columnGap: 12,
-                      alignItems: "center",
-                      marginBottom: 14,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      CDR
+                  <div style={storageStatusRowsStyle}>
+                    <div style={storageStatusGridStyle(labelColWidth)}>
+                      <div />
+                      <div style={storageStatusColHeaderStyle}>
+                        {STORAGE_STATUS_COL_COUNT}
+                      </div>
+                      <div style={storageStatusColHeaderStyle}>
+                        {STORAGE_STATUS_COL_SIZE}
+                      </div>
                     </div>
 
-                    <TextField
-                      size="small"
-                      value={storageStatus.cdr.count}
-                      InputProps={{ readOnly: true }}
-                      sx={storageStatusTextFieldSx}
-                    />
-
-                    <TextField
-                      size="small"
-                      value={storageStatus.cdr.size}
-                      InputProps={{ readOnly: true }}
-                      sx={storageStatusTextFieldSx}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
-                      columnGap: 12,
-                      alignItems: "center",
-                      marginBottom: 14,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      Voicemail
+                    <div style={storageStatusGridStyle(labelColWidth)}>
+                      <div style={storageStatusLabelStyle}>CDR</div>
+                      <TextField
+                        size="small"
+                        value={storageStatus.cdr.count}
+                        InputProps={{ readOnly: true }}
+                        sx={storageStatusTextFieldSx}
+                      />
+                      <TextField
+                        size="small"
+                        value={storageStatus.cdr.size}
+                        InputProps={{ readOnly: true }}
+                        sx={storageStatusTextFieldSx}
+                      />
                     </div>
 
-                    <TextField
-                      size="small"
-                      value={storageStatus.voicemail.count}
-                      InputProps={{ readOnly: true }}
-                      sx={storageStatusTextFieldSx}
-                    />
-
-                    <TextField
-                      size="small"
-                      value={storageStatus.voicemail.size}
-                      InputProps={{ readOnly: true }}
-                      sx={storageStatusTextFieldSx}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `${labelColWidth}px 200px 200px`,
-                      columnGap: 12,
-                      alignItems: "center",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      Recordings
+                    <div style={storageStatusGridStyle(labelColWidth)}>
+                      <div style={storageStatusLabelStyle}>Voicemail</div>
+                      <TextField
+                        size="small"
+                        value={storageStatus.voicemail.count}
+                        InputProps={{ readOnly: true }}
+                        sx={storageStatusTextFieldSx}
+                      />
+                      <TextField
+                        size="small"
+                        value={storageStatus.voicemail.size}
+                        InputProps={{ readOnly: true }}
+                        sx={storageStatusTextFieldSx}
+                      />
                     </div>
 
-                    <TextField
-                      size="small"
-                      value={storageStatus.recordings.count}
-                      InputProps={{ readOnly: true }}
-                      sx={storageStatusTextFieldSx}
-                    />
-
-                    <TextField
-                      size="small"
-                      value={storageStatus.recordings.size}
-                      InputProps={{ readOnly: true }}
-                      sx={storageStatusTextFieldSx}
-                    />
+                    <div style={storageStatusGridStyle(labelColWidth)}>
+                      <div style={storageStatusLabelStyle}>Recordings</div>
+                      <TextField
+                        size="small"
+                        value={storageStatus.recordings.count}
+                        InputProps={{ readOnly: true }}
+                        sx={storageStatusTextFieldSx}
+                      />
+                      <TextField
+                        size="small"
+                        value={storageStatus.recordings.size}
+                        InputProps={{ readOnly: true }}
+                        sx={storageStatusTextFieldSx}
+                      />
+                    </div>
                   </div>
                 </div>
 

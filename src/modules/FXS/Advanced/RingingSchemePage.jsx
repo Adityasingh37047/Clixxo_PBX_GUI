@@ -87,7 +87,7 @@ const C = {
   rowAlt: "#f8fafc",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 const FIELD_RADIUS = 8;
 const OUTLINED_BORDER = "#d1d5db";
 const OUTLINED_HOVER = "#9ca3af";

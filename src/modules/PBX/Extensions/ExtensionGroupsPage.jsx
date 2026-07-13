@@ -206,8 +206,8 @@ const extGroupModalTitleStyle = {
   fontSize: 16,
   textAlign: "center",
   padding: "16px 24px",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const extGroupModalFormStyle = {
@@ -216,7 +216,7 @@ const extGroupModalFormStyle = {
   gap: 14,
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -228,7 +228,7 @@ const extGroupDialogPaperSx = {
   display: "flex",
   flexDirection: "column",
   p: 0,
-  borderRadius: "8px",
+  borderRadius: "4px",
   overflow: "hidden",
 };
 

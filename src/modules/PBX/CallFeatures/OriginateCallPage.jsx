@@ -99,7 +99,7 @@ const nativeFieldInteraction = {
 
 // ── Local page UI ──
 
-const ORIGINATE_CALL_CARD_RADIUS = 10;
+const ORIGINATE_CALL_CARD_RADIUS = 4;
 
 const originateCallFormContentStyle = {
   width: "100%",
@@ -268,7 +268,7 @@ const pageFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

@@ -51,7 +51,7 @@ const C = {
   sectionHeading: "#30415A",
 };
 
-const FEATURE_CODE_CARD_RADIUS = 10;
+const FEATURE_CODE_CARD_RADIUS = 4;
 
 
 const featureCodeFormBodyStyle = {
@@ -80,7 +80,7 @@ const pageFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

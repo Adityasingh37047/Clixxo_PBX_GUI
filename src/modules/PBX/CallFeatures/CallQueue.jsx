@@ -78,7 +78,7 @@ const C = {
 // ── Local page UI ──
 
 
-const CALL_QUEUE_TABLE_CARD_RADIUS = 10;
+const CALL_QUEUE_TABLE_CARD_RADIUS = 4;
 
 const callQueuePaginationStyle = {
   display: "flex",
@@ -125,8 +125,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -248,8 +248,8 @@ const callQueueModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const callQueueModalFormStyle = {
@@ -259,7 +259,7 @@ const callQueueModalFormStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -823,7 +823,7 @@ const CallQueue = () => {
         slotProps={{
           backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
         }}
-        PaperProps={{ sx: callQueueModalPaperSx }}
+        PaperProps={{ sx: { ...callQueueModalPaperSx, borderRadius: editIndex === null ? "4px" : callQueueModalPaperSx.borderRadius } }}
         disableRestoreFocus
       >
         <DialogTitle sx={callQueueModalTitleStyle}>
@@ -1797,7 +1797,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || queues.length === 0
                 }
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 Inverse
               </Btn>
@@ -1807,7 +1807,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 10 }}
+                style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />

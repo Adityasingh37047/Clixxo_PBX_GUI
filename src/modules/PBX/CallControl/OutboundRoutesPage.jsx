@@ -87,8 +87,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -421,11 +421,11 @@ const outboundRouteModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
-const OUTBOUND_ROUTE_TABLE_CARD_RADIUS = 10;
+const OUTBOUND_ROUTE_TABLE_CARD_RADIUS = 4;
 
 const outboundRoutePaginationStyle = {
   display: "flex",
@@ -459,7 +459,7 @@ const outboundRouteModalFormStyle = {
   overflow: "hidden",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -1618,7 +1618,7 @@ const OutboundRoutesPage = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: outboundRouteModalPaperSx }}
+        PaperProps={{ sx: { ...outboundRouteModalPaperSx, borderRadius: editId == null ? "4px" : outboundRouteModalPaperSx.borderRadius } }}
         disableRestoreFocus
         disableEnforceFocus
       >

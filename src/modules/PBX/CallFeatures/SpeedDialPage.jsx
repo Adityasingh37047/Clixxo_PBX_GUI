@@ -67,7 +67,7 @@ const C = {
 // ── Local page UI ──
 
 
-const SPEED_DIAL_TABLE_CARD_RADIUS = 10;
+const SPEED_DIAL_TABLE_CARD_RADIUS = 4;
 
 const speedDialPaginationStyle = {
   display: "flex",
@@ -168,8 +168,8 @@ const speedDialModalTitleStyle = {
   fontSize: 16,
   padding: "16px 24px",
   textAlign: "center",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: 4,
+  borderTopRightRadius: 4,
 };
 
 const speedDialModalFormStyle = {
@@ -179,7 +179,7 @@ const speedDialModalFormStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: 20,
 };
 
@@ -194,8 +194,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -949,7 +949,7 @@ const SpeedDialPage = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: speedDialModalPaperSx }}
+        PaperProps={{ sx: { ...speedDialModalPaperSx, borderRadius: editId == null ? "4px" : speedDialModalPaperSx.borderRadius } }}
       >
         <DialogTitle style={speedDialModalTitleStyle}>
           {editId != null

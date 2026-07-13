@@ -71,7 +71,7 @@ const C = {
     "0 0 14px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.06)",
 };
 
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
 
 const Btn = ({
   children,
