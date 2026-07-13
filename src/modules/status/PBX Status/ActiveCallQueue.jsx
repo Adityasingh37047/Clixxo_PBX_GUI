@@ -151,7 +151,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 8,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -275,7 +275,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -448,8 +448,9 @@ const ActiveCallQueueToolbarSearchBar = ({
   );
 };
 
-const ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS = 10;
-const ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS = 20;
+const CARD_RADIUS = 4;
+const ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS = CARD_RADIUS;
+const ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS = CARD_RADIUS;
 
 const ACTIVE_CALL_QUEUE_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
@@ -530,13 +531,14 @@ const activeCallQueueCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const activeCallQueuePrimaryBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const activeCallQueueStatsToolbarBtnStyle = {

@@ -62,6 +62,8 @@ import {
 } from "../../components/common";
 
 // ── Local page UI (inlined from cdrSharedUi) ────────────────────────────────
+const CARD_RADIUS = 4;
+
 const Btn = ({
   children,
   onClick,
@@ -154,7 +156,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -319,7 +321,7 @@ const callCountFilterModalPaperSx = {
   maxWidth: "96vw",
   mx: "auto",
   p: 0,
-  borderRadius: 2,
+  borderRadius: `${CARD_RADIUS}px`,
   overflow: "hidden",
   boxShadow:
     "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
@@ -332,15 +334,15 @@ const callCountFilterModalTitleStyle = {
   fontSize: 16,
   textAlign: "center",
   padding: "16px 24px",
-  borderTopLeftRadius: 8,
-  borderTopRightRadius: 8,
+  borderTopLeftRadius: CARD_RADIUS,
+  borderTopRightRadius: CARD_RADIUS,
 };
 
 const callCountFilterModalFormStyle = {
   width: "100%",
   background: "#f8fafc",
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: 8,
+  borderRadius: CARD_RADIUS,
   padding: 20,
   boxSizing: "border-box",
 };
@@ -356,15 +358,15 @@ const callCountFilterModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: CARD_RADIUS,
+  borderBottomRightRadius: CARD_RADIUS,
 };
 
 const callCountFilterModalFooterBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
   minWidth: 100,
 };
 

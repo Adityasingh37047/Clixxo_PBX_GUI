@@ -39,7 +39,8 @@ const C = {
   successGreen: "#16a34a",
 };
 
-const VIEW_VOICEMAIL_TABLE_CARD_RADIUS = 10;
+const CARD_RADIUS = 4;
+const VIEW_VOICEMAIL_TABLE_CARD_RADIUS = CARD_RADIUS;
 
 const VIEW_VOICEMAIL_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
@@ -145,7 +146,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -284,7 +285,7 @@ const viewVoicemailToolbarBtnStyle = {
   height: 30,
   padding: "6px 14px",
   fontSize: 12,
-  borderRadius: 10,
+  borderRadius: 4,
 };
 
 const viewVoicemailRefreshBtnStyle = {
@@ -294,7 +295,8 @@ const viewVoicemailRefreshBtnStyle = {
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
   width: 70,
-  boxSizing: "border-box",  
+  boxSizing: "border-box",
+  borderRadius: 4,
 };
 
 const TH = ({ children, align = "center", style: extra }) => (

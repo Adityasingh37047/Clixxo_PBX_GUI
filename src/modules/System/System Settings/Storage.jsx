@@ -502,13 +502,7 @@ const storagePageInnerStyle = {
   margin: "0 auto",
 };
 
-const storageCardShellStyle = {
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
-};
+
 
 const storageTableContainerStyle = {
   width: "100%",

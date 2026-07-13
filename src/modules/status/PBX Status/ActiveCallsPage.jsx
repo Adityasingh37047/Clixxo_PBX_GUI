@@ -31,9 +31,10 @@ const C = {
 
 const activeCallsRefreshBtnStyle = {
   height: 30,
+  borderRadius: 4,
 };
 
-const ACTIVE_CALLS_CARD_RADIUS = 10;
+const ACTIVE_CALLS_CARD_RADIUS = 4;
 
 const ACTIVE_CALLS_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
@@ -792,6 +793,7 @@ const ActiveCallsPage = () => {
                                 sx={{
                                   color: C.errorRed,
                                   padding: "2px",
+                                  borderRadius: 4,
                                 }}
                               >
                                 {hangupChannelId === hangupKey ? (

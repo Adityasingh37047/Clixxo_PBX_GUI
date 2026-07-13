@@ -143,7 +143,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 14px",
-        borderRadius: 8,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -267,7 +267,7 @@ const TableListEmptyState = ({
       <Btn
         variant="cancel"
         onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 6 }}
+        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 4 }}
       >
         {buttonLabel}
       </Btn>
@@ -278,8 +278,9 @@ const TableListEmptyState = ({
 const PBX_MONITOR_COMPACT_MQ = "(max-width: 768px)";
 const PBX_MONITOR_EXTENSION_TABLE_MIN_WIDTH = 640;
 const PBX_MONITOR_TRUNK_TABLE_MIN_WIDTH = 520;
-const PBX_MONITOR_TABLE_CARD_RADIUS = 10;
-const PBX_MONITOR_FORM_HEADER_RADIUS = 20;
+const CARD_RADIUS = 4;
+const PBX_MONITOR_TABLE_CARD_RADIUS = CARD_RADIUS;
+const PBX_MONITOR_FORM_HEADER_RADIUS = CARD_RADIUS;
 
 const pbxMonitorCardHeaderStyle = {
   width: "100%",
@@ -398,7 +399,7 @@ const PbxMonitorToolbarSearchBar = ({
         boxSizing: "border-box",
         background: "#f8fafc",
         border: `1px solid ${OUTLINED_BORDER}`,
-        borderRadius: 10,
+        borderRadius: 4,
         padding: `0 ${horizontalPadding}px`,
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
         width: resolvedWidth,
@@ -500,6 +501,7 @@ const pbxMonitorCancelBtnStyle = {
   color: "#374151",
   border: "1px solid #cbd5e1",
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+  borderRadius: 4,
 };
 
 const pbxMonitorFooterStyle = {
@@ -519,7 +521,7 @@ const StatCard = ({ label, value, accent, ready }) => (
   <div
     style={{
       background: "#ffffff",
-      borderRadius: 10,
+      borderRadius: CARD_RADIUS,
       padding: "8px 12px",
       minHeight: 52,
       border: `1px solid ${C.cardBorder}`,

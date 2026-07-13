@@ -27,7 +27,7 @@ const C = {
   errorRed: "#dc2626",
 };
 
-const SYSTEM_INFO_CARD_RADIUS = 10;
+const SYSTEM_INFO_CARD_RADIUS = 4;
 
 const SYSTEM_INFO_CARD_SHADOW =
   "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
@@ -92,7 +92,7 @@ const Btn = ({
         alignItems: "center",
         justifyContent: "center",
         padding: "6px 18px",
-        borderRadius: 10,
+        borderRadius: 4,
         fontSize: 12,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
@@ -657,7 +657,7 @@ const SystemInfo = () => {
               borderLeft: `3px solid ${C.errorRed}`,
               color: C.errorRed,
               padding: "10px 14px",
-              borderRadius: 8,
+              borderRadius: 4,
               marginBottom: 16,
               fontSize: 13,
             }}
