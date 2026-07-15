@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { listIvrDestinations } from "../../../api/apiService";
+import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -14,15 +13,9 @@ import {
   MenuItem,
   Select,
   TextField,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
-import axiosInstance from "../../../api/axiosInstance";
-import { listOutboundRouteExtensions } from "../../../api/apiService";
-import {
-  OUTBOUND_RESTRICTION_ENABLE_OPTIONS,
-  OUTBOUND_RESTRICTION_FIELD_TOOLTIPS,
-} from "../../../constants/OutboundRestrictionConstants";
+import { C } from "../../../theme/pbxTokens";
+import { OUTBOUND_RESTRICTION_ENABLE_OPTIONS } from "../../../constants/OutboundRestrictionConstants";
 import {
   Btn,
   TH,
@@ -30,6 +23,7 @@ import {
   ExtensionBreadcrumb as OutboundRestrictionBreadcrumb,
   ExtensionTableListLoading as OutboundRestrictionTableListLoading,
   ExtensionTableListEmptyState as OutboundRestrictionTableListEmptyState,
+  ExtensionPagination as OutboundRestrictionPagination,
   extensionTableCheckboxSx as outboundRestrictionTableCheckboxSx,
   extensionFixedAlertSx as outboundRestrictionFixedAlertSx,
   extensionPageWrapStyle as outboundRestrictionPageWrapStyle,
@@ -40,912 +34,77 @@ import {
   extensionCancelBtnStyle as outboundRestrictionCancelBtnStyle,
   extensionPrimaryBtnStyle as outboundRestrictionPrimaryBtnStyle,
   ExtensionCodecDualList as OutboundRestrictionCodecDualList,
+  getExtensionRowBg as getOutboundRestrictionRowBg,
 } from "../../../components/common";
-
-const OUTBOUND_RESTRICTION_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Outbound Restriction API (local — does not modify apiService) ─────────────
-const orPost = async (payload) => {
-  try {
-    const response = await axiosInstance.post("/outbound-restriction", payload);
-    return response.data;
-  } catch (error) {
-    if (error.code === "ECONNABORTED" || error.message === "Network Error") {
-      throw new Error("Network Error");
-    }
-    throw error.response?.data || { message: "Server unavailable" };
-  }
-};
-
-const listOutboundRestrictions = () => orPost({ type: "list" });
-const createOutboundRestriction = (data) => orPost({ type: "create", ...data });
-const updateOutboundRestriction = (id, data) =>
-  orPost({ type: "update", id: Number(id), ...data });
-const deleteOutboundRestriction = (id) =>
-  orPost({ type: "delete", id: Number(id) });
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  codecBoxBorder: "#c5ccd6",
-  codecBoxAvailableBg: "#f8fafc",
-  codecStripBg: "#ffffff",
-  codecStripBorder: "#ced4de",
-  codecStripSelectedBg: "#f1f5f9",
-  codecStripSelectedBorder: "#8fa3b8",
-  codecBtnBorder: "#c9d0d9",
-  codecBtnBg: "#d9dde3",
-  placeholderText: "#94a3b8",
-};
-
-// ── Local page UI ──
-
-
-const checkboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const outboundRestrictionModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const OUTBOUND_RESTRICTION_LIST_TRUNCATE_THRESHOLD = 10;
-const OUTBOUND_RESTRICTION_LIST_DISPLAY_LIMIT = 6;
-
-const formatOutboundRestrictionItemListDisplay = (
-  items,
-  {
-    threshold = OUTBOUND_RESTRICTION_LIST_TRUNCATE_THRESHOLD,
-    limit = OUTBOUND_RESTRICTION_LIST_DISPLAY_LIMIT,
-    mapItem = (x) => String(x),
-    separator = ", ",
-    ellipsis = "....",
-  } = {},
-) => {
-  if (!items?.length) return "";
-  const labels = items.map(mapItem).filter((v) => v !== "" && v != null);
-  if (!labels.length) return "";
-  if (labels.length <= threshold) {
-    return labels.join(separator);
-  }
-  return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
-};
-
-const OUTBOUND_RESTRICTION_MODAL_SECTION_BG = "#f8fafc";
-const OUTBOUND_RESTRICTION_MODAL_SECTION_HEADING_COLOR = "#30415A";
-
-const OUTBOUND_RESTRICTION_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatOutboundRestrictionTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const RestrictionFieldLabel = ({ tooltipKey, children, style = {} }) => {
-  const tooltip = OUTBOUND_RESTRICTION_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip
-      title={formatOutboundRestrictionTooltipTitle(tooltip)}
-      {...OUTBOUND_RESTRICTION_TOOLTIP_PROPS}
-    >
-      {label}
-    </Tooltip>
-  );
-};
-
-const OutboundRestrictionModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  const heading = (
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: isLaptopNarrow ? 0 : -6,
-        background: OUTBOUND_RESTRICTION_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: OUTBOUND_RESTRICTION_MODAL_SECTION_HEADING_COLOR,
-        cursor: tooltipKey ? "help" : undefined,
-      }}
-    >
-      {title}
-    </span>
-  );
-  const tooltip = tooltipKey
-    ? OUTBOUND_RESTRICTION_FIELD_TOOLTIPS[tooltipKey]
-    : "";
-  return (
-    <div
-      style={{
-        margin: isFirst
-          ? isLaptopNarrow
-            ? "16px 0 24px 0"
-            : "0 0 24px 0"
-          : "16px 0 24px 0",
-        position: "relative",
-        width: "100%",
-      }}
-    >
-      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-      {tooltip ? (
-        <Tooltip
-          title={formatOutboundRestrictionTooltipTitle(tooltip)}
-          {...OUTBOUND_RESTRICTION_TOOLTIP_PROPS}
-        >
-          {heading}
-        </Tooltip>
-      ) : (
-        heading
-      )}
-    </div>
-  );
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const outboundRestrictionOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const outboundRestrictionModalTextFieldSx = {
-  "& .MuiOutlinedInput-root": outboundRestrictionOutlinedInputRootSx,
-  "& .MuiOutlinedInput-input": {
-    backgroundColor: "#fff",
-    fontSize: 13,
-    padding: "8px 12px",
-  },
-};
-
-const outboundRestrictionModalTextFieldFullSx = {
-  ...outboundRestrictionModalTextFieldSx,
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...outboundRestrictionOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-  },
-};
-
-const outboundRestrictionModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...outboundRestrictionOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const outboundRestrictionModalPaperSx = {
-  width: 900,
-  maxWidth: "95vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const outboundRestrictionModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-
-const OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS = 4;
-
-const outboundRestrictionPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: OUTBOUND_RESTRICTION_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const outboundRestrictionPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const OutboundRestrictionPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-}) => (
-  <div style={{ ...outboundRestrictionPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        ← Prev
-      </Btn>
-      <span style={outboundRestrictionPageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
-
-const FieldRow = ({
-  label,
-  tooltipKey,
-  children,
-  wide = false,
-  labelWidth = 130,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: wide ? "flex-start" : "center",
-      gap: 12,
-      width: "100%",
-    }}
-  >
-    {tooltipKey ? (
-      <RestrictionFieldLabel
-        tooltipKey={tooltipKey}
-        style={{
-          textAlign: "left",
-          width: labelWidth,
-          minWidth: labelWidth,
-          flexShrink: 0,
-          paddingTop: wide ? 4 : 0,
-        }}
-      >
-        {label}
-      </RestrictionFieldLabel>
-    ) : (
-      <label
-        style={{
-          fontSize: 13,
-          color: C.labelText,
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-          textAlign: "left",
-          width: labelWidth,
-          minWidth: labelWidth,
-          flexShrink: 0,
-          paddingTop: wide ? 4 : 0,
-        }}
-      >
-        {label}
-      </label>
-    )}
-    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
-  </div>
-);
-
-const OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH = 185;
-const OUTBOUND_RESTRICTION_MODAL_FIELD_WIDTH = 210;
-const OUTBOUND_RESTRICTION_RIGHT_LABEL_PADDING_LEFT = 28;
-const OUTBOUND_RESTRICTION_LEFT_FIELD_LABEL_WIDTH = 168;
-
-/** Left column — same fill-box size as right; label position unchanged */
-const OutboundLeftField = ({ children }) => (
-  <div
-    style={{
-      width: OUTBOUND_RESTRICTION_MODAL_FIELD_WIDTH,
-      maxWidth: "100%",
-    }}
-  >
-    {children}
-  </div>
-);
-
-const OutboundRightRow = ({ label, tooltipKey, children }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      width: "100%",
-    }}
-  >
-    {tooltipKey ? (
-      <RestrictionFieldLabel
-        tooltipKey={tooltipKey}
-        style={{
-          textAlign: "left",
-          width: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
-          minWidth: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
-          flexShrink: 0,
-          paddingLeft: OUTBOUND_RESTRICTION_RIGHT_LABEL_PADDING_LEFT,
-          boxSizing: "border-box",
-        }}
-      >
-        {label}
-      </RestrictionFieldLabel>
-    ) : (
-      <label
-        style={{
-          fontSize: 13,
-          color: C.labelText,
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-          textAlign: "left",
-          width: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
-          minWidth: OUTBOUND_RESTRICTION_MODAL_LABEL_WIDTH,
-          flexShrink: 0,
-          paddingLeft: OUTBOUND_RESTRICTION_RIGHT_LABEL_PADDING_LEFT,
-          boxSizing: "border-box",
-        }}
-      >
-        {label}
-      </label>
-    )}
-    <div
-      style={{
-        width: OUTBOUND_RESTRICTION_MODAL_FIELD_WIDTH,
-        flexShrink: 0,
-      }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-const outboundRightColStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 8,
-  width: "100%",
-};
-
-const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
-  <div style={{ marginBottom: 8 }}>
-    <OutboundRestrictionModalSectionHeading
-      title={title}
-      tooltipKey={tooltipKey}
-      isFirst={isFirst}
-    />
-    <div>{children}</div>
-  </div>
-);
-
-const outboundRestrictionModalFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  overflow: "hidden",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const toUiYesNo = (value, defaultValue = "No") => {
-  if (typeof value === "string") {
-    const normalized = value.toLowerCase();
-    if (normalized === "yes") return "Yes";
-    if (normalized === "no") return "No";
-  }
-  if (typeof value === "boolean") return value ? "Yes" : "No";
-  return defaultValue;
-};
-
-const toApiYesNo = (value, defaultValue = "no") => {
-  const normalized = String(value || "").toLowerCase();
-  if (normalized === "yes") return "yes";
-  if (normalized === "no") return "no";
-  return defaultValue;
-};
-
-const mapRestrictionFromApi = (item) => ({
-  id: item?.id,
-  name: String(item?.name || ""),
-  timeLimit: String(
-    item?.time_limit ?? item?.timeLimit ?? item?.time_limit_sec ?? "",
-  ),
-  callsLimit: String(
-    item?.calls_limit ??
-      item?.number_of_calls_limit ??
-      item?.callsLimit ??
-      item?.call_limit ??
-      "",
-  ),
-  autoCancelRestriction: toUiYesNo(
-    item?.auto_cancel_restriction ?? item?.auto_cancel ?? item?.autoCancel,
-    "No",
-  ),
-  memberExtensions: Array.isArray(item?.member_extensions)
-    ? item.member_extensions.map(String)
-    : Array.isArray(item?.extensions)
-      ? item.extensions.map(String)
-      : [],
-  enabled: toUiYesNo(item?.enabled ?? item?.enable, "Yes"),
-});
-
-const yesNoCellStyle = (value) => ({
-  color: value === "Yes" ? "#16a34a" : "#475569",
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: "0.01em",
-  whiteSpace: "nowrap",
-});
+import { useOutboundRestrictionsPage } from "./hooks/useOutboundRestrictionsPage";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  FieldRow,
+  OUTBOUND_RESTRICTION_LEFT_FIELD_LABEL_WIDTH,
+  OutboundLeftField,
+  OutboundRightRow,
+  outboundRestrictionModalCancelBtnStyle,
+  outboundRestrictionModalFormStyle,
+  outboundRestrictionModalPaperSx,
+  outboundRestrictionModalSelectSx,
+  outboundRestrictionModalTextFieldFullSx,
+  outboundRestrictionModalTitleStyle,
+  outboundRightColStyle,
+  SectionCard,
+} from "./components/OutboundRestrictionsFormFields";
+import {
+  formatOutboundRestrictionItemListDisplay,
+  handleOutboundRestrictionEditIconHover,
+  outboundRestrictionEditIconStyle,
+  OUTBOUND_RESTRICTION_LIST_TRUNCATE_THRESHOLD,
+  yesNoCellStyle,
+} from "./components/OutboundRestrictionsTableHelpers";
 
 const OutboundRestrictions = () => {
-  const isCompact = useMediaQuery(OUTBOUND_RESTRICTION_COMPACT_MQ);
-  const [rows, setRows] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({
-    list: false,
-    save: false,
-    delete: false,
-    extensions: false,
-  });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const hasLoadedExtensionsRef = useRef(false);
-
-  const [editId, setEditId] = useState(null);
-  const [name, setName] = useState("");
-  const [timeLimit, setTimeLimit] = useState("");
-  const [callsLimit, setCallsLimit] = useState("");
-  const [autoCancelRestriction, setAutoCancelRestriction] = useState("No");
-  const [enabled, setEnabled] = useState("Yes");
-  const [availableExtensions, setAvailableExtensions] = useState([]);
-  const [memberExtensions, setMemberExtensions] = useState([]);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-  const showAlert = (text) => showMessage("error", text);
-
-  const filteredRows = useMemo(() => {
-    if (!searchQuery.trim()) return rows;
-    const q = searchQuery.toLowerCase();
-    return rows.filter((row) => {
-      const extStr = (row.memberExtensions || []).join(" ").toLowerCase();
-      return (
-        (row.name || "").toLowerCase().includes(q) ||
-        (row.timeLimit || "").toLowerCase().includes(q) ||
-        (row.callsLimit || "").toLowerCase().includes(q) ||
-        (row.autoCancelRestriction || "").toLowerCase().includes(q) ||
-        (row.enabled || "").toLowerCase().includes(q) ||
-        extStr.includes(q)
-      );
-    });
-  }, [rows, searchQuery]);
-  const loadDestinations = async () => {
-    try {
-      const data = await listIvrDestinations();
-
-      const msg = data?.message || {};
-
-      const mapped = (msg.Extensions || []).map((item) => ({
-        extension: String(item?.value ?? "").trim(),
-        label: String(item?.label ?? "").trim(),
-      }));
-
-      setAvailableExtensions(mapped);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
-      ),
-    );
-  }, [filteredRows.length]);
-
-  const fetchRestrictions = async () => {
-    setLoading((prev) => ({ ...prev, list: true }));
-    try {
-      const res = await listOutboundRestrictions();
-      if (!res?.response) {
-        showAlert(res?.message || "Failed to load outbound restrictions.");
-        setRows([]);
-        return;
-      }
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : res?.message
-          ? [res.message]
-          : [];
-      setRows(list.map(mapRestrictionFromApi));
-    } catch (err) {
-      showAlert(err?.message || "Failed to load outbound restrictions.");
-      setRows([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, list: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  const loadExtensions = async () => {
-    setLoading((prev) => ({ ...prev, extensions: true }));
-    try {
-      const res = await listOutboundRouteExtensions();
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res?.data)
-          ? res.data
-          : [];
-      const exts = list
-        .map((item) => ({
-          extension: String(item?.extension ?? item?.id ?? "").trim(),
-          label: String(
-            item?.label ?? item?.name ?? item?.extension ?? item?.id ?? "",
-          ).trim(),
-        }))
-        .filter((item) => item.extension)
-        .sort(
-          (a, b) =>
-            (parseInt(a.extension, 10) || 0) - (parseInt(b.extension, 10) || 0),
-        );
-      setAvailableExtensions(exts);
-      hasLoadedExtensionsRef.current = true;
-    } catch (err) {
-      showAlert(err?.message || "Failed to load extensions.");
-      setAvailableExtensions([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, extensions: false }));
-    }
-  };
-
-  useEffect(() => {
-    fetchRestrictions();
-    loadDestinations();
-  }, []);
-
-  const extensionLabelMap = useMemo(() => {
-    const map = new Map();
-    availableExtensions.forEach((item) =>
-      map.set(item.extension, item.label || item.extension),
-    );
-    return map;
-  }, [availableExtensions]);
-
-  const getExtensionLabel = (ext) => extensionLabelMap.get(ext) || ext;
-
-  const allExtensionOptions = useMemo(
-    () =>
-      availableExtensions.map(({ extension, label }) => ({
-        value: extension,
-        label: label || extension,
-      })),
-    [availableExtensions],
-  );
-
-  const resetForm = () => {
-    setEditId(null);
-    setName("");
-    setTimeLimit("");
-    setCallsLimit("");
-    setAutoCancelRestriction("No");
-    setEnabled("Yes");
-    setMemberExtensions([]);
-  };
-
-  const handleOpenAddModal = async () => {
-    resetForm();
-    setShowModal(true);
-    // if (!hasLoadedExtensionsRef.current) await loadExtensions();
-  };
-
-  const handleOpenEditModal = async (row) => {
-    setEditId(row.id);
-    setName(row.name || "");
-    setTimeLimit(row.timeLimit || "");
-    setCallsLimit(row.callsLimit || "");
-    setAutoCancelRestriction(row.autoCancelRestriction || "No");
-    setEnabled(row.enabled || "Yes");
-    setMemberExtensions(
-      Array.isArray(row.memberExtensions) ? row.memberExtensions : [],
-    );
-    setShowModal(true);
-    // if (!hasLoadedExtensionsRef.current) await loadExtensions();
-  };
-
-  const handleCloseModal = () => {
-    if (loading.save) return;
-    setShowModal(false);
-    resetForm();
-  };
-
-  const handleSelectRow = (idx) => {
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-  };
-
-  const pageIndices = pagedRows.map((_, i) => (page - 1) * itemsPerPage + i);
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleAll = () => {
-    if (allPageSelected) {
-      setSelected((prev) => prev.filter((i) => !pageIndices.includes(i)));
-    } else {
-      setSelected((prev) => Array.from(new Set([...prev, ...pageIndices])));
-    }
-  };
-
-  const handleDelete = async () => {
-    if (selected.length === 0) {
-      showAlert("Please select at least one row to delete.");
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selected.length} record(s)?`,
-      )
-    ) {
-      return;
-    }
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const idsToDelete = selected
-        .map((idx) => filteredRows[idx]?.id)
-        .filter((id) => id != null);
-      const results = await Promise.all(
-        idsToDelete.map((id) => deleteOutboundRestriction(id)),
-      );
-      const failed = results.find((res) => !res?.response);
-      if (failed) {
-        showAlert(failed?.message || "Failed to delete one or more records.");
-      } else {
-        showMessage("success", "Outbound restriction(s) deleted successfully.");
-      }
-      await fetchRestrictions();
-      setSelected([]);
-      setPage(1);
-    } catch (err) {
-      showAlert(err?.message || "Failed to delete record(s).");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  const handleSave = async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) {
-      showAlert("Name is required.");
-      return;
-    }
-    if (memberExtensions.length === 0) {
-      showAlert("Please select at least one member extension.");
-      return;
-    }
-
-    const apiPayload = {
-      name: trimmedName,
-      time_limit: timeLimit.trim(),
-      calls_limit: callsLimit.trim(),
-      auto_cancel_restriction: toApiYesNo(autoCancelRestriction),
-      member_extensions: [...memberExtensions],
-      enabled: toApiYesNo(enabled, "yes"),
-    };
-
-    setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      const response =
-        editId != null
-          ? await updateOutboundRestriction(editId, apiPayload)
-          : await createOutboundRestriction(apiPayload);
-      if (!response?.response) {
-        showAlert(response?.message || "Failed to save outbound restriction.");
-        return;
-      }
-      showMessage(
-        "success",
-        editId != null
-          ? "Outbound restriction updated successfully."
-          : "Outbound restriction created successfully.",
-      );
-      await fetchRestrictions();
-      handleCloseModal();
-    } catch (err) {
-      showAlert(err?.message || "Failed to save outbound restriction.");
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
-
-  const dataEmpty = !isInitialLoad && rows.length === 0;
-  const searchEmpty =
-    !isInitialLoad && rows.length > 0 && filteredRows.length === 0;
+  const vm = useOutboundRestrictionsPage();
+  const {
+    isCompact,
+    selected,
+    showModal,
+    loading,
+    isInitialLoad,
+    editId,
+    name,
+    setName,
+    timeLimit,
+    setTimeLimit,
+    callsLimit,
+    setCallsLimit,
+    autoCancelRestriction,
+    setAutoCancelRestriction,
+    enabled,
+    setEnabled,
+    memberExtensions,
+    setMemberExtensions,
+    searchQuery,
+    itemsPerPage,
+    page,
+    setPage,
+    totalPages,
+    pagedRows,
+    filteredRows,
+    message,
+    setMessage,
+    allExtensionOptions,
+    allPageSelected,
+    somePageSelected,
+    getExtensionLabel,
+    handleOpenAddModal,
+    handleOpenEditModal,
+    handleCloseModal,
+    handleSelectRow,
+    handleToggleAll,
+    handleDelete,
+    handleSave,
+    dataEmpty,
+    searchEmpty,
+  } = vm;
 
   return (
     <div
@@ -1133,7 +292,7 @@ const OutboundRestrictions = () => {
                         indeterminate={somePageSelected}
                         onChange={handleToggleAll}
                         disabled={loading.delete}
-                        sx={checkboxSx}
+                        sx={outboundRestrictionTableCheckboxSx}
                       />
                     </TH>
                     <TH
@@ -1185,11 +344,7 @@ const OutboundRestrictions = () => {
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
-                    const rowBg = isSelected
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getOutboundRestrictionRowBg(isSelected, idx);
                     return (
                       <tr
                         key={row.id ?? realIdx}
@@ -1220,7 +375,7 @@ const OutboundRestrictions = () => {
                             checked={isSelected}
                             onChange={() => handleSelectRow(realIdx)}
                             disabled={loading.delete}
-                            sx={checkboxSx}
+                            sx={outboundRestrictionTableCheckboxSx}
                           />
                         </td>
                         <td
@@ -1340,23 +495,23 @@ const OutboundRestrictions = () => {
                             <EditDocumentIcon
                               titleAccess="Edit"
                               onClick={() => handleOpenEditModal(row)}
-                              style={{
-                                cursor: loading.delete
-                                  ? "not-allowed"
-                                  : "pointer",
-                                color: "#2563eb",
-                                fontSize: 22,
-                                opacity: loading.delete ? 0.4 : 0.7,
-                                transition: "opacity 0.15s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!loading.delete)
-                                  e.currentTarget.style.opacity = "1";
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!loading.delete)
-                                  e.currentTarget.style.opacity = "0.7";
-                              }}
+                              style={outboundRestrictionEditIconStyle(
+                                loading.delete,
+                              )}
+                              onMouseEnter={(e) =>
+                                handleOutboundRestrictionEditIconHover(
+                                  e,
+                                  true,
+                                  loading.delete,
+                                )
+                              }
+                              onMouseLeave={(e) =>
+                                handleOutboundRestrictionEditIconHover(
+                                  e,
+                                  false,
+                                  loading.delete,
+                                )
+                              }
                             />
                           </div>
                         </td>

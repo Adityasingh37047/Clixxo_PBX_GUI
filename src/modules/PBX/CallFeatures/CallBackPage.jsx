@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -16,20 +16,9 @@ import {
   RadioGroup,
   Select as MuiSelect,
   TextField,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
+import { C } from "../../../theme/pbxTokens";
 import {
-  fetchSipAccounts,
-  listTrunkIds,
-  fetchCallbackRules,
-  createCallbackRule,
-  updateCallbackRule,
-  deleteCallbackRule,
-} from "../../../api/apiService";
-import {
-  CALL_BACK_DEFAULT_DELAY,
-  CALL_BACK_FIELD_TOOLTIPS,
   CALL_BACK_ORDER_OPTIONS,
   CALL_BACK_THROUGH_OPTIONS,
   CALL_BACK_TRUNK_ROW_COUNT,
@@ -41,6 +30,7 @@ import {
   ExtensionBreadcrumb as CallBackBreadcrumb,
   ExtensionTableListLoading as CallBackTableListLoading,
   ExtensionTableListEmptyState as CallBackTableListEmptyState,
+  ExtensionPagination as CallBackPagination,
   extensionTableCheckboxSx as callBackTableCheckboxSx,
   extensionFixedAlertSx as callBackFixedAlertSx,
   extensionPageWrapStyle as callBackPageWrapStyle,
@@ -51,589 +41,71 @@ import {
   extensionCancelBtnStyle as callBackCancelBtnStyle,
   extensionPrimaryBtnStyle as callBackPrimaryBtnStyle,
 } from "../../../components/common";
-
-const CALL_BACK_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  placeholderText: "#94a3b8",
-};
-
-// ── Local page UI ──
-
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const callBackModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const CALL_BACK_TABLE_CARD_RADIUS = 4;
-
-const callBackPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: CALL_BACK_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: CALL_BACK_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const callBackPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const callBackEditIconStyle = {
-  cursor: "pointer",
-  color: "#2563eb",
-  fontSize: 22,
-  opacity: 0.7,
-  transition: "opacity 0.15s ease",
-};
-
-const handleCallBackEditIconHover = (e, entering) => {
-  e.currentTarget.style.opacity = entering ? "1" : "0.7";
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const callBackOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const callBackModalTextFieldFullSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...callBackOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-  },
-};
-
-const callBackModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...callBackOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const callBackModalPaperSx = {
-  width: 560,
-  maxWidth: "95vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const callBackModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-
-const callBackModalFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  overflow: "hidden",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const CALL_BACK_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatCallBackTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const CallBackFieldLabel = ({ tooltipKey, children, style = {} }) => {
-  const tooltip = CALL_BACK_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip
-      title={formatCallBackTooltipTitle(tooltip)}
-      {...CALL_BACK_TOOLTIP_PROPS}
-    >
-      {label}
-    </Tooltip>
-  );
-};
-
-const CALL_BACK_MODAL_LABEL_WIDTH = 100;
-
-const callBackRadioSx = {
-  p: 0.5,
-  color: C.labelText,
-  "&.Mui-checked": { color: C.accent },
-};
-
-const CallBackFieldRow = ({ label, tooltipKey, children, alignTop = false }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: alignTop ? "flex-start" : "center",
-      gap: 12,
-    }}
-  >
-    <CallBackFieldLabel
-      tooltipKey={tooltipKey}
-      style={{
-        width: CALL_BACK_MODAL_LABEL_WIDTH,
-        flexShrink: 0,
-        marginTop: alignTop ? 4 : 0,
-      }}
-    >
-      {label} <span style={{ color: C.labelText }}>:</span>
-    </CallBackFieldLabel>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-// ─────────────────────────────────────────────────────────────────────────────
+import { useCallBackPage } from "./hooks/useCallBackPage";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  CallBackFieldRow,
+  callBackModalCancelBtnStyle,
+  callBackModalFormStyle,
+  callBackModalPaperSx,
+  callBackModalSelectSx,
+  callBackModalTextFieldFullSx,
+  callBackModalTitleStyle,
+  callBackRadioSx,
+} from "./components/CallBackFormFields";
+import {
+  callBackEditIconStyle,
+  delayCellStyle,
+  handleCallBackEditIconHover,
+  renderThrough,
+  throughCellStyle,
+} from "./components/CallBackTableHelpers";
 
 const CallBackPage = () => {
-  const isCompact = useMediaQuery(CALL_BACK_COMPACT_MQ);
-  const [rows, setRows] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({
-    fetch: false,
-    delete: false,
-    save: false,
-    extensions: false,
-  });
-  const [error, setError] = useState({ type: "", text: "" });
-  const hasInitialLoadRef = useRef(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Search & Pagination
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  // Add/Edit modal state
-  const [editId, setEditId] = useState(null);
-  const [name, setName] = useState("");
-  const [delay, setDelay] = useState(CALL_BACK_DEFAULT_DELAY);
-  const [strip, setStrip] = useState("");
-  const [prepend, setPrepend] = useState("");
-  const [destination, setDestination] = useState("");
-  const [, setThroughAuto] = useState(true);
-  const [throughFromComeIn, setThroughFromComeIn] = useState(false);
-  const [throughSelect, setThroughSelect] = useState(false);
-  const [extensionOptions, setExtensionOptions] = useState([]);
-  const [trunkOptions, setTrunkOptions] = useState([]);
-
-  const showAlert = (type, text) => {
-    setError({ type, text });
-    setTimeout(() => setError({ type: "", text: "" }), 5000);
-  };
-
-  const loadRows = async () => {
-    setLoading((prev) => ({ ...prev, fetch: true }));
-    try {
-      const res = await fetchCallbackRules();
-      const raw = res?.message ?? res?.data ?? res;
-      const list = Array.isArray(raw) ? raw : [];
-      setRows(
-        list.map((item) => ({
-          id: item.id,
-          name: item.name || "",
-          delay: item.delay_sec != null ? String(item.delay_sec) : "10",
-          strip: item.strip_digits != null ? String(item.strip_digits) : "",
-          prepend: item.prepend || "",
-          destination: item.destination || "",
-          throughAuto: item.through_mode === "auto",
-          throughFromComeIn: item.through_mode === "from_in",
-          throughSelect: item.through_mode === "select",
-        })),
-      );
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to load callbacks.");
-    } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  const loadExtensions = async () => {
-    setLoading((prev) => ({ ...prev, extensions: true }));
-    try {
-      const res = await fetchSipAccounts();
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res)
-          ? res
-          : [];
-      const exts = list
-        .map((item) => String(item.extension ?? ""))
-        .filter((x) => x)
-        .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
-      setExtensionOptions(exts);
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to load extensions.");
-      setExtensionOptions([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, extensions: false }));
-    }
-  };
-
-  const loadTrunks = async () => {
-    try {
-      const res = await listTrunkIds();
-      const raw = res?.message ?? res?.data ?? res;
-      const list = Array.isArray(raw) ? raw : [];
-      const trunks = list
-        .map((t) => t?.trunk_id || t?.id || t)
-        .filter(Boolean)
-        .map(String);
-      setTrunkOptions(trunks);
-    } catch (err) {
-      console.error("Failed to load trunk IDs for callback:", err);
-      setTrunkOptions([]);
-    }
-  };
-
-  useEffect(() => {
-    if (!hasInitialLoadRef.current) {
-      hasInitialLoadRef.current = true;
-      loadRows();
-    }
-  }, []);
-
-  // ── Search & Pagination Logic ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name, r.destination, r.delay].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
-      ),
-    );
-  }, [filteredRows.length]);
-
-  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-
-  // ── Checkbox Logic ──
-  const pageIndices = pagedRows.map(
-    (_, idx) => (page - 1) * itemsPerPage + idx,
-  );
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleRow = (idx) => {
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-  };
-
-  const handleToggleAll = () => {
-    if (!pageIndices.length) return;
-    setSelected((prev) =>
-      allPageSelected
-        ? prev.filter((i) => !pageIndices.includes(i))
-        : Array.from(new Set([...prev, ...pageIndices])),
-    );
-  };
-
-  const handleDelete = async () => {
-    if (selected.length === 0) {
-      showAlert("error", "Please select at least one row to delete.");
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selected.length} records?`,
-      )
-    )
-      return;
-
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const ids = selected.map((i) => filteredRows[i]?.id).filter(Boolean);
-      await Promise.all(ids.map((id) => deleteCallbackRule(id)));
-      setSelected([]);
-      setPage(1);
-      await loadRows();
-      showAlert("success", `Deleted ${ids.length} item(s).`);
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to delete.");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  // ── Form Modal Handlers ──
-  const resetForm = () => {
-    setEditId(null);
-    setName("");
-    setDelay(CALL_BACK_DEFAULT_DELAY);
-    setStrip("");
-    setPrepend("");
-    setDestination("");
-    setThroughAuto(true);
-    setThroughFromComeIn(false);
-    setThroughSelect(false);
-  };
-
-  const handleOpenAddModal = async () => {
-    resetForm();
-    setShowModal(true);
-    await Promise.all([loadExtensions(), loadTrunks()]);
-  };
-
-  const handleOpenEditModal = async (row) => {
-    setEditId(row.id);
-    setName(row.name || "");
-    setDelay(row.delay ?? "");
-    setStrip(row.strip ?? "");
-    setPrepend(row.prepend ?? "");
-    setDestination(row.destination || "");
-    setThroughAuto(!!row.throughAuto);
-    setThroughFromComeIn(!!row.throughFromComeIn);
-    setThroughSelect(!!row.throughSelect);
-    setShowModal(true);
-    await Promise.all([loadExtensions(), loadTrunks()]);
-  };
-
-  const handleCloseModal = () => {
-    if (loading.save) return;
-    setShowModal(false);
-    resetForm();
-  };
-
-  const handleSave = async () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return showAlert("error", "Please enter a Name.");
-    if (!delay) return showAlert("error", "Please enter Delay (s).");
-    if (!destination) return showAlert("error", "Please select Destination.");
-
-    const delaySec = Number(delay) || 0;
-    const stripDigits = strip === "" ? 0 : Number(strip) || 0;
-
-    let through_mode = "auto";
-    if (throughSelect) through_mode = "select";
-    else if (throughFromComeIn) through_mode = "from_in";
-
-    const apiPayload = {
-      name: trimmedName,
-      delay_sec: delaySec,
-      strip_digits: stripDigits,
-      prepend,
-      destination,
-      through_mode,
-      enabled: true,
-      trunks: [], // Logic kept exactly as original
-    };
-
-    setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      if (editId != null) {
-        await updateCallbackRule({ id: editId, ...apiPayload });
-        showAlert("success", "Callback updated.");
-      } else {
-        await createCallbackRule(apiPayload);
-        showAlert("success", "Callback created.");
-      }
-      await loadRows();
-      handleCloseModal();
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to save.");
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
-
-  const renderThrough = (row) => {
-    const labels = [];
-    if (row.throughAuto) labels.push("Auto");
-    if (row.throughFromComeIn) labels.push("From Come in");
-    if (row.throughSelect) labels.push("Select");
-    return labels.join(", ") || "Auto";
-  };
+  const vm = useCallBackPage();
+  const {
+    isCompact,
+    rows,
+    selected,
+    showModal,
+    loading,
+    error,
+    setError,
+    isInitialLoad,
+    itemsPerPage,
+    page,
+    setPage,
+    searchQuery,
+    totalPages,
+    pagedRows,
+    filteredRows,
+    editId,
+    name,
+    setName,
+    delay,
+    setDelay,
+    strip,
+    setStrip,
+    prepend,
+    setPrepend,
+    destination,
+    setDestination,
+    throughFromComeIn,
+    throughSelect,
+    extensionOptions,
+    trunkOptions,
+    allPageSelected,
+    somePageSelected,
+    handleToggleRow,
+    handleToggleAll,
+    handleDelete,
+    handleOpenAddModal,
+    handleOpenEditModal,
+    handleCloseModal,
+    handleSave,
+    handleThroughChange,
+  } = vm;
 
   return (
     <div
@@ -953,22 +425,7 @@ const CallBackPage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <span
-                            style={{
-                              color: C.valueText,
-                              padding: "4px 11px",
-                              borderRadius: 999,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {row.delay}
-                          </span>
+                          <span style={delayCellStyle}>{row.delay}</span>
                         </td>
                         <td
                           style={{
@@ -1012,19 +469,7 @@ const CallBackPage = () => {
                               : tdStyle.borderBottom,
                           }}
                         >
-                          <span
-                            style={{
-                              color: row.throughAuto
-                                ? "#16a34a"
-                                : row.throughFromComeIn
-                                  ? C.accent
-                                  : "#475569",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <span style={throughCellStyle(row)}>
                             {renderThrough(row)}
                           </span>
                         </td>
@@ -1059,33 +504,14 @@ const CallBackPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div style={callBackPaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.fetch || page <= 1}
-                  variant="outline" 
-                  style={{ borderRadius: 4 }}
-                >
-                  ← Prev
-                </Btn>
-                <span style={callBackPageBadgeStyle}>
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.fetch || page >= totalPages}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <CallBackPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -1094,8 +520,14 @@ const CallBackPage = () => {
         open={showModal}
         onClose={loading.save ? null : handleCloseModal}
         maxWidth={false}
-        PaperProps={{ sx: { ...callBackModalPaperSx, borderRadius: editId == null ? "4px" : callBackModalPaperSx.borderRadius } }}
-         sx={{
+        PaperProps={{
+          sx: {
+            ...callBackModalPaperSx,
+            borderRadius:
+              editId == null ? "4px" : callBackModalPaperSx.borderRadius,
+          },
+        }}
+        sx={{
           "& .MuiDialog-container": {
             alignItems: "center",
             justifyContent: "center",
@@ -1186,12 +618,7 @@ const CallBackPage = () => {
                         ? "from_in"
                         : "auto"
                   }
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setThroughAuto(val === "auto");
-                    setThroughFromComeIn(val === "from_in");
-                    setThroughSelect(val === "select");
-                  }}
+                  onChange={(e) => handleThroughChange(e.target.value)}
                   sx={{ display: "flex", flexDirection: "column", gap: 0 }}
                 >
                   {CALL_BACK_THROUGH_OPTIONS.map((opt) => (
@@ -1317,7 +744,6 @@ const CallBackPage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-
     </div>
   );
 };

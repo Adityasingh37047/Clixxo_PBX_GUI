@@ -44,7 +44,7 @@ import {
   conferencePageBadgeStyle,
   conferencePaginationStyle,
   handleConferenceEditIconHover,
-} from "./ConferenceTableHelpers";
+} from "./components/ConferenceTableHelpers";
 import {
   addNewModalFooterBtnStyle,
   addNewModalFooterStyle,
@@ -59,7 +59,7 @@ import {
   conferenceModalSelectSx,
   conferenceModalTextFieldFullSx,
   conferenceModalTitleStyle,
-} from "./ConferenceFormFields";
+} from "./components/ConferenceFormFields";
 
 const ConferencePage = () => {
   const vm = useConferencePage();

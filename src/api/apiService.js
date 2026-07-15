@@ -3015,6 +3015,54 @@ export const listOutboundRouteTrunks = async () => {
   }
 };
 
+// Outbound Restriction API
+export const listOutboundRestrictions = async () => {
+  try {
+    const response = await axiosInstance.post('/outbound-restriction', { type: 'list' });
+    return response.data;
+  } catch (error) {
+    console.error('Error listing outbound restrictions:', error.message);
+    throw error;
+  }
+};
+
+export const createOutboundRestriction = async (data) => {
+  try {
+    const response = await axiosInstance.post('/outbound-restriction', { type: 'create', ...data });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating outbound restriction:', error.message);
+    throw error;
+  }
+};
+
+export const updateOutboundRestriction = async (id, data) => {
+  try {
+    const response = await axiosInstance.post('/outbound-restriction', {
+      type: 'update',
+      id: Number(id),
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating outbound restriction:', error.message);
+    throw error;
+  }
+};
+
+export const deleteOutboundRestriction = async (id) => {
+  try {
+    const response = await axiosInstance.post('/outbound-restriction', {
+      type: 'delete',
+      id: Number(id),
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting outbound restriction:', error.message);
+    throw error;
+  }
+};
+
 // Speed Dial API
 export const listSpeedDials = async () => {
   try {

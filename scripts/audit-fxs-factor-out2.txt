@@ -1,0 +1,240 @@
+
+======== PortFxsModify ========
+HEAD_PAYLOAD(payload): port, enabled, registerPort, sipAccount, displayName, authPassword, displayNamePreferred, autoDialEnabled, autoDialNumber, autoDialWaitSec, inputGain, outputGain, cidEnabled, echoCanceller, callWaiting, dnd, callForwardEnabled, forwardType, forwardNumber, noReplyDelaySec
+CUR_PAYLOAD(buildPortFxsModifySavePayload): port, enabled, registerPort, sipAccount, displayName, authPassword, displayNamePreferred, autoDialEnabled, autoDialNumber, autoDialWaitSec, inputGain, outputGain, cidEnabled, echoCanceller, callWaiting, dnd, callForwardEnabled, forwardType, forwardNumber, noReplyDelaySec
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 3
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: fetchFxsPorts, saveFxsPort
+CUR_API: fetchFxsPorts, saveFxsPort
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: payload[20]; anyPayloadLike[20]
+CUR_ALL_PAYLOADS: buildPortFxsModifySavePayload[20]; fnReturn[2]
+
+======== PortFxsBatchModify ========
+HEAD_PAYLOAD(payload): startingPort, endingPort, batchRegisterEnabled, registerPort, batchAccountEnabled, startingSipAccount, startingDisplayName, startingAuthenticationPassword, displayNamePreferred, sipAccountBatchRule, sipAccountBatchStepSize, displayNameBatchRule, displayNameBatchStepSize, authPasswordBatchRule, authPasswordBatchStepSize, batchConfigureEnabled, autoDialEnabled, autoDialNumber, autoDialWaitSec, inputGain, outputGain, cidEnabled, echoCanceller, callWaiting, dnd, callForwardEnabled, forwardType, forwardNumber, noReplyDelaySec
+CUR_PAYLOAD(buildPortFxsBatchSavePayload): startingPort, endingPort, batchRegisterEnabled, registerPort, batchAccountEnabled, startingSipAccount, startingDisplayName, startingAuthenticationPassword, displayNamePreferred, sipAccountBatchRule, sipAccountBatchStepSize, displayNameBatchRule, displayNameBatchStepSize, authPasswordBatchRule, authPasswordBatchStepSize, batchConfigureEnabled, autoDialEnabled, autoDialNumber, autoDialWaitSec, inputGain, outputGain, cidEnabled, echoCanceller, callWaiting, dnd, callForwardEnabled, forwardType, forwardNumber, noReplyDelaySec
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 10
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: saveFxsBatch
+CUR_API: saveFxsBatch
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: payload[29]; anyPayloadLike[29]
+CUR_ALL_PAYLOADS: buildPortFxsBatchSavePayload[29]; fnReturn[2]
+
+======== PortFxsAdvanced ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(fnReturn): valid, message
+MISSING_KEYS: (none)
+EXTRA_KEYS: valid, message
+HEAD_ERR_COUNT: 2
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: fnReturn[2]
+
+======== PortGroup ========
+HEAD_PAYLOAD(newGroup/row): id, index, description, sipAccount, sipAccount, displayName, displayName, ports, portSelectMode, enumRule, ringExpire, robKey, robKey
+CUR_PAYLOAD(return_row): id, index, description, sipAccount, sipAccount, displayName, displayName, ports, portSelectMode, enumRule, ringExpire, robKey, robKey
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 6
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: newGroup/row[13]; anyPayloadLike[13]
+CUR_ALL_PAYLOADS: return_row[13]; fnReturn[13]; fnReturn[9]; arrowObj[2]
+
+======== PortFxsPage ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(fnReturn): ports, maxPorts
+MISSING_KEYS: (none)
+EXTRA_KEYS: ports, maxPorts
+HEAD_ERR_COUNT: 0
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: fetchFxsPorts
+CUR_API: fetchFxsPorts
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: fnReturn[2]; fnReturn[2]; arrowObj[1]
+
+======== FxsVoipSip ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD((none)): (none)
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 0
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: listFxsSipSettings, resetFxsSipSettings, saveFxsSipSettings, statusFxsSipSettings
+CUR_API: listFxsSipSettings, resetFxsSipSettings, saveFxsSipSettings, statusFxsSipSettings
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: 
+
+======== FxsVoipMedia ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD((none)): (none)
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 11
+MISSING_ERRS: The SIP port value 5060 cannot be within the port range! || The difference between the latter 
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: 
+
+======== NatSettings ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD((none)): (none)
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 1
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: 
+
+======== SipCompatibility ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(fnReturn): leftLayout, rightLayout
+MISSING_KEYS: (none)
+EXTRA_KEYS: leftLayout, rightLayout
+HEAD_ERR_COUNT: 1
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: fnReturn[2]
+
+======== RouteIpToTel ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(fnReturn): index, description, sourceIP, callerIdPrefix, calleeIdPrefix, routeByNumber, callDestination, callDestination, id, id
+MISSING_KEYS: (none)
+EXTRA_KEYS: index, description, sourceIP, callerIdPrefix, calleeIdPrefix, routeByNumber, callDestination, id
+HEAD_ERR_COUNT: 17
+MISSING_ERRS: Index is required. || Index must be between 0 and 63. || Index already exists. Please choose a different index. || Description is required. || Description cannot contain special characters like ~, !, &, | and = || CallerID Prefix cannot contain special characters like ~, !, &, | and = || CalleeID Prefix cannot contain special characters like ~, !, &, | and =
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: fnReturn[10]; build[1]; arrowObj[1]; arrowObj[1]; arrowObj[1]; fnReturn[1]
+
+======== RouteTelToIp ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(fnReturn): index, description, sourcePortGroup, callerIdPrefix, calleeIdPrefix, routeSelf, destinationAddress, destinationPort, id, id
+MISSING_KEYS: (none)
+EXTRA_KEYS: index, description, sourcePortGroup, callerIdPrefix, calleeIdPrefix, routeSelf, destinationAddress, destinationPort, id
+HEAD_ERR_COUNT: 18
+MISSING_ERRS: Index is required. || Index must be between 0 and 63. || Index already exists. Please choose a different index. || Description is required. || Description cannot contain special characters like ~, !, &, | and = || CallerID Prefix cannot contain special characters like ~, !, &, | and = || CalleeID Prefix cannot contain special characters like ~, !, &, | and =
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: fnReturn[10]; build[1]; arrowObj[1]; fnReturn[1]
+
+======== RouteRoutingParameter ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD((none)): (none)
+MISSING_KEYS: (none)
+EXTRA_KEYS: (none)
+HEAD_ERR_COUNT: 0
+MISSING_ERRS: (none)
+EXTRA_ERRS: (none)
+HEAD_API: 
+CUR_API: 
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: 
+
+======== IPCallInCallerID ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(build): id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+MISSING_KEYS: (none)
+EXTRA_KEYS: id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+HEAD_ERR_COUNT: 15
+MISSING_ERRS: Call Initiator is required. || CallerID Prefix is required. || CalleeID Prefix is required. || Created successfully || Updated successfully || Deleted successfully
+EXTRA_ERRS: (none)
+HEAD_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, updateNumberManipulation
+CUR_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, updateNumberManipulation
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: build[11]
+
+======== IPCallInCalleeID ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(build): id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+MISSING_KEYS: (none)
+EXTRA_KEYS: id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+HEAD_ERR_COUNT: 15
+MISSING_ERRS: Call Initiator is required. || CallerID Prefix is required. || CalleeID Prefix is required. || Created successfully || Updated successfully || Deleted successfully
+EXTRA_ERRS: (none)
+HEAD_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, updateNumberManipulation
+CUR_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, updateNumberManipulation
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: build[11]
+
+======== PSTNCallInCallerID ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(build): id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+MISSING_KEYS: (none)
+EXTRA_KEYS: id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+HEAD_ERR_COUNT: 15
+MISSING_ERRS: Source Port Group is required. || CallerID Prefix is required. || CalleeID Prefix is required. || Created successfully || Updated successfully || Deleted successfully
+EXTRA_ERRS: (none)
+HEAD_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, listPstnGroups, updateNumberManipulation
+CUR_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, listPstnGroups, updateNumberManipulation
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: build[11]; fnReturn[1]
+
+======== PSTNCallInCalleeID ========
+HEAD_PAYLOAD((none)): (none)
+CUR_PAYLOAD(build): id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+MISSING_KEYS: (none)
+EXTRA_KEYS: id, call_initiator, callerid_prefix, calleeid_prefix, with_original_calleeid, stripped_digits_from_left, stripped_digits_from_right, reserved_digits_from_right, prefix_to_add, suffix_to_add, description
+HEAD_ERR_COUNT: 15
+MISSING_ERRS: Source Port Group is required. || CallerID Prefix is required. || CalleeID Prefix is required. || Created successfully || Updated successfully || Deleted successfully
+EXTRA_ERRS: (none)
+HEAD_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, listPstnGroups, updateNumberManipulation
+CUR_API: createNumberManipulation, deleteNumberManipulation, fetchNumberManipulations, listNumberManipulations, listPstnGroups, updateNumberManipulation
+MISSING_API: (none)
+EXTRA_API: (none)
+HEAD_ALL_PAYLOADS: 
+CUR_ALL_PAYLOADS: build[11]; fnReturn[1]

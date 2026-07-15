@@ -1,0 +1,118 @@
+{
+  "pageHookIssues": [
+    {
+      "file": "src/modules/E1-PRI/PCM/PcmPage.jsx",
+      "issue": "No use*Page hook call found"
+    },
+    {
+      "file": "src/modules/E1-PRI/PCM/PcmSettingsPage.jsx",
+      "issue": "No use*Page hook call found"
+    },
+    {
+      "file": "src/modules/E1-PRI/PCM/PcmStatusPage.jsx",
+      "issue": "No use*Page hook call found"
+    }
+  ],
+  "hookWiringIssues": [],
+  "apiIssues": [
+    {
+      "file": "src/modules/FXS/Port/PortGroupPage.jsx",
+      "missingApis": [
+        "checkAnyPortSelected",
+        "renderPortsSection"
+      ],
+      "headApis": [
+        "checkAnyPortSelected",
+        "renderPortsSection"
+      ],
+      "curApis": [
+        "getSelectedPortGroupIds",
+        "getPortGroupRowBg"
+      ]
+    },
+    {
+      "file": "src/modules/FXS/VoIP/FxsVoipSipPage.jsx",
+      "missingApis": [
+        "getFxsNativeFieldInteraction"
+      ],
+      "headApis": [
+        "listFxsSipSettings",
+        "statusFxsSipSettings",
+        "saveFxsSipSettings",
+        "resetFxsSipSettings",
+        "getFxsNativeFieldInteraction"
+      ],
+      "curApis": [
+        "getFxsVoipSipLeftColumnFields",
+        "getFxsVoipSipRightColumnFields",
+        "listFxsSipSettings",
+        "statusFxsSipSettings",
+        "saveFxsSipSettings",
+        "resetFxsSipSettings",
+        "getFxsVoipSipInitialState"
+      ]
+    },
+    {
+      "file": "src/modules/E1-PRI/PCM/PcmTrunkPage.jsx",
+      "missingApis": [
+        "pcmTrunkSetFieldFocus",
+        "pcmTrunkSetFieldDefault",
+        "pcmTrunkSetFieldHover"
+      ],
+      "headApis": [
+        "pcmTrunkSetFieldFocus",
+        "pcmTrunkSetFieldDefault",
+        "pcmTrunkSetFieldHover",
+        "setTrunks"
+      ],
+      "curApis": [
+        "usePcmTrunkPage",
+        "setTrunks"
+      ]
+    }
+  ],
+  "importIssues": [],
+  "ok": [
+    "src/modules/FXS/Advanced/ActionUrlPage.jsx",
+    "src/modules/FXS/Advanced/AreaSelectPage.jsx",
+    "src/modules/FXS/Advanced/CdrQueryPage.jsx",
+    "src/modules/FXS/Advanced/ColorRingPage.jsx",
+    "src/modules/FXS/Advanced/CueTonePage.jsx",
+    "src/modules/FXS/Advanced/DialingRulePage.jsx",
+    "src/modules/FXS/Advanced/DialingTimeoutPage.jsx",
+    "src/modules/FXS/Advanced/DtmfPage.jsx",
+    "src/modules/FXS/Advanced/FunctionKeyPage.jsx",
+    "src/modules/FXS/Advanced/FxsPage.jsx",
+    "src/modules/FXS/Advanced/QosPage.jsx",
+    "src/modules/FXS/Advanced/RingingSchemePage.jsx",
+    "src/modules/FXS/Advanced/ToneDetecterPage.jsx",
+    "src/modules/FXS/Advanced/ToneGeneratorPage.jsx",
+    "src/modules/FXS/Port/PortFxsAdvancedPage.jsx",
+    "src/modules/FXS/Port/PortFxsBatchModifyPage.jsx",
+    "src/modules/FXS/Port/PortFxsModifyPage.jsx",
+    "src/modules/FXS/Port/PortFxsPage.jsx",
+    "src/modules/FXS/Port/PortGroupPage.jsx",
+    "src/modules/FXS/Route/RouteIpToTelPage.jsx",
+    "src/modules/FXS/Route/RouteRoutingParameterPage.jsx",
+    "src/modules/FXS/VoIP/FxsVoipMediaPage.jsx",
+    "src/modules/FXS/VoIP/FxsVoipSipPage.jsx",
+    "src/modules/FXS/VoIP/NatSettingsPage.jsx",
+    "src/modules/FXS/VoIP/SipCompatibilityPage.jsx",
+    "src/modules/E1-PRI/PCM/hooks/usePcmCircuitMaintenancePage.jsx",
+    "src/modules/E1-PRI/PCM/hooks/usePcmPstnPage.jsx",
+    "src/modules/E1-PRI/PCM/PcmCircuitMaintenancePage.jsx",
+    "src/modules/E1-PRI/PCM/PcmNumReceivingRulePage.jsx",
+    "src/modules/E1-PRI/PCM/PcmPcmPage.jsx",
+    "src/modules/E1-PRI/PCM/PcmPstnPage.jsx",
+    "src/modules/E1-PRI/PCM/PcmReceptionTimeoutPage.jsx",
+    "src/modules/E1-PRI/PCM/PcmTrunkGroupPage.jsx",
+    "src/modules/E1-PRI/PCM/PcmTrunkPage.jsx",
+    "src/modules/E1-PRI/Route/RouteIpPstnPage.jsx",
+    "src/modules/E1-PRI/Route/RouteIPToIPPage.jsx",
+    "src/modules/E1-PRI/Route/RouteRoutingParameterPage.jsx",
+    "src/modules/E1-PRI/SIP/HaPage.jsx",
+    "src/modules/E1-PRI/SIP/SipMediaPage.jsx",
+    "src/modules/E1-PRI/SIP/SipSipPage.jsx",
+    "src/modules/E1-PRI/SIP/SipToSipAccountPage.jsx"
+  ]
+}

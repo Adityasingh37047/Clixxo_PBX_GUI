@@ -1,4 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import StopRoundedIcon from "@mui/icons-material/StopRounded";
 import {
   Dialog,
   DialogActions,
@@ -12,26 +16,7 @@ import {
   TextField,
   Checkbox,
   Alert,
-  CircularProgress, useMediaQuery } from "@mui/material";
-import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import StopRoundedIcon from "@mui/icons-material/StopRounded";
-import {
-  deleteCustomPrompt,
-  deleteMohFile,
-  getVoicePromptPreferences,
-  listCustomPrompts,
-  listMohClasses,
-  listMohFiles,
-  listVoicePromptExtensions,
-  playCustomPrompt,
-  playMohFile,
-  recordNewCustomPrompt,
-  uploadCustomPrompt,
-  updateVoicePromptPreferences,
-  uploadMohFile,
-} from "../../../api/apiService";
+} from "@mui/material";
 import {
   VOICE_PROMPTS_CUSTOM_UPLOAD_NOTE,
   VOICE_PROMPTS_FIELD_TOOLTIPS,
@@ -46,6 +31,7 @@ import {
   Btn,
   TH,
   tdStyle,
+  getExtensionRowBg,
   ExtensionBreadcrumb as VoicePromptsBreadcrumb,
   ExtensionTableListLoading as VoicePromptsTableListLoading,
   ExtensionTableListEmptyState as VoicePromptsTableListEmptyState,
@@ -54,730 +40,88 @@ import {
   extensionPageInnerStyle as voicePromptsPageInnerStyle,
   extensionCardStyle as voicePromptsCardStyle,
 } from "../../../components/common";
-
-const voicePromptsPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const VOICE_PROMPTS_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color Palette (CDR / PBX Admin Theme) ───────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  sectionHeading: "#30415A",
-};
-
-const VOICE_PROMPTS_CARD_RADIUS = 4;
-
-// ── Local page UI (inlined from pbxSharedUi) ──
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const voicePromptsModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const VOICE_PROMPTS_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const tooltipProps = VOICE_PROMPTS_TOOLTIP_PROPS;
-
-const voicePromptsTabHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: VOICE_PROMPTS_CARD_RADIUS,
-  borderTopRightRadius: VOICE_PROMPTS_CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "10px 28px 10px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  flexWrap: "wrap",
-  gap: 8,
-  boxSizing: "border-box",
-  flexShrink: 0,
-};
-
-const voicePromptsHeaderLeftStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  flexWrap: "wrap",
-  minWidth: 0,
-};
-
-const voicePromptsTabBtnStyle = {
-  height: 30,
-  borderRadius: 4,
-};
-
-const voicePromptsChooseFileBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  minWidth: "auto",
-  borderRadius: 4,
-};
-
-const voicePromptsPanelStyle = {
-  background: "#f8fafc",
-  padding: 16,
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const voicePromptsTableCardStyle = {
-  overflowX: "auto",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  background: "#ffffff",
-};
-
-const VoicePromptsSectionHeading = ({ title, isFirst = false }) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  return (
-  <div
-    style={{
-      margin: isFirst
-        ? isLaptopNarrow
-          ? "16px 0 24px 0"
-          : "0 0 24px 0"
-        : "28px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.divider}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: 0,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: C.sectionHeading,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-  );
-};
-
-const SipPcmSectionHeading = VoicePromptsSectionHeading;
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-
-const getVoicePromptsRowBg = (idx) => (idx % 2 === 1 ? "#f8fafc" : "#ffffff");
-
-const VoicePromptsFieldRow = ({ label, children, required, align = "center" }) => (
-  <div style={{ display: "flex", alignItems: align, gap: 12, minHeight: 32 }}>
-    <label
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        width: 170,
-        flexShrink: 0,
-        paddingTop: align === "flex-start" ? 8 : 0,
-      }}
-    >
-      {label} {required && <span style={{ color: C.errorRed }}>*</span>}
-    </label>
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const FieldRow = VoicePromptsFieldRow;
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const voicePromptsOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const voicePromptsTextFieldSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...voicePromptsOutlinedInputRootSx,
-    minHeight: 34,
-    height: 34,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-    color: C.valueText,
-  },
-};
-
-const voicePromptsSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 34,
-  height: 34,
-  ...voicePromptsOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    padding: "7px 32px 7px 10px !important",
-    display: "flex",
-    alignItems: "center",
-    color: C.valueText,
-  },
-};
-
-const voicePromptsModalPaperSx = {
-  width: 560,
-  maxWidth: "96vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: "4px",
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const voicePromptsModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-  margin: 0,
-};
-
-const voicePromptsModalContentStyle = {
-  padding: "24px",
-  paddingTop: 24,
-  backgroundColor: "#ffffff",
-  boxSizing: "border-box",
-};
-
-const voicePromptsModalSectionStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 16,
-  width: "100%",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const toolIconBtnSx = {
-  width: 24,
-  height: 24,
-  border: "1px solid #c2c8d0",
-  borderRadius: 4,
-  backgroundColor: "#f5f7fa",
-  p: 0,
-  "&:hover": { backgroundColor: "#e8edf3" },
-};
-
-// ── Utility Functions ────────────────────────────────────────────────────────
-const normalizeList = (raw) => {
-  const list = raw?.message ?? raw?.data ?? raw;
-  return Array.isArray(list) ? list : [];
-};
-
-const formatSize = (bytes) => {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-};
-
-const formatDateTime = (value) => {
-  if (!value) return "--";
-  const dt = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(dt.getTime())) return "--";
-  return dt.toLocaleString();
-};
-
-const safeFilename = (v) => String(v || "").trim();
-const normalizeMohClassList = (res) => {
-  const msg = res?.message ?? res?.data ?? {};
-  const raw = Array.isArray(msg?.moh_classes)
-    ? msg.moh_classes
-    : Array.isArray(msg?.classes)
-      ? msg.classes
-      : Array.isArray(msg?.categories)
-        ? msg.categories
-        : Array.isArray(msg)
-          ? msg
-          : Array.isArray(res?.data)
-            ? res.data
-            : [];
-  return raw
-    .map((x) =>
-      typeof x === "string" ? x : x?.name || x?.category || x?.class || "",
-    )
-    .map((x) => String(x).trim())
-    .filter(Boolean);
-};
-
-const triggerBrowserDownload = (blob, filename) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename || "download";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
-
-const toMessageText = (msg, fallback) => {
-  if (typeof msg === "string" && msg.trim()) return msg;
-  if (msg && typeof msg === "object") {
-    if (typeof msg.message === "string" && msg.message.trim())
-      return msg.message;
-    if (typeof msg.error === "string" && msg.error.trim()) return msg.error;
-    if (typeof msg.details === "string" && msg.details.trim())
-      return msg.details;
-  }
-  return fallback;
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
+import { C } from "../../../theme/pbxTokens";
+import { useVoicePromptsPage } from "./hooks/useVoicePromptsPage";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterCancelBtnStyle,
+  addNewModalFooterStyle,
+  tooltipProps,
+  voicePromptsChooseFileBtnStyle,
+  voicePromptsHeaderLeftStyle,
+  voicePromptsModalContentStyle,
+  voicePromptsModalPaperSx,
+  voicePromptsModalSectionStyle,
+  voicePromptsModalTitleStyle,
+  voicePromptsPanelStyle,
+  voicePromptsPrimaryBtnStyle,
+  voicePromptsSelectSx,
+  voicePromptsTabBtnStyle,
+  voicePromptsTabHeaderStyle,
+  voicePromptsTableCardStyle,
+  voicePromptsTextFieldSx,
+  VoicePromptsFieldRow,
+  VoicePromptsSectionHeading,
+  VoicePromptsTooltipLabel,
+  voicePromptsCheckboxSx,
+} from "./components/VoicePromptsFormFields";
+import {
+  formatDateTime,
+  formatSize,
+  toolIconBtnSx,
+} from "./components/VoicePromptsTableHelpers";
 
 const VoicePromptsPage = () => {
-  const isCompact = useMediaQuery(VOICE_PROMPTS_COMPACT_MQ);
-  const [activeTab, setActiveTab] = useState("promptPreference");
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const [playCallForwardingPrompt, setPlayCallForwardingPrompt] =
-    useState(false);
-  const [promptMohCategory, setPromptMohCategory] = useState("default");
-
-  const [mohCategoryName, setMohCategoryName] = useState("");
-  const [mohFile, setMohFile] = useState(null);
-  const [mohFiles, setMohFiles] = useState([]);
-  const [mohLoading, setMohLoading] = useState(false);
-
-  const [customFile, setCustomFile] = useState(null);
-  const [customItems, setCustomItems] = useState([]);
-  const [customLoading, setCustomLoading] = useState(false);
-
-  const [recordModalOpen, setRecordModalOpen] = useState(false);
-  const [recordFileName, setRecordFileName] = useState("");
-  const [recordExtension, setRecordExtension] = useState("");
-  const [extensions, setExtensions] = useState([]);
-
-  const mohFileInputRef = useRef(null);
-  const customFileInputRef = useRef(null);
-
-  const [mohAudioUrl, setMohAudioUrl] = useState("");
-  const [customAudioUrl, setCustomAudioUrl] = useState("");
-  const mohAudioRef = useRef(null);
-  const customAudioRef = useRef(null);
-  const [savingPrefs, setSavingPrefs] = useState(false);
-
-  const showMsg = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const categories = useMemo(() => {
-    const listCats = mohFiles
-      .map((f) => String(f?.category || "").trim())
-      .filter(Boolean);
-    return Array.from(new Set(listCats));
-  }, [mohFiles]);
-
-  const loadInitial = async () => {
-    try {
-      const prefRes = await getVoicePromptPreferences();
-      if (prefRes?.response) {
-        const msg = prefRes?.message ?? prefRes?.data ?? {};
-        setPromptMohCategory(String(msg?.music_on_hold || "default"));
-        setPlayCallForwardingPrompt(!!msg?.play_call_forwarding_prompt);
-      }
-    } catch {}
-
-    await loadMohFiles();
-
-    try {
-      const extRes = await listVoicePromptExtensions();
-      if (extRes?.response) {
-        const list = normalizeList(extRes);
-        const extList = list
-          .map((x) => String(x?.extension ?? x?.ext ?? x).trim())
-          .filter(Boolean);
-        setExtensions(Array.from(new Set(extList)));
-      } else {
-        setExtensions([]);
-      }
-    } catch {
-      setExtensions([]);
-    }
-
-    try {
-      setCustomLoading(true);
-      const res = await listCustomPrompts();
-      if (res?.response) {
-        const list = normalizeList(res);
-        setCustomItems(
-          list.map((it, idx) => ({
-            id: it?.id ?? `${idx}`,
-            recordingName: String(
-              it?.recording_name || it?.name || it?.filename || "",
-            ).replace(/\.[^/.]+$/, ""),
-            fileName: safeFilename(
-              it?.filename || it?.file_name || it?.file || "",
-            ),
-            extension: String(it?.extension || it?.ext || "--"),
-            sizeBytes: Number(it?.size_bytes ?? it?.size ?? 0) || 0,
-            uploadedAt: it?.uploaded_at || it?.uploaded || it?.date || "",
-          })),
-        );
-      } else {
-        setCustomItems([]);
-      }
-    } catch {
-      setCustomItems([]);
-    } finally {
-      setCustomLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadInitial();
-  }, []);
-
-  useEffect(() => {
-    if (categories.length > 0 && !categories.includes(promptMohCategory)) {
-      setPromptMohCategory(categories[0]);
-      return;
-    }
-    if (categories.length === 0 && !mohLoading) {
-      setPromptMohCategory("");
-    }
-  }, [categories, promptMohCategory, mohLoading]);
-
-  const loadMohFiles = async () => {
-    setMohLoading(true);
-    try {
-      const res = await listMohFiles();
-      if (!res?.response) {
-        setMohFiles([]);
-        return;
-      }
-      const msg = res?.message ?? res?.data ?? {};
-      const list = Array.isArray(msg)
-        ? msg
-        : Array.isArray(msg?.files)
-          ? msg.files
-          : Array.isArray(res?.data)
-            ? res.data
-            : [];
-      setMohFiles(
-        list.map((it, idx) => ({
-          id: it?.id ?? `${idx}`,
-          category: String(it?.category || ""),
-          filename: safeFilename(
-            it?.filename || it?.file_name || it?.name || it,
-          ),
-          sizeBytes: Number(it?.size_bytes ?? it?.size ?? 0) || 0,
-          uploadedAt:
-            it?.uploaded_at || it?.created_at || it?.uploaded || it?.date || "",
-        })),
-      );
-    } catch {
-      setMohFiles([]);
-    } finally {
-      setMohLoading(false);
-    }
-  };
-
-  const refreshMohClasses = async () => {
-    try {
-      const clsRes = await listMohClasses();
-      if (!clsRes?.response) return [];
-      return normalizeMohClassList(clsRes);
-    } catch {
-      return [];
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === "musicOnHold") {
-      loadMohFiles();
-    }
-  }, [activeTab]);
-
-  const handleSavePreferences = async () => {
-    setSavingPrefs(true);
-    try {
-      const res = await updateVoicePromptPreferences({
-        music_on_hold: promptMohCategory,
-        play_call_forwarding_prompt: playCallForwardingPrompt,
-      });
-      if (!res?.response)
-        return showMsg(
-          "error",
-          res?.message || "Failed to update preferences.",
-        );
-      showMsg("success", "Preferences updated successfully.");
-    } catch (e) {
-      showMsg("error", e?.message || "Failed to update preferences.");
-    } finally {
-      setSavingPrefs(false);
-    }
-  };
-
-  const handleUploadMoh = async () => {
-    const trimmedCategory = mohCategoryName.trim();
-    if (!trimmedCategory) return showMsg("error", "Category is required.");
-    if (!mohFile) return showMsg("error", "Please select a hold music file.");
-
-    try {
-      const res = await uploadMohFile({
-        category: trimmedCategory,
-        file: mohFile,
-      });
-      if (!res?.response)
-        return showMsg("error", res?.message || "Upload failed.");
-
-      await refreshMohClasses();
-      setPromptMohCategory(trimmedCategory);
-      setMohCategoryName("");
-      setMohFile(null);
-      await loadMohFiles();
-      showMsg("success", "MOH File uploaded successfully.");
-    } catch (e) {
-      showMsg("error", e?.message || "Upload failed.");
-    }
-  };
-
-  const refreshCustomPrompts = async () => {
-    setCustomLoading(true);
-    try {
-      const res = await listCustomPrompts();
-      if (!res?.response) {
-        setCustomItems([]);
-        return;
-      }
-      const list = normalizeList(res);
-      setCustomItems(
-        list.map((it, idx) => ({
-          id: it?.id ?? `${idx}`,
-          recordingName: String(
-            it?.recording_name || it?.name || it?.filename || "",
-          ).replace(/\.[^/.]+$/, ""),
-          fileName: safeFilename(
-            it?.filename || it?.file_name || it?.file || "",
-          ),
-          extension: String(it?.extension || it?.ext || "--"),
-          sizeBytes: Number(it?.size_bytes ?? it?.size ?? 0) || 0,
-          uploadedAt: it?.uploaded_at || it?.uploaded || it?.date || "",
-        })),
-      );
-    } catch {
-      setCustomItems([]);
-    } finally {
-      setCustomLoading(false);
-    }
-  };
-
-  const handleUploadCustomPrompt = async () => {
-    if (!customFile)
-      return showMsg("error", "Please select a custom prompt file.");
-
-    try {
-      const res = await uploadCustomPrompt({ file: customFile });
-      if (!res?.response)
-        return showMsg(
-          "error",
-          res?.message || "Failed to upload custom prompt.",
-        );
-
-      setCustomFile(null);
-      await refreshCustomPrompts();
-      showMsg("success", "Custom prompt uploaded successfully.");
-    } catch (e) {
-      showMsg("error", e?.message || "Failed to upload custom prompt.");
-    }
-  };
-
-  const openRecordModal = () => {
-    setRecordFileName("");
-    setRecordExtension(extensions[0] || "");
-    setRecordModalOpen(true);
-  };
-
-  const handleSaveRecordedPrompt = async () => {
-    const trimmed = recordFileName.trim();
-    if (!trimmed) return showMsg("error", "File Name is required.");
-    if (!recordExtension)
-      return showMsg("error", "Please select an extension.");
-
-    try {
-      const res = await recordNewCustomPrompt({
-        file_name: trimmed,
-        extension: recordExtension,
-      });
-      if (!res?.response)
-        return showMsg(
-          "error",
-          toMessageText(res?.message, "Failed to start recording."),
-        );
-
-      showMsg("success", toMessageText(res?.message, "Recording started."));
-      setRecordModalOpen(false);
-      await refreshCustomPrompts();
-    } catch (e) {
-      showMsg(
-        "error",
-        toMessageText(
-          e?.response?.data?.message || e?.message,
-          "Failed to start recording.",
-        ),
-      );
-    }
-  };
-
-  const stopMohPlayer = () => {
-    if (mohAudioRef.current) {
-      mohAudioRef.current.pause();
-      mohAudioRef.current.currentTime = 0;
-    }
-    if (mohAudioUrl) {
-      URL.revokeObjectURL(mohAudioUrl);
-      setMohAudioUrl("");
-    }
-  };
-
-  const stopCustomPlayer = () => {
-    if (customAudioRef.current) {
-      customAudioRef.current.pause();
-      customAudioRef.current.currentTime = 0;
-    }
-    if (customAudioUrl) {
-      URL.revokeObjectURL(customAudioUrl);
-      setCustomAudioUrl("");
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (mohAudioUrl) URL.revokeObjectURL(mohAudioUrl);
-      if (customAudioUrl) URL.revokeObjectURL(customAudioUrl);
-    };
-  }, [mohAudioUrl, customAudioUrl]);
+  const vm = useVoicePromptsPage();
+  const {
+    isCompact,
+    activeTab,
+    message,
+    setMessage,
+    playCallForwardingPrompt,
+    setPlayCallForwardingPrompt,
+    promptMohCategory,
+    setPromptMohCategory,
+    mohCategoryName,
+    setMohCategoryName,
+    mohFile,
+    setMohFile,
+    mohFiles,
+    mohLoading,
+    customFile,
+    setCustomFile,
+    customItems,
+    customLoading,
+    recordModalOpen,
+    setRecordModalOpen,
+    recordFileName,
+    setRecordFileName,
+    recordExtension,
+    setRecordExtension,
+    extensions,
+    mohFileInputRef,
+    customFileInputRef,
+    mohAudioUrl,
+    customAudioUrl,
+    mohAudioRef,
+    customAudioRef,
+    savingPrefs,
+    categories,
+    handleTabChange,
+    handleSavePreferences,
+    handleUploadMoh,
+    handleUploadCustomPrompt,
+    openRecordModal,
+    handleSaveRecordedPrompt,
+    stopMohPlayer,
+    stopCustomPlayer,
+    handlePlayMoh,
+    handleDownloadMoh,
+    handleDeleteMoh,
+    handlePlayCustom,
+    handleDownloadCustom,
+    handleDeleteCustom,
+  } = vm;
 
   return (
     <div
@@ -822,11 +166,7 @@ const VoicePromptsPage = () => {
                   key={tab.id}
                   type="button"
                   variant={activeTab === tab.id ? "tabActive" : "tabInactive"}
-                  onClick={() => {
-                    stopMohPlayer();
-                    stopCustomPlayer();
-                    setActiveTab(tab.id);
-                  }}
+                  onClick={() => handleTabChange(tab.id)}
                   style={voicePromptsTabBtnStyle}
                 >
                   {tab.label}
@@ -836,7 +176,6 @@ const VoicePromptsPage = () => {
           </div>
 
           <div style={{ padding: 16 }}>
-            {/* ── TAB 1: PROMPT PREFERENCE ── */}
             {activeTab === "promptPreference" && (
               <div>
                 <VoicePromptsSectionHeading
@@ -851,14 +190,11 @@ const VoicePromptsPage = () => {
                     ...voicePromptsPanelStyle,
                   }}
                 >
-                  <FieldRow
+                  <VoicePromptsFieldRow
                     label={
-                      <Tooltip
-                        title={VOICE_PROMPTS_FIELD_TOOLTIPS.music_on_hold}
-                        {...tooltipProps}
-                      >
-                        <span style={{ cursor: "help" }}>Music On Hold</span>
-                      </Tooltip>
+                      <VoicePromptsTooltipLabel tooltipKey="music_on_hold">
+                        Music On Hold
+                      </VoicePromptsTooltipLabel>
                     }
                   >
                     <FormControl size="small" sx={{ width: 260 }}>
@@ -895,21 +231,14 @@ const VoicePromptsPage = () => {
                         )}
                       </MuiSelect>
                     </FormControl>
-                  </FieldRow>
+                  </VoicePromptsFieldRow>
 
                   <div>
-                    <FieldRow
+                    <VoicePromptsFieldRow
                       label={
-                        <Tooltip
-                          title={
-                            VOICE_PROMPTS_FIELD_TOOLTIPS.play_call_forwarding_prompt
-                          }
-                          {...tooltipProps}
-                        >
-                          <span style={{ cursor: "help" }}>
-                            Play Call Forwarding Prompt
-                          </span>
-                        </Tooltip>
+                        <VoicePromptsTooltipLabel tooltipKey="play_call_forwarding_prompt">
+                          Play Call Forwarding Prompt
+                        </VoicePromptsTooltipLabel>
                       }
                     >
                       <Checkbox
@@ -918,14 +247,9 @@ const VoicePromptsPage = () => {
                           setPlayCallForwardingPrompt(e.target.checked)
                         }
                         size="small"
-                        sx={{
-                          padding: "1px",
-                          color: "#3E5475",
-                          "&.Mui-checked": { color: "#0284c7" },
-                          "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-                        }}
+                        sx={voicePromptsCheckboxSx}
                       />
-                    </FieldRow>
+                    </VoicePromptsFieldRow>
                     <div
                       style={{
                         display: "flex",
@@ -954,7 +278,6 @@ const VoicePromptsPage = () => {
               </div>
             )}
 
-            {/* ── TAB 2: MUSIC ON HOLD ── */}
             {activeTab === "musicOnHold" && (
               <div>
                 <VoicePromptsSectionHeading
@@ -979,13 +302,13 @@ const VoicePromptsPage = () => {
                       {...tooltipProps}
                     >
                       <label
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
-                    >
-                      Category
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: C.labelText,
+                        }}
+                      >
+                        Category
                       </label>
                     </Tooltip>
                     <TextField
@@ -1066,25 +389,26 @@ const VoicePromptsPage = () => {
                       showButton={false}
                     />
                   ) : (
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      minWidth: 600, ...(isCompact ? { minWidth: 720 } : {}),
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <TH>File Name</TH>
-                        <TH>Category</TH>
-                        <TH>File Size</TH>
-                        <TH>Uploaded</TH>
-                        <TH style={{ width: 100 }}>Tools</TH>
-                      </tr>
-                    </thead>
-                    <tbody>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        minWidth: 600,
+                        ...(isCompact ? { minWidth: 720 } : {}),
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <TH>File Name</TH>
+                          <TH>Category</TH>
+                          <TH>File Size</TH>
+                          <TH>Uploaded</TH>
+                          <TH style={{ width: 100 }}>Tools</TH>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {mohFiles.map((item, idx) => {
-                          const rowBg = getVoicePromptsRowBg(idx);
+                          const rowBg = getExtensionRowBg(false, idx);
                           const isLastRow = idx === mohFiles.length - 1;
                           const cellStyle = {
                             ...tdStyle,
@@ -1098,158 +422,79 @@ const VoicePromptsPage = () => {
                             borderRight: "none",
                           };
                           return (
-                          <tr
-                            key={item.id}
-                            style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                          >
-                            <td
+                            <tr
+                              key={item.id}
                               style={{
-                                ...cellStyle,
-                                textAlign: "left",
-                                fontWeight: 500,
+                                background: rowBg,
+                                transition: "background 0.15s ease",
                               }}
                             >
-                              {item.filename}
-                            </td>
-                            <td style={{ ...cellStyle, textAlign: "left" }}>
-                              {item.category || "--"}
-                            </td>
-                            <td style={{ ...cellStyle, color: C.mutedText }}>
-                              {formatSize(item.sizeBytes)}
-                            </td>
-                            <td style={{ ...cellStyle, color: C.mutedText }}>
-                              {formatDateTime(item.uploadedAt)}
-                            </td>
-                            <td style={lastCellStyle}>
-                              <div
+                              <td
                                 style={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  gap: 8,
+                                  ...cellStyle,
+                                  textAlign: "left",
+                                  fontWeight: 500,
                                 }}
                               >
-                                <Tooltip title="Play">
-                                  <IconButton
-                                    size="small"
-                                    sx={toolIconBtnSx}
-                                    onClick={async () => {
-                                      try {
-                                        const resp = await playMohFile({
-                                          category: item.category,
-                                          filename: item.filename,
-                                        });
-                                        const url = URL.createObjectURL(
-                                          resp.data,
-                                        );
-                                        stopCustomPlayer();
-                                        if (mohAudioUrl)
-                                          URL.revokeObjectURL(mohAudioUrl);
-                                        setMohAudioUrl(url);
-                                        setTimeout(
-                                          () => mohAudioRef.current?.play?.(),
-                                          0,
-                                        );
-                                      } catch (e) {
-                                        showMsg(
-                                          "error",
-                                          e?.message || "Failed to play file.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <PlayArrowRoundedIcon
-                                      sx={{ fontSize: 16, color: "#16a34a" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Download">
-                                  <IconButton
-                                    size="small"
-                                    sx={toolIconBtnSx}
-                                    onClick={async () => {
-                                      try {
-                                        const resp = await playMohFile({
-                                          category: item.category,
-                                          filename: item.filename,
-                                        });
-                                        triggerBrowserDownload(
-                                          resp.data,
-                                          item.filename,
-                                        );
-                                      } catch (e) {
-                                        showMsg(
-                                          "error",
-                                          e?.message ||
-                                            "Failed to download file.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <DownloadRoundedIcon
-                                      sx={{ fontSize: 15, color: "#0284c7" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete">
-                                  <IconButton
-                                    size="small"
-                                    sx={toolIconBtnSx}
-                                    onClick={async () => {
-                                      if (
-                                        !window.confirm(
-                                          `Delete ${item.filename}?`,
-                                        )
-                                      )
-                                        return;
-                                      try {
-                                        const res = await deleteMohFile({
-                                          category: item.category,
-                                          filename: item.filename,
-                                        });
-                                        if (!res?.response)
-                                          return showMsg(
-                                            "error",
-                                            res?.message ||
-                                              "Failed to delete file.",
-                                          );
-                                        const classes =
-                                          await refreshMohClasses();
-                                        if (
-                                          !classes.includes(promptMohCategory)
-                                        ) {
-                                          setPromptMohCategory(
-                                            classes[0] || "",
-                                          );
-                                        }
-                                        await loadMohFiles();
-                                        showMsg(
-                                          "success",
-                                          "File deleted successfully.",
-                                        );
-                                      } catch (e) {
-                                        showMsg(
-                                          "error",
-                                          e?.message ||
-                                            "Failed to delete file.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <DeleteOutlineRoundedIcon
-                                      sx={{ fontSize: 15, color: C.errorRed }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                              </div>
-                            </td>
-                          </tr>
+                                {item.filename}
+                              </td>
+                              <td style={{ ...cellStyle, textAlign: "left" }}>
+                                {item.category || "--"}
+                              </td>
+                              <td style={{ ...cellStyle, color: C.mutedText }}>
+                                {formatSize(item.sizeBytes)}
+                              </td>
+                              <td style={{ ...cellStyle, color: C.mutedText }}>
+                                {formatDateTime(item.uploadedAt)}
+                              </td>
+                              <td style={lastCellStyle}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: 8,
+                                  }}
+                                >
+                                  <Tooltip title="Play">
+                                    <IconButton
+                                      size="small"
+                                      sx={toolIconBtnSx}
+                                      onClick={() => handlePlayMoh(item)}
+                                    >
+                                      <PlayArrowRoundedIcon
+                                        sx={{ fontSize: 16, color: "#16a34a" }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Download">
+                                    <IconButton
+                                      size="small"
+                                      sx={toolIconBtnSx}
+                                      onClick={() => handleDownloadMoh(item)}
+                                    >
+                                      <DownloadRoundedIcon
+                                        sx={{ fontSize: 15, color: "#0284c7" }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Delete">
+                                    <IconButton
+                                      size="small"
+                                      sx={toolIconBtnSx}
+                                      onClick={() => handleDeleteMoh(item)}
+                                    >
+                                      <DeleteOutlineRoundedIcon
+                                        sx={{ fontSize: 15, color: C.errorRed }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                </div>
+                              </td>
+                            </tr>
                           );
                         })}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
                   )}
                 </div>
 
@@ -1291,7 +536,6 @@ const VoicePromptsPage = () => {
               </div>
             )}
 
-            {/* ── TAB 3: CUSTOM PROMPT ── */}
             {activeTab === "customPrompt" && (
               <div>
                 <div
@@ -1393,25 +637,26 @@ const VoicePromptsPage = () => {
                       showButton={false}
                     />
                   ) : (
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      minWidth: 700, ...(isCompact ? { minWidth: 720 } : {}),
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <TH>Recording Name</TH>
-                        <TH>File Name</TH>
-                        <TH>File Size</TH>
-                        <TH>Uploaded</TH>
-                        <TH style={{ width: 120 }}>Tools</TH>
-                      </tr>
-                    </thead>
-                    <tbody>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        minWidth: 700,
+                        ...(isCompact ? { minWidth: 720 } : {}),
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <TH>Recording Name</TH>
+                          <TH>File Name</TH>
+                          <TH>File Size</TH>
+                          <TH>Uploaded</TH>
+                          <TH style={{ width: 120 }}>Tools</TH>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {customItems.map((item, idx) => {
-                          const rowBg = getVoicePromptsRowBg(idx);
+                          const rowBg = getExtensionRowBg(false, idx);
                           const isLastRow = idx === customItems.length - 1;
                           const cellStyle = {
                             ...tdStyle,
@@ -1425,154 +670,86 @@ const VoicePromptsPage = () => {
                             borderRight: "none",
                           };
                           return (
-                          <tr
-                            key={item.id}
-                            style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                          >
-                            <td
+                            <tr
+                              key={item.id}
                               style={{
-                                ...cellStyle,
-                                textAlign: "left",
-                                fontWeight: 600,
+                                background: rowBg,
+                                transition: "background 0.15s ease",
                               }}
                             >
-                              {item.recordingName}
-                            </td>
-                            <td
-                              style={{
-                                ...cellStyle,
-                                textAlign: "left",
-                                color: C.mutedText,
-                                fontFamily: "monospace",
-                              }}
-                            >
-                              {item.fileName}
-                            </td>
-                            <td style={{ ...cellStyle, color: C.mutedText }}>
-                              {formatSize(item.sizeBytes)}
-                            </td>
-                            <td style={{ ...cellStyle, color: C.mutedText }}>
-                              {formatDateTime(item.uploadedAt)}
-                            </td>
-                            <td style={lastCellStyle}>
-                              <div
+                              <td
                                 style={{
-                                  display: "flex",
-                                  justifyContent: "center",
-                                  gap: 8,
+                                  ...cellStyle,
+                                  textAlign: "left",
+                                  fontWeight: 600,
                                 }}
                               >
-                                <Tooltip title="Play">
-                                  <IconButton
-                                    size="small"
-                                    sx={toolIconBtnSx}
-                                    onClick={async () => {
-                                      try {
-                                        const resp = await playCustomPrompt({
-                                          filename: item.fileName,
-                                        });
-                                        const url = URL.createObjectURL(
-                                          resp.data,
-                                        );
-                                        stopMohPlayer();
-                                        if (customAudioUrl)
-                                          URL.revokeObjectURL(customAudioUrl);
-                                        setCustomAudioUrl(url);
-                                        setTimeout(
-                                          () =>
-                                            customAudioRef.current?.play?.(),
-                                          0,
-                                        );
-                                      } catch (e) {
-                                        showMsg(
-                                          "error",
-                                          e?.message || "Failed to play file.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <PlayArrowRoundedIcon
-                                      sx={{ fontSize: 16, color: "#16a34a" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Download">
-                                  <IconButton
-                                    size="small"
-                                    sx={toolIconBtnSx}
-                                    onClick={async () => {
-                                      try {
-                                        const resp = await playCustomPrompt({
-                                          filename: item.fileName,
-                                        });
-                                        triggerBrowserDownload(
-                                          resp.data,
-                                          item.fileName,
-                                        );
-                                      } catch (e) {
-                                        showMsg(
-                                          "error",
-                                          e?.message ||
-                                            "Failed to download file.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <DownloadRoundedIcon
-                                      sx={{ fontSize: 15, color: "#0284c7" }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete">
-                                  <IconButton
-                                    size="small"
-                                    sx={toolIconBtnSx}
-                                    onClick={async () => {
-                                      if (
-                                        !window.confirm(
-                                          `Delete ${item.fileName}?`,
-                                        )
-                                      )
-                                        return;
-                                      try {
-                                        const res = await deleteCustomPrompt({
-                                          filename: item.fileName,
-                                        });
-                                        if (!res?.response)
-                                          return showMsg(
-                                            "error",
-                                            res?.message ||
-                                              "Failed to delete file.",
-                                          );
-                                        await refreshCustomPrompts();
-                                        showMsg(
-                                          "success",
-                                          "File deleted successfully.",
-                                        );
-                                      } catch (e) {
-                                        showMsg(
-                                          "error",
-                                          e?.message ||
-                                            "Failed to delete file.",
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    <DeleteOutlineRoundedIcon
-                                      sx={{ fontSize: 15, color: C.errorRed }}
-                                    />
-                                  </IconButton>
-                                </Tooltip>
-                              </div>
-                            </td>
-                          </tr>
+                                {item.recordingName}
+                              </td>
+                              <td
+                                style={{
+                                  ...cellStyle,
+                                  textAlign: "left",
+                                  color: C.mutedText,
+                                  fontFamily: "monospace",
+                                }}
+                              >
+                                {item.fileName}
+                              </td>
+                              <td style={{ ...cellStyle, color: C.mutedText }}>
+                                {formatSize(item.sizeBytes)}
+                              </td>
+                              <td style={{ ...cellStyle, color: C.mutedText }}>
+                                {formatDateTime(item.uploadedAt)}
+                              </td>
+                              <td style={lastCellStyle}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: 8,
+                                  }}
+                                >
+                                  <Tooltip title="Play">
+                                    <IconButton
+                                      size="small"
+                                      sx={toolIconBtnSx}
+                                      onClick={() => handlePlayCustom(item)}
+                                    >
+                                      <PlayArrowRoundedIcon
+                                        sx={{ fontSize: 16, color: "#16a34a" }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Download">
+                                    <IconButton
+                                      size="small"
+                                      sx={toolIconBtnSx}
+                                      onClick={() => handleDownloadCustom(item)}
+                                    >
+                                      <DownloadRoundedIcon
+                                        sx={{ fontSize: 15, color: "#0284c7" }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Delete">
+                                    <IconButton
+                                      size="small"
+                                      sx={toolIconBtnSx}
+                                      onClick={() => handleDeleteCustom(item)}
+                                    >
+                                      <DeleteOutlineRoundedIcon
+                                        sx={{ fontSize: 15, color: C.errorRed }}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                </div>
+                              </td>
+                            </tr>
                           );
                         })}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
                   )}
                 </div>
 
@@ -1617,7 +794,6 @@ const VoicePromptsPage = () => {
         </div>
       </div>
 
-      {/* ── Record New Prompt Modal ── */}
       <Dialog
         open={recordModalOpen}
         onClose={() => setRecordModalOpen(false)}
@@ -1638,7 +814,7 @@ const VoicePromptsPage = () => {
           sx={{ "&.MuiDialogContent-root": { paddingTop: "24px" } }}
         >
           <div style={voicePromptsModalSectionStyle}>
-            <FieldRow label="File Name" required>
+            <VoicePromptsFieldRow label="File Name" required>
               <TextField
                 size="small"
                 fullWidth
@@ -1647,8 +823,8 @@ const VoicePromptsPage = () => {
                 onChange={(e) => setRecordFileName(e.target.value)}
                 sx={voicePromptsTextFieldSx}
               />
-            </FieldRow>
-            <FieldRow label="Extension" required>
+            </VoicePromptsFieldRow>
+            <VoicePromptsFieldRow label="Extension" required>
               <FormControl size="small" fullWidth variant="outlined">
                 <MuiSelect
                   variant="outlined"
@@ -1667,7 +843,7 @@ const VoicePromptsPage = () => {
                   ))}
                 </MuiSelect>
               </FormControl>
-            </FieldRow>
+            </VoicePromptsFieldRow>
           </div>
         </DialogContent>
         <DialogActions sx={{ p: 0, m: 0 }} style={addNewModalFooterStyle}>

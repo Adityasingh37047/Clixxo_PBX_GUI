@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
+import { FOCUS_RING_SHADOW } from "../../../theme/pbxTokens";
 import {
   PCM_TRUNK_GROUP_FIELDS,
   PCM_TRUNK_GROUP_INITIAL_FORM,
@@ -31,15 +32,24 @@ import {
   Tooltip,
   useMediaQuery,
 } from "@mui/material";
+import { usePcmTrunkGroupPage } from "./hooks/usePcmTrunkGroupPage";
+import { Btn } from "../../../components/common";
 import {
-  listPstn,
-  listPstnGroups,
-  savePstnGroup,
-  deletePstnGroup,
-  listIpPstnRoutes,
-  listNumberManipulations,
-} from "../../../api/apiService";
+  TH,
+  C,
+  tdStyle,
+  checkboxSx,
+  PcmTrunkGroupBreadcrumb,
+} from "./components/PcmTrunkGroupFormFields";
+import {
+  CARD_RADIUS,
+  pcmTrunkGroupFixedAlertSx,
+  pcmTrunkGroupEditIconStyle,
+  handlePcmTrunkGroupEditIconHover,
+  getPcmTrunkGroupRowBg,
+} from "./components/PcmTrunkGroupTableHelpers";
 
+/* Page-local styles/helpers preserved from monolith */
 const PCM_TRUNK_GROUP_COMPACT_MQ = "(max-width: 768px)";
 
 const PCM_TRUNK_GROUP_ADD_NEW_DIALOG_MARGIN = 24;
@@ -128,148 +138,6 @@ const PcmTrunkGroupFieldLabel = ({ tooltipKey, tooltips, children, style = {} })
 };
 
 // ── Color palette (matches Extensions) ────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#94a3b8",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-};
-
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: C.amber,
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 4,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
 
 const addNewModalFooterStyle = {
   display: "flex",
@@ -372,40 +240,6 @@ const pcmTrunkGroupSelectStyle = {
   padding: "0 28px 0 10px",
   appearance: "auto",
   cursor: "pointer",
-};
-
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
 };
 
 const pcmTrunkGroupPageWrapStyle = {
@@ -664,7 +498,6 @@ const pcmTrunkGroupModalFormPanelStyle = {
   padding: 20,
 };
 
-
 const pcmTrunkGroupTableCheckboxSx = {
   padding: "1px",
   color: "#3E5475",
@@ -675,629 +508,42 @@ const pcmTrunkGroupTableCheckboxSx = {
 // const LOCAL_STORAGE_KEY = 'pcmTrunkGroups';
 
 const PcmTrunkGroupPage = () => {
-  const isCompact = useMediaQuery(PCM_TRUNK_GROUP_COMPACT_MQ);
-  const tableScrollRef = useRef(null);
-  const [groups, setGroups] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState(PCM_TRUNK_GROUP_INITIAL_FORM);
-  const [checkAll, setCheckAll] = useState(false);
-  const [selected, setSelected] = useState([]);
-  const [page, setPage] = useState(1);
-  const [spansData, setSpansData] = useState([]);
-  const [isLoadingSpans, setIsLoadingSpans] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  const [error, setError] = useState(null);
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const itemsPerPage = 20;
-  const totalPages = Math.max(1, Math.ceil(groups.length / itemsPerPage));
-  const pagedGroups = groups.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  // Message handling
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  // useEffect(() => {
-  //   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(groups));
-  // }, [groups]);
-
-  // Fetch PCM trunk group data on component mount
-
-  useEffect(() => {
-    fetchPcmTrunkGroupData();
-  }, []);
-
-  const fetchSpansData = async () => {
-    setIsLoadingSpans(true);
-    try {
-      const res = await listPstn();
-
-      // Support various shapes: res.message, res.data, top-level array, or nested
-      let raw = [];
-      if (Array.isArray(res)) raw = res;
-      else if (Array.isArray(res?.message)) raw = res.message;
-      else if (Array.isArray(res?.data)) raw = res.data;
-      else if (Array.isArray(res?.data?.message)) raw = res.data.message;
-      if (!raw.length && res && typeof res === "object") {
-        const v = Object.values(res).find(
-          (x) =>
-            Array.isArray(x) &&
-            x.length &&
-            (x[0]?.span_id != null || x[0]?.span != null),
-        );
-        if (v) raw = v;
-      }
-
-      const mapped = raw
-        .map((it) => {
-          const spanId = it?.span_id ?? it?.span ?? it?.spanNo ?? it?.id;
-          return spanId != null ? { spanNo: String(spanId) } : null;
-        })
-        .filter(Boolean);
-
-      setSpansData(mapped);
-      if (!mapped.length)
-        console.warn("PSTN list returned no spans. Raw:", res);
-    } catch (error) {
-      console.error("Error fetching spans data:", error);
-    } finally {
-      setIsLoadingSpans(false);
-    }
-  };
-
-  const fetchPcmTrunkGroupData = async () => {
-    setIsLoadingData(true);
-    setError(null); // Clear any previous errors
-    try {
-      const response = await listPstnGroups();
-      if (response?.response && Array.isArray(response.message)) {
-        const mapped = response.message.map((g) => ({
-          groupId: g.group_id,
-          pstnIds: g.pstn_ids || [],
-          description: g.description || "",
-        }));
-        setGroups(mapped);
-      } else {
-        setGroups([]);
-      }
-    } catch (error) {
-      console.error("Error fetching PSTN groups:", error);
-      showMessage("error", error?.message || "Failed to load PSTN groups");
-      // On error, keep empty array
-      setGroups([]);
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
-
-  const handleOpenModal = async (item = null, index = -1) => {
-    // Always fetch fresh spans data when opening modal
-    await fetchSpansData();
-
-    if (item) {
-      // Editing existing item
-      setFormData({
-        ...item,
-        groupId:
-          String(item.groupId) !== undefined
-            ? Number(item.groupId)
-            : item.groupId,
-        originalIndex: index,
-      });
-    } else {
-      setFormData({ ...PCM_TRUNK_GROUP_INITIAL_FORM });
-    }
-    setIsModalOpen(true);
-  };
-
-  // Helper function to get used PSTN spans from existing groups
-  const getUsedPstnSpans = () => {
-    const usedSpans = new Set();
-    groups.forEach((group) => {
-      if (group.pstnIds && Array.isArray(group.pstnIds)) {
-        group.pstnIds.forEach((span) => usedSpans.add(String(span)));
-      }
-    });
-    return usedSpans;
-  };
-
-  // Helper function to check if a span is available for selection
-  const isSpanAvailable = (
-    spanNo,
-    isEditing = false,
-    editingGroupIndex = null,
-  ) => {
-    const usedSpans = getUsedPstnSpans();
-    const spanStr = String(spanNo);
-
-    // If we're editing an existing group, the spans used by that group should still be available
-    if (isEditing && editingGroupIndex !== null) {
-      const editingGroup = groups[editingGroupIndex];
-      if (
-        editingGroup &&
-        editingGroup.pstnIds &&
-        editingGroup.pstnIds.includes(spanStr)
-      ) {
-        return true; // This span is used by the group we're editing, so it's available
-      }
-    }
-
-    return !usedSpans.has(spanStr);
-  };
-  const handleCloseModal = () => setIsModalOpen(false);
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    // Special validation for index field
-    if (name === "index") {
-      const newIndex = parseInt(value);
-
-      // Check if this index is already used by another item (excluding current item being edited)
-      const existingIndexes = groups.map((group) => parseInt(group.index));
-      const currentIndex =
-        formData.originalIndex !== undefined
-          ? parseInt(groups[formData.originalIndex]?.index)
-          : null;
-
-      // Remove current item's index from the check if we're editing
-      const otherIndexes = existingIndexes.filter(
-        (idx) => idx !== currentIndex,
-      );
-
-      if (otherIndexes.includes(newIndex)) {
-        showMessage(
-          "error",
-          `Index ${newIndex} is already in use. Please select a different index.`,
-        );
-        return; // Don't update the form data
-      }
-    }
-
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // PSTN IDs (checkboxes), use span.spanNo as pstn id string
-  const handleTrunkCheckbox = (spanNo) => {
-    const isEditing = formData.originalIndex !== undefined;
-    const isAvailable = isSpanAvailable(
-      spanNo,
-      isEditing,
-      formData.originalIndex,
-    );
-
-    // Don't allow selection of unavailable spans
-    if (!isAvailable) {
-      return;
-    }
-
-    setFormData((prev) => {
-      const idStr = String(spanNo);
-      const next = prev.pstnIds?.includes(idStr)
-        ? prev.pstnIds.filter((t) => t !== idStr)
-        : [...(prev.pstnIds || []), idStr];
-      return { ...prev, pstnIds: next };
-    });
-  };
-  const handleCheckAll = () => {
-    setCheckAll(true);
-    // Check all available spans only
-    const isEditing = formData.originalIndex !== undefined;
-    const available = spansData
-      .filter((span) =>
-        isSpanAvailable(span.spanNo, isEditing, formData.originalIndex),
-      )
-      .map((span) => String(span.spanNo));
-    setFormData((prev) => ({ ...prev, pstnIds: available }));
-  };
-  const handleUncheckAll = () => {
-    setCheckAll(false);
-    setFormData((prev) => ({ ...prev, pstnIds: [] }));
-  };
-
-  const handleSave = async () => {
-    // Validate form data with better checks
-    // Check if groupId is null, undefined, or empty string (but allow 0 as valid)
-    if (
-      formData.groupId === null ||
-      formData.groupId === undefined ||
-      formData.groupId === ""
-    ) {
-      showMessage("error", "Please select a Group ID.");
-      return;
-    }
-
-    if (!formData.description || formData.description.trim() === "") {
-      showMessage("error", "Please fill in the Description field.");
-      return;
-    }
-
-    if (!formData.pstnIds || formData.pstnIds.length === 0) {
-      showMessage("error", "Please select at least one PSTN ID.");
-      return;
-    }
-
-    // Additional validation for duplicate index
-    const newIndex = parseInt(formData.groupId);
-    const existingIndexes = groups.map((group) => parseInt(group.groupId));
-    const currentIndex =
-      formData.originalIndex !== undefined
-        ? parseInt(groups[formData.originalIndex]?.groupId)
-        : null;
-    const otherIndexes = existingIndexes.filter((idx) => idx !== currentIndex);
-
-    if (otherIndexes.includes(newIndex)) {
-      showMessage(
-        "error",
-        `Index ${newIndex} is already in use. Please select a different index.`,
-      );
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      // Auto-upgrade index if it's a new entry (not editing existing)
-      let finalIndex = parseInt(formData.groupId);
-      if (formData.originalIndex === undefined) {
-        const existingIndexes = groups.map((group) => parseInt(group.groupId));
-        let nextIndex = 0;
-        while (existingIndexes.includes(nextIndex)) {
-          nextIndex++;
-        }
-        finalIndex = nextIndex;
-      }
-
-      // Check if we're trying to create multiple trunk groups at once
-      // If so, we need to create separate entries for each trunk
-      if (formData.pstnIds.length > 1 && formData.originalIndex === undefined) {
-        // Create multiple trunk groups - one for each selected trunk
-        const savePromises = formData.pstnIds.map(
-          async (pstnId, trunkIndex) => {
-            const trunkGroupIndex = finalIndex + trunkIndex;
-            return await savePstnGroup(
-              trunkGroupIndex,
-              [pstnId],
-              `${formData.description}`,
-            );
-          },
-        );
-
-        const results = await Promise.all(savePromises);
-        const allSuccessful = results.every(
-          (result) => result && result.response,
-        );
-        if (allSuccessful) {
-          const newGroups = formData.pstnIds.map((pstnId, trunkIndex) => ({
-            groupId: String(finalIndex + trunkIndex),
-            description: formData.description,
-            pstnIds: [pstnId],
-          }));
-
-          setGroups((prev) => [...prev, ...newGroups]);
-
-          showMessage(
-            "success",
-            `Successfully created ${formData.pstnIds.length} PSTN group(s)!`,
-          );
-          setIsModalOpen(false);
-          await fetchPcmTrunkGroupData();
-        } else {
-          showMessage(
-            "error",
-            "Failed to create some PSTN groups. Please try again.",
-          );
-        }
-      } else {
-        const response = await savePstnGroup(
-          finalIndex,
-          formData.pstnIds,
-          formData.description,
-        );
-        if (response?.response) {
-          showMessage("success", "PSTN Group saved successfully!");
-          setIsModalOpen(false);
-          await fetchPcmTrunkGroupData();
-        } else {
-          showMessage("error", "Failed to save PSTN Group. Please try again.");
-        }
-      }
-    } catch (error) {
-      console.error("Error saving PSTN group:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage("error", error.message || "Failed to save PSTN group");
-      }
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSelectRow = (idx) => {
-    setSelected((sel) =>
-      sel.includes(idx) ? sel.filter((i) => i !== idx) : [...sel, idx],
-    );
-  };
-
-  const pagedRowIndexes = pagedGroups.map(
-    (_, idx) => (page - 1) * itemsPerPage + idx,
-  );
-  const allPageSelected =
-    pagedRowIndexes.length > 0 &&
-    pagedRowIndexes.every((idx) => selected.includes(idx));
-  const somePageSelected =
-    pagedRowIndexes.length > 0 &&
-    pagedRowIndexes.some((idx) => selected.includes(idx)) &&
-    !allPageSelected;
-
-  const handleToggleAll = () => {
-    if (allPageSelected) {
-      setSelected((prev) =>
-        prev.filter((idx) => !pagedRowIndexes.includes(idx)),
-      );
-    } else {
-      setSelected((prev) => {
-        const next = [...prev];
-        pagedRowIndexes.forEach((idx) => {
-          if (!next.includes(idx)) next.push(idx);
-        });
-        return next;
-      });
-    }
-  };
-
-  const handleInverse = () => {
-    const otherPageSelections = selected.filter(
-      (idx) => !pagedRowIndexes.includes(idx),
-    );
-    const invertedPagedSelections = pagedRowIndexes.filter(
-      (idx) => !selected.includes(idx),
-    );
-    setSelected([...otherPageSelections, ...invertedPagedSelections]);
-  };
-
-  const handleCheckAllRows = () => {
-    setSelected(pagedRowIndexes);
-  };
-  const handleUncheckAllRows = () => {
-    setSelected([]);
-  };
-
-  // Check if PCM trunk group is referenced by routing rules or number manipulations
-  const isPcmGroupReferenced = async (groupId) => {
-    try {
-      const gid = String(groupId);
-
-      // Check routes (PSTN to IP routes use call_source field for PCM trunk groups)
-      try {
-        const routeRes = await listIpPstnRoutes("pstn_to_ip");
-        const routeList =
-          (routeRes && (routeRes.message || routeRes.data)) || [];
-        const foundInRoutes = routeList.some((item) => {
-          try {
-            // In RoutePstnToIPpage, callInitiator is mapped to call_source in the API
-            const candidates = [
-              item?.call_source,
-              item?.callSource,
-              item?.call_source_id,
-              item?.callInitiator,
-              item?.call_initiator,
-              item?.callInitiatorId,
-              item?.call_initiator_id,
-              item?.pcm_trunk_group,
-              item?.pcm_trunk_group_id,
-            ]
-              .filter((v) => v !== undefined && v !== null)
-              .map((v) => String(v));
-            return candidates.some((v) => v === gid);
-          } catch {
-            return false;
-          }
-        });
-        if (foundInRoutes) return true;
-      } catch (e) {
-        console.warn("Route reference check failed:", e?.message);
-      }
-
-      // Check number manipulations (if they use PCM trunk groups)
-      try {
-        const manipRes = await listNumberManipulations();
-        const manipList =
-          (manipRes && (manipRes.message || manipRes.data)) || [];
-        const foundInManip = manipList.some((item) => {
-          try {
-            const candidates = [
-              item?.call_source,
-              item?.callSource,
-              item?.callInitiator,
-              item?.call_initiator,
-              item?.callInitiatorId,
-              item?.call_initiator_id,
-              item?.pcm_trunk_group,
-              item?.pcm_trunk_group_id,
-            ]
-              .filter((v) => v !== undefined && v !== null)
-              .map((v) => String(v));
-            return candidates.some((v) => v === gid);
-          } catch {
-            return false;
-          }
-        });
-        if (foundInManip) return true;
-      } catch (e) {
-        console.warn("Number manipulation reference check failed:", e?.message);
-      }
-
-      return false;
-    } catch (e) {
-      console.warn("Reference check failed:", e?.message);
-      return false;
-    }
-  };
-
-  // Delete individual PCM trunk group
-  const handleDeleteSelected = async () => {
-    if (selected.length === 0) {
-      showMessage("error", "Please select at least one item to delete.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${selected.length} selected item(s)?`,
-    );
-    if (!confirmed) return;
-
-    setIsLoadingData(true);
-    try {
-      let deletedCount = 0;
-      let skippedCount = 0;
-
-      for (const idx of selected) {
-        const item = groups[idx];
-        if (!item || item.groupId == null) continue;
-
-        // Check if group is referenced before deleting
-        const inUse = await isPcmGroupReferenced(item.groupId);
-        if (inUse) {
-          showMessage(
-            "error",
-            "The PCM trunk group cannot be deleted because it is quoted by the routing rule!",
-          );
-          skippedCount++;
-          continue;
-        }
-
-        // Delete the group
-        try {
-          const response = await deletePstnGroup(String(item.groupId));
-          if (response?.response) {
-            deletedCount++;
-          } else {
-            console.warn(
-              `Failed to delete group ${item.groupId}:`,
-              response?.message,
-            );
-          }
-        } catch (deleteError) {
-          console.error(`Error deleting group ${item.groupId}:`, deleteError);
-        }
-      }
-
-      // Refresh data from server
-      await fetchPcmTrunkGroupData();
-      setSelected([]);
-
-      if (deletedCount > 0) {
-        showMessage(
-          "success",
-          `Successfully deleted ${deletedCount} item(s)${skippedCount > 0 ? `, ${skippedCount} skipped (in use)` : ""}`,
-        );
-      } else if (skippedCount > 0) {
-        showMessage(
-          "warning",
-          `No items deleted. ${skippedCount} item(s) are in use and cannot be deleted.`,
-        );
-      } else {
-        showMessage("info", "No items were deleted.");
-      }
-    } catch (error) {
-      console.error("Error deleting selected items:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage(
-          "error",
-          error.message || "Failed to delete selected items",
-        );
-      }
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
-
-  // Delete all PCM trunk groups
-  const handleClearAll = async () => {
-    if (groups.length === 0) {
-      showMessage("info", "No PCM trunk groups to clear");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      "Are you sure you want to delete ALL PCM trunk groups? This action cannot be undone.",
-    );
-    if (!confirmed) return;
-
-    setIsLoadingData(true);
-    try {
-      let deletedCount = 0;
-      let skippedCount = 0;
-
-      for (const group of groups) {
-        // Check if group is referenced before deleting
-        const inUse = await isPcmGroupReferenced(group.groupId);
-        if (inUse) {
-          showMessage(
-            "error",
-            "The PCM trunk group cannot be deleted because it is quoted by the routing rule!",
-          );
-          skippedCount++;
-          continue;
-        }
-
-        // Delete the group
-        try {
-          const response = await deletePstnGroup(String(group.groupId));
-          if (response?.response) {
-            deletedCount++;
-          } else {
-            console.warn(
-              `Failed to delete group ${group.groupId}:`,
-              response?.message,
-            );
-          }
-        } catch (deleteError) {
-          console.error(`Error deleting group ${group.groupId}:`, deleteError);
-        }
-      }
-
-      // Refresh data from server
-      await fetchPcmTrunkGroupData();
-      setSelected([]);
-      setPage(1);
-
-      if (deletedCount > 0) {
-        showMessage(
-          "success",
-          `Successfully deleted ${deletedCount} PCM trunk group(s)${skippedCount > 0 ? `, ${skippedCount} skipped (in use)` : ""}`,
-        );
-      } else if (skippedCount > 0) {
-        showMessage(
-          "warning",
-          `No groups deleted. ${skippedCount} group(s) are in use and cannot be deleted.`,
-        );
-      } else {
-        showMessage("info", "No groups were deleted.");
-      }
-    } catch (error) {
-      console.error("Error deleting all PCM trunk groups:", error);
-      if (error.message === "Network Error") {
-        showMessage("error", "Network error. Please check your connection.");
-      } else {
-        showMessage(
-          "error",
-          error.message || "Failed to delete all PCM trunk groups",
-        );
-      }
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
+  const vm = usePcmTrunkGroupPage();
+  const {
+    groups,
+    isModalOpen,
+    formData,
+    setFormData,
+    selected,
+    page,
+    setPage,
+    spansData,
+    isLoadingSpans,
+    isSaving,
+    isLoadingData,
+    message,
+    setMessage,
+    isCompact,
+    tableScrollRef,
+    itemsPerPage,
+    totalPages,
+    pagedGroups,
+    handleOpenModal,
+    isSpanAvailable,
+    handleCloseModal,
+    handleInputChange,
+    handleTrunkCheckbox,
+    handleCheckAll,
+    handleUncheckAll,
+    handleSave,
+    handleSelectRow,
+    allPageSelected,
+    somePageSelected,
+    handleToggleAll,
+    handleInverse,
+    handleDeleteSelected,
+    handleClearAll,
+  } = vm;
 
   return (
     <div

@@ -1,0 +1,131 @@
+## Advanced HEAD handleSave full
+const handleSave = (e) => {
+    e.preventDefault();
+
+    if (
+      batchForm.forbidOutgoingCall &&
+      batchForm.wayOfForbidOutgoingCall === "Select time"
+    ) {
+      for (let i = 1; i <= prohibitLimitCount; i++) {
+        const start1 = batchForm[`period${i}Start1`];
+        const end1 = batchForm[`period${i}End1`];
+        if (!start1 || !end1) {
+          showMessage(
+            "error",
+            `Please input the start and end time for period ${i}!`,
+          );
+          return;
+        }
+        const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+        if (!timeRegex.test(start1) || !timeRegex.test(end1)) {
+          showMessage(
+            "error",
+            `Please input the time in the right format (hh:mm:ss) for period ${i}!`,
+          );
+          return;
+        }
+      }
+    }
+
+    showMessage("success", "Batch modify settings saved successfully!");
+    handleCloseModal();
+  };
+
+  
+
+## IPCaller create else
+} else {
+          alert("Failed to update number manipulation");
+        }
+      } else {
+        response = await createNumberManipulation(normalized, "ip_in_callerid");
+        if (response.response) {
+          alert(
+            response.message || "Number manipulation created successfully!",
+          );
+          try {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            await fetchNumberManipulations();
+      
+
+## PortGroup newGroup
+const newGroup = {
+      id: Date.now(),
+      index: form.index,
+      description: form.description,
+      sipAccount: form.registerPortGroup === "1" ? form.sipAccount : "---",
+      displayName:
+        form.registerPortGroup === "1" && form.displayName
+          ? form.displayName
+          : "---",
+      ports: selectedPorts || "---",
+      portSelectMode:
+        PORT_GROUP_SELECT_MODE_OPTIONS.find(
+          (o) => o.value === form.portSelectMode,
+        )?.label || "",
+      enumRule: form.portSelectMode === "5" ? form.enumRule || "---
+
+## Media HEAD validate alerts:
+Please enter a RFC2833 load!
+The value range of 
+Please enter a RTP port range!
+Invalid RTP port range!
+The value range of 
+The SIP port value 5060 cannot be within the port range!
+The starting port number must be an even!
+The difference between the latter 
+Please enter a JitterBuffer value!
+The value range of 
+The value range of 
+The value of 
+Please select a CODEC!
+
+## Media CUR validate returns:
+Please enter a RFC2833 load!
+The value range of 
+Please enter a RTP port range!
+Invalid RTP port range!
+The value range of 
+The SIP port value 5060 cannot be within the port range!
+The starting port number must be an even!
+The difference between the latter 
+Please enter a JitterBuffer value!
+The value range of 
+The value range of 
+The value of 
+Please select a CODEC!
+
+MISSING in CUR: (none)
+
+## IpToTel HEAD normalize area
+const indexNum = parseInt(formData.index);
+    if (isNaN(indexNum) || indexNum < 0 || indexNum > 63) {
+      alert("Index must be between 0 and 63.");
+      return;
+    }
+
+    if (editIndex === null) {
+      if (rules.some((r) => r.index === indexNum)) {
+        alert("Index already exists. Please choose a different index.");
+        return;
+      }
+    } else {
+      if (rules.some((r, idx) => idx !== editIndex && r.index === indexNum)) {
+        alert("Index already exists. Please choose a dif
+listFxsSipSettings: HEAD=true CUR=true
+saveFxsSipSettings: HEAD=true CUR=true
+resetFxsSipSettings: HEAD=true CUR=true
+statusFxsSipSettings: HEAD=true CUR=true
+status poll/interval HEAD=true CUR=true
+
+## Hook wiring PortFxsPage: used=24 ret~28 missingFromHook=none
+
+## Hook wiring PortGroupPage: used=24 ret~24 missingFromHook=none
+
+## Hook wiring FxsVoipSipPage: used=13 ret~13 missingFromHook=none
+
+## Hook wiring RouteIpToTel: used=27 ret~27 missingFromHook=none
+
+## Hook wiring IPCaller: used=26 ret~27 missingFromHook=none
+
+## Hook wiring PSTNCaller: used=28 ret~29 missingFromHook=none

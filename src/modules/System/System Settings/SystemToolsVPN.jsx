@@ -1,10 +1,10 @@
 import React from "react";
-import { Alert, CircularProgress, Chip } from "@mui/material";
 import StartIcon from "@mui/icons-material/PlayArrow";
 import StopIcon from "@mui/icons-material/Stop";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import UploadIcon from "@mui/icons-material/Upload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Alert, CircularProgress, Chip } from "@mui/material";
 import {
   SYSTEM_TOOLS_VPN_TYPES, SYSTEM_TOOLS_VPN_SECTION_TITLE, SYSTEM_TOOLS_VPN_TYPE_LABEL,
   SYSTEM_TOOLS_VPN_BTN_SAVE, SYSTEM_TOOLS_VPN_BTN_SAVING, SYSTEM_TOOLS_VPN_BTN_START,
@@ -12,9 +12,11 @@ import {
   SYSTEM_TOOLS_VPN_BTN_UPLOAD, SYSTEM_TOOLS_VPN_BTN_UPLOADING, SYSTEM_TOOLS_VPN_BTN_REFRESH_LOGS,
   SYSTEM_TOOLS_VPN_BTN_REFRESHING_LOGS, SYSTEM_TOOLS_VPN_BTN_CLEAR_LOGS, SYSTEM_TOOLS_VPN_BTN_CHOOSE_FILE,
 } from "../../../constants/SystemToolsVPNConstants";
+import { C, OUTLINED_FOCUS } from "../../../theme/pbxTokens";
+import { Btn } from "../../../components/common";
 import { useSystemToolsVPNPage } from "./hooks/useSystemToolsVPNPage";
-import { C, CARD_RADIUS, OUTLINED_FOCUS } from "./SystemToolsVPNTableHelpers";
-import { Btn, inputInteraction, ROW, selectStyle, SeInput, SYSTEM_TOOLS_VPN_SCROLL_CLASS, VpnBreadcrumb, VpnPageShell, vpnContentStyle, vpnFixedAlertSx, vpnLogTextareaStyle, vpnSaveBtnStyle, vpnTableContainerStyle, vpnToolbarBtnStyle, vpnToolbarStyle, vpnUploadLabelStyle } from "./SystemToolsVPNFormFields";
+import { inputInteraction, ROW, selectStyle, SeInput, SYSTEM_TOOLS_VPN_SCROLL_CLASS, VpnBreadcrumb, VpnPageShell, vpnContentStyle, vpnFixedAlertSx, vpnLogTextareaStyle, vpnSaveBtnStyle, vpnTableContainerStyle, vpnToolbarBtnStyle, vpnToolbarStyle, vpnUploadLabelStyle } from "./components/SystemToolsVPNFormFields";
+import { CARD_RADIUS } from "./components/SystemToolsVPNTableHelpers";
 
 const SystemToolsVPN = () => {
   const vm = useSystemToolsVPNPage();
@@ -24,7 +26,7 @@ const SystemToolsVPN = () => {
     enableChoice, setEnableChoice, enableSeChoice, setEnableSeChoice, showSeAdvanced,
     handleVpnTypeSelect, handleCertChange, handleSeChange, handleSeCert, handleSeKey, areSeFieldsFilled,
     handleSeCreateFlow, handleSeDisconnect, handleSeStatus, handleSeConnect, handleSeDelete, handleSeState,
-    handleFileUpload, handleStartVpn, handleStopVpn, handleCheckStatus, handleRefreshLogs, handleSaveEnable, handleSaveSeEnable,
+    handleRemoveFile, handleFileUpload, handleStartVpn, handleStopVpn, handleCheckStatus, handleRefreshLogs, handleSaveEnable, handleSaveSeEnable,
     seFieldPairs, seRowLabelStyle,
   } = vm;
   return (
@@ -68,7 +70,7 @@ const SystemToolsVPN = () => {
                     form.vpnType === opt.value ? "tabActive" : "tabInactive"
                   }
                   onClick={() => handleVpnTypeSelect(opt.value)}
-                  style={{ height: 30 }}
+                  style={{ height: 30, borderRadius: 4 }}
                 >
                   {opt.label}
                 </Btn>
@@ -213,20 +215,28 @@ const SystemToolsVPN = () => {
                                 ? selectedFile.name
                                 : "No file chosen"}
                             </span>
+                            {selectedFile ? (
+                              <Btn
+                                type="button"
+                                variant="cancel"
+                                onClick={handleRemoveFile}
+                                style={vpnToolbarBtnStyle}
+                              >
+                                Remove
+                              </Btn>
+                            ) : null}
                           </div>
                           <Btn
                             variant="primary"
                             onClick={handleFileUpload}
                             disabled={loading.upload || !selectedFile}
-                            startIcon={
-                              loading.upload ? (
-                                <CircularProgress size={13} color="inherit" />
-                              ) : (
-                                <UploadIcon sx={{ fontSize: 13 }} />
-                              )
-                            }
                             style={{ ...vpnToolbarBtnStyle, minWidth: 105, flexShrink: 0 }}
                           >
+                            {loading.upload ? (
+                              <CircularProgress size={13} color="inherit" />
+                            ) : (
+                              <UploadIcon sx={{ fontSize: 13 }} />
+                            )}
                             {loading.upload ? SYSTEM_TOOLS_VPN_BTN_UPLOADING : SYSTEM_TOOLS_VPN_BTN_UPLOAD}
                           </Btn>
                         </div>
@@ -267,45 +277,39 @@ const SystemToolsVPN = () => {
                           variant="primary"
                           onClick={handleStartVpn}
                           disabled={loading.start}
-                          startIcon={
-                            loading.start ? (
-                              <CircularProgress size={13} color="inherit" />
-                            ) : (
-                              <StartIcon sx={{ fontSize: 13 }} />
-                            )
-                          }
                           style={vpnToolbarBtnStyle}
                         >
+                          {loading.start ? (
+                            <CircularProgress size={13} color="inherit" />
+                          ) : (
+                            <StartIcon sx={{ fontSize: 13 }} />
+                          )}
                           {loading.start ? SYSTEM_TOOLS_VPN_BTN_STARTING : SYSTEM_TOOLS_VPN_BTN_START}
                         </Btn>
                         <Btn
                           variant="primary"
                           onClick={handleStopVpn}
                           disabled={loading.stop}
-                          startIcon={
-                            loading.stop ? (
-                              <CircularProgress size={13} color="inherit" />
-                            ) : (
-                              <StopIcon sx={{ fontSize: 13 }} />
-                            )
-                          }
                           style={vpnToolbarBtnStyle}
                         >
+                          {loading.stop ? (
+                            <CircularProgress size={13} color="inherit" />
+                          ) : (
+                            <StopIcon sx={{ fontSize: 13 }} />
+                          )}
                           {loading.stop ? SYSTEM_TOOLS_VPN_BTN_STOPPING : SYSTEM_TOOLS_VPN_BTN_STOP}
                         </Btn>
                         <Btn
                           variant="cancel"
                           onClick={handleCheckStatus}
                           disabled={loading.status}
-                          startIcon={
-                            loading.status ? (
-                              <CircularProgress size={13} color="inherit" />
-                            ) : (
-                              <CheckCircleIcon sx={{ fontSize: 13 }} />
-                            )
-                          }
                           style={{ ...vpnToolbarBtnStyle, minWidth: 130 }}
                         >
+                          {loading.status ? (
+                            <CircularProgress size={13} color="inherit" />
+                          ) : (
+                            <CheckCircleIcon sx={{ fontSize: 13 }} />
+                          )}
                           {loading.status ? "Checking..." : "Check Status"}
                         </Btn>
                       </div>
@@ -354,14 +358,12 @@ const SystemToolsVPN = () => {
                         onClick={handleRefreshLogs}
                         disabled={loading.logs}
                         style={vpnToolbarBtnStyle}
-                        startIcon={
-                          loading.logs ? (
-                            <CircularProgress size={13} color="inherit" />
-                          ) : (
-                            <RefreshIcon sx={{ fontSize: 13 }} />
-                          )
-                        }
                       >
+                        {loading.logs ? (
+                          <CircularProgress size={13} color="inherit" />
+                        ) : (
+                          <RefreshIcon sx={{ fontSize: 13 }} />
+                        )}
                         {loading.logs ? SYSTEM_TOOLS_VPN_BTN_REFRESHING_LOGS : SYSTEM_TOOLS_VPN_BTN_REFRESH_LOGS}
                       </Btn>
                     </div>

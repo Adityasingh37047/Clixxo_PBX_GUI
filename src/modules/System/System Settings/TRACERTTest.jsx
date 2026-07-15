@@ -31,6 +31,24 @@ import {
   TRACERT_TEST_TOAST_SERVER_ERROR,
   TRACERT_TEST_TOAST_CONNECTION_ERROR,
 } from "../../../constants/TRACERTTestConstants";
+import {
+  C,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  FOCUS_RING_SHADOW,
+} from "../../../theme/pbxTokens";
+import {
+  Btn,
+  ExtensionBreadcrumb,
+  EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
+  extensionPageWrapStyle as tracertPageWrapStyle,
+  extensionPageInnerStyle as tracertPageInnerStyleBase,
+  extensionFixedAlertSx as tracertFixedAlertSx,
+} from "../../../components/common";
+
+const TRACERT_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
 
 const TRACERT_TEST_SCROLL_CLASS = "tracert-test-scroll";
 const TRACERT_TEST_COMPACT_MQ = "(max-width: 768px)";
@@ -38,29 +56,9 @@ const TRACERT_TEST_LABEL_COL_WIDTH = 188;
 const TRACERT_TEST_FIELD_COL_GAP = 16;
 const TRACERT_TEST_FORM_PAD_X = 28;
 
-const C = {
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  cardShadow:
-    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-  divider: "#e2e6ec",
-  labelText: "#5a6d87",
-  valueText: "#374151",
-  mutedText: "#94a3b8",
-  placeholderText: "#b0b9c6",
-  strongText: "#374151",
-  accent: "#3E5475",
-  errorRed: "#dc2626",
-  sectionHeading: TRACERT_TEST_SECTION_HEADING_COLOR,
-};
 
-const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -77,7 +75,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW();
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInputStyle = {
@@ -240,114 +238,6 @@ const FieldRow = ({ name, label, children }) => {
   );
 };
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#e2e8f0",
-      color: "#475569",
-      border: "1px solid #e2e8f0",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#d4dce6",
-      default: "#f1f5f9",
-    }[variant] || "#f1f5f9";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#c5ced9",
-      default: "#e2e8f0",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 4,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </button>
-  );
-};
 
 const PanelTitle = ({ title, subtitle }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
@@ -355,7 +245,7 @@ const PanelTitle = ({ title, subtitle }) => (
       style={{
         fontSize: 14,
         fontWeight: 600,
-        color: C.sectionHeading,
+        color: TRACERT_TEST_SECTION_HEADING_COLOR,
         letterSpacing: "0.01em",
       }}
     >
@@ -471,16 +361,8 @@ const tracertOutputTextareaStyle = {
   cursor: "default",
 };
 
-const tracertPageWrapStyle = {
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
 const tracertPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+  ...tracertPageInnerStyleBase,
   display: "flex",
   flexDirection: "column",
 };
@@ -494,7 +376,7 @@ const tracertTableContainerStyle = {
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
+  boxShadow: TRACERT_CARD_SHADOW,
   overflow: "hidden",
   boxSizing: "border-box",
 };
@@ -517,17 +399,6 @@ const tracertHeaderStyle = {
 
 const tracertClearBtnStyle = tracertFooterBtnStyle;
 
-const tracertFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  maxWidth: 500,
-  wordBreak: "break-word",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-  fontWeight: 500,
-};
 
 const TracertScrollbarStyles = () => (
   <style>{`
@@ -579,27 +450,11 @@ const TracertPageShell = ({ children }) => (
 );
 
 const TracertBreadcrumb = () => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      flexShrink: 0,
-    }}
-  >
-    <span>{TRACERT_TEST_PAGE_BREADCRUMB_ROOT}</span>
-    <span>&gt;</span>
-    <span>{TRACERT_TEST_PAGE_BREADCRUMB_SECTION}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      {TRACERT_TEST_PAGE_TITLE}
-    </span>
-  </div>
+  <ExtensionBreadcrumb
+    root={TRACERT_TEST_PAGE_BREADCRUMB_ROOT}
+    section={TRACERT_TEST_PAGE_BREADCRUMB_SECTION}
+    current={TRACERT_TEST_PAGE_TITLE}
+  />
 );
 
 function isValidIp(ip) {
@@ -958,7 +813,7 @@ const TRACERTTest = () => {
                   style={{
                     fontSize: 14,
                     fontWeight: 600,
-                    color: C.sectionHeading,
+                    color: TRACERT_TEST_SECTION_HEADING_COLOR,
                   }}
                 >
                   {TRACERT_TEST_SECTION_OUTPUT}

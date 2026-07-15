@@ -27,6 +27,24 @@ import {
 } from "../../../api/apiService";
 import { Alert, Checkbox, CircularProgress } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import {
+  C,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  FOCUS_RING_SHADOW,
+} from "../../../theme/pbxTokens";
+import {
+  Btn,
+  ExtensionBreadcrumb,
+  EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
+  extensionPageWrapStyle as dhcpPageWrapStyle,
+  extensionPageInnerStyle as dhcpPageInnerStyleBase,
+  extensionFixedAlertSx as dhcpFixedAlertSx,
+} from "../../../components/common";
+
+const DHCP_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
 
 const DHCP_SERVER_SCROLL_CLASS = "dhcp-server-scroll";
 const DHCP_SERVER_COMPACT_MQ = "(max-width: 768px)";
@@ -40,31 +58,9 @@ const DHCP_SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
 const DHCP_SETTINGS_COLUMN_GAP = 12;
 const DHCP_SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
 
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  cardShadow:
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#1f2937",
-  mutedText: "#6b7280",
-  placeholderText: "#9aa3b2",
-  strongText: "#1f2937",
-  accent: "#3E5475",
-  errorRed: "#dc2626",
-  sectionHeading: DHCP_SERVER_SECTION_HEADING_COLOR,
-};
 
-const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
-// ── Local field UI (matches RoutingInterface.jsx design language) ──
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -81,7 +77,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW();
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInputStyle = {
@@ -276,115 +272,6 @@ const FieldRow = ({ name, label, labelStyle, children, labelColWidth }) => {
   );
 };
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  return (
-    <button
-      type={type}
-      form={form}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 4,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </button>
-  );
-};
 
 const disabledInputStyle = {
   ...inputStyle,
@@ -418,7 +305,7 @@ const SectionHeading = ({ title, isFirst = false }) => {
         paddingRight: 8,
         fontSize: 14,
         fontWeight: 600,
-        color: C.sectionHeading,
+        color: DHCP_SERVER_SECTION_HEADING_COLOR,
       }}
     >
       {title}
@@ -427,17 +314,8 @@ const SectionHeading = ({ title, isFirst = false }) => {
   );
 };
 
-const dhcpPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
 const dhcpPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+  ...dhcpPageInnerStyleBase,
   display: "flex",
   flexDirection: "column",
 };
@@ -457,7 +335,7 @@ const dhcpTableContainerStyle = {
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
+  boxShadow: DHCP_CARD_SHADOW,
   overflow: "hidden",
   boxSizing: "border-box",
 };
@@ -535,17 +413,6 @@ const dhcpLanGridResponsiveCss = `
   }
 `;
 
-const dhcpFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  maxWidth: 500,
-  wordBreak: "break-word",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-  fontWeight: 500,
-};
 
 const DhcpScrollbarStyles = () => (
   <style>{`
@@ -598,27 +465,11 @@ const DhcpPageShell = ({ children }) => (
 );
 
 const DhcpBreadcrumb = () => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      flexShrink: 0,
-    }}
-  >
-    <span>{DHCP_SERVER_PAGE_BREADCRUMB_ROOT}</span>
-    <span>&gt;</span>
-    <span>{DHCP_SERVER_PAGE_BREADCRUMB_SECTION}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      {DHCP_SERVER_PAGE_TITLE}
-    </span>
-  </div>
+  <ExtensionBreadcrumb
+    root={DHCP_SERVER_PAGE_BREADCRUMB_ROOT}
+    section={DHCP_SERVER_PAGE_BREADCRUMB_SECTION}
+    current={DHCP_SERVER_PAGE_TITLE}
+  />
 );
 
 const buildSavePayload = (formData, sections) => {

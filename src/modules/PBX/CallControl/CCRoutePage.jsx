@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -12,31 +12,21 @@ import {
   FormControl,
   MenuItem,
   Select,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
+import { C } from "../../../theme/pbxTokens";
 import {
   CC_ROUTE_ENABLE_OPTIONS,
-  CC_ROUTE_FIELD_TOOLTIPS,
   CC_ROUTE_INTERVAL_OPTIONS,
-  CC_ROUTE_KEEP_MINUTES_TO_LABEL,
   CC_ROUTE_RECORD_KEEP_OPTIONS,
   CC_ROUTE_THROUGH_OPTIONS,
 } from "../../../constants/CCRouteConstants";
 import {
-  createCCRoute,
-  deleteCCRoute,
-  fetchCCRouteExtensions,
-  fetchCCRoutes,
-  updateCCRoute,
-} from "../../../api/apiService";
-import {
   Btn,
   TH,
-  tdStyle,
   ExtensionBreadcrumb as CcRouteBreadcrumb,
   ExtensionTableListLoading as CcRouteTableListLoading,
   ExtensionTableListEmptyState as CcRouteTableListEmptyState,
+  ExtensionPagination as CcRoutePagination,
   extensionTableCheckboxSx as ccRouteTableCheckboxSx,
   extensionFixedAlertSx as ccRouteFixedAlertSx,
   extensionPageWrapStyle as ccRoutePageWrapStyle,
@@ -50,714 +40,71 @@ import {
   getExtensionTdStyle as getCcRouteTdStyle,
   getExtensionRowBg as getCcRouteRowBg,
 } from "../../../components/common";
+import { useCCRoutePage } from "./hooks/useCCRoutePage";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  ccRouteModalCancelBtnStyle,
+  ccRouteModalFormStyle,
+  ccRouteModalPaperSx,
+  ccRouteModalSelectSx,
+  ccRouteModalTitleStyle,
+  FieldRow,
+  SectionCard,
+  ThWithTooltip,
+} from "./components/CCRouteFormFields";
+import {
+  CC_ROUTE_LIST_TRUNCATE_THRESHOLD,
+  ccRouteEditIconStyle,
+  formatCcRouteItemListDisplay,
+  handleCcRouteEditIconHover,
+} from "./components/CCRouteTableHelpers";
+import { getCcRouteIntervalLabel } from "./utils/CCRouteTransformers";
 
-const CC_ROUTE_COMPACT_MQ = "(max-width: 768px)";
-
-const CC_ROUTE_INTERVAL_VALUE_SET = new Set(
-  CC_ROUTE_INTERVAL_OPTIONS.map((o) => o.value),
-);
-const getCcRouteIntervalLabel = (value) => {
-  const found = CC_ROUTE_INTERVAL_OPTIONS.find(
-    (o) => o.value === String(value),
-  );
-  return found ? found.label : `${value}s`;
-};
-
-// ── Normalization Helpers ─────────────────────────────────────────────────────
-function normalizeThroughFromApi(value) {
-  const mode = String(value || "").toLowerCase();
-  return mode === "from_come_in" || mode === "from come in"
-    ? "From Come In"
-    : "Auto";
-}
-function normalizeEnabledFromApi(value) {
-  return value === true || String(value || "").toLowerCase() === "yes"
-    ? "Yes"
-    : "No";
-}
-function normalizeRecordKeepTime(route) {
-  if (route?.record_keep_time) return String(route.record_keep_time);
-  const minutes = Number(route?.keep_minutes);
-  return CC_ROUTE_KEEP_MINUTES_TO_LABEL[minutes] || "8 hours";
-}
-function normalizeRoute(item) {
-  const rawInterval = Number(item.interval_minutes ?? item.cc_interval_time);
-  const normalizedInterval =
-    Number.isFinite(rawInterval) && rawInterval > 0
-      ? rawInterval <= 5
-        ? rawInterval * 60
-        : rawInterval
-      : 10;
-  const ccIntervalTime = CC_ROUTE_INTERVAL_VALUE_SET.has(String(normalizedInterval))
-    ? String(normalizedInterval)
-    : "10";
-  return {
-    id: item.id,
+const CCRoutePage = () => {
+  const vm = useCCRoutePage();
+  const {
+    isCompact,
+    rows,
+    selected,
+    showModal,
+    loading,
+    isInitialLoad,
+    editId,
     ccIntervalTime,
-    through: normalizeThroughFromApi(item.through_mode ?? item.through),
-    recordKeepTime: normalizeRecordKeepTime(item),
-    enabled: normalizeEnabledFromApi(item.enabled ?? item.enable),
-    memberExtensions: Array.isArray(item.extensions)
-      ? item.extensions.map(String)
-      : [],
-  };
-}
+    setCcIntervalTime,
+    through,
+    setThrough,
+    recordKeepTime,
+    setRecordKeepTime,
+    enabled,
+    setEnabled,
+    selectedExtensions,
+    setSelectedExtensions,
+    itemsPerPage,
+    page,
+    setPage,
+    totalPages,
+    pagedRows,
+    message,
+    setMessage,
+    allExtensionOptions,
+    allPageSelected,
+    somePageSelected,
+    getExtensionLabel,
+    handleOpenAddModal,
+    handleOpenEditModal,
+    handleCloseModal,
+    handleSelectRow,
+    handleToggleAll,
+    handleDelete,
+    handleSave,
+  } = vm;
 
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-};
-
-// ── Local page UI ──
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const ccRouteModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const CC_ROUTE_LIST_TRUNCATE_THRESHOLD = 10;
-const CC_ROUTE_LIST_DISPLAY_LIMIT = 6;
-
-const formatCcRouteItemListDisplay = (
-  items,
-  {
-    threshold = CC_ROUTE_LIST_TRUNCATE_THRESHOLD,
-    limit = CC_ROUTE_LIST_DISPLAY_LIMIT,
-    mapItem = (x) => String(x),
-    separator = ", ",
-    ellipsis = "....",
-  } = {},
-) => {
-  if (!items?.length) return "";
-  const labels = items.map(mapItem).filter((v) => v !== "" && v != null);
-  if (!labels.length) return "";
-  if (labels.length <= threshold) {
-    return labels.join(separator);
-  }
-  return `${labels.slice(0, limit).join(separator)}${ellipsis}`;
-};
-
-const CC_ROUTE_MODAL_SECTION_BG = "#f8fafc";
-const CC_ROUTE_MODAL_SECTION_HEADING_COLOR = "#30415A";
-
-const CC_ROUTE_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatCcTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const CcFieldLabel = ({ tooltipKey, children, style = {} }) => {
-  const tooltip = CC_ROUTE_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        color: C.labelText,
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip title={formatCcTooltipTitle(tooltip)} {...CC_ROUTE_TOOLTIP_PROPS}>
-      {label}
-    </Tooltip>
-  );
-};
-
-const ThWithTooltip = ({ tooltipKey, children, style: extra }) => {
-  const tooltip = CC_ROUTE_FIELD_TOOLTIPS[tooltipKey];
-  const content = (
-    <span
-      style={{ cursor: tooltip ? "help" : undefined, display: "inline-block" }}
-    >
-      {children}
-    </span>
-  );
-  return (
-    <TH style={extra}>
-      {tooltip ? (
-        <Tooltip
-          title={formatCcTooltipTitle(tooltip)}
-          {...CC_ROUTE_TOOLTIP_PROPS}
-        >
-          {content}
-        </Tooltip>
-      ) : (
-        content
-      )}
-    </TH>
-  );
-};
-
-const CcRouteModalSectionHeading = ({ title, tooltipKey, isFirst = false }) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  const heading = (
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: isLaptopNarrow ? 0 : -6,
-        background: CC_ROUTE_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: CC_ROUTE_MODAL_SECTION_HEADING_COLOR,
-        cursor: tooltipKey ? "help" : undefined,
-      }}
-    >
-      {title}
-    </span>
-  );
-  const tooltip = tooltipKey ? CC_ROUTE_FIELD_TOOLTIPS[tooltipKey] : "";
   return (
     <div
-      style={{
-        margin: isFirst
-          ? isLaptopNarrow
-            ? "16px 0 24px 0"
-            : "0 0 24px 0"
-          : "16px 0 24px 0",
-        position: "relative",
-        width: "100%",
-      }}
+      style={{ ...ccRoutePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}
     >
-      <div style={{ borderTop: `1px solid ${C.cardBorder}` }} />
-      {tooltip ? (
-        <Tooltip
-          title={formatCcTooltipTitle(tooltip)}
-          {...CC_ROUTE_TOOLTIP_PROPS}
-        >
-          {heading}
-        </Tooltip>
-      ) : (
-        heading
-      )}
-    </div>
-  );
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const ccRouteOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const ccRouteModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...ccRouteOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const ccRouteModalPaperSx = {
-  width: 900,
-  maxWidth: "95vw",
-  mx: "auto",
-  my: 0,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const ccRouteModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-  flexShrink: 0,
-};
-
-const CC_ROUTE_TABLE_CARD_RADIUS = 4;
-
-const ccRoutePaginationStyle = {
-
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: CC_ROUTE_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: CC_ROUTE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const ccRoutePageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const CcRoutePagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-}) => (
-  <div style={{ ...ccRoutePaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        ← Prev
-      </Btn>
-      <span style={ccRoutePageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
-
-const ccRouteEditIconStyle = {
-  cursor: "pointer",
-  color: "#2563eb",
-  fontSize: 22,
-  opacity: 0.7,
-  transition: "opacity 0.15s ease",
-};
-
-const handleCcRouteEditIconHover = (e, entering) => {
-  e.currentTarget.style.opacity = entering ? "1" : "0.7";
-};
-
-const ccRouteModalFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const FieldRow = ({
-  label,
-  tooltipKey,
-  children,
-  wide = false,
-  labelWidth = 130,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: wide ? "flex-start" : "center",
-      gap: 12,
-      width: "100%",
-    }}
-  >
-    {tooltipKey ? (
-      <CcFieldLabel
-        tooltipKey={tooltipKey}
-        style={{
-          whiteSpace: "nowrap",
-          textAlign: "left",
-          width: labelWidth,
-          flexShrink: 0,
-          paddingTop: wide ? 4 : 0,
-        }}
-      >
-        {label}
-      </CcFieldLabel>
-    ) : (
-      <label
-        style={{
-          fontSize: 13,
-          color: C.labelText,
-          fontWeight: 600,
-          whiteSpace: "nowrap",
-          textAlign: "left",
-          width: labelWidth,
-          flexShrink: 0,
-          paddingTop: wide ? 4 : 0,
-        }}
-      >
-        {label}
-      </label>
-    )}
-    <div style={{ flex: 1, minWidth: 0, width: "100%" }}>{children}</div>
-  </div>
-);
-
-const SectionCard = ({ title, tooltipKey, children, isFirst = false }) => (
-  <div style={{ marginBottom: 8 }}>
-    <CcRouteModalSectionHeading
-      title={title}
-      tooltipKey={tooltipKey}
-      isFirst={isFirst}
-    />
-    <div>{children}</div>
-  </div>
-);
-
-// ── Main Component ────────────────────────────────────────────────────────────
-const CCRoutePage = () => {
-  const isCompact = useMediaQuery(CC_ROUTE_COMPACT_MQ);
-  const [rows, setRows] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({
-    fetch: false,
-    save: false,
-    delete: false,
-    extensions: false,
-  });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const hasLoadedExtensionsRef = useRef(false);
-
-  const [editId, setEditId] = useState(null);
-  const [ccIntervalTime, setCcIntervalTime] = useState("10");
-  const [through, setThrough] = useState("Auto");
-  const [recordKeepTime, setRecordKeepTime] = useState("8 hours");
-  const [enabled, setEnabled] = useState("No");
-  const [availableExtensions, setAvailableExtensions] = useState([]);
-  const [selectedExtensions, setSelectedExtensions] = useState([]);
-
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
-  const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const showAlert = (text) => showMessage("error", text);
-
-  const resetForm = () => {
-    setEditId(null);
-    setCcIntervalTime("10");
-    setThrough("Auto");
-    setRecordKeepTime("8 hours");
-    setEnabled("No");
-    setSelectedExtensions([]);
-  };
-
-  const loadRows = async () => {
-    setLoading((prev) => ({ ...prev, fetch: true }));
-    try {
-      const res = await fetchCCRoutes();
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res?.data)
-          ? res.data
-          : [];
-      setRows(list.map(normalizeRoute));
-    } catch (err) {
-      showAlert(err?.message || "Failed to load CC routes.");
-      setRows([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  const loadExtensions = async () => {
-    setLoading((prev) => ({ ...prev, extensions: true }));
-    try {
-      const res = await fetchCCRouteExtensions();
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res?.data)
-          ? res.data
-          : [];
-      const exts = list
-        .map((item) => ({
-          extension: String(item?.extension ?? "").trim(),
-          label: String(item?.label ?? item?.extension ?? "").trim(),
-        }))
-        .filter((item) => item.extension)
-        .sort(
-          (a, b) =>
-            (parseInt(a.extension, 10) || 0) - (parseInt(b.extension, 10) || 0),
-        );
-      setAvailableExtensions(exts);
-      hasLoadedExtensionsRef.current = true;
-    } catch (err) {
-      showAlert(err?.message || "Failed to load extensions.");
-    } finally {
-      setLoading((prev) => ({ ...prev, extensions: false }));
-    }
-  };
-
-  useEffect(() => {
-    loadRows();
-  }, []);
-
-  const extensionLabelMap = useMemo(() => {
-    const map = new Map();
-    availableExtensions.forEach((item) =>
-      map.set(item.extension, item.label || item.extension),
-    );
-    return map;
-  }, [availableExtensions]);
-
-  const getExtensionLabel = (ext) => extensionLabelMap.get(ext) || ext;
-
-  const allExtensionOptions = useMemo(
-    () =>
-      availableExtensions.map(({ extension, label }) => ({
-        value: extension,
-        label,
-      })),
-    [availableExtensions],
-  );
-
-  const handleOpenAddModal = async () => {
-    resetForm();
-    setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) await loadExtensions();
-  };
-
-  const handleOpenEditModal = async (row) => {
-    setEditId(row.id);
-    setCcIntervalTime(row.ccIntervalTime);
-    setThrough(row.through);
-    setRecordKeepTime(row.recordKeepTime);
-    setEnabled(row.enabled);
-    setSelectedExtensions(
-      Array.isArray(row.memberExtensions) ? row.memberExtensions : [],
-    );
-    setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) await loadExtensions();
-  };
-
-  const handleCloseModal = () => {
-    if (!loading.save) setShowModal(false);
-  };
-
-  const handleSelectRow = (idx) => {
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-  };
-
-  const pageIndices = pagedRows.map((_, i) => (page - 1) * itemsPerPage + i);
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleAll = () => {
-    if (allPageSelected)
-      setSelected((prev) => prev.filter((i) => !pageIndices.includes(i)));
-    else setSelected((prev) => Array.from(new Set([...prev, ...pageIndices])));
-  };
-
-  const handleDelete = async () => {
-    if (selected.length === 0) return;
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selected.length} record(s)?`,
-      )
-    )
-      return;
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const ids = selected.map((i) => rows[i]?.id).filter(Boolean);
-      await Promise.all(ids.map((id) => deleteCCRoute(id)));
-      setSelected([]);
-      await loadRows();
-      showMessage("success", `Deleted ${ids.length} item(s).`);
-    } catch (err) {
-      showAlert(err?.message || "Failed to delete CC route.");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  const handleSave = async () => {
-    if (selectedExtensions.length === 0) {
-      showAlert("Please select at least one member extension.");
-      return;
-    }
-    const apiPayload = {
-      cc_interval_time: Number(ccIntervalTime),
-      through,
-      record_keep_time: recordKeepTime,
-      enable: enabled,
-      extensions: selectedExtensions,
-    };
-    setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      if (editId != null) {
-        await updateCCRoute({ id: editId, ...apiPayload });
-        showMessage("success", "CC route updated.");
-      } else {
-        await createCCRoute(apiPayload);
-        showMessage("success", "CC route created.");
-      }
-      await loadRows();
-      handleCloseModal();
-    } catch (err) {
-      showAlert(err?.message || "Failed to save CC route.");
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
-
-  return (
-    <div style={{ ...ccRoutePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={ccRoutePageInnerStyle}>
         {message.text && (
           <Alert
@@ -820,7 +167,6 @@ const CCRoutePage = () => {
             </div>
           </div>
 
-          {/* Table */}
           <div
             style={{
               overflowX: "auto",
@@ -1033,7 +379,6 @@ const CCRoutePage = () => {
         </div>
       </div>
 
-      {/* ── Add/Edit Modal ── */}
       <Dialog
         open={showModal}
         onClose={handleCloseModal}
@@ -1045,7 +390,13 @@ const CCRoutePage = () => {
             pt: 8,
           },
         }}
-        PaperProps={{ sx: { ...ccRouteModalPaperSx, borderRadius: editId == null ? "4px" : ccRouteModalPaperSx.borderRadius } }}
+        PaperProps={{
+          sx: {
+            ...ccRouteModalPaperSx,
+            borderRadius:
+              editId == null ? "4px" : ccRouteModalPaperSx.borderRadius,
+          },
+        }}
       >
         <DialogTitle style={ccRouteModalTitleStyle}>
           {editId != null ? "Edit CC Route" : "Add CC Route"}
