@@ -255,8 +255,6 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "sysManagement", label: "Management" },
           { id: "sysGlobalSip", label: "Global SIP" },
           { id: "sysIpRoutingTable", label: "IP Route Table" },
-          { id: "sysSipAccessControl", label: "SIP Access Control" },
-          { id: "sysAccessControl", label: "Access Control" },
           { id: "sysVpn", label: "VPN" },
           { id: "sysCentralizedManage", label: "Centralized Manage" },
           { id: "sysDhcp", label: "DHCP" },
@@ -264,6 +262,22 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "sysTracertTest", label: "Tracert Test" },
           { id: "sysAsteriskCLI", label: "Asterisk CLI" },
           { id: "sysLinuxCLI", label: "Linux CLI" },
+        ],
+      },
+    ],
+  },
+
+  // ── Security ──────────────────────────────────────────────────────────────
+  {
+    id: "security",
+    label: "Security",
+    subGroups: [
+      {
+        id: "securityRules",
+        label: "Security Rules",
+        pages: [
+          { id: "sysAccessControl", label: "Access Control" },
+          { id: "sysSipAccessControl", label: "SIP Access Control" },
         ],
       },
     ],

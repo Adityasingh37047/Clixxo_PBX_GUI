@@ -1,0 +1,35 @@
+export {
+
+  getE1PriNumManipulateRowBg as getE1PriIPCallInOriCalleeIDRowBg,
+
+  e1PriNumManipulateEditIconStyle as e1PriIPCallInOriCalleeIDEditIconStyle,
+
+  getE1PriNumManipulateEditIconStyle as getE1PriIPCallInOriCalleeIDEditIconStyle,
+
+  handleE1PriNumManipulateEditIconHover as handleE1PriIPCallInOriCalleeIDEditIconHover,
+
+  e1PriNumManipulateFixedAlertSx as e1PriIPCallInOriCalleeIDFixedAlertSx,
+
+  e1PriNumManipulatePageWrapStyle as e1PriIPCallInOriCalleeIDPageWrapStyle,
+
+  e1PriNumManipulatePageInnerStyle as e1PriIPCallInOriCalleeIDPageInnerStyle,
+
+  e1PriNumManipulateSelectedBadgeStyle as e1PriIPCallInOriCalleeIDSelectedBadgeStyle,
+
+  e1PriNumManipulateToolbarBtnStyle as e1PriIPCallInOriCalleeIDToolbarBtnStyle,
+
+  e1PriNumManipulateCancelBtnStyle as e1PriIPCallInOriCalleeIDCancelBtnStyle,
+
+  e1PriNumManipulateLoadingWrapStyle as e1PriIPCallInOriCalleeIDLoadingWrapStyle,
+
+  e1PriNumManipulateEmptyWrapStyle as e1PriIPCallInOriCalleeIDEmptyWrapStyle,
+
+  e1PriNumManipulateEmptyTitleStyle as e1PriIPCallInOriCalleeIDEmptyTitleStyle,
+
+  e1PriNumManipulateTableScrollStyle as e1PriIPCallInOriCalleeIDTableScrollStyle,
+
+  E1_PRI_NUM_MANIPULATE_CARD_RADIUS as E1PRI_IPCALLINORICALLEEID_CARD_RADIUS,
+
+} from "./E1PriNumManipulateSharedTableHelpers";
+
+

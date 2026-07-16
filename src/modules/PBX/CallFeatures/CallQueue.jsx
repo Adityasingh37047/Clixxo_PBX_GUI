@@ -15,6 +15,7 @@ import {
   Select as MuiSelect,
   TextField,
 } from "@mui/material";
+import { C } from "../../../theme/pbxTokens";
 import {
   ACTION_OPTIONS,
   ANNOUNCE_FREQ_OPTIONS,
@@ -41,13 +42,6 @@ import {
 } from "../../../components/common";
 import { useCallQueuePage } from "./hooks/useCallQueuePage";
 import {
-  C,
-  callQueueEditIconStyle,
-  callQueuePageBadgeStyle,
-  callQueuePaginationStyle,
-  handleCallQueueEditIconHover,
-} from "./CallQueueTableHelpers";
-import {
   addNewModalFooterBtnStyle,
   addNewModalFooterStyle,
   CALL_QUEUE_MODAL_LABEL_WIDTH,
@@ -61,7 +55,13 @@ import {
   CallQueueFieldLabel,
   CallQueueFieldRow,
   SectionCard,
-} from "./CallQueueFormFields";
+} from "./components/CallQueueFormFields";
+import {
+  callQueueEditIconStyle,
+  callQueuePageBadgeStyle,
+  callQueuePaginationStyle,
+  handleCallQueueEditIconHover,
+} from "./components/CallQueueTableHelpers";
 
 const CallQueue = () => {
   const vm = useCallQueuePage();

@@ -1,22 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Alert,
-  Checkbox,
-  CircularProgress,
-  FormControl,
-  MenuItem,
-  Select as MuiSelect,
-  Tooltip,
-  useMediaQuery,
-} from "@mui/material";
-import {
-  getVoicemailSettings,
-  updateVoicemailSettings,
-} from "../../../api/apiService";
+import React from "react";
+import { Alert, Checkbox, CircularProgress } from "@mui/material";
 import {
   VOICEMAIL_BREADCRUMB_SECTION,
-  VOICEMAIL_FIELD_TOOLTIPS,
-  VOICEMAIL_INITIAL_FORM,
   VOICEMAIL_MAX_MESSAGE_TIME_OPTIONS,
   VOICEMAIL_MAX_MESSAGES_OPTIONS,
   VOICEMAIL_MIN_MESSAGE_TIME_OPTIONS,
@@ -33,370 +18,32 @@ import {
   extensionPageInnerStyle as voicemailPageInnerStyle,
   extensionCardStyle as voicemailCardStyle,
 } from "../../../components/common";
-
-const VOICEMAIL_COMPACT_MQ = "(max-width: 768px)";
-const VOICEMAIL_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
-const VOICEMAIL_MAIN_SECTION_HEADING_LEFT = -20;
-
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  accent: "#3E5475",
-  sectionHeading: "#30415A",
-};
-
-const VOICEMAIL_CARD_RADIUS = 4;
-const VOICEMAIL_FORM_HORIZONTAL_PADDING = 24;
-const VOICEMAIL_FIELD_LABEL_WIDTH = 260;
-const VOICEMAIL_INPUT_WIDTH = 150;
-const VOICEMAIL_FIELD_MIDDLE_GAP = 24;
-
-
-const voicemailFormBodyStyle = {
-  width: "100%",
-  maxWidth: 720,
-  margin: "0 auto",
-  padding: `0 ${VOICEMAIL_FORM_HORIZONTAL_PADDING}px`,
-  boxSizing: "border-box",
-};
-
-const voicemailHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: VOICEMAIL_CARD_RADIUS,
-  borderTopRightRadius: VOICEMAIL_CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.divider}`,
-};
-
-const pageFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const voicemailFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  padding: "10px 28px",
-  borderTop: `1px solid ${C.divider}`,
-  boxSizing: "border-box",
-  background: "#ffffff",
-  borderBottomLeftRadius: VOICEMAIL_CARD_RADIUS,
-  borderBottomRightRadius: VOICEMAIL_CARD_RADIUS,
-};
-
-const voicemailFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const VoicemailSectionHeading = ({ title, isFirst = false, isCompact = false }) => {
-  const isLaptopNarrow = useMediaQuery(VOICEMAIL_LAPTOP_NARROW_MQ);
-  const tightenSpacing = isLaptopNarrow || isCompact;
-  return (
-  <div
-    style={{
-      margin: isFirst
-        ? tightenSpacing
-          ? "20px 0 24px 0"
-          : "16px 0 24px 0"
-        : "28px 0 24px 0",
-      position: "relative",
-      width: "100%",
-    }}
-  >
-    <div style={{ borderTop: `1px solid ${C.divider}` }} />
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: tightenSpacing ? 0 : VOICEMAIL_MAIN_SECTION_HEADING_LEFT,
-        background: C.cardBg,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: C.sectionHeading,
-      }}
-    >
-      {title}
-    </span>
-  </div>
-  );
-};
-
-const VOICEMAIL_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const voicemailOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const voicemailSelectSx = (isCompact) => ({
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: isCompact ? "100%" : VOICEMAIL_INPUT_WIDTH,
-  maxWidth: isCompact ? "100%" : VOICEMAIL_INPUT_WIDTH,
-  minHeight: 34,
-  height: 34,
-  ...voicemailOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    padding: "7px 32px 7px 10px !important",
-    display: "flex",
-    alignItems: "center",
-    color: C.valueText,
-    cursor: "pointer",
-  },
-});
-
-const voicemailCheckboxSx = {
-  padding: 0,
-  margin: 0,
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const VoicemailFieldRow = ({ label, tooltipKey, isCompact, children }) => {
-  const stacked = isCompact;
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: stacked ? "column" : "row",
-        alignItems: stacked ? "stretch" : "center",
-        justifyContent: "flex-start",
-        padding: "8px 0",
-        gap: stacked ? 8 : VOICEMAIL_FIELD_MIDDLE_GAP,
-        width: "100%",
-      }}
-    >
-      <Tooltip
-        title={VOICEMAIL_FIELD_TOOLTIPS[tooltipKey] || ""}
-        {...VOICEMAIL_TOOLTIP_PROPS}
-      >
-        <span
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: C.labelText,
-            textAlign: "left",
-            width: stacked ? "100%" : "auto",
-            maxWidth: stacked ? "100%" : VOICEMAIL_FIELD_LABEL_WIDTH,
-            flexShrink: 0,
-            lineHeight: 1.4,
-            cursor: "help",
-          }}
-        >
-          {label}
-        </span>
-      </Tooltip>
-      <div
-        style={{
-          minWidth: 0,
-          flexShrink: 0,
-          display: "flex",
-          justifyContent: "flex-start",
-          width: stacked ? "100%" : VOICEMAIL_INPUT_WIDTH,
-          marginLeft: stacked ? 0 : "auto",
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-};
-
-const mapApiToForm = (d) => ({
-  max_messages: String(d.max_messages ?? VOICEMAIL_INITIAL_FORM.max_messages),
-  max_message_time: String(
-    d.max_message_time ?? VOICEMAIL_INITIAL_FORM.max_message_time,
-  ),
-  min_message_time: String(
-    d.min_message_time ?? VOICEMAIL_INITIAL_FORM.min_message_time,
-  ),
-  press5_enabled: d.press5_enabled ?? VOICEMAIL_INITIAL_FORM.press5_enabled,
-  busy_prompt: d.busy_prompt ?? VOICEMAIL_INITIAL_FORM.busy_prompt,
-  noanswer_prompt: d.noanswer_prompt ?? VOICEMAIL_INITIAL_FORM.noanswer_prompt,
-  announce_callerid:
-    d.announce_callerid ?? VOICEMAIL_INITIAL_FORM.announce_callerid,
-  announce_duration:
-    d.announce_duration ?? VOICEMAIL_INITIAL_FORM.announce_duration,
-  announce_arrival_time:
-    d.announce_arrival_time ?? VOICEMAIL_INITIAL_FORM.announce_arrival_time,
-});
+import { useVoicemailPage } from "./hooks/useVoicemailPage";
+import {
+  VoicemailFieldRow,
+  VoicemailSectionHeading,
+  VoicemailSelectField,
+  voicemailCheckboxSx,
+} from "./components/VoicemailFormFields";
+import {
+  voicemailFooterBtnStyle,
+  voicemailFooterStyle,
+  voicemailFormBodyStyle,
+  voicemailHeaderStyle,
+} from "./components/VoicemailTableHelpers";
 
 const VoicemailPage = () => {
-  const isCompact = useMediaQuery(VOICEMAIL_COMPACT_MQ);
-  const [form, setForm] = useState({ ...VOICEMAIL_INITIAL_FORM });
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const hasLoaded = useRef(false);
-
-  const showMsg = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 4000);
-  };
-
-  const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const res = await getVoicemailSettings();
-      if (res?.response && res?.message && typeof res.message === "object") {
-        setForm(mapApiToForm(res.message));
-      }
-    } catch (_) {
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!hasLoaded.current) {
-      hasLoaded.current = true;
-      loadData();
-    }
-  }, []);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const payload = {
-        max_messages: Number(form.max_messages),
-        max_message_time: Number(form.max_message_time),
-        min_message_time: Number(form.min_message_time),
-        press5_enabled: form.press5_enabled,
-        busy_prompt: form.busy_prompt,
-        noanswer_prompt: form.noanswer_prompt,
-        announce_callerid: form.announce_callerid,
-        announce_duration: form.announce_duration,
-        announce_arrival_time: form.announce_arrival_time,
-      };
-      const res = await updateVoicemailSettings(payload);
-      if (res?.response) {
-        showMsg("success", "Voicemail settings saved successfully");
-      } else {
-        showMsg(
-          "error",
-          typeof res?.message === "string" ? res.message : "Save failed",
-        );
-      }
-    } catch (e) {
-      showMsg("error", e.message || "Save failed");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const renderSelect = (fieldKey, options, getLabel) => (
-    <FormControl
-      size="small"
-      sx={{ width: isCompact ? "100%" : VOICEMAIL_INPUT_WIDTH }}
-    >
-      <MuiSelect
-        value={form[fieldKey]}
-        onChange={(e) => set(fieldKey, e.target.value)}
-        sx={voicemailSelectSx(isCompact)}
-      >
-        {options.map((opt) => {
-          const value = typeof opt === "string" ? opt : opt.value;
-          const label = getLabel
-            ? getLabel(opt)
-            : typeof opt === "string"
-              ? opt
-              : opt.label;
-          return (
-            <MenuItem key={value} value={value} sx={{ fontSize: 13 }}>
-              {label}
-            </MenuItem>
-          );
-        })}
-      </MuiSelect>
-    </FormControl>
-  );
+  const vm = useVoicemailPage();
+  const {
+    isCompact,
+    form,
+    message,
+    setMessage,
+    loading,
+    saving,
+    set,
+    handleSave,
+  } = vm;
 
   return (
     <div
@@ -442,7 +89,13 @@ const VoicemailPage = () => {
                   tooltipKey="max_messages"
                   isCompact={isCompact}
                 >
-                  {renderSelect("max_messages", VOICEMAIL_MAX_MESSAGES_OPTIONS)}
+                  <VoicemailSelectField
+                    fieldKey="max_messages"
+                    value={form.max_messages}
+                    onChange={set}
+                    options={VOICEMAIL_MAX_MESSAGES_OPTIONS}
+                    isCompact={isCompact}
+                  />
                 </VoicemailFieldRow>
 
                 <VoicemailFieldRow
@@ -450,10 +103,13 @@ const VoicemailPage = () => {
                   tooltipKey="max_message_time"
                   isCompact={isCompact}
                 >
-                  {renderSelect(
-                    "max_message_time",
-                    VOICEMAIL_MAX_MESSAGE_TIME_OPTIONS,
-                  )}
+                  <VoicemailSelectField
+                    fieldKey="max_message_time"
+                    value={form.max_message_time}
+                    onChange={set}
+                    options={VOICEMAIL_MAX_MESSAGE_TIME_OPTIONS}
+                    isCompact={isCompact}
+                  />
                 </VoicemailFieldRow>
 
                 <VoicemailFieldRow
@@ -461,10 +117,13 @@ const VoicemailPage = () => {
                   tooltipKey="min_message_time"
                   isCompact={isCompact}
                 >
-                  {renderSelect(
-                    "min_message_time",
-                    VOICEMAIL_MIN_MESSAGE_TIME_OPTIONS,
-                  )}
+                  <VoicemailSelectField
+                    fieldKey="min_message_time"
+                    value={form.min_message_time}
+                    onChange={set}
+                    options={VOICEMAIL_MIN_MESSAGE_TIME_OPTIONS}
+                    isCompact={isCompact}
+                  />
                 </VoicemailFieldRow>
 
                 <VoicemailFieldRow
@@ -489,7 +148,13 @@ const VoicemailPage = () => {
                   tooltipKey="busy_prompt"
                   isCompact={isCompact}
                 >
-                  {renderSelect("busy_prompt", VOICEMAIL_PROMPT_OPTIONS)}
+                  <VoicemailSelectField
+                    fieldKey="busy_prompt"
+                    value={form.busy_prompt}
+                    onChange={set}
+                    options={VOICEMAIL_PROMPT_OPTIONS}
+                    isCompact={isCompact}
+                  />
                 </VoicemailFieldRow>
 
                 <VoicemailFieldRow
@@ -497,7 +162,13 @@ const VoicemailPage = () => {
                   tooltipKey="noanswer_prompt"
                   isCompact={isCompact}
                 >
-                  {renderSelect("noanswer_prompt", VOICEMAIL_PROMPT_OPTIONS)}
+                  <VoicemailSelectField
+                    fieldKey="noanswer_prompt"
+                    value={form.noanswer_prompt}
+                    onChange={set}
+                    options={VOICEMAIL_PROMPT_OPTIONS}
+                    isCompact={isCompact}
+                  />
                 </VoicemailFieldRow>
 
                 <VoicemailSectionHeading

@@ -1,0 +1,35 @@
+export {
+
+  getE1PriNumManipulateRowBg as getE1PriIPCallInCallerIDRowBg,
+
+  e1PriNumManipulateEditIconStyle as e1PriIPCallInCallerIDEditIconStyle,
+
+  getE1PriNumManipulateEditIconStyle as getE1PriIPCallInCallerIDEditIconStyle,
+
+  handleE1PriNumManipulateEditIconHover as handleE1PriIPCallInCallerIDEditIconHover,
+
+  e1PriNumManipulateFixedAlertSx as e1PriIPCallInCallerIDFixedAlertSx,
+
+  e1PriNumManipulatePageWrapStyle as e1PriIPCallInCallerIDPageWrapStyle,
+
+  e1PriNumManipulatePageInnerStyle as e1PriIPCallInCallerIDPageInnerStyle,
+
+  e1PriNumManipulateSelectedBadgeStyle as e1PriIPCallInCallerIDSelectedBadgeStyle,
+
+  e1PriNumManipulateToolbarBtnStyle as e1PriIPCallInCallerIDToolbarBtnStyle,
+
+  e1PriNumManipulateCancelBtnStyle as e1PriIPCallInCallerIDCancelBtnStyle,
+
+  e1PriNumManipulateLoadingWrapStyle as e1PriIPCallInCallerIDLoadingWrapStyle,
+
+  e1PriNumManipulateEmptyWrapStyle as e1PriIPCallInCallerIDEmptyWrapStyle,
+
+  e1PriNumManipulateEmptyTitleStyle as e1PriIPCallInCallerIDEmptyTitleStyle,
+
+  e1PriNumManipulateTableScrollStyle as e1PriIPCallInCallerIDTableScrollStyle,
+
+  E1_PRI_NUM_MANIPULATE_CARD_RADIUS as E1PRI_IPCALLINCALLERID_CARD_RADIUS,
+
+} from "./E1PriNumManipulateSharedTableHelpers";
+
+

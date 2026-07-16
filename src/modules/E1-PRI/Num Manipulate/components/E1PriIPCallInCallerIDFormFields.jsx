@@ -1,0 +1,41 @@
+export {
+  E1PriNumManipulateBtn as E1PriIPCallInCallerIDBtn,
+  E1PriNumManipulateTH as E1PriIPCallInCallerIDTH,
+  E1PriNumManipulateFieldLabel as E1PriIPCallInCallerIDFieldLabel,
+  E1PriNumManipulateModalFormFields as E1PriIPCallInCallerIDModalFormFields,
+  e1PriNumManipulateCardStyle as e1PriIPCallInCallerIDCardStyle,
+  e1PriNumManipulateToolbarStyle as e1PriIPCallInCallerIDToolbarStyle,
+  e1PriNumManipulatePaginationStyle as e1PriIPCallInCallerIDPaginationStyle,
+  e1PriNumManipulateAddNewModalFooterStyle as e1PriIPCallInCallerIDAddNewModalFooterStyle,
+  e1PriNumManipulateAddNewModalFooterBtnStyle as e1PriIPCallInCallerIDAddNewModalFooterBtnStyle,
+  e1PriNumManipulateAddNewModalFooterCancelBtnStyle as e1PriIPCallInCallerIDAddNewModalFooterCancelBtnStyle,
+  e1PriNumManipulateAddNewModalBackdropSlotProps as e1PriIPCallInCallerIDAddNewModalBackdropSlotProps,
+  e1PriNumManipulateAddNewModalDialogContentSx as e1PriIPCallInCallerIDAddNewModalDialogContentSx,
+  e1PriNumManipulateCheckboxSx as e1PriIPCallInCallerIDCheckboxSx,
+  e1PriNumManipulateTdStyle as e1PriIPCallInCallerIDTdStyle,
+  e1PriNumManipulatePageBadgeStyle as e1PriIPCallInCallerIDPageBadgeStyle,
+  e1PriNumManipulateCancelBtnStyle as e1PriIPCallInCallerIDCancelBtnStyle,
+  e1PriNumManipulateToolbarBtnStyle as e1PriIPCallInCallerIDToolbarBtnStyle,
+  E1PriNumManipulateTableListLoading as E1PriIPCallInCallerIDTableListLoading,
+  E1PriNumManipulateTableListEmptyState as E1PriIPCallInCallerIDTableListEmptyState,
+  E1_PRI_IP_NUM_MANIPULATE_COMPACT_MQ as E1_PRI_IP_CALL_IN_CALLERID_COMPACT_MQ,
+  createE1PriNumManipulateDialogConfig,
+  createE1PriNumManipulateBreadcrumb,
+} from "./E1PriNumManipulateSharedFormFields";
+
+import {
+  createE1PriNumManipulateBreadcrumb as createBreadcrumb,
+  createE1PriNumManipulateDialogConfig,
+} from "./E1PriNumManipulateSharedFormFields";
+import {
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_TITLE,
+} from "../../../../constants/E1PriIPCallInCallerIDConstants";
+
+export const E1PriIPCallInCallerIDBreadcrumb = createBreadcrumb(
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_IP_CALL_IN_CALLERID_PAGE_TITLE,
+);
+
+export const e1PriIPCallInCallerIDDialogConfig =
+  createE1PriNumManipulateDialogConfig(600);

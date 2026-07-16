@@ -2,6 +2,8 @@ export const PRIVATE_GROUP_ITEMS_PER_PAGE = 20;
 
 export const PRIVATE_GROUP_TITLE = 'Private Group';
 
+export const PRIVATE_GROUP_ENABLE_OPTIONS = ['Yes', 'No'];
+
 /** Field tooltips for Private Group */
 export const PRIVATE_GROUP_FIELD_TOOLTIPS = {
   name:

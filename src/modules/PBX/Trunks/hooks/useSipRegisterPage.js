@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { useMediaQuery } from "@mui/material";
 import {
   SIP_REGISTER_INITIAL_FORM,
@@ -28,8 +28,8 @@ import {
   validateIdentityIp,
   validateForm,
 } from "../utils/SipRegisterValidators";
-import { parseCodecList } from "../SipRegisterFormFields";
-import { SIP_REGISTER_ZOOM_TABLE_WIDTH } from "../SipRegisterTableHelpers";
+import { parseCodecList } from "../components/SipRegisterFormFields";
+import { SIP_REGISTER_ZOOM_TABLE_WIDTH } from "../components/SipRegisterTableHelpers";
 
 const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
 

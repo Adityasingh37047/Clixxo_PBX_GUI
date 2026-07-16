@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Alert,
   Checkbox,
@@ -9,17 +9,9 @@ import {
   Radio,
   RadioGroup,
   Select as MuiSelect,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
 import {
   ORIGINATE_CALL_CONTEXT_OPTIONS,
-  ORIGINATE_CALL_DEFAULT_APP_DATA,
-  ORIGINATE_CALL_DEFAULT_APPLICATION,
-  ORIGINATE_CALL_DEFAULT_CONTEXT,
-  ORIGINATE_CALL_DEFAULT_MODE,
-  ORIGINATE_CALL_DEFAULT_PRIORITY,
-  ORIGINATE_CALL_FIELD_TOOLTIPS,
   ORIGINATE_CALL_FORM_NOTE,
   ORIGINATE_CALL_MODE_OPTIONS,
   ORIGINATE_CALL_TITLE,
@@ -32,458 +24,54 @@ import {
   extensionPageInnerStyle as originateCallPageInnerStyle,
   extensionCardStyle as originateCallCardStyle,
 } from "../../../components/common";
-
-const ORIGINATE_CALL_COMPACT_MQ = "(max-width: 768px)";
-
-// Agar amiOriginate apiService me defined hai to isko uncomment kar lena:
-// import { amiOriginate } from "../api/apiService";
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  placeholderText: "#94a3b8",
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const setFieldDefault = (el) => {
-  el.style.borderColor = OUTLINED_BORDER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldHover = (el) => {
-  el.style.borderColor = OUTLINED_HOVER;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = "none";
-};
-
-const setFieldFocus = (el) => {
-  el.style.borderColor = OUTLINED_FOCUS;
-  el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW;
-};
-
-const nativeFieldInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled) return;
-    setFieldFocus(e.target);
-  },
-  onBlur: (e) => {
-    setFieldDefault(e.target);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled) return;
-    if (document.activeElement === e.target) setFieldFocus(e.target);
-    else setFieldHover(e.target);
-  },
-  onMouseLeave: (e) => {
-    if (document.activeElement === e.target) setFieldFocus(e.target);
-    else setFieldDefault(e.target);
-  },
-};
-
-// ── Local page UI ──
-
-const ORIGINATE_CALL_CARD_RADIUS = 4;
-
-const originateCallFormContentStyle = {
-  width: "100%",
-  maxWidth: 640,
-  margin: "0 auto",
-  boxSizing: "border-box",
-};
-
-const originateCallFormRowStyle = {
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "flex-start",
-  width: "100%",
-};
-
-const originateCallLabelColStyle = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: C.labelText,
-  flex: "0 0 48%",
-  maxWidth: "48%",
-  paddingRight: 24,
-  textAlign: "left",
-  lineHeight: 1.35,
-};
-
-const originateCallValueColStyle = {
-  flex: "1 1 52%",
-  minWidth: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-};
-
-const originateCallControlSlotStyle = {
-  width: 220,
-  flexShrink: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-start",
-};
-
-const originateCallControlSlotWideStyle = {
-  ...originateCallControlSlotStyle,
-  width: 280,
-};
-
-const originateCallHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: ORIGINATE_CALL_CARD_RADIUS,
-  borderTopRightRadius: ORIGINATE_CALL_CARD_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.divider}`,
-};
-
-const ORIGINATE_CALL_FIELD_HEIGHT = 36;
-
-const originateCallFormInputStyle = {
-  padding: "7px 10px",
-  borderRadius: 6,
-  border: `1px solid ${OUTLINED_BORDER}`,
-  fontSize: 13,
-  width: "100%",
-  backgroundColor: "#ffffff",
-  outline: "none",
-  color: C.valueText,
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  boxSizing: "border-box",
-  boxShadow: "none",
-  height: ORIGINATE_CALL_FIELD_HEIGHT,
-  minHeight: ORIGINATE_CALL_FIELD_HEIGHT,
-  lineHeight: 1.35,
-};
-
-const originateCallFormInputInteraction = {
-  onFocus: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onFocus(e);
-  },
-  onBlur: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onBlur(e);
-  },
-  onMouseEnter: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseEnter(e);
-  },
-  onMouseLeave: (e) => {
-    if (e.target.disabled || e.target.readOnly) return;
-    nativeFieldInteraction.onMouseLeave(e);
-  },
-};
-
-const originateCallOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const originateCallFormSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: ORIGINATE_CALL_FIELD_HEIGHT,
-  height: ORIGINATE_CALL_FIELD_HEIGHT,
-  ...originateCallOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const originateCallFormNoteStyle = {
-  fontSize: 12,
-  color: C.mutedText,
-  margin: "0 auto 16px",
-  padding: "0 32px",
-  textAlign: "center",
-  width: "100%",
-  maxWidth: "100%",
-  lineHeight: 1.5,
-  boxSizing: "border-box",
-};
-
-const pageFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const originateCallFormFooterStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  padding: "10px 28px",
-  borderTop: `1px solid ${C.divider}`,
-  background: "#f8fafc",
-  boxSizing: "border-box",
-  borderBottomLeftRadius: ORIGINATE_CALL_CARD_RADIUS,
-  borderBottomRightRadius: ORIGINATE_CALL_CARD_RADIUS,
-};
-
-const originateCallFormBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const originateCallFormCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const originateCallRadioSx = {
-  p: 0.5,
-  color: C.labelText,
-  "&.Mui-checked": { color: C.accent },
-};
-
-const ORIGINATE_CALL_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const originateCallFieldInputStyle = {
-  ...originateCallFormInputStyle,
-  width: "100%",
-  maxWidth: "100%",
-};
-
-/** Builds callerid string for AMI: "Name" <number> or number only */
-function buildCallerId(name, number) {
-  const n = (number || "").trim();
-  const nm = (name || "").trim();
-  if (nm && n) return `"${nm}" <${n}>`;
-  if (n) return n;
-  if (nm) return nm;
-  return undefined;
-}
-
-const OriginateCallFieldRow = ({
-  label,
-  tooltipKey,
-  required = false,
-  children,
-  align = "center",
-  wide = false,
-  hideLabel = false,
-}) => (
-  <div
-    style={{
-      ...originateCallFormRowStyle,
-      alignItems: align === "flex-start" ? "flex-start" : "center",
-    }}
-  >
-    {hideLabel ? (
-      <span style={originateCallLabelColStyle} aria-hidden="true" />
-    ) : (
-      <Tooltip
-        title={ORIGINATE_CALL_FIELD_TOOLTIPS[tooltipKey] || ""}
-        {...ORIGINATE_CALL_TOOLTIP_PROPS}
-      >
-        <label
-          style={{
-            ...originateCallLabelColStyle,
-            cursor: tooltipKey ? "help" : "default",
-          }}
-        >
-          {label}
-          {required ? <span style={{ color: C.amber }}> *</span> : null}
-        </label>
-      </Tooltip>
-    )}
-    <div style={originateCallValueColStyle}>
-      <div
-        style={
-          wide
-            ? originateCallControlSlotWideStyle
-            : originateCallControlSlotStyle
-        }
-      >
-        {children}
-      </div>
-    </div>
-  </div>
-);
+import { useOriginateCallPage } from "./hooks/useOriginateCallPage";
+import {
+  OriginateCallFieldRow,
+  OriginateCallFixedAppLabel,
+  originateCallFieldInputStyle,
+  originateCallFormBtnStyle,
+  originateCallFormCheckboxSx,
+  originateCallFormContentStyle,
+  originateCallFormFooterStyle,
+  originateCallFormInputInteraction,
+  originateCallFormNoteStyle,
+  originateCallFormSelectSx,
+  originateCallHeaderStyle,
+  originateCallRadioSx,
+} from "./components/OriginateCallFormFields";
+import { originateCallHeaderSubtitleStyle } from "./components/OriginateCallTableHelpers";
 
 const OriginateCallPage = () => {
-  const isCompact = useMediaQuery(ORIGINATE_CALL_COMPACT_MQ);
-  const [mode, setMode] = useState(ORIGINATE_CALL_DEFAULT_MODE);
-
-  const [extension, setExtension] = useState("");
-  const [name, setName] = useState("");
-  const [callerIdName, setCallerIdName] = useState("");
-  const [callerIdNumber, setCallerIdNumber] = useState("");
-
-  const [useFixedApp, setUseFixedApp] = useState(true);
-  const [application, setApplication] = useState(
-    ORIGINATE_CALL_DEFAULT_APPLICATION,
-  );
-  const [appData, setAppData] = useState(ORIGINATE_CALL_DEFAULT_APP_DATA);
-
-  const [context, setContext] = useState(ORIGINATE_CALL_DEFAULT_CONTEXT);
-  const [exten, setExten] = useState("");
-  const [priority, setPriority] = useState(ORIGINATE_CALL_DEFAULT_PRIORITY);
-
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const handleOriginate = async () => {
-    const ext = extension.trim();
-    if (!ext) {
-      showMessage("error", "Call / Dial this extension is required.");
-      return;
-    }
-
-    const callerid = buildCallerId(callerIdName, callerIdNumber);
-    let data = { extension: ext };
-    if (callerid) data.callerid = callerid;
-
-    if (mode === "simple") {
-      if (useFixedApp) {
-        data.application = "Wait";
-        data.appData = appData.trim() || "30";
-      } else {
-        const app = application.trim();
-        if (!app) {
-          showMessage(
-            "error",
-            "Application is required for Simple mode when not using fixed Wait.",
-          );
-          return;
-        }
-        data.application = app;
-        if (appData.trim()) data.appData = appData.trim();
-      }
-    } else {
-      const ctx = context.trim();
-      const ex = exten.trim();
-      if (!ctx || !ex) {
-        showMessage(
-          "error",
-          "Context and Extension/Exten are required for two-step mode.",
-        );
-        return;
-      }
-      data.context = ctx;
-      data.exten = ex;
-      const pri = parseInt(priority, 10);
-      data.priority = Number.isFinite(pri) && pri >= 0 ? pri : 1;
-    }
-
-    setLoading(true);
-    try {
-      if (typeof amiOriginate === "undefined") {
-        throw new Error(
-          "amiOriginate function is not imported or defined. Please check apiService.",
-        );
-      }
-
-      // eslint-disable-next-line no-undef
-      const res = await amiOriginate(data);
-      if (res?.response === false) {
-        showMessage("error", res?.message || "Originate failed.");
-      } else {
-        showMessage("success", res?.message || "Originate sent successfully.");
-      }
-    } catch (err) {
-      showMessage("error", err?.message || String(err) || "Originate failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const vm = useOriginateCallPage();
+  const {
+    isCompact,
+    mode,
+    setMode,
+    extension,
+    setExtension,
+    name,
+    setName,
+    callerIdName,
+    setCallerIdName,
+    callerIdNumber,
+    setCallerIdNumber,
+    useFixedApp,
+    setUseFixedApp,
+    application,
+    setApplication,
+    appData,
+    setAppData,
+    context,
+    setContext,
+    exten,
+    setExten,
+    priority,
+    setPriority,
+    loading,
+    message,
+    setMessage,
+    handleOriginate,
+  } = vm;
 
   return (
     <div
@@ -512,14 +100,7 @@ const OriginateCallPage = () => {
           <div style={originateCallHeaderStyle}>
             <span>
               AMI Originate
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: C.mutedText,
-                  marginLeft: 8,
-                }}
-              >
+              <span style={originateCallHeaderSubtitleStyle}>
                 (POST /api/ami — type: ami_originate)
               </span>
             </span>
@@ -634,25 +215,10 @@ const OriginateCallPage = () => {
                           size="small"
                           sx={originateCallFormCheckboxSx}
                         />
-                        <Tooltip
-                          title={
-                            ORIGINATE_CALL_FIELD_TOOLTIPS.useFixedApp || ""
-                          }
-                          {...ORIGINATE_CALL_TOOLTIP_PROPS}
-                        >
-                          <label
-                            htmlFor="fixedApp"
-                            style={{
-                              fontSize: 13,
-                              color: C.labelText,
-                              cursor: "help",
-                              fontWeight: 500,
-                            }}
-                          >
-                            Use fixed Application Wait + appData below
-                            (recommended)
-                          </label>
-                        </Tooltip>
+                        <OriginateCallFixedAppLabel htmlFor="fixedApp">
+                          Use fixed Application Wait + appData below
+                          (recommended)
+                        </OriginateCallFixedAppLabel>
                       </div>
                     </OriginateCallFieldRow>
 

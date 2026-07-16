@@ -8,7 +8,7 @@ import {
 import { SYSTEM_TOOLS_VPN_RUNNING_INFO } from "../../../../constants/SystemToolsVPNConstants";
 import { buildSystemToolsVPNSoftEtherPayload, buildSystemToolsVPNSoftEtherProfile, createSystemToolsVPNInitialForm } from "../utils/SystemToolsVPNTransformers";
 import { isSystemToolsVPNCertificateValid, isSystemToolsVPNKeyValid, validateSystemToolsVPNSoftEtherForm } from "../utils/SystemToolsVPNValidators";
-import { getSeRowLabelStyle } from "../SystemToolsVPNFormFields";
+import { getSeRowLabelStyle } from "../components/SystemToolsVPNFormFields";
 
 export function useSystemToolsVPNPage() {
   const vpnFileInputRef = useRef(null);

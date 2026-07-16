@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -13,23 +13,11 @@ import {
   MenuItem,
   Select as MuiSelect,
   TextField,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
+import { C } from "../../../theme/pbxTokens";
 import {
-  fetchBlockedList,
-  createBlockedEntry,
-  updateBlockedEntry,
-  deleteBlockedEntry,
-  listConferenceExtensions,
-} from "../../../api/apiService";
-import {
-  BLOCKED_LIST_DEFAULT_DIRECTION,
-  BLOCKED_LIST_DEFAULT_ENABLED,
-  BLOCKED_LIST_DEFAULT_MATCH_MODE,
   BLOCKED_LIST_DIRECTION_OPTIONS,
   BLOCKED_LIST_ENABLE_OPTIONS,
-  BLOCKED_LIST_FIELD_TOOLTIPS,
   BLOCKED_LIST_MATCH_MODE_OPTIONS,
 } from "../../../constants/BlockedListConstants";
 import {
@@ -39,6 +27,7 @@ import {
   ExtensionBreadcrumb as BlockedListBreadcrumb,
   ExtensionTableListLoading as BlockedListTableListLoading,
   ExtensionTableListEmptyState as BlockedListTableListEmptyState,
+  ExtensionPagination as BlockedListPagination,
   extensionTableCheckboxSx as blockedListTableCheckboxSx,
   extensionFixedAlertSx as blockedListFixedAlertSx,
   extensionPageWrapStyle as blockedListPageWrapStyle,
@@ -48,599 +37,70 @@ import {
   extensionSelectedBadgeStyle as blockedListSelectedBadgeStyle,
   extensionCancelBtnStyle as blockedListCancelBtnStyle,
   extensionPrimaryBtnStyle as blockedListPrimaryBtnStyle,
+  getExtensionRowBg as getBlockedListRowBg,
 } from "../../../components/common";
-
-const BLOCKED_LIST_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color Palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  placeholderText: "#94a3b8",
-};
-
-// ── Local page UI ──
-
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const blockedListModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const BLOCKED_LIST_TABLE_CARD_RADIUS = 4;
-
-const blockedListPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: BLOCKED_LIST_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const blockedListPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const blockedListEditIconStyle = {
-  cursor: "pointer",
-  color: "#2563eb",
-  fontSize: 22,
-  opacity: 0.7,
-  transition: "opacity 0.15s ease",
-};
-
-const handleBlockedListEditIconHover = (e, entering) => {
-  e.currentTarget.style.opacity = entering ? "1" : "0.7";
-};
-
-const yesNoCellStyle = (value) => ({
-  color: value === "Yes" ? "#16a34a" : "#475569",
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: "0.01em",
-  whiteSpace: "nowrap",
-});
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const blockedListOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const blockedListModalTextFieldFullSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...blockedListOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-  },
-};
-
-const blockedListModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...blockedListOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const blockedListModalPaperSx = {
-  width: 560,
-  maxWidth: "95vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const blockedListModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-
-const blockedListModalFormStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  overflow: "hidden",
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const BLOCKED_LIST_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatBlockedListTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const BlockedListFieldLabel = ({
-  tooltipKey,
-  children,
-  required,
-  style = {},
-}) => {
-  const tooltip = BLOCKED_LIST_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-      {required ? <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span> : null}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip
-      title={formatBlockedListTooltipTitle(tooltip)}
-      {...BLOCKED_LIST_TOOLTIP_PROPS}
-    >
-      {label}
-    </Tooltip>
-  );
-};
-
-const BLOCKED_LIST_MODAL_LABEL_WIDTH = 160;
-
-const BlockedListFieldRow = ({ label, tooltipKey, required, children }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-    {tooltipKey ? (
-      <BlockedListFieldLabel
-        tooltipKey={tooltipKey}
-        required={required}
-        style={{
-          width: BLOCKED_LIST_MODAL_LABEL_WIDTH,
-          flexShrink: 0,
-        }}
-      >
-        {label}
-      </BlockedListFieldLabel>
-    ) : (
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: BLOCKED_LIST_MODAL_LABEL_WIDTH,
-          flexShrink: 0,
-        }}
-      >
-        {label}
-        {required ? (
-          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
-        ) : null}
-      </label>
-    )}
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
+import { useBlockedListPage } from "./hooks/useBlockedListPage";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  BlockedListFieldRow,
+  blockedListModalCancelBtnStyle,
+  blockedListModalFormStyle,
+  blockedListModalPaperSx,
+  blockedListModalSelectSx,
+  blockedListModalTextFieldFullSx,
+  blockedListModalTitleStyle,
+} from "./components/BlockedListFormFields";
+import {
+  blockedListEditIconStyle,
+  directionCellStyle,
+  handleBlockedListEditIconHover,
+  matchModeCellStyle,
+  yesNoCellStyle,
+} from "./components/BlockedListTableHelpers";
 
 const BlockedListPage = () => {
-  const isCompact = useMediaQuery(BLOCKED_LIST_COMPACT_MQ);
-  const [rows, setRows] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({
-    fetch: false,
-    delete: false,
-    save: false,
-  });
-  const [error, setError] = useState({ type: "", text: "" });
-  const hasInitialLoadRef = useRef(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Search & Pagination
-  const itemsPerPage = 20;
-  const [page, setPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  // Add/Edit modal state
-  const [editId, setEditId] = useState(null);
-  const [name, setName] = useState("");
-  const [matchMode, setMatchMode] = useState(BLOCKED_LIST_DEFAULT_MATCH_MODE);
-  const [blockedNumber, setBlockedNumber] = useState("");
-  const [selectedExtension, setSelectedExtension] = useState("");
-  const [direction, setDirection] = useState(BLOCKED_LIST_DEFAULT_DIRECTION);
-  const [enabled, setEnabled] = useState(BLOCKED_LIST_DEFAULT_ENABLED);
-  const [availableExtensions, setAvailableExtensions] = useState([]);
-
-  const showAlert = (type, text) => {
-    setError({ type, text });
-    setTimeout(() => setError({ type: "", text: "" }), 5000);
-  };
-
-  const loadRows = async () => {
-    setLoading((prev) => ({ ...prev, fetch: true }));
-    try {
-      const res = await fetchBlockedList();
-      const raw = res?.message ?? res?.data ?? res;
-      const list = Array.isArray(raw) ? raw : [];
-      setRows(
-        list.map((item) => ({
-          id: item.id,
-          name: item.name || "",
-          matchMode:
-            item.match_mode === "regex"
-              ? "Regex Match"
-              : item.match_mode === "extension"
-                ? "Extension"
-                : "Exact Match",
-          blockedNumber: item.pattern || "",
-          direction: (() => {
-            const d = (item.direction || "").toLowerCase();
-            if (d === "outbound") return "Outbound";
-            if (d === "internal") return "Internal";
-            return "Inbound";
-          })(),
-          enabled:
-            item.enabled === false ||
-            String(item.enabled).toLowerCase() === "no"
-              ? "No"
-              : "Yes",
-        })),
-      );
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to load blocked list.");
-    } finally {
-      setLoading((prev) => ({ ...prev, fetch: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  const loadAvailableExtensions = async () => {
-    try {
-      const extRes = await listConferenceExtensions();
-      const extRaw = Array.isArray(extRes?.message)
-        ? extRes.message
-        : Array.isArray(extRes?.data)
-          ? extRes.data
-          : [];
-      const extList = extRaw
-        .filter((e) => e && e.extension)
-        .map((e) => ({
-          value: String(e.extension),
-          label: e.display_name
-            ? `${e.display_name} (${e.extension})`
-            : String(e.extension),
-        }));
-      setAvailableExtensions(extList);
-    } catch (err) {
-      console.error("Failed to load extensions for blocked list:", err);
-      setAvailableExtensions([]);
-    }
-  };
-
-  useEffect(() => {
-    if (!hasInitialLoadRef.current) {
-      hasInitialLoadRef.current = true;
-      loadRows();
-      loadAvailableExtensions();
-    }
-  }, []);
-
-  // ── Search & Pagination Logic ──
-  const filteredRows = searchQuery.trim()
-    ? rows.filter((r) =>
-        [r.name, r.blockedNumber, r.matchMode].some((v) =>
-          String(v || "")
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-        ),
-      )
-    : rows;
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
-      ),
-    );
-  }, [filteredRows.length]);
-
-  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-
-  // ── Checkbox Logic ──
-  const pageIndices = pagedRows.map(
-    (_, idx) => (page - 1) * itemsPerPage + idx,
-  );
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleRow = (idx) => {
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-  };
-
-  const handleToggleAll = () => {
-    if (!pageIndices.length) return;
-    setSelected((prev) =>
-      allPageSelected
-        ? prev.filter((i) => !pageIndices.includes(i))
-        : Array.from(new Set([...prev, ...pageIndices])),
-    );
-  };
-
-  const handleDelete = async () => {
-    if (selected.length === 0) {
-      showAlert("error", "Please select at least one row to delete.");
-      return;
-    }
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selected.length} records?`,
-      )
-    )
-      return;
-
-    setLoading((prev) => ({ ...prev, delete: true }));
-    try {
-      const ids = selected.map((i) => filteredRows[i]?.id).filter(Boolean);
-      await Promise.all(ids.map((id) => deleteBlockedEntry(id)));
-      setSelected([]);
-      setPage(1);
-      await loadRows();
-      showAlert("success", `Deleted ${ids.length} item(s).`);
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to delete.");
-    } finally {
-      setLoading((prev) => ({ ...prev, delete: false }));
-    }
-  };
-
-  // ── Form Modal Handlers ──
-  const resetForm = () => {
-    setEditId(null);
-    setName("");
-    setMatchMode(BLOCKED_LIST_DEFAULT_MATCH_MODE);
-    setBlockedNumber("");
-    setSelectedExtension("");
-    setDirection(BLOCKED_LIST_DEFAULT_DIRECTION);
-    setEnabled(BLOCKED_LIST_DEFAULT_ENABLED);
-  };
-
-  const handleOpenAddModal = () => {
-    resetForm();
-    setShowModal(true);
-  };
-
-  const handleOpenEditModal = (row) => {
-    setEditId(row.id);
-    setName(row.name || "");
-    setMatchMode(row.matchMode || BLOCKED_LIST_DEFAULT_MATCH_MODE);
-    setBlockedNumber(row.blockedNumber || "");
-    setSelectedExtension(
-      row.matchMode === "Extension" ? row.blockedNumber || "" : "",
-    );
-    setDirection(row.direction || BLOCKED_LIST_DEFAULT_DIRECTION);
-    setEnabled(row.enabled || BLOCKED_LIST_DEFAULT_ENABLED);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    if (loading.save) return;
-    setShowModal(false);
-    resetForm();
-  };
-
-  const handleSave = async () => {
-    const trimmedName = name.trim();
-    const trimmedNumber = blockedNumber.trim();
-    const valueToBlock =
-      matchMode === "Extension"
-        ? String(selectedExtension || "").trim()
-        : trimmedNumber;
-
-    if (!trimmedName) {
-      showAlert("error", "Please enter a Name.");
-      return;
-    }
-    if (!valueToBlock) {
-      showAlert(
-        "error",
-        matchMode === "Extension"
-          ? "Please select an Extension."
-          : "Please enter a Blocked List Number.",
-      );
-      return;
-    }
-
-    const apiPayload = {
-      name: trimmedName,
-      match_mode:
-        matchMode === "Regex Match"
-          ? "regex"
-          : matchMode === "Extension"
-            ? "extension"
-            : "exact",
-      pattern: valueToBlock,
-      direction: direction.toLowerCase(),
-      enabled: enabled === "Yes",
-    };
-
-    setLoading((prev) => ({ ...prev, save: true }));
-    try {
-      if (editId != null) {
-        await updateBlockedEntry({ id: editId, ...apiPayload });
-        showAlert("success", "Blocked entry updated.");
-      } else {
-        await createBlockedEntry(apiPayload);
-        showAlert("success", "Blocked entry created.");
-      }
-      await loadRows();
-      handleCloseModal();
-    } catch (err) {
-      showAlert("error", err?.message || "Failed to save.");
-    } finally {
-      setLoading((prev) => ({ ...prev, save: false }));
-    }
-  };
+  const vm = useBlockedListPage();
+  const {
+    isCompact,
+    rows,
+    selected,
+    showModal,
+    loading,
+    error,
+    setError,
+    isInitialLoad,
+    itemsPerPage,
+    page,
+    setPage,
+    searchQuery,
+    totalPages,
+    pagedRows,
+    filteredRows,
+    editId,
+    name,
+    setName,
+    matchMode,
+    setMatchMode,
+    blockedNumber,
+    setBlockedNumber,
+    selectedExtension,
+    setSelectedExtension,
+    direction,
+    setDirection,
+    enabled,
+    setEnabled,
+    availableExtensions,
+    allPageSelected,
+    somePageSelected,
+    handleToggleRow,
+    handleToggleAll,
+    handleDelete,
+    handleOpenAddModal,
+    handleOpenEditModal,
+    handleCloseModal,
+    handleSave,
+  } = vm;
 
   return (
     <div
@@ -700,85 +160,6 @@ const BlockedListPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "#ffffff",
-                  border: `0.5px solid ${searchFocused ? C.accent : C.cardBorder}`,
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  transition: "border-color 0.15s ease",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: searchFocused ? C.accent : C.mutedText,
-                  }}
-                >
-                  🔍
-                </span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setPage(1);
-                  }}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder="Search blocked lists..."
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: 11,
-                    color: C.valueText,
-                    outline: "none",
-                    width: 160,
-                  }}
-                />
-                {searchQuery && (
-                  <span
-                    onClick={() => setSearchQuery("")}
-                    style={{
-                      fontSize: 11,
-                      color: C.mutedText,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                )}
-              </div> */}
-
-              {/* <Btn
-                onClick={handlePrev}
-                disabled={loading.fetch || page <= 1}
-                variant="outline"
-              >
-                ← Prev
-              </Btn>
-              <Btn
-                onClick={handleNext}
-                disabled={loading.fetch || page >= totalPages}
-                variant="outline"
-              >
-                Next →
-              </Btn> */}
-
-              {/* <Btn
-                onClick={loadRows}
-                disabled={loading.fetch}
-                variant="default"
-              >
-                {loading.fetch ? (
-                  <CircularProgress size={11} style={{ color: "#fff" }} />
-                ) : (
-                  "Refresh"
-                )}
-              </Btn> */}
               <Btn
                 onClick={handleDelete}
                 disabled={
@@ -804,7 +185,6 @@ const BlockedListPage = () => {
             </div>
           </div>
 
-          {/* Table */}
           <div
             style={{
               overflowX: "hidden",
@@ -902,11 +282,7 @@ const BlockedListPage = () => {
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
-                    const rowBg = isSelected
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getBlockedListRowBg(isSelected, idx);
 
                     return (
                       <tr
@@ -964,17 +340,7 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span
-                            style={{
-                              color: C.valueText,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {row.matchMode}
-                          </span>
+                          <span style={matchModeCellStyle}>{row.matchMode}</span>
                         </td>
                         <td
                           style={{
@@ -992,20 +358,7 @@ const BlockedListPage = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          <span
-                            style={{
-                              color:
-                                row.direction === "Inbound"
-                                  ? "#16a34a"
-                                  : row.direction === "Outbound"
-                                    ? C.accent
-                                    : "#475569",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              letterSpacing: "0.01em",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
+                          <span style={directionCellStyle(row.direction)}>
                             {row.direction}
                           </span>
                         </td>
@@ -1037,21 +390,21 @@ const BlockedListPage = () => {
                             <EditDocumentIcon
                               titleAccess="Edit"
                               onClick={() => handleOpenEditModal(row)}
-                              style={{
-                                ...blockedListEditIconStyle,
-                                cursor: loading.delete
-                                  ? "not-allowed"
-                                  : "pointer",
-                                opacity: loading.delete ? 0.4 : 0.7,
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!loading.delete)
-                                  handleBlockedListEditIconHover(e, true);
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!loading.delete)
-                                  handleBlockedListEditIconHover(e, false);
-                              }}
+                              style={blockedListEditIconStyle(loading.delete)}
+                              onMouseEnter={(e) =>
+                                handleBlockedListEditIconHover(
+                                  e,
+                                  true,
+                                  loading.delete,
+                                )
+                              }
+                              onMouseLeave={(e) =>
+                                handleBlockedListEditIconHover(
+                                  e,
+                                  false,
+                                  loading.delete,
+                                )
+                              }
                             />
                           </div>
                         </td>
@@ -1064,33 +417,14 @@ const BlockedListPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div style={blockedListPaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.fetch || page <= 1}
-                  variant="outline" 
-                  style={{ borderRadius: 4 }}
-                >
-                  ← Prev
-                </Btn>
-                <span style={blockedListPageBadgeStyle}>
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.fetch || page >= totalPages}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <BlockedListPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -1105,7 +439,13 @@ const BlockedListPage = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: { ...blockedListModalPaperSx, borderRadius: editId == null ? "4px" : blockedListModalPaperSx.borderRadius } }}
+        PaperProps={{
+          sx: {
+            ...blockedListModalPaperSx,
+            borderRadius:
+              editId == null ? "4px" : blockedListModalPaperSx.borderRadius,
+          },
+        }}
       >
         <DialogTitle style={blockedListModalTitleStyle}>
           {editId != null ? "Edit Blocked Entry" : "Add Blocked Entry"}
@@ -1260,10 +600,8 @@ const BlockedListPage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-
     </div>
   );
 };
 
 export default BlockedListPage;
-

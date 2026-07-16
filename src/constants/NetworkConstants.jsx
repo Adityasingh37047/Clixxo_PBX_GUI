@@ -39,7 +39,18 @@ export const NETWORK_RADIO_NO = "No";
 export const NETWORK_OPTION_STATIC = "Static";
 export const NETWORK_OPTION_DHCP = "DHCP";
 
+export const NETWORK_VLAN_INTERFACE_OPTIONS = [
+  { value: "lan1", label: "LAN 1" },
+  { value: "lan2", label: "LAN 2" },
+];
+
 export const NETWORK_VLAN_LAN1_FIELDS = [
+  {
+    label: "Select Interfaces:",
+    key: "selectInterface",
+    type: "select",
+    options: NETWORK_VLAN_INTERFACE_OPTIONS,
+  },
   { label: "LAN 1 IP Address (I):", key: "lan1Ip" },
   { label: "LAN 1 Subnet Mask (U):", key: "lan1Mask" },
   { label: "LAN 1 Default Gateway (D):", key: "lan1Gw" },
@@ -80,6 +91,8 @@ export const NETWORK_FIELD_TOOLTIPS = {
     "Specify the prefix length for the IPv6 address assigned to this interface. The prefix length is the number of bits in the prefix.",
   vlanEnable:
     "Enable VLAN tagging for this interface. When enabled, network traffic will be associated with the configured VLAN ID.",
+  selectInterface:
+    "Select which LAN interface the VLAN will be created on. Options: LAN 1 or LAN 2.",
   preferredDnsServer:
     "Specify the preferred DNS server used for domain name resolution. This server will be queried first when resolving hostnames.",
   standbyDnsServer:
@@ -90,7 +103,8 @@ export const NETWORK_FIELD_TOOLTIPS = {
 
 export const NETWORK_CONFIRM_SAVE = "Are you sure you want to save changes?";
 
-export const NETWORK_ERR_INVALID_DATA = "Invalid data format received from server";
+export const NETWORK_ERR_INVALID_DATA =
+  "Invalid data format received from server";
 export const NETWORK_ERR_LOAD_TIMEOUT =
   "Request timeout. Please check your connection and try again.";
 export const NETWORK_ERR_LOAD_NOT_FOUND =
@@ -116,7 +130,8 @@ export const NETWORK_ERR_RESTART_TIMEOUT =
 export const NETWORK_ERR_REBOOT_FAILED =
   "Failed to reboot device. Please reboot manually.";
 export const NETWORK_ERR_SAVE_FAILED = "Save operation failed";
-export const NETWORK_ERR_SAVE_FAILED_GENERIC = "Failed to save network settings.";
+export const NETWORK_ERR_SAVE_FAILED_GENERIC =
+  "Failed to save network settings.";
 export const NETWORK_ERR_SAVE_TIMEOUT =
   "Save operation timed out. Please check your connection and try again.";
 export const NETWORK_ERR_SAVE_INVALID =
@@ -129,7 +144,8 @@ export const NETWORK_ERR_DHCP_ONLY_ONE =
   "Only one interface can be set to DHCP at a time. Please change the others back to Static and try again.";
 export const NETWORK_ERR_INVALID_IP = "Please enter a valid IP address.";
 export const NETWORK_ERR_INVALID_SUBNET = "Please enter a valid subnet mask.";
-export const NETWORK_ERR_INVALID_GATEWAY = "Please enter a valid gateway address.";
+export const NETWORK_ERR_INVALID_GATEWAY =
+  "Please enter a valid gateway address.";
 export const NETWORK_ERR_INVALID_ARP = "Please select a valid ARP mode.";
 
 export const NETWORK_SETTINGS_FIELDS = [
@@ -174,7 +190,11 @@ export const NETWORK_SETTINGS_FIELDS = [
   {
     section: "DNS Server Set",
     fields: [
-      { name: "preferredDns", label: "Preferred DNS Server (P):", type: "text" },
+      {
+        name: "preferredDns",
+        label: "Preferred DNS Server (P):",
+        type: "text",
+      },
       { name: "standbyDns", label: "Standby DNS Server (P):", type: "text" },
     ],
   },

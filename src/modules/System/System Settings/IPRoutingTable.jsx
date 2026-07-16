@@ -54,27 +54,25 @@ import {
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
+import {
+  C,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  FOCUS_RING_SHADOW,
+} from "../../../theme/pbxTokens";
+import {
+  Btn,
+  ExtensionBreadcrumb,
+  extensionPageWrapStyle as ipRoutePageWrapStyle,
+  extensionPageInnerStyle as ipRoutePageInnerStyle,
+  extensionFixedAlertSx as ipRouteFixedAlertSx,
+} from "../../../components/common";
 
 const IP_ROUTE_TABLE_COMPACT_MQ = "(max-width: 768px)";
 const IP_ROUTE_TABLE_SCROLL_CLASS = "ip-route-table-scroll";
 
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  errorRed: "#dc2626",
-};
 
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
 
 const IP_ROUTE_TABLE_CARD_RADIUS = 4;
 
@@ -107,10 +105,10 @@ const ipRouteModalSelectSx = {
   width: "100%",
   minHeight: 36,
   height: 36,
-  borderRadius: "6px",
+  borderRadius: "4px",
   ...ipRouteOutlinedInputRootSx,
   "& .MuiOutlinedInput-root": {
-    borderRadius: "6px",
+    borderRadius: "4px",
     minHeight: 36,
     height: 36,
     backgroundColor: "#fff",
@@ -187,7 +185,7 @@ const ipRouteModalFieldInputStyle = {
   padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
-  borderRadius: 6,
+  borderRadius: 4,
   outline: "none",
   backgroundColor: "#fff",
   color: C.valueText,
@@ -299,142 +297,6 @@ const IpRouteTableScrollbarStyles = () => (
   `}</style>
 );
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-  form,
-  component,
-  title,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15,23,42,0.08)",
-    },
-    danger: {
-      background: "#fef2f2",
-      color: "#dc2626",
-      border: "0.5px solid #fecaca",
-    },
-    outline: {
-      background: C.cardBg,
-      color: C.labelText,
-      border: `1px solid ${C.cardBorder}`,
-    },
-    accent: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-  };
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      accent: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      danger: "#fca5a5",
-      outline: "#e2e8f0",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      accent: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      danger: "#f87171",
-      outline: "#d1d9e6",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary" || variant === "accent"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  const Component = component || "button";
-  return (
-    <Component
-      type={type}
-      form={form}
-      title={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 4,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </Component>
-  );
-};
 
 const addNewModalFooterStyle = {
   display: "flex",
@@ -447,8 +309,8 @@ const addNewModalFooterStyle = {
   boxSizing: "border-box",
   background: "#f8fafc",
   borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 const addNewModalFooterBtnStyle = {
@@ -508,14 +370,6 @@ const ipRouteTableCheckboxSx = {
   "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
-const ipRouteFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  boxShadow: 3,
-};
 
 const getIpRouteTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
   ...tdStyle,
@@ -549,40 +403,13 @@ const IpRouteTableEditIcon = ({ disabled, onClick }) => (
   />
 );
 
-const ipRoutePageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const ipRoutePageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
 
 const IpRouteTableBreadcrumb = () => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-    }}
-  >
-    <span>{IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT}</span>
-    <span>&gt;</span>
-    <span>{IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      {IP_ROUTING_TABLE_PAGE_TITLE}
-    </span>
-  </div>
+  <ExtensionBreadcrumb
+    root={IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT}
+    section={IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION}
+    current={IP_ROUTING_TABLE_PAGE_TITLE}
+  />
 );
 
 const ipRouteCardStyle = {
@@ -634,6 +461,7 @@ const ipRouteCancelBtnStyle = {
   background: "#cbd5e1",
   color: "#374151",
   border: "1px solid #cbd5e1",
+  borderRadius: 4,
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
@@ -1986,7 +1814,7 @@ WantedBy=multi-user.target
             maxWidth: "96vw",
             mx: "auto",
             p: 0,
-            borderRadius: "8px",
+            borderRadius: "4px",
             overflow: "hidden",
           },
         }}
@@ -1999,8 +1827,8 @@ WantedBy=multi-user.target
             fontSize: 16,
             padding: "16px 24px",
             textAlign: "center",
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
           }}
         >
           {editIndex !== null
@@ -2021,7 +1849,7 @@ WantedBy=multi-user.target
               gap: 14,
               background: "#f8fafc",
               border: `1px solid ${C.cardBorder}`,
-              borderRadius: 8,
+              borderRadius: 4,
               padding: 20,
               marginTop: 0,
             }}
@@ -2067,7 +1895,7 @@ WantedBy=multi-user.target
                       fullWidth
                       sx={{
                         ...ipRouteModalSelectSx,
-                        borderRadius: "6px",
+                        borderRadius: "4px",
                         fontSize: 13,
                       }}
                       MenuProps={{

@@ -21,31 +21,32 @@ import {
   ASTERISK_CLI_TOAST_SERVER_ERROR,
   ASTERISK_CLI_TOAST_EXECUTE_FAILED,
 } from "../../../constants/AsteriskCLIConstants";
+import {
+  C,
+  OUTLINED_BORDER,
+  OUTLINED_HOVER,
+  OUTLINED_FOCUS,
+  FOCUS_RING_SHADOW,
+} from "../../../theme/pbxTokens";
+import {
+  Btn,
+  ExtensionBreadcrumb,
+  EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
+  extensionPageWrapStyle as cliPageWrapStyle,
+  extensionPageInnerStyle as cliPageInnerStyleBase,
+  extensionFixedAlertSx as cliFixedAlertSx,
+} from "../../../components/common";
+
+const CLI_CARD_SHADOW =
+  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
 
 const ASTERISK_CLI_SCROLL_CLASS = "asterisk-cli-scroll";
 const ASTERISK_CLI_COMPACT_MQ = "(max-width: 768px)";
 const ASTERISK_CLI_FORM_PAD_X = 28;
 
-const C = {
-  pageBg: "#fbfcfe",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  cardShadow:
-    "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#374151",
-  mutedText: "#94a3b8",
-  errorRed: "#dc2626",
-};
 
-const CARD_RADIUS = 4;
 const FIELD_RADIUS = 6;
 
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = () => `0 0 0 2px rgba(62, 84, 117, 0.15)`;
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -62,7 +63,7 @@ const setFieldHover = (el) => {
 const setFieldFocus = (el) => {
   el.style.borderColor = OUTLINED_FOCUS;
   el.style.borderWidth = "1px";
-  el.style.boxShadow = FOCUS_RING_SHADOW();
+  el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
 const nativeFieldInputStyle = {
@@ -171,114 +172,6 @@ const inlineLabelStyle = {
   lineHeight: 1.4,
 };
 
-const Btn = ({
-  children,
-  onClick,
-  disabled,
-  variant = "default",
-  style: extraStyle,
-  type,
-}) => {
-  const styles = {
-    default: {
-      background: C.cardBg,
-      color: C.valueText,
-      border: "1px solid #9ca3af",
-    },
-    primary: {
-      background:
-        "linear-gradient(to bottom, #5A6F8F 0%, #3E5475 60%, #2C3E57 100%)",
-      color: "#fff",
-      border: "1px solid #5A6F8F",
-      fontWeight: 600,
-    },
-    cancel: {
-      background: "#cbd5e1",
-      color: "#374151",
-      border: "1px solid #cbd5e1",
-      boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-    },
-  };
-
-  const s = styles[variant] || styles.default;
-  const hoverBg =
-    {
-      primary: "linear-gradient(to bottom, #3E5475 0%, #5A6F8F 100%)",
-      cancel: "#b6c2d3",
-      default: "#e2e8f0",
-    }[variant] || "#e2e8f0";
-  const activeBg =
-    {
-      primary: "linear-gradient(to bottom, #2C3E57 0%, #3E5475 100%)",
-      cancel: "#a3b1c2",
-      default: "#d1d5db",
-    }[variant] || "#d1d5db";
-  const baseBg = extraStyle?.background ?? s.background;
-  const baseShadow = extraStyle?.boxShadow ?? s.boxShadow ?? "none";
-
-  const clearPressStyle = (el) => {
-    el.style.transform = "";
-    el.style.boxShadow = baseShadow;
-  };
-
-  const applyPressStyle = (el) => {
-    el.style.background = activeBg;
-    el.style.transform = "translateY(1px) scale(0.98)";
-    el.style.boxShadow =
-      variant === "primary"
-        ? "inset 0 2px 4px rgba(0, 0, 0, 0.25)"
-        : variant === "cancel"
-          ? "inset 0 2px 4px rgba(15, 23, 42, 0.15)"
-          : "inset 0 1px 3px rgba(15, 23, 42, 0.12)";
-  };
-
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 14px",
-        borderRadius: 4,
-        fontSize: 12,
-        fontWeight: 600,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        transition:
-          "background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease",
-        height: 30,
-        gap: 6,
-        whiteSpace: "nowrap",
-        userSelect: "none",
-        ...s,
-        ...extraStyle,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-      }}
-      onMouseLeave={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = baseBg;
-        clearPressStyle(e.currentTarget);
-      }}
-      onMouseDown={(e) => {
-        if (disabled) return;
-        applyPressStyle(e.currentTarget);
-      }}
-      onMouseUp={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = hoverBg;
-        clearPressStyle(e.currentTarget);
-      }}
-    >
-      {children}
-    </button>
-  );
-};
 
 const cliFooterBtnStyle = {
   height: 30,
@@ -288,17 +181,8 @@ const cliFooterBtnStyle = {
   minWidth: 100,
 };
 
-const cliPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
 const cliPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
+  ...cliPageInnerStyleBase,
   display: "flex",
   flexDirection: "column",
 };
@@ -312,7 +196,7 @@ const cliTableContainerStyle = {
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
   borderRadius: CARD_RADIUS,
-  boxShadow: C.cardShadow,
+  boxShadow: CLI_CARD_SHADOW,
   overflow: "hidden",
   boxSizing: "border-box",
 };
@@ -338,17 +222,6 @@ const cliBodyStyle = {
   boxSizing: "border-box",
 };
 
-const cliFixedAlertSx = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 9999,
-  minWidth: 300,
-  maxWidth: 500,
-  wordBreak: "break-word",
-  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-  fontWeight: 500,
-};
 
 const CliScrollbarStyles = () => (
   <style>{`
@@ -400,27 +273,11 @@ const CliPageShell = ({ children }) => (
 );
 
 const CliBreadcrumb = () => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      flexShrink: 0,
-    }}
-  >
-    <span>{ASTERISK_CLI_PAGE_BREADCRUMB_ROOT}</span>
-    <span>&gt;</span>
-    <span>{ASTERISK_CLI_PAGE_BREADCRUMB_SECTION}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>
-      {ASTERISK_CLI_PAGE_TITLE}
-    </span>
-  </div>
+  <ExtensionBreadcrumb
+    root={ASTERISK_CLI_PAGE_BREADCRUMB_ROOT}
+    section={ASTERISK_CLI_PAGE_BREADCRUMB_SECTION}
+    current={ASTERISK_CLI_PAGE_TITLE}
+  />
 );
 
 const AsteriskCLI = () => {

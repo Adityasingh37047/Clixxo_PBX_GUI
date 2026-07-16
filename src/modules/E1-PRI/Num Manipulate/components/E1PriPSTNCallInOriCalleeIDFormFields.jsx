@@ -1,0 +1,38 @@
+export {
+  E1PriNumManipulateBtn as E1PriPSTNCallInOriCalleeIDBtn,
+  E1PriNumManipulateTH as E1PriPSTNCallInOriCalleeIDTH,
+  E1PriNumManipulateFieldLabel as E1PriPSTNCallInOriCalleeIDFieldLabel,
+  E1PriNumManipulateFieldRow as E1PriPSTNCallInOriCalleeIDFieldRow,
+  E1PriNumManipulateModalFormFields as E1PriPSTNCallInOriCalleeIDModalFormFields,
+  e1PriNumManipulateCardStyle as e1PriPSTNCallInOriCalleeIDCardStyle,
+  e1PriNumManipulateToolbarStyle as e1PriPSTNCallInOriCalleeIDToolbarStyle,
+  e1PriNumManipulatePaginationStyle as e1PriPSTNCallInOriCalleeIDPaginationStyle,
+  e1PriNumManipulatePageBadgeStyle as e1PriPSTNCallInOriCalleeIDPageBadgeStyle,
+  e1PriNumManipulateCancelBtnStyle as e1PriPSTNCallInOriCalleeIDCancelBtnStyle,
+  e1PriNumManipulateToolbarBtnStyle as e1PriPSTNCallInOriCalleeIDToolbarBtnStyle,
+  e1PriNumManipulateAddNewModalFooterStyle as e1PriPSTNCallInOriCalleeIDAddNewModalFooterStyle,
+  e1PriNumManipulateAddNewModalFooterBtnStyle as e1PriPSTNCallInOriCalleeIDAddNewModalFooterBtnStyle,
+  e1PriNumManipulateAddNewModalFooterCancelBtnStyle as e1PriPSTNCallInOriCalleeIDAddNewModalFooterCancelBtnStyle,
+  e1PriNumManipulateCheckboxSx as e1PriPSTNCallInOriCalleeIDCheckboxSx,
+  e1PriNumManipulateTdStyle as e1PriPSTNCallInOriCalleeIDTdStyle,
+  e1PriNumManipulateC as e1PriPSTNCallInOriCalleeIDC,
+  createE1PriNumManipulateDialogConfig,
+  createE1PriNumManipulateBreadcrumb,
+} from "./E1PriNumManipulateSharedFormFields";
+
+import {
+  createE1PriNumManipulateBreadcrumb as createBreadcrumb,
+  createE1PriNumManipulateDialogConfig,
+} from "./E1PriNumManipulateSharedFormFields";
+import {
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_TITLE,
+} from "../../../../constants/E1PriPSTNCallInOriCalleeIDConstants";
+
+export const E1PriPSTNCallInOriCalleeIDBreadcrumb = createBreadcrumb(
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_BREADCRUMB_SECTION,
+  NUM_MANIPULATE_PSTN_CALL_IN_ORICALLEEID_PAGE_TITLE,
+);
+
+export const e1PriPSTNCallInOriCalleeIDDialogConfig =
+  createE1PriNumManipulateDialogConfig(600);

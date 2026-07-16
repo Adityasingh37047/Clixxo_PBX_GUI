@@ -14,7 +14,7 @@ const extensionPageInnerStyle = {
   margin: "0 auto",
 };
 
-const ExtensionBreadcrumb = ({ section, current, style }) => (
+const ExtensionBreadcrumb = ({ root = "PBX", section, current, style }) => (
   <div
     style={{
       fontSize: 12,
@@ -28,7 +28,7 @@ const ExtensionBreadcrumb = ({ section, current, style }) => (
       ...style,
     }}
   >
-    <span>PBX</span>
+    <span>{root}</span>
     <span>&gt;</span>
     <span>{section}</span>
     <span>&gt;</span>

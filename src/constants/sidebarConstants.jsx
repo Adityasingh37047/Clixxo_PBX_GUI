@@ -14,6 +14,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import PhoneInTalkIcon from "@mui/icons-material/PhoneInTalk";
 import SettingsPhoneIcon from "@mui/icons-material/SettingsPhone";
+import SecurityIcon from "@mui/icons-material/Security";
 import { ROUTE_PATHS } from "./routeConstants";
 import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
 import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
@@ -663,16 +664,6 @@ export const SIDEBAR_SECTIONS = [
             title: "IP Route Table",
             path: "/system-tools/ip-routing-table",
           },
-          {
-            id: "sysSipAccessControl",
-            title: "SIP Access Control",
-            path: "/system-tools/sip-access-control",
-          },
-          {
-            id: "sysAccessControl",
-            title: "Access Control",
-            path: "/system-tools/access-control",
-          },
           { id: "sysVpn", title: "VPN", path: "/system-tools/vpn" },
           {
             id: "sysCentralizedManage",
@@ -699,6 +690,35 @@ export const SIDEBAR_SECTIONS = [
             id: "sysLinuxCLI",
             title: "Linux CLI",
             path: "/system-tools/linux-cli",
+          },
+        ],
+      },
+    ],
+  },
+
+  // Security
+
+  {
+    id: "security",
+    title: "Security",
+    icon: SecurityIcon,
+    hasSubmenu: true,
+    path: "/system-tools/access-control",
+    submenuItems: [
+      {
+        id: "securityRules",
+        title: "Security Rules",
+        icon: SecurityIcon,
+        items: [
+          {
+            id: "sysAccessControl",
+            title: "Access Control",
+            path: "/system-tools/access-control",
+          },
+          {
+            id: "sysSipAccessControl",
+            title: "SIP Access Control",
+            path: "/system-tools/sip-access-control",
           },
         ],
       },

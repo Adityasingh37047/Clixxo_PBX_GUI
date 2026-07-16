@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import {
@@ -10,21 +10,8 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Tooltip,
-  useMediaQuery,
 } from "@mui/material";
-import {
-  createPickupGroup,
-  deletePickupGroup,
-  listPickupGroupExtensions,
-  listPickupGroups,
-  updatePickupGroup,
-} from "../../../api/apiService";
-import {
-  PICKUP_GROUP_FIELD_TOOLTIPS,
-  PICKUP_GROUP_ITEMS_PER_PAGE,
-  PICKUP_GROUP_TITLE,
-} from "../../../constants/PickupGroupConstants";
+import { PICKUP_GROUP_TITLE } from "../../../constants/PickupGroupConstants";
 import {
   Btn,
   TH,
@@ -32,6 +19,8 @@ import {
   ExtensionBreadcrumb as PickupGroupBreadcrumb,
   ExtensionTableListLoading as PickupGroupTableListLoading,
   ExtensionTableListEmptyState as PickupGroupTableListEmptyState,
+  ExtensionPagination as PickupGroupPagination,
+  ExtensionCodecDualList as PickupGroupCodecDualList,
   extensionTableCheckboxSx as pickupGroupTableCheckboxSx,
   extensionFixedAlertSx as pickupGroupFixedAlertSx,
   extensionPageWrapStyle as pickupGroupPageWrapStyle,
@@ -41,671 +30,62 @@ import {
   extensionSelectedBadgeStyle as pickupGroupSelectedBadgeStyle,
   extensionCancelBtnStyle as pickupGroupCancelBtnStyle,
   extensionPrimaryBtnStyle as pickupGroupPrimaryBtnStyle,
-  ExtensionCodecDualList as PickupGroupCodecDualList,
 } from "../../../components/common";
-
-const PICKUP_GROUP_COMPACT_MQ = "(max-width: 768px)";
-
-// ── Color palette ─────────────────────────────────────────────────────────────
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-  placeholderText: "#94a3b8",
-};
-
-// ── Local page UI ──
-
-
-const PICKUP_GROUP_TABLE_CARD_RADIUS = 4;
-
-const pickupGroupPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: PICKUP_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const pickupGroupPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const pickupGroupEditIconStyle = {
-  cursor: "pointer",
-  color: "#2563eb",
-  fontSize: 22,
-  opacity: 0.7,
-  transition: "opacity 0.15s ease",
-};
-
-const handlePickupGroupEditIconHover = (e, entering) => {
-  e.currentTarget.style.opacity = entering ? "1" : "0.7";
-};
-
-const OUTLINED_BORDER = "#d1d5db";
-const OUTLINED_HOVER = "#9ca3af";
-const OUTLINED_FOCUS = "#3E5475";
-const FOCUS_RING_SHADOW = "0 0 0 2px rgba(62, 84, 117, 0.15)";
-
-const pickupGroupOutlinedInputRootSx = {
-  backgroundColor: "#fff",
-  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  "& fieldset": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover fieldset": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused": {
-    boxShadow: FOCUS_RING_SHADOW,
-  },
-  "&.Mui-focused fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "&.Mui-focused:hover fieldset": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-};
-
-const pickupGroupModalTextFieldFullSx = {
-  width: "100%",
-  "& .MuiOutlinedInput-root": {
-    ...pickupGroupOutlinedInputRootSx,
-    minHeight: 36,
-    height: 36,
-    fontSize: 13,
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "7px 10px",
-    fontSize: 13,
-    boxSizing: "border-box",
-    backgroundColor: "#fff",
-  },
-};
-
-const pickupGroupModalSelectSx = {
-  fontSize: 13,
-  backgroundColor: "#fff",
-  width: "100%",
-  minHeight: 36,
-  height: 36,
-  ...pickupGroupOutlinedInputRootSx,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_BORDER,
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_HOVER,
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: OUTLINED_FOCUS,
-    borderWidth: "1px",
-  },
-  "& .MuiSelect-select": {
-    display: "flex",
-    alignItems: "center",
-    padding: "7px 32px 7px 10px !important",
-    lineHeight: 1.35,
-    boxSizing: "border-box",
-    fontSize: 13,
-    backgroundColor: "#fff",
-  },
-};
-
-const PICKUP_GROUP_MODAL_LABEL_WIDTH = 140;
-const PICKUP_GROUP_MODAL_NAME_LABEL_WIDTH = 80;
-const PICKUP_GROUP_MODAL_NAME_FIELD_WIDTH = 480;
-
-const pickupGroupModalNameTextFieldSx = {
-  ...pickupGroupModalTextFieldFullSx,
-  width: PICKUP_GROUP_MODAL_NAME_FIELD_WIDTH,
-  maxWidth: "100%",
-};
-
-const pickupGroupModalPaperSx = {
-  width: 680,
-  maxWidth: "96vw",
-  margin: 24,
-  maxHeight: "calc(100vh - 80px - 48px)",
-  display: "flex",
-  flexDirection: "column",
-  p: 0,
-  borderRadius: 2,
-  overflow: "hidden",
-  boxShadow:
-    "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-};
-
-const pickupGroupModalTitleStyle = {
-  background: "#1e2d42",
-  color: "#ffffff",
-  fontWeight: 600,
-  fontSize: 16,
-  padding: "16px 24px",
-  textAlign: "center",
-  borderTopLeftRadius: 4,
-  borderTopRightRadius: 4,
-};
-
-const pickupGroupModalSectionStyle = {
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const addNewModalFooterCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const pickupGroupModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  borderRadius: 4,
-};
-
-const PICKUP_GROUP_TOOLTIP_PROPS = {
-  arrow: true,
-  placement: "top",
-  slotProps: {
-    tooltip: {
-      sx: {
-        backgroundColor: "#fff",
-        color: "#333",
-        border: "1px solid #d1d5db",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        fontSize: 12,
-        lineHeight: 1.45,
-        maxWidth: 500,
-        padding: "10px 12px",
-      },
-    },
-    arrow: {
-      sx: { color: "#fff" },
-    },
-  },
-};
-
-const formatPickupGroupTooltipTitle = (text) => {
-  if (!text) return "";
-  const normalized = text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-  if (normalized.includes("\n")) {
-    return (
-      <span style={{ whiteSpace: "pre-line", display: "block" }}>
-        {normalized}
-      </span>
-    );
-  }
-  return normalized;
-};
-
-const PICKUP_GROUP_MODAL_SECTION_BG = "#f8fafc";
-const PICKUP_GROUP_MODAL_SECTION_HEADING_COLOR = "#30415A";
-
-const PickupGroupFieldLabel = ({
-  tooltipKey,
-  children,
-  required,
-  style = {},
-}) => {
-  const tooltip = PICKUP_GROUP_FIELD_TOOLTIPS[tooltipKey] || "";
-  const label = (
-    <span
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.labelText,
-        cursor: tooltip ? "help" : undefined,
-        ...style,
-      }}
-    >
-      {children}
-      {required ? (
-        <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
-      ) : null}
-    </span>
-  );
-  if (!tooltip) return label;
-  return (
-    <Tooltip
-      title={formatPickupGroupTooltipTitle(tooltip)}
-      {...PICKUP_GROUP_TOOLTIP_PROPS}
-    >
-      {label}
-    </Tooltip>
-  );
-};
-
-const PickupGroupFieldRow = ({
-  label,
-  tooltipKey,
-  required,
-  children,
-  labelWidth = PICKUP_GROUP_MODAL_LABEL_WIDTH,
-}) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-    {tooltipKey ? (
-      <PickupGroupFieldLabel
-        tooltipKey={tooltipKey}
-        required={required}
-        style={{
-          width: labelWidth,
-          flexShrink: 0,
-        }}
-      >
-        {label}
-      </PickupGroupFieldLabel>
-    ) : (
-      <label
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: C.labelText,
-          width: labelWidth,
-          flexShrink: 0,
-        }}
-      >
-        {label}
-        {required ? (
-          <span style={{ color: C.errorRed, marginLeft: 2 }}>*</span>
-        ) : null}
-      </label>
-    )}
-    <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-  </div>
-);
-
-const PickupGroupSectionHeading = ({
-  title,
-  isFirst = false,
-  required = false,
-  tooltipKey,
-}) => {
-  const isLaptopNarrow = useMediaQuery("(max-width: 1366px)");
-  const heading = (
-    <span
-      style={{
-        position: "absolute",
-        top: -10,
-        left: isLaptopNarrow ? 0 : -6,
-        background: PICKUP_GROUP_MODAL_SECTION_BG,
-        paddingRight: 8,
-        fontSize: 14,
-        fontWeight: 600,
-        color: PICKUP_GROUP_MODAL_SECTION_HEADING_COLOR,
-        cursor: tooltipKey ? "help" : undefined,
-      }}
-    >
-      {title}
-      {required ? <span style={{ color: C.errorRed }}> *</span> : null}
-    </span>
-  );
-  const tooltip = tooltipKey ? PICKUP_GROUP_FIELD_TOOLTIPS[tooltipKey] : "";
-  return (
-    <div
-      style={{
-        margin: isFirst
-          ? isLaptopNarrow
-            ? "16px 0 24px 0"
-            : "0 0 24px 0"
-          : "28px 0 24px 0",
-        position: "relative",
-        width: "100%",
-      }}
-    >
-      <div style={{ borderTop: `1px solid ${C.divider}` }} />
-      {tooltip ? (
-        <Tooltip
-          title={formatPickupGroupTooltipTitle(tooltip)}
-          {...PICKUP_GROUP_TOOLTIP_PROPS}
-        >
-          {heading}
-        </Tooltip>
-      ) : (
-        heading
-      )}
-    </div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
+import { usePickupGroupPage } from "./hooks/usePickupGroupPage";
+import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  PickupGroupFieldRow,
+  PickupGroupSectionHeading,
+  pickupGroupModalCancelBtnStyle,
+  pickupGroupModalNameTextFieldSx,
+  pickupGroupModalPaperSx,
+  pickupGroupModalSectionStyle,
+  pickupGroupModalTitleStyle,
+  PICKUP_GROUP_MODAL_NAME_LABEL_WIDTH,
+} from "./components/PickupGroupFormFields";
+import {
+  formatPickupGroupMembersDisplay,
+  getPickupGroupRowBg,
+  handlePickupGroupEditIconHover,
+  pickupGroupEditIconStyle,
+} from "./components/PickupGroupTableHelpers";
 
 const PickupGroup = () => {
-  const isCompact = useMediaQuery(PICKUP_GROUP_COMPACT_MQ);
-  const [rows, setRows] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState({
-    save: false,
-    delete: false,
-    extensions: false,
-    list: false,
-  });
-  const [message, setMessage] = useState({ type: "", text: "" });
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const hasLoadedExtensionsRef = useRef(false);
-
-  // Search & Pagination
-  const itemsPerPage = PICKUP_GROUP_ITEMS_PER_PAGE;
-  const [page, setPage] = useState(1);
-
-  // Modal State
-  const [editId, setEditId] = useState(null);
-  const [name, setName] = useState("");
-
-  // Dual list state
-  const [availableExtensions, setAvailableExtensions] = useState([]);
-  const [memberExtensions, setMemberExtensions] = useState([]);
-
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: "", text: "" }), 5000);
-  };
-
-  const normalizePickupGroupList = (res) => {
-    const list = Array.isArray(res?.message)
-      ? res.message
-      : Array.isArray(res?.data)
-        ? res.data
-        : [];
-    return list.map((g) => ({
-      id: g.id,
-      name: g.name,
-      members: Array.isArray(g.members) ? g.members.map(String) : [],
-    }));
-  };
-
-  const refreshPickupGroups = async () => {
-    setLoading((prev) => ({ ...prev, list: true }));
-    try {
-      const res = await listPickupGroups();
-      if (res?.response === false) {
-        showMessage("error", res?.message || "Failed to list pickup groups.");
-        setRows([]);
-        return;
-      }
-      setRows(normalizePickupGroupList(res));
-    } catch (err) {
-      showMessage("error", err?.message || "Failed to list pickup groups.");
-      setRows([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, list: false }));
-      setIsInitialLoad(false);
-    }
-  };
-
-  useEffect(() => {
-    refreshPickupGroups();
-  }, []);
-
-  const loadExtensions = async () => {
-    setLoading((prev) => ({ ...prev, extensions: true }));
-    try {
-      const res = await listPickupGroupExtensions();
-      if (res?.response === false) {
-        showMessage("error", res?.message || "Failed to load extensions.");
-        setAvailableExtensions([]);
-        return;
-      }
-      const list = Array.isArray(res?.message)
-        ? res.message
-        : Array.isArray(res?.data)
-          ? res.data
-          : [];
-      const exts = list
-        .filter((e) => e && e.extension)
-        .map((e) => {
-          const ext = String(e.extension);
-          const display = (e.display_name || "").trim();
-          return {
-            value: ext,
-            label: display ? `${ext}-${display}` : ext,
-          };
-        })
-        .sort((a, b) => {
-          const an = parseInt(a.value, 10);
-          const bn = parseInt(b.value, 10);
-          if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn)
-            return an - bn;
-          return a.label.localeCompare(b.label);
-        });
-      setAvailableExtensions(exts);
-      hasLoadedExtensionsRef.current = true;
-    } catch (err) {
-      showMessage("error", err?.message || "Failed to load extensions.");
-      setAvailableExtensions([]);
-    } finally {
-      setLoading((prev) => ({ ...prev, extensions: false }));
-    }
-  };
-
-  // ── Search & Pagination ──
-  const filteredRows = rows;
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
-  const pagedRows = filteredRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage,
-  );
-
-  useEffect(() => {
-    setPage((current) =>
-      Math.min(
-        Math.max(1, current),
-        Math.max(1, Math.ceil(filteredRows.length / itemsPerPage)),
-      ),
-    );
-  }, [filteredRows.length]);
-
-  const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-  const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-
-  // ── Checkbox Logic ──
-  const pageIndices = pagedRows.map(
-    (_, idx) => (page - 1) * itemsPerPage + idx,
-  );
-  const allPageSelected =
-    pageIndices.length > 0 && pageIndices.every((i) => selected.includes(i));
-  const somePageSelected =
-    pageIndices.some((i) => selected.includes(i)) && !allPageSelected;
-
-  const handleToggleRow = (idx) =>
-    setSelected((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-    );
-  const handleToggleAll = () => {
-    if (!pageIndices.length) return;
-    setSelected((prev) =>
-      allPageSelected
-        ? prev.filter((i) => !pageIndices.includes(i))
-        : Array.from(new Set([...prev, ...pageIndices])),
-    );
-  };
-
-  // ── Form Handlers ──
-  const resetForm = () => {
-    setEditId(null);
-    setName("");
-    setMemberExtensions([]);
-  };
-
-  const handleOpenAddModal = async () => {
-    resetForm();
-    setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) await loadExtensions();
-  };
-
-  const handleOpenEditModal = async (row) => {
-    setEditId(row.id);
-    setName(row.name || "");
-    setMemberExtensions(Array.isArray(row.members) ? row.members : []);
-    setShowModal(true);
-    if (!hasLoadedExtensionsRef.current) await loadExtensions();
-  };
-
-  const handleCloseModal = () => {
-    if (loading.save) return;
-    setShowModal(false);
-    resetForm();
-  };
-
-  const handleDelete = () => {
-    if (selected.length === 0)
-      return showMessage("error", "Please select at least one row to delete.");
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selected.length} records?`,
-      )
-    )
-      return;
-
-    setLoading((prev) => ({ ...prev, delete: true }));
-    (async () => {
-      try {
-        const toDelete = filteredRows.filter((_, idx) =>
-          selected.includes(idx),
-        );
-        for (const row of toDelete) {
-          if (row.id != null) {
-            const res = await deletePickupGroup(row.id);
-            if (res?.response === false) {
-              showMessage(
-                "error",
-                res?.message || "Failed to delete pickup group.",
-              );
-              break;
-            }
-          }
-        }
-        setSelected([]);
-        await refreshPickupGroups();
-        showMessage("success", "Pickup Group(s) deleted successfully.");
-      } catch (err) {
-        showMessage(
-          "error",
-          err?.message || "Failed to delete pickup group(s).",
-        );
-      } finally {
-        setLoading((prev) => ({ ...prev, delete: false }));
-      }
-    })();
-  };
-
-  const handleSave = () => {
-    const trimmed = name.trim();
-    if (!trimmed) return showMessage("error", "Name is required.");
-    if (!/^[A-Za-z0-9_]+$/.test(trimmed))
-      return showMessage(
-        "error",
-        "Name may contain only letters, numbers, and underscore.",
-      );
-    if (!memberExtensions.length)
-      return showMessage("error", "Please select at least one Member.");
-
-    setLoading((prev) => ({ ...prev, save: true }));
-    (async () => {
-      try {
-        if (editId != null) {
-          const res = await updatePickupGroup(editId, {
-            name: trimmed,
-            members: memberExtensions.map(String),
-          });
-          if (res?.response === false)
-            return showMessage(
-              "error",
-              res?.message || "Failed to update pickup group.",
-            );
-          await refreshPickupGroups();
-          showMessage("success", "Pickup group updated successfully.");
-        } else {
-          const res = await createPickupGroup(
-            trimmed,
-            memberExtensions.map(String),
-          );
-          if (res?.response === false)
-            return showMessage(
-              "error",
-              res?.message || "Failed to create pickup group.",
-            );
-          setRows(normalizePickupGroupList(res));
-          showMessage("success", "Pickup group created successfully.");
-        }
-        handleCloseModal();
-      } catch (err) {
-        showMessage("error", err?.message || "Failed to save pickup group.");
-      } finally {
-        setLoading((prev) => ({ ...prev, save: false }));
-      }
-    })();
-  };
-
-  const getExtLabel = (ext) => {
-    const found = availableExtensions.find((e) => e.value === ext);
-    return found?.label || ext;
-  };
-
-  const allExtensionOptions = useMemo(
-    () =>
-      availableExtensions.map(({ value, label }) => ({ value, label })),
-    [availableExtensions],
-  );
-
-  const availableMemberEmptyText = loading.extensions
-    ? "Loading..."
-    : "No extension";
+  const vm = usePickupGroupPage();
+  const {
+    isCompact,
+    rows,
+    selected,
+    showModal,
+    loading,
+    message,
+    setMessage,
+    isInitialLoad,
+    itemsPerPage,
+    page,
+    setPage,
+    totalPages,
+    pagedRows,
+    filteredRows,
+    editId,
+    name,
+    setName,
+    memberExtensions,
+    setMemberExtensions,
+    allExtensionOptions,
+    getExtLabel,
+    availableMemberEmptyText,
+    allPageSelected,
+    somePageSelected,
+    handleToggleRow,
+    handleToggleAll,
+    handleDelete,
+    handleOpenAddModal,
+    handleOpenEditModal,
+    handleCloseModal,
+    handleSave,
+  } = vm;
 
   return (
     <div
@@ -870,11 +250,7 @@ const PickupGroup = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getPickupGroupRowBg(isSelected, idx);
                     const lastRowCellStyle = {
                       borderBottom: isLastRow
                         ? "none"
@@ -937,13 +313,10 @@ const PickupGroup = () => {
                             ...lastRowCellStyle,
                           }}
                         >
-                          {(row.members || [])
-                            .slice(0, 4)
-                            .map(getExtLabel)
-                            .join(", ")}
-                          {(row.members || []).length > 4
-                            ? ` +${(row.members || []).length - 4}`
-                            : ""}
+                          {formatPickupGroupMembersDisplay(
+                            row.members,
+                            getExtLabel,
+                          )}
                         </td>
                         <td
                           style={{
@@ -981,33 +354,14 @@ const PickupGroup = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div style={pickupGroupPaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.list || page <= 1}
-                  variant="outline" 
-                  style={{ borderRadius: 4 }}
-                >
-                  ← Prev
-                </Btn>
-                <span style={pickupGroupPageBadgeStyle}>
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.list || page >= totalPages}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <PickupGroupPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>
@@ -1022,7 +376,13 @@ const PickupGroup = () => {
             justifyContent: "center",
           },
         }}
-        PaperProps={{ sx: { ...pickupGroupModalPaperSx, borderRadius: editId == null ? "4px" : pickupGroupModalPaperSx.borderRadius } }}
+        PaperProps={{
+          sx: {
+            ...pickupGroupModalPaperSx,
+            borderRadius:
+              editId == null ? "4px" : pickupGroupModalPaperSx.borderRadius,
+          },
+        }}
       >
         <DialogTitle style={pickupGroupModalTitleStyle}>
           {editId != null
