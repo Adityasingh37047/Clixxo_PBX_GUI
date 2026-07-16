@@ -26,20 +26,22 @@ import {
   NETWORK_PROGRESS_SAVED_REBOOTING,
   NETWORK_PROGRESS_WAITING_REBOOT,
 } from "../../../../constants/NetworkConstants";
+
 import {
   fetchNetwork,
   resetNetworkSettings,
   saveNetworkSettings,
   postLinuxCmd,
   servicePing,
+  fetchVlanSettings,
+  saveVlanSettings,
 } from "../../../../api/apiService";
+
 import { validateNetworkForm } from "../utils/NetworkValidators";
 import {
   normalizeLanArray,
   applyStaticDefaults,
   filterAndNormalizeLanInterfaces,
-  findPrimaryVlanIface,
-  buildInitialVlanForm,
   emptyVlanForm,
   resolveVlanParentLan,
   buildNetworkSavePayload,
@@ -105,39 +107,63 @@ export function useNetworkPage() {
 
       if (data && data.data) {
         if (Array.isArray(data.data.interfaces)) {
-          const allIfaces = data.data.interfaces;
-          const filteredInterfaces = filterAndNormalizeLanInterfaces(allIfaces);
+          const filteredInterfaces = filterAndNormalizeLanInterfaces(
+            data.data.interfaces,
+          );
 
           setLanInterfaces(filteredInterfaces);
           setOriginalLanSnapshot(normalizeLanArray(filteredInterfaces));
 
-          const lan1 = filteredInterfaces[0] || {};
-          const lan2 = filteredInterfaces[1] || {};
-          // Detect VLAN on LAN 1 first, then LAN 2
-          const lan1Kernel = lan1.interface || "eth0";
-          const lan2Kernel = lan2.interface || "";
-          let vlanIface = findPrimaryVlanIface(allIfaces, lan1Kernel);
-          let selectInterface = "lan1";
-          let parentLan = lan1;
-          if (!vlanIface && lan2Kernel) {
-            vlanIface = findPrimaryVlanIface(allIfaces, lan2Kernel);
-            if (vlanIface) {
-              selectInterface = "lan2";
-              parentLan = lan2;
+          try {
+            const vlanRes = await fetchVlanSettings();
+
+            if (vlanRes?.response) {
+              const enabled = Boolean(vlanRes.data?.enabled);
+              const parents = vlanRes.data?.parents || [];
+              const vlans = vlanRes.data?.vlans || [];
+              const vlan0 = vlans[0];
+
+              const parentInterface =
+                vlan0?.parentInterface || parents[0] || "eth0";
+
+              const selectInterface =
+                parentInterface === "eth1" ? "lan2" : "lan1";
+
+              const parentLan =
+                filteredInterfaces.find(
+                  (iface) => iface.interface === parentInterface,
+                ) ||
+                filteredInterfaces[0] ||
+                {};
+
+              setVlanEnabled(enabled);
+              setVlanForm({
+                selectInterface,
+                lan1Ip: parentLan.ipAddress || "",
+                lan1Mask: parentLan.subnetMask || "",
+                lan1Gw: parentLan.defaultGateway || "",
+                vlan1Id: vlan0?.vlanId != null ? String(vlan0.vlanId) : "",
+                vlan1Ip: vlan0?.ipAddress || "",
+                vlan1Mask: vlan0?.subnetMask || "",
+                vlan1Gw: vlan0?.gateway || "",
+                vlan2Id: "",
+                vlan2Ip: "",
+                vlan2Mask: "",
+                vlan2Gw: "",
+                vlan3Id: "",
+                vlan3Ip: "",
+                vlan3Mask: "",
+                vlan3Gw: "",
+              });
+            } else {
+              setVlanEnabled(false);
+              setVlanForm(emptyVlanForm());
             }
+          } catch (vlanErr) {
+            console.warn("VLAN settings fetch failed:", vlanErr);
+            setVlanEnabled(false);
+            setVlanForm(emptyVlanForm());
           }
-          const hasVlan = Boolean(vlanIface);
-
-          const initialVlan = buildInitialVlanForm({
-            lan1: parentLan,
-            hasVlan,
-            vlanIface,
-            vlanGateway: hasVlan ? vlanIface.defaultGateway || "" : "",
-            selectInterface,
-          });
-
-          setVlanEnabled(hasVlan);
-          setVlanForm((prev) => ({ ...prev, ...initialVlan }));
         }
         const dnsSnap = data.data.dnsServers || ["", ""];
         const arpSnap = data.data.defaultArpMode || "1";
@@ -472,21 +498,49 @@ export function useNetworkPage() {
         lanInterfaces,
         dnsServers,
         arpMode,
-        vlanEnabled,
-        vlanForm,
       });
-      console.log(payload);
+
+      const selectedLan =
+        vlanForm.selectInterface === "lan2" ? lanInterfaces[1] : lanInterfaces[0];
+
+      const parentInterface =
+        selectedLan?.interface ||
+        (vlanForm.selectInterface === "lan2" ? "eth1" : "eth0");
+
+      const vlanEnablePayload = {
+        enabled: true,
+        vlans: [
+          {
+            parentInterface,
+            vlanId: Number(vlanForm.vlan1Id),
+            ipAddress: (vlanForm.vlan1Ip || "").trim(),
+            subnetMask: (vlanForm.vlan1Mask || "").trim(),
+            gateway: (vlanForm.vlan1Gw || "").trim(),
+          },
+        ],
+      };
+
+      const vlanDisablePayload = { enabled: false };
 
       const response = await saveNetworkSettings(payload);
 
       if (response.response) {
+        if (vlanEnabled) {
+          if (!vlanForm.vlan1Id || !vlanForm.vlan1Ip || !vlanForm.vlan1Mask) {
+            throw new Error("Please fill VLAN ID, IP address and subnet mask.");
+          }
+          await saveVlanSettings(vlanEnablePayload);
+        } else {
+          await saveVlanSettings(vlanDisablePayload);
+        }
+
         setHasChanges(false);
         setLoading(false);
         await triggerNetworkRestart(pendingList);
         return;
-      } else {
-        throw new Error(response.message || NETWORK_ERR_SAVE_FAILED);
       }
+
+      throw new Error(response.message || NETWORK_ERR_SAVE_FAILED);
     } catch (error) {
       console.error("Network save error:", error);
 
