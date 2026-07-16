@@ -39,14 +39,10 @@ import {
   applyStaticDefaults,
   filterAndNormalizeLanInterfaces,
   findPrimaryVlanIface,
-  VLAN_CFG_GATEWAY_CMD,
-  parseVlanCfgGateway,
   buildInitialVlanForm,
   emptyVlanForm,
-  subnetMaskToCidr,
+  resolveVlanParentLan,
   buildNetworkSavePayload,
-  buildVlanEnableCmd,
-  buildVlanDisableCmd,
   NETWORK_REBOOT_CMD,
 } from "../utils/NetworkTransformers";
 
@@ -116,36 +112,28 @@ export function useNetworkPage() {
           setOriginalLanSnapshot(normalizeLanArray(filteredInterfaces));
 
           const lan1 = filteredInterfaces[0] || {};
-          // Detect VLAN sub-interfaces (e.g. enp4s0.100, eth0.100) using the
-          // primary interface's actual kernel name as the parent
-          const primaryKernelName = lan1.interface || "eth0";
-          const vlanIface = findPrimaryVlanIface(allIfaces, primaryKernelName);
-          const hasVlan = Boolean(vlanIface);
-
-          // Try to read VLAN gateway from vlan.cfg if it exists
-          let vlanGateway = "";
-          if (hasVlan) {
-            try {
-              const vlanCfgGwRes = await postLinuxCmd({
-                cmd: VLAN_CFG_GATEWAY_CMD,
-              });
-              vlanGateway = parseVlanCfgGateway(vlanCfgGwRes);
-              if (vlanGateway) {
-                console.log(
-                  "Read VLAN gateway from /etc/network/interfaces.d/vlan.cfg:",
-                  vlanGateway,
-                );
-              }
-            } catch (e) {
-              console.warn("Failed to read VLAN gateway from vlan.cfg:", e);
+          const lan2 = filteredInterfaces[1] || {};
+          // Detect VLAN on LAN 1 first, then LAN 2
+          const lan1Kernel = lan1.interface || "eth0";
+          const lan2Kernel = lan2.interface || "";
+          let vlanIface = findPrimaryVlanIface(allIfaces, lan1Kernel);
+          let selectInterface = "lan1";
+          let parentLan = lan1;
+          if (!vlanIface && lan2Kernel) {
+            vlanIface = findPrimaryVlanIface(allIfaces, lan2Kernel);
+            if (vlanIface) {
+              selectInterface = "lan2";
+              parentLan = lan2;
             }
           }
+          const hasVlan = Boolean(vlanIface);
 
           const initialVlan = buildInitialVlanForm({
-            lan1,
+            lan1: parentLan,
             hasVlan,
             vlanIface,
-            vlanGateway,
+            vlanGateway: hasVlan ? vlanIface.defaultGateway || "" : "",
+            selectInterface,
           });
 
           setVlanEnabled(hasVlan);
@@ -258,6 +246,17 @@ export function useNetworkPage() {
 
   const handleVlanChange = (field, value) => {
     setHasChanges(true);
+    if (field === "selectInterface") {
+      const lan = resolveVlanParentLan(lanInterfaces, value);
+      setVlanForm((prev) => ({
+        ...prev,
+        selectInterface: value,
+        lan1Ip: lan.ipAddress || "",
+        lan1Mask: lan.subnetMask || "",
+        lan1Gw: lan.defaultGateway || "",
+      }));
+      return;
+    }
     setVlanForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -269,15 +268,14 @@ export function useNetworkPage() {
 
   const handleEnableVlan = () => {
     try {
-      const lan1 =
-        (lanInterfaces || []).find(
-          (l) => l.name === "LAN 1" || l.interface === "eth0",
-        ) || {};
+      const selectInterface = vlanForm.selectInterface || "lan1";
+      const lan = resolveVlanParentLan(lanInterfaces, selectInterface);
       setVlanForm((prev) => ({
         ...prev,
-        lan1Ip: lan1.ipAddress || prev.lan1Ip || "",
-        lan1Mask: lan1.subnetMask || prev.lan1Mask || "",
-        lan1Gw: lan1.defaultGateway || prev.lan1Gw || "",
+        selectInterface,
+        lan1Ip: lan.ipAddress || prev.lan1Ip || "",
+        lan1Mask: lan.subnetMask || prev.lan1Mask || "",
+        lan1Gw: lan.defaultGateway || prev.lan1Gw || "",
       }));
     } catch {
       /* ignore */
@@ -482,44 +480,6 @@ export function useNetworkPage() {
       const response = await saveNetworkSettings(payload);
 
       if (response.response) {
-        // If VLAN is enabled, configure VLAN interface using Linux CLI
-        try {
-          if (vlanEnabled) {
-            const vlanId = String(vlanForm.vlan1Id || "").trim();
-            const vlanIp = String(vlanForm.vlan1Ip || "").trim();
-            const vlanMask = String(vlanForm.vlan1Mask || "").trim();
-            const vlanGw = String(vlanForm.vlan1Gw || "").trim();
-            const cidr = subnetMaskToCidr(vlanMask);
-            // Use actual kernel name of first LAN interface as VLAN parent
-            const parentIface = lanInterfaces[0]?.interface || "eth0";
-            if (vlanId && vlanIp && cidr !== null) {
-              const cmd = buildVlanEnableCmd({
-                parentIface,
-                vlanId,
-                vlanIp,
-                vlanMask,
-                vlanGw,
-                cidr,
-              });
-              const vlanRes = await postLinuxCmd({ cmd });
-              const out = String(vlanRes?.responseData || "").trim();
-              if (!/VLAN_CREATED/.test(out)) {
-                showToast(
-                  `VLAN create command did not confirm success. Output:\n${out || "(no output)"}`,
-                  "warning",
-                );
-              }
-            }
-          } else {
-            // VLAN disabled: remove any VLAN sub-interfaces of the primary LAN interface
-            const parentIface = lanInterfaces[0]?.interface || "eth0";
-            const removeCmd = buildVlanDisableCmd(parentIface);
-            await postLinuxCmd({ cmd: removeCmd });
-          }
-        } catch {
-          /* ignore */
-        }
-
         setHasChanges(false);
         setLoading(false);
         await triggerNetworkRestart(pendingList);

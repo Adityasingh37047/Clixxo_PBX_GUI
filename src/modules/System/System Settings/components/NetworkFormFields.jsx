@@ -560,15 +560,31 @@ export const VlanInputField = ({
   <NetworkFieldRow
     key={fieldDef.key}
     label={fieldDef.label}
+    tooltipKey={fieldDef.key}
     labelColWidth={labelColWidth}
   >
-    <input
-      type="text"
-      value={vlanForm[fieldDef.key] || ""}
-      onChange={(e) => onVlanChange(fieldDef.key, e.target.value)}
-      style={inputStyle}
-      {...inputInteraction}
-    />
+    {fieldDef.type === "select" ? (
+      <select
+        value={vlanForm[fieldDef.key] || fieldDef.options?.[0]?.value || ""}
+        onChange={(e) => onVlanChange(fieldDef.key, e.target.value)}
+        style={selectStyle}
+        {...inputInteraction}
+      >
+        {(fieldDef.options || []).map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <input
+        type="text"
+        value={vlanForm[fieldDef.key] || ""}
+        onChange={(e) => onVlanChange(fieldDef.key, e.target.value)}
+        style={inputStyle}
+        {...inputInteraction}
+      />
+    )}
   </NetworkFieldRow>
 );
 

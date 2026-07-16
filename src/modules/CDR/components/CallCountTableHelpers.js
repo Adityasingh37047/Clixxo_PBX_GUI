@@ -93,7 +93,7 @@ export const callCountFilterModalCancelBtnStyle = {
 };
 const callCountFilterControlBase = {
   height: 36, fontSize: 13, color: C.valueText, background: "#ffffff",
-  border: `1px solid ${OUTLINED_BORDER}`, borderRadius: 10, padding: "0 12px",
+  border: `1px solid ${OUTLINED_BORDER}`, borderRadius: 4, padding: "0 12px",
   outline: "none", fontFamily: "Inter, sans-serif",
   transition: "border-color 0.2s ease, box-shadow 0.2s ease", boxSizing: "border-box", boxShadow: "none",
 };

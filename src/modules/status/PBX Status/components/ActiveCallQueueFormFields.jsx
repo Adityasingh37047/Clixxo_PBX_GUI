@@ -303,7 +303,7 @@ const activeCallQueueStatsHeaderStyle = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "10px 28px 10px 14px",
+  padding: "7px 14px",
   fontWeight: 700,
   fontSize: 13,
   color: C.labelText,
@@ -577,39 +577,6 @@ const RatePill = ({ value }) => (
   </span>
 );
 
-// ── Loading / Empty states ───────────────────────────────────────────────────
-const LoadingRow = ({ cols }) => (
-  <tr>
-    <td
-      colSpan={cols}
-      style={{
-        textAlign: "center",
-        padding: 32,
-        color: C.mutedText,
-        fontSize: 13,
-      }}
-    >
-      <CircularProgress size={20} style={{ color: C.accent }} />
-    </td>
-  </tr>
-);
-
-const EmptyRow = ({ cols, msg = "No data available" }) => (
-  <tr>
-    <td
-      colSpan={cols}
-      style={{
-        textAlign: "center",
-        padding: "32px 0",
-        color: C.mutedText,
-        fontSize: 13,
-      }}
-    >
-      {msg}
-    </td>
-  </tr>
-);
-
 // ═══════════════════════════════════════════════════════════════════════════
 // CALL QUEUE STATISTICS VIEW
 // ═══════════════════════════════════════════════════════════════════════════
@@ -732,139 +699,146 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
           {/* ── AGENT STATISTICS TAB ── */}
           {activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.agent && (
             <>
-              {/* Agent table */}
-              <div
-                style={{
-                  ...statsTableWrapStyle,
-                  ...(isCompact
-                    ? {
-                        overflowX: "auto",
-                        WebkitOverflowScrolling: "touch",
-                      }
-                    : {}),
-                }}
-              >
-                <table
-                  style={{
-                    ...statsTableStyle,
-                    ...(isCompact
-                      ? {
-                          minWidth: ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
-                          tableLayout: "auto",
-                        }
-                      : {}),
-                  }}
-                >
-                  <StatsColGroup widths={AGENT_STATS_COL_WIDTHS} />
-                  <thead>
-                    <tr>
-                      <StatsTH>Agent No.</StatsTH>
-                      <StatsTH>Agent Name</StatsTH>
-                      <StatsTH>Online Time</StatsTH>
-                      <StatsTH>Total Calls</StatsTH>
-                      <StatsTH>Answered</StatsTH>
-                      <StatsTH>Answered Rate</StatsTH>
-                      <StatsTH>Caller Hangup (Ring)</StatsTH>
-                      <StatsTH>Avg Talk Time</StatsTH>
-                      <StatsTH>Idle Time</StatsTH>
-                      <StatsTH style={{ borderRight: "none" }}>
-                        Avg Idle Time
-                      </StatsTH>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loadingAgent && agentData.length === 0 ? (
-                      <LoadingRow cols={10} />
-                    ) : filteredAgents.length === 0 ? (
-                      <EmptyRow
-                        cols={10}
-                        msg={
-                          agentSearch
-                            ? `No results for "${agentSearch}"`
-                            : "No agent data available"
-                        }
-                      />
-                    ) : (
-                      filteredAgents.map((row, i) => {
-                        const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
-                        const isLastRow = i === filteredAgents.length - 1;
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
+              {loadingAgent && agentData.length === 0 ? (
+                <div style={{ padding: "14px 16px 16px" }}>
+                  <TableListLoading />
+                </div>
+              ) : filteredAgents.length === 0 ? (
+                <div style={{ padding: "14px 16px 16px" }}>
+                  <TableListEmptyState
+                    message={
+                      agentSearch
+                        ? `No results for "${agentSearch}"`
+                        : "No agent data available"
+                    }
+                    showButton={false}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      ...statsTableWrapStyle,
+                      ...(isCompact
+                        ? {
+                            overflowX: "auto",
+                            WebkitOverflowScrolling: "touch",
+                          }
+                        : {}),
+                    }}
+                  >
+                    <table
+                      style={{
+                        ...statsTableStyle,
+                        ...(isCompact
+                          ? {
+                              minWidth: ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
+                              tableLayout: "auto",
+                            }
+                          : {}),
+                      }}
+                    >
+                      <StatsColGroup widths={AGENT_STATS_COL_WIDTHS} />
+                      <thead>
+                        <tr>
+                          <StatsTH>Agent No.</StatsTH>
+                          <StatsTH>Agent Name</StatsTH>
+                          <StatsTH>Online Time</StatsTH>
+                          <StatsTH>Total Calls</StatsTH>
+                          <StatsTH>Answered</StatsTH>
+                          <StatsTH>Answered Rate</StatsTH>
+                          <StatsTH>Caller Hangup (Ring)</StatsTH>
+                          <StatsTH>Avg Talk Time</StatsTH>
+                          <StatsTH>Idle Time</StatsTH>
+                          <StatsTH style={{ borderRight: "none" }}>
+                            Avg Idle Time
+                          </StatsTH>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredAgents.map((row, i) => {
+                          const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                          const isLastRow = i === filteredAgents.length - 1;
+                          const lastRowCellStyle = isLastRow
+                            ? { borderBottom: "none" }
+                            : {};
 
-                        return (
-                          <tr
-                            key={i}
-                            style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = rowBg;
-                            }}
-                          >
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              <strong style={{ color: C.valueText }}>
-                                {row.agent_number ?? row.agentNumber ?? "—"}
-                              </strong>
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.agent_name ?? row.agentName ?? null}
-                            </StatsTD>
-                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
-                              {row.online_time ?? row.onlineTime ?? null}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.total_calls ?? row.totalCalls ?? 0}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.answered_calls ?? row.answeredCalls ?? 0}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              <RatePill
-                                value={
-                                  row.answered_rate ?? row.answeredRate ?? 0
-                                }
-                              />
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.caller_hangup_while_agent_ring ??
-                                row.callerHangup ??
-                                0}
-                            </StatsTD>
-                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
-                              {row.avg_talk_time ?? row.averageTalkTime ?? null}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.idle_time ?? row.idleTime ?? null}
-                            </StatsTD>
-                            <StatsTD
-                              bg={rowBg}
+                          return (
+                            <tr
+                              key={i}
                               style={{
-                                ...lastRowCellStyle,
-                                borderRight: "none",
+                                background: rowBg,
+                                transition: "background 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "#f1f5f9";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = rowBg;
                               }}
                             >
-                              {row.avg_idle_time ?? row.averageIdleTime ?? null}
-                            </StatsTD>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                <strong style={{ color: C.valueText }}>
+                                  {row.agent_number ?? row.agentNumber ?? "—"}
+                                </strong>
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.agent_name ?? row.agentName ?? null}
+                              </StatsTD>
+                              <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                                {row.online_time ?? row.onlineTime ?? null}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.total_calls ?? row.totalCalls ?? 0}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.answered_calls ?? row.answeredCalls ?? 0}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                <RatePill
+                                  value={
+                                    row.answered_rate ?? row.answeredRate ?? 0
+                                  }
+                                />
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.caller_hangup_while_agent_ring ??
+                                  row.callerHangup ??
+                                  0}
+                              </StatsTD>
+                              <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                                {row.avg_talk_time ??
+                                  row.averageTalkTime ??
+                                  null}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.idle_time ?? row.idleTime ?? null}
+                              </StatsTD>
+                              <StatsTD
+                                bg={rowBg}
+                                style={{
+                                  ...lastRowCellStyle,
+                                  borderRight: "none",
+                                }}
+                              >
+                                {row.avg_idle_time ??
+                                  row.averageIdleTime ??
+                                  null}
+                              </StatsTD>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
-              {agentData.length > 0 && (
-                <div style={activeCallQueueStatsFooterStyle}>
-                  <span style={{ fontSize: 11, color: C.mutedText }}>
-                    Showing {filteredAgents.length} Agent
-                    {filteredAgents.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
+                  <div style={activeCallQueueStatsFooterStyle}>
+                    <span style={{ fontSize: 11, color: C.mutedText }}>
+                      Showing {filteredAgents.length} Agent
+                      {filteredAgents.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </>
               )}
             </>
           )}
@@ -872,132 +846,142 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
           {/* ── QUEUE STATISTICS TAB ── */}
           {activeTab === ACTIVE_CALL_QUEUE_TAB_VALUES.queue && (
             <>
-              {/* Queue table */}
-              <div
-                style={{
-                  ...statsTableWrapStyle,
-                  ...(isCompact
-                    ? {
-                        overflowX: "auto",
-                        WebkitOverflowScrolling: "touch",
-                      }
-                    : {}),
-                }}
-              >
-                <table
-                  style={{
-                    ...statsTableStyle,
-                    ...(isCompact
-                      ? {
-                          minWidth: ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
-                          tableLayout: "auto",
-                        }
-                      : {}),
-                  }}
-                >
-                  <StatsColGroup widths={QUEUE_STATS_COL_WIDTHS} />
-                  <thead>
-                    <tr>
-                      <StatsTH>Queue No.</StatsTH>
-                      <StatsTH>Queue Name</StatsTH>
-                      <StatsTH>Total Calls</StatsTH>
-                      <StatsTH>Answered</StatsTH>
-                      <StatsTH>Answered Rate</StatsTH>
-                      <StatsTH>Avg Wait Time</StatsTH>
-                      <StatsTH>Avg Talk Time</StatsTH>
-                      <StatsTH>Caller Hangup</StatsTH>
-                      <StatsTH>Timeout Calls</StatsTH>
-                      <StatsTH style={{ borderRight: "none" }}>
-                        Callback Calls
-                      </StatsTH>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loadingQueue && queueData.length === 0 ? (
-                      <LoadingRow cols={10} />
-                    ) : queueData.length === 0 ? (
-                      <EmptyRow cols={10} msg="No queue data available" />
-                    ) : (
-                      queueData.map((row, i) => {
-                        const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
-                        const isLastRow = i === queueData.length - 1;
-                        const lastRowCellStyle = isLastRow
-                          ? { borderBottom: "none" }
-                          : {};
+              {loadingQueue && queueData.length === 0 ? (
+                <div style={{ padding: "14px 16px 16px" }}>
+                  <TableListLoading />
+                </div>
+              ) : queueData.length === 0 ? (
+                <div style={{ padding: "14px 16px 16px" }}>
+                  <TableListEmptyState
+                    message="No queue data available"
+                    showButton={false}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      ...statsTableWrapStyle,
+                      ...(isCompact
+                        ? {
+                            overflowX: "auto",
+                            WebkitOverflowScrolling: "touch",
+                          }
+                        : {}),
+                    }}
+                  >
+                    <table
+                      style={{
+                        ...statsTableStyle,
+                        ...(isCompact
+                          ? {
+                              minWidth: ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH,
+                              tableLayout: "auto",
+                            }
+                          : {}),
+                      }}
+                    >
+                      <StatsColGroup widths={QUEUE_STATS_COL_WIDTHS} />
+                      <thead>
+                        <tr>
+                          <StatsTH>Queue No.</StatsTH>
+                          <StatsTH>Queue Name</StatsTH>
+                          <StatsTH>Total Calls</StatsTH>
+                          <StatsTH>Answered</StatsTH>
+                          <StatsTH>Answered Rate</StatsTH>
+                          <StatsTH>Avg Wait Time</StatsTH>
+                          <StatsTH>Avg Talk Time</StatsTH>
+                          <StatsTH>Caller Hangup</StatsTH>
+                          <StatsTH>Timeout Calls</StatsTH>
+                          <StatsTH style={{ borderRight: "none" }}>
+                            Callback Calls
+                          </StatsTH>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {queueData.map((row, i) => {
+                          const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                          const isLastRow = i === queueData.length - 1;
+                          const lastRowCellStyle = isLastRow
+                            ? { borderBottom: "none" }
+                            : {};
 
-                        return (
-                          <tr
-                            key={i}
-                            style={{
-                              background: rowBg,
-                              transition: "background 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = rowBg;
-                            }}
-                          >
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              <strong style={{ color: C.valueText }}>
-                                {row.queue_number ?? row.queueNumber ?? "—"}
-                              </strong>
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.queue_name ?? row.queueName ?? null}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.total_calls ?? row.totalCalls ?? 0}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.answered_calls ?? row.answeredCalls ?? 0}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              <RatePill
-                                value={
-                                  row.answered_rate ?? row.answeredRate ?? 0
-                                }
-                              />
-                            </StatsTD>
-                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
-                              {row.average_wait_time ?? row.avgWaitTime ?? null}
-                            </StatsTD>
-                            <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
-                              {row.average_talk_time ?? row.avgTalkTime ?? null}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.caller_hangup ?? row.callerHangup ?? 0}
-                            </StatsTD>
-                            <StatsTD bg={rowBg} style={lastRowCellStyle}>
-                              {row.call_queue_timeout_calls ??
-                                row.timeoutCalls ??
-                                0}
-                            </StatsTD>
-                            <StatsTD
-                              bg={rowBg}
+                          return (
+                            <tr
+                              key={i}
                               style={{
-                                ...lastRowCellStyle,
-                                borderRight: "none",
+                                background: rowBg,
+                                transition: "background 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "#f1f5f9";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = rowBg;
                               }}
                             >
-                              {row.callback_calls ?? row.callbackCalls ?? 0}
-                            </StatsTD>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                <strong style={{ color: C.valueText }}>
+                                  {row.queue_number ?? row.queueNumber ?? "—"}
+                                </strong>
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.queue_name ?? row.queueName ?? null}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.total_calls ?? row.totalCalls ?? 0}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.answered_calls ?? row.answeredCalls ?? 0}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                <RatePill
+                                  value={
+                                    row.answered_rate ?? row.answeredRate ?? 0
+                                  }
+                                />
+                              </StatsTD>
+                              <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                                {row.average_wait_time ??
+                                  row.avgWaitTime ??
+                                  null}
+                              </StatsTD>
+                              <StatsTD mono bg={rowBg} style={lastRowCellStyle}>
+                                {row.average_talk_time ??
+                                  row.avgTalkTime ??
+                                  null}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.caller_hangup ?? row.callerHangup ?? 0}
+                              </StatsTD>
+                              <StatsTD bg={rowBg} style={lastRowCellStyle}>
+                                {row.call_queue_timeout_calls ??
+                                  row.timeoutCalls ??
+                                  0}
+                              </StatsTD>
+                              <StatsTD
+                                bg={rowBg}
+                                style={{
+                                  ...lastRowCellStyle,
+                                  borderRight: "none",
+                                }}
+                              >
+                                {row.callback_calls ?? row.callbackCalls ?? 0}
+                              </StatsTD>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
-              {queueData.length > 0 && (
-                <div style={activeCallQueueStatsFooterStyle}>
-                  <span style={{ fontSize: 11, color: C.mutedText }}>
-                    Showing {queueData.length} Queue
-                    {queueData.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
+                  <div style={activeCallQueueStatsFooterStyle}>
+                    <span style={{ fontSize: 11, color: C.mutedText }}>
+                      Showing {queueData.length} Queue
+                      {queueData.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </>
               )}
             </>
           )}
