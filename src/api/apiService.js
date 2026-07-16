@@ -855,6 +855,30 @@ export const saveNetworkSettings = async (data)=>{
   }
 };
 
+//System-Setting-Network /get-vlan-settings
+export const fetchVlanSettings = async () => {
+  try {
+    const response = await axiosInstance.get("/get-vlan-settings");
+    return response.data;
+  } catch (error) {
+    console.log("Error fetching VLAN settings", error.message);
+    throw error;
+  }
+};
+
+//System-Setting-Network /save-vlan-settings
+export const saveVlanSettings = async (data) => {
+  try {
+    const response = await axiosInstance.post("/save-vlan-settings", data, {
+      timeout: 30000,
+    });
+    return response.data;
+  } catch (error) {
+    console.log("Error saving VLAN settings", error.message);
+    throw error;
+  }
+};
+
 export const getStorageUsage = async () => {
   try {
     const response = await axiosInstance.post("/storage-settings", {
@@ -1139,12 +1163,6 @@ export const uploadLicenseFile = async (file) => {
     throw error.response?.data || { message: 'Server unavailable' };
   }
 };
-
-
-
-
-
-
 
 // SIP Account API Services
 export const fetchSipAccounts = async () => {

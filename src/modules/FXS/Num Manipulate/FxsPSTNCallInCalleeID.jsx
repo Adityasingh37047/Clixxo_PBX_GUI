@@ -404,27 +404,27 @@ const PSTNCallInCalleeID = () => {
           </div>
         </div>
 
-        <Dialog
-          open={isModalOpen}
-          onClose={handleCloseModal}
-          maxWidth={false}
+      <Dialog
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        maxWidth={false}
           slotProps={pSTNCallInCalleeIDAddNewModalBackdropSlotProps}
           sx={dialogSx}
           PaperProps={{ sx: paperSx }}
-          disableRestoreFocus
-          disableEnforceFocus
-        >
+        disableRestoreFocus
+        disableEnforceFocus
+      >
           <DialogTitle style={modalTitleStyle}>
-            {editIndex !== null
-              ? PSTN_CALL_IN_CALLEEID_MODAL_TITLE_EDIT
-              : PSTN_CALL_IN_CALLEEID_MODAL_TITLE_ADD}
-          </DialogTitle>
-          <DialogContent
-            style={{
-              padding: "24px",
-              backgroundColor: "#ffffff",
-              flex: "1 1 auto",
-            }}
+          {editIndex !== null
+            ? PSTN_CALL_IN_CALLEEID_MODAL_TITLE_EDIT
+            : PSTN_CALL_IN_CALLEEID_MODAL_TITLE_ADD}
+        </DialogTitle>
+        <DialogContent
+          style={{
+            padding: "24px",
+            backgroundColor: "#ffffff",
+            flex: "1 1 auto",
+          }}
             sx={pSTNCallInCalleeIDAddNewModalDialogContentSx}
           >
             <PSTNCallInCalleeIDModalFormFields
@@ -433,30 +433,30 @@ const PSTNCallInCalleeID = () => {
               formData={formData}
               handleInputChange={handleInputChange}
             />
-          </DialogContent>
+        </DialogContent>
           <DialogActions sx={{ p: 0, m: 0 }} style={pSTNCallInCalleeIDAddNewModalFooterStyle}>
             <PSTNCallInCalleeIDBtn
-              variant="primary"
-              onClick={handleSave}
-              disabled={loading.save}
+            variant="primary"
+            onClick={handleSave}
+            disabled={loading.save}
               style={pSTNCallInCalleeIDAddNewModalFooterBtnStyle}
-            >
-              {loading.save
-                ? "Saving..."
-                : editIndex !== null
-                  ? "Update"
-                  : "Save"}
+          >
+            {loading.save
+              ? "Saving..."
+              : editIndex !== null
+                ? "Update"
+                : "Save"}
             </PSTNCallInCalleeIDBtn>
             <PSTNCallInCalleeIDBtn
-              variant="cancel"
-              onClick={handleCloseModal}
-              disabled={loading.save}
+            variant="cancel"
+            onClick={handleCloseModal}
+            disabled={loading.save}
               style={pSTNCallInCalleeIDAddNewModalFooterCancelBtnStyle}
-            >
-              Close
+          >
+            Close
             </PSTNCallInCalleeIDBtn>
-          </DialogActions>
-        </Dialog>
+        </DialogActions>
+      </Dialog>
       </div>
     </div>
   );

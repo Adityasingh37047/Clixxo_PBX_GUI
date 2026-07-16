@@ -32,17 +32,20 @@ const ExtensionsPage = () => {
     totalPages,
     setPage,
     handleOpenModal,
-    loading,
-    selected,
+    // loading,
+    // selected,
   } = vm;
 
   return (
     <div
-      style={{ ...extensionPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}
+      style={{
+        ...extensionPageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
     >
-      {loading.delete && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div
+      {/* {loading.delete && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"> */}
+      {/* <div
             className="bg-white rounded-lg flex flex-col items-center gap-4 pointer-events-auto"
             style={{
               minWidth: 300,
@@ -51,9 +54,9 @@ const ExtensionsPage = () => {
               boxShadow: "0 4px 16px rgba(15, 23, 42, 0.12)",
               borderRadius: 4,
             }}
-          >
-            <CircularProgress size={50} sx={{ color: C.accent }} />
-            <div
+          > */}
+      {/* <CircularProgress size={50} sx={{ color: C.accent }} /> */}
+      {/* <div
               style={{
                 fontSize: 15,
                 fontWeight: 600,
@@ -63,15 +66,15 @@ const ExtensionsPage = () => {
               }}
             >
               {getExtensionsDeleteLoadingText(selected.length)}
-            </div>
-          </div>
-        </div>
-      )}
+            </div> */}
+      {/* </div> */}
+      {/* </div>
+      )} */}
 
       <div style={extensionPageInnerStyle}>
         <MessageBanner
           message={message}
-            onClose={() => setMessage({ type: "", text: "" })}
+          onClose={() => setMessage({ type: "", text: "" })}
         />
 
         <ExtensionBreadcrumb section="Extensions" current="Extensions" />

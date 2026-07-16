@@ -145,8 +145,6 @@ export const buildNetworkSavePayload = ({
   lanInterfaces,
   dnsServers,
   arpMode,
-  vlanEnabled,
-  vlanForm,
 }) => {
   const lanArray = lanInterfaces.map((lan) => ({
     name: lan.interface,
@@ -163,9 +161,7 @@ export const buildNetworkSavePayload = ({
   ];
   const arpArray = [{ defaultArpMode: arpMode }];
   return {
-    vlanEnabled,
-    vlan: vlanEnabled ? vlanForm : undefined,
-    interfaces: vlanEnabled ? [] : lanArray,
+    interfaces: lanArray,
     dnsServers: dnsArray,
     arpMode: arpArray,
   };
