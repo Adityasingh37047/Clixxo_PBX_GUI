@@ -35,6 +35,7 @@ export const STORAGE_DEVICE_LOCAL_DISK = "Local Disk";
 
 export const STORAGE_BTN_SAVE = "Save";
 export const STORAGE_BTN_REFRESH = "Refresh";
+export const STORAGE_BTN_RESET = "Reset";
 export const STORAGE_BTN_FTP_TEST = "FTP Test";
 
 export const STORAGE_SECTION_HEADING_LEFT = -20;
