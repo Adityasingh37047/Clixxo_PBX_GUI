@@ -18,7 +18,17 @@ export const SYSTEM_INFO_STAT_LABELS = {
 export const SYSTEM_INFO_CARD_TITLES = {
   versionInfo: "Version Info",
   systemDetails: "System Details",
+  storageDetails: "Storage Details",
 };
+
+/** Row labels for Storage Details; values are supplied from the Storage Settings API. */
+export const SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS = [
+  { key: "storage", label: "Storage" },
+  { key: "totalCapacity", label: "Total Capacity" },
+  { key: "usedSpace", label: "Used Space" },
+  { key: "availableSpace", label: "Available Space" },
+  { key: "usage", label: "Usage" },
+];
 
 export const SYSTEM_INFO_LAN_NAME_MAP = {
   eth0: "LAN 1",

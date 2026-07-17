@@ -20,6 +20,7 @@ import {
   systemInfoPageInnerStyle,
   systemInfoPageWrapStyle,
 } from "./components/SystemInfoTableHelpers";
+import { resolveStorageDetailRows } from "./utils/SystemInfoTransformers";
 
 const twoColGridStyle = {
   display: "grid",
@@ -41,10 +42,19 @@ const SystemInfo = () => {
     cpuUsage,
     dcmsStatus,
     packetLoss,
+    storageDetails,
   } = vm;
 
+  const storageDetailRows = resolveStorageDetailRows(storageDetails);
   const lanCount = LAN_INTERFACES.length;
   const oddLanCount = lanCount > 0 && lanCount % 2 === 1;
+  const lastLanRow = lanCount === 0 ? 0 : Math.ceil(lanCount / 2);
+  const systemDetailsRow = oddLanCount ? lastLanRow : lastLanRow + 1;
+  const systemDetailsCol = oddLanCount ? 2 : 1;
+  const versionRow = lastLanRow + 1;
+  const versionCol = oddLanCount ? 1 : 2;
+  const storageRow = oddLanCount ? lastLanRow + 1 : lastLanRow + 2;
+  const storageCol = oddLanCount ? 2 : 1;
 
   const renderLanCard = (lan, gridPosition) => {
     const lanEntries = Object.entries(lan.data || {});
@@ -72,12 +82,6 @@ const SystemInfo = () => {
       </Card>
     );
   };
-
-  const lastLanRow = lanCount === 0 ? 0 : Math.ceil(lanCount / 2);
-  const systemDetailsRow = oddLanCount ? lastLanRow : lastLanRow + 1;
-  const systemDetailsCol = oddLanCount ? 2 : 1;
-  const versionRow = oddLanCount ? lastLanRow + 1 : lastLanRow + 1;
-  const versionCol = oddLanCount ? 1 : 2;
 
   return (
     <div style={systemInfoPageWrapStyle}>
@@ -209,6 +213,27 @@ const SystemInfo = () => {
                   label={v.label}
                   value={v.value}
                   keyName={v.label}
+                  even={idx % 2 === 1}
+                />
+              ))}
+            </InfoCardBody>
+          </Card>
+
+          <Card
+            title={SYSTEM_INFO_CARD_TITLES.storageDetails}
+            style={{
+              ...infoCardStretchStyle,
+              gridRow: storageRow,
+              gridColumn: storageCol,
+            }}
+          >
+            <InfoCardBody rowCount={storageDetailRows.length}>
+              {storageDetailRows.map((row, idx) => (
+                <InfoTableRow
+                  key={row.label}
+                  label={row.label}
+                  value={row.value}
+                  keyName={row.label}
                   even={idx % 2 === 1}
                 />
               ))}

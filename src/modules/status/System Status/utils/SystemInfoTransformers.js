@@ -1,7 +1,9 @@
 import {
   SYSTEM_INFO_LAN_NAME_MAP,
   SYSTEM_INFO_LAN_SORT_ORDER,
+  SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS,
 } from "../../../../constants/SystemInfoConstants";
+import { STORAGE_DEVICE_LOCAL_DISK } from "../../../../constants/StorageConstants";
 
 export const extractRawLanInterfaces = (details = {}) => {
   let rawInterfaces = [];
@@ -87,4 +89,42 @@ export const getSystemInfoMetric = (systemInfo, keywords) => {
     ),
   );
   return item?.value ?? null;
+};
+
+/** Prefer API-mapped rows; otherwise show label rows with empty values for layout. */
+export const resolveStorageDetailRows = (rowsFromApi) => {
+  if (Array.isArray(rowsFromApi) && rowsFromApi.length > 0) {
+    return rowsFromApi;
+  }
+  return SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS.map(({ label }) => ({
+    label,
+    value: "",
+  }));
+};
+
+/**
+ * Maps Storage Settings get_usage payload to System Info row shape.
+ * Wire via setSTORAGE_DETAILS when the API is integrated.
+ */
+export const mapStorageUsageToDetailRows = (data) => {
+  const disk = data?.disk;
+  if (!disk) return [];
+
+  const labelByKey = Object.fromEntries(
+    SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS.map(({ key, label }) => [key, label]),
+  );
+
+  const usedPct = disk.used_pct;
+  const usageValue =
+    usedPct !== undefined && usedPct !== null && usedPct !== ""
+      ? `${usedPct}%`
+      : "";
+
+  return [
+    { label: labelByKey.storage, value: STORAGE_DEVICE_LOCAL_DISK },
+    { label: labelByKey.totalCapacity, value: disk.total?.human ?? "" },
+    { label: labelByKey.usedSpace, value: disk.used?.human ?? "" },
+    { label: labelByKey.availableSpace, value: disk.avail?.human ?? "" },
+    { label: labelByKey.usage, value: usageValue },
+  ];
 };

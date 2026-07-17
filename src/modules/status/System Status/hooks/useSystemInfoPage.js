@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchSystemInfo, postLinuxCmd } from "../../../../api/apiService";
+import {
+  fetchSystemInfo,
+  postLinuxCmd,
+  getStorageUsage,
+} from "../../../../api/apiService";
 import { SYSTEM_INFO_REFRESH_INTERVAL_MS } from "../../../../constants/SystemInfoConstants";
 import {
   extractRawLanInterfaces,
@@ -8,6 +12,7 @@ import {
   parseAstLicenseSerial,
   parseWebVersionPayload,
   updateVersionEntry,
+  mapStorageUsageToDetailRows,
 } from "../utils/SystemInfoTransformers";
 import { getSystemInfoLoadErrorMessage } from "../utils/SystemInfoValidators";
 
@@ -15,6 +20,7 @@ export function useSystemInfoPage() {
   const [LAN_INTERFACES, setLAN_INTERFACES] = useState([]);
   const [SYSTEM_INFO, setSYSTEM_INFO] = useState([]);
   const [VERSION_INFO, setVERSION_INFO] = useState([]);
+  const [storageDetails, setStorageDetails] = useState([]);
   const [error, setErros] = useState("");
   const [licenseSerialNumber, setLicenseSerialNumber] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -30,14 +36,15 @@ export function useSystemInfoPage() {
 
     try {
       // Fetch system info and serial (via astlicense) in parallel
-      const [systemData, versionInfoData, astLicData] =
-        await Promise.allSettled([
-          fetchSystemInfo(),
-          postLinuxCmd({
-            cmd: "cat /home/clixxo/server/config/web_version.json",
-          }),
-          postLinuxCmd({ cmd: "astlicense" }),
-        ]);
+      const [systemData, versionInfoData, astLicData, storageData] =
+      await Promise.allSettled([
+        fetchSystemInfo(),
+        postLinuxCmd({
+          cmd: "cat /home/clixxo/server/config/web_version.json",
+        }),
+        postLinuxCmd({ cmd: "astlicense" }),
+        getStorageUsage(),
+      ]);
 
       // Handle system info
       if (systemData.status === "fulfilled" && systemData.value.success) {
@@ -119,6 +126,15 @@ export function useSystemInfoPage() {
 
         setVERSION_INFO(versionInfo);
         setErros("");
+
+        if (storageData.status === "fulfilled") {
+          const usagePayload =
+            storageData.value?.message ?? storageData.value ?? {};
+          setStorageDetails(mapStorageUsageToDetailRows(usagePayload));
+        } else {
+          console.error("Failed to fetch storage details");
+          setStorageDetails([]);
+        }
       } else {
         setErros(
           systemData.status === "rejected"
@@ -128,6 +144,7 @@ export function useSystemInfoPage() {
         setLAN_INTERFACES([]);
         setSYSTEM_INFO([]);
         setVERSION_INFO([]);
+        setStorageDetails([]);
       }
     } catch (error) {
       // Handle different types of errors with user-friendly messages
@@ -135,6 +152,7 @@ export function useSystemInfoPage() {
       setLAN_INTERFACES([]);
       setSYSTEM_INFO([]);
       setVERSION_INFO([]);
+      setStorageDetails([]);
       setLicenseSerialNumber("");
     } finally {
       if (silent) {
@@ -184,5 +202,6 @@ export function useSystemInfoPage() {
     cpuUsage,
     dcmsStatus,
     packetLoss,
+    storageDetails,
   };
 }
