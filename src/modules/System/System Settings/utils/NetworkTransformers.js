@@ -11,7 +11,7 @@ export const normalizeLanArray = (interfaces = []) =>
   }));
 
 export const normalizeVlanSnapshot = (form = {}) => ({
-  selectInterface: form.selectInterface || "lan1",
+  selectInterface: form.selectInterface || "",
   lan1Ip: form.lan1Ip || "",
   lan1Mask: form.lan1Mask || "",
   lan1Gw: form.lan1Gw || "",
@@ -28,6 +28,22 @@ export const normalizeVlanSnapshot = (form = {}) => ({
   vlan3Mask: form.vlan3Mask || "",
   vlan3Gw: form.vlan3Gw || "",
 });
+
+/** Build Select Interfaces options from /get-vlan-settings `parents`. */
+export const buildVlanInterfaceOptions = (parents = [], lanInterfaces = []) => {
+  const fromParents = (parents || []).filter(Boolean);
+  const ports = fromParents.length
+    ? fromParents
+    : (lanInterfaces || []).map((lan) => lan.interface).filter(Boolean);
+
+  return ports.map((parent, idx) => {
+    const lan = (lanInterfaces || []).find((l) => l.interface === parent);
+    return {
+      value: parent,
+      label: lan?.name || `LAN ${idx + 1}`,
+    };
+  });
+};
 
 export const applyStaticDefaults = (lan) => {
   const next = { ...lan };
@@ -92,9 +108,18 @@ export const findPrimaryVlanIface = (allIfaces, primaryKernelName) =>
       /\.\d+$/.test(i.interface),
   );
 
-export const resolveVlanParentLan = (lanInterfaces = [], selectInterface = "lan1") => {
-  const idx = selectInterface === "lan2" ? 1 : 0;
-  return lanInterfaces[idx] || lanInterfaces[0] || {};
+export const resolveVlanParentLan = (lanInterfaces = [], selectInterface = "") => {
+  // Legacy lan1/lan2 values (older form state)
+  if (selectInterface === "lan1" || selectInterface === "lan2") {
+    const idx = selectInterface === "lan2" ? 1 : 0;
+    return lanInterfaces[idx] || lanInterfaces[0] || {};
+  }
+  // API parent interface names: eth0, eth1, …
+  return (
+    (lanInterfaces || []).find((lan) => lan.interface === selectInterface) ||
+    lanInterfaces[0] ||
+    {}
+  );
 };
 
 export const buildInitialVlanForm = ({
@@ -122,11 +147,7 @@ export const buildInitialVlanForm = ({
   vlan3Gw: "",
 });
 
-export const emptyVlanForm = () => ({
-  selectInterface: "lan1",
-  lan1Ip: "",
-  lan1Mask: "",
-  lan1Gw: "",
+export const emptyVlanSlots = () => ({
   vlan1Id: "",
   vlan1Ip: "",
   vlan1Mask: "",
@@ -140,6 +161,152 @@ export const emptyVlanForm = () => ({
   vlan3Mask: "",
   vlan3Gw: "",
 });
+
+export const emptyVlanForm = (selectInterface = "") => ({
+  selectInterface,
+  lan1Ip: "",
+  lan1Mask: "",
+  lan1Gw: "",
+  ...emptyVlanSlots(),
+});
+
+export const extractVlanSlots = (form = {}) => ({
+  vlan1Id: form.vlan1Id || "",
+  vlan1Ip: form.vlan1Ip || "",
+  vlan1Mask: form.vlan1Mask || "",
+  vlan1Gw: form.vlan1Gw || "",
+  vlan2Id: form.vlan2Id || "",
+  vlan2Ip: form.vlan2Ip || "",
+  vlan2Mask: form.vlan2Mask || "",
+  vlan2Gw: form.vlan2Gw || "",
+  vlan3Id: form.vlan3Id || "",
+  vlan3Ip: form.vlan3Ip || "",
+  vlan3Mask: form.vlan3Mask || "",
+  vlan3Gw: form.vlan3Gw || "",
+});
+
+const VLAN_SLOT_KEYS = [1, 2, 3];
+
+/** Map API vlan list for one parent → vlan1/2/3 form slots. */
+export const mapApiVlansToSlots = (parentVlans = []) => {
+  const slots = emptyVlanSlots();
+  const sorted = [...(parentVlans || [])].sort(
+    (a, b) => Number(a?.vlanId) - Number(b?.vlanId),
+  );
+  sorted.slice(0, 3).forEach((vlan, idx) => {
+    const n = idx + 1;
+    slots[`vlan${n}Id`] = vlan?.vlanId != null ? String(vlan.vlanId) : "";
+    slots[`vlan${n}Ip`] = vlan?.ipAddress || "";
+    slots[`vlan${n}Mask`] = vlan?.subnetMask || "";
+    slots[`vlan${n}Gw`] = vlan?.gateway || "";
+  });
+  return slots;
+};
+
+/**
+ * Build per-parent drafts from /get-vlan-settings.
+ * parents without vlans get empty slots.
+ */
+export const buildVlanDraftsFromApi = (vlans = [], parents = []) => {
+  const byParent = {};
+  (vlans || []).forEach((vlan) => {
+    const parent = vlan?.parentInterface;
+    if (!parent) return;
+    if (!byParent[parent]) byParent[parent] = [];
+    byParent[parent].push(vlan);
+  });
+
+  const parentKeys = [
+    ...new Set([...(parents || []), ...Object.keys(byParent)]),
+  ].filter(Boolean);
+
+  const drafts = {};
+  parentKeys.forEach((parent) => {
+    drafts[parent] = mapApiVlansToSlots(byParent[parent] || []);
+  });
+  return drafts;
+};
+
+/** One filled slot → API vlan entry (or null if incomplete/empty). */
+export const slotToVlanEntry = (parentInterface, slots, slotNum) => {
+  const vlanId = String(slots[`vlan${slotNum}Id`] || "").trim();
+  const ipAddress = String(slots[`vlan${slotNum}Ip`] || "").trim();
+  const subnetMask = String(slots[`vlan${slotNum}Mask`] || "").trim();
+  const gateway = String(slots[`vlan${slotNum}Gw`] || "").trim();
+
+  if (!vlanId && !ipAddress && !subnetMask && !gateway) return null;
+
+  if (!vlanId || !ipAddress || !subnetMask) {
+    return {
+      error: `Please fill VLAN ${slotNum} ID, IP address and subnet mask.`,
+    };
+  }
+
+  const idNum = Number(vlanId);
+  if (!Number.isFinite(idNum) || idNum <= 0) {
+    return { error: `VLAN ${slotNum} ID must be a valid number.` };
+  }
+
+  return {
+    entry: {
+      parentInterface,
+      vlanId: idNum,
+      ipAddress,
+      subnetMask,
+      gateway,
+    },
+  };
+};
+
+/**
+ * Merge current form into drafts, then build save payload vlans[].
+ * Returns { vlans, error }.
+ */
+export const buildVlanEnablePayloadFromDrafts = (
+  draftsByParent = {},
+  currentForm = {},
+) => {
+  const drafts = { ...draftsByParent };
+  const currentParent = currentForm.selectInterface;
+  if (currentParent) {
+    drafts[currentParent] = extractVlanSlots(currentForm);
+  }
+
+  const vlans = [];
+  for (const [parentInterface, slots] of Object.entries(drafts)) {
+    if (!parentInterface) continue;
+    for (const slotNum of VLAN_SLOT_KEYS) {
+      const result = slotToVlanEntry(parentInterface, slots || {}, slotNum);
+      if (!result) continue;
+      if (result.error) return { vlans: [], error: result.error };
+      vlans.push(result.entry);
+    }
+  }
+
+  if (vlans.length === 0) {
+    return {
+      vlans: [],
+      error: "Please fill at least one VLAN (ID, IP address and subnet mask).",
+    };
+  }
+
+  return { vlans, error: "" };
+};
+
+export const buildVlanFormForParent = (
+  parentInterface,
+  draftsByParent = {},
+  lanInterfaces = [],
+) => {
+  const lan = resolveVlanParentLan(lanInterfaces, parentInterface);
+  return {
+    selectInterface: parentInterface,
+    lan1Ip: lan.ipAddress || "",
+    lan1Mask: lan.subnetMask || "",
+    lan1Gw: lan.defaultGateway || "",
+    ...(draftsByParent[parentInterface] || emptyVlanSlots()),
+  };
+};
 
 export const buildNetworkSavePayload = ({
   lanInterfaces,
@@ -169,3 +336,56 @@ export const buildNetworkSavePayload = ({
 
 export const NETWORK_REBOOT_CMD =
   'nohup sh -c "sleep 5; reboot" >/dev/null 2>&1 & echo REBOOT_TRIGGERED';
+
+/** Source IP dropdown options for PING / TRACERT (LAN + all VLAN parents + VPN). */
+export const buildNetworkSourceIpOptions = (allIfaces = []) => {
+  const lanIfaces = (allIfaces || []).filter((i) => {
+    const kn = (i.interface || "").toLowerCase();
+    return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
+  });
+
+  const options = [];
+  const seen = new Set();
+
+  const push = (value, label) => {
+    const ip = String(value || "").trim();
+    if (!ip || seen.has(ip)) return;
+    seen.add(ip);
+    options.push({ value: ip, label });
+  };
+
+  lanIfaces
+    .filter((i) => i.ipAddress)
+    .forEach((iface, idx) => {
+      push(iface.ipAddress, `LAN ${idx + 1}:${iface.ipAddress}`);
+    });
+
+  const lanKernelNames = lanIfaces.map((i) => i.interface).filter(Boolean);
+  for (const iface of allIfaces || []) {
+    const kn = (iface.interface || "").toString();
+    const parent = lanKernelNames.find(
+      (p) => kn.startsWith(`${p}.`) && /\.\d+$/.test(kn),
+    );
+    if (!parent || !iface.ipAddress) continue;
+    const vlanId = kn.split(".")[1] || "";
+    push(iface.ipAddress, `VLAN ${vlanId}:${iface.ipAddress}`);
+  }
+
+  const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
+  for (const iface of allIfaces || []) {
+    const kn = (iface.interface || "").toLowerCase();
+    if (
+      iface.ipAddress &&
+      !lanIfaceSet.has(iface.interface) &&
+      kn !== "lo" &&
+      !/^eth\d+\.\d+$/.test(kn)
+    ) {
+      push(
+        iface.ipAddress,
+        `VPN (${iface.interface}):${iface.ipAddress}`,
+      );
+    }
+  }
+
+  return options;
+};

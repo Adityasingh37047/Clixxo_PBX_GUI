@@ -43,7 +43,12 @@ import {
   applyStaticDefaults,
   filterAndNormalizeLanInterfaces,
   emptyVlanForm,
-  resolveVlanParentLan,
+  emptyVlanSlots,
+  extractVlanSlots,
+  buildVlanInterfaceOptions,
+  buildVlanDraftsFromApi,
+  buildVlanFormForParent,
+  buildVlanEnablePayloadFromDrafts,
   buildNetworkSavePayload,
   NETWORK_REBOOT_CMD,
 } from "../utils/NetworkTransformers";
@@ -65,6 +70,8 @@ export function useNetworkPage() {
   // VLAN state
   const [vlanEnabled, setVlanEnabled] = useState(false);
   const [vlanForm, setVlanForm] = useState(emptyVlanForm());
+  const [vlanInterfaceOptions, setVlanInterfaceOptions] = useState([]);
+  const vlanDraftsRef = useRef({});
   // Removed showConfirm and pendingSave for native confirm
   const [hasChanges, setHasChanges] = useState(false);
   const [networkRestarting, setNetworkRestarting] = useState(false);
@@ -121,48 +128,52 @@ export function useNetworkPage() {
               const enabled = Boolean(vlanRes.data?.enabled);
               const parents = vlanRes.data?.parents || [];
               const vlans = vlanRes.data?.vlans || [];
-              const vlan0 = vlans[0];
+              const options = buildVlanInterfaceOptions(
+                parents,
+                filteredInterfaces,
+              );
+              setVlanInterfaceOptions(options);
 
-              const parentInterface =
-                vlan0?.parentInterface || parents[0] || "eth0";
+              const drafts = buildVlanDraftsFromApi(vlans, parents);
+              // Ensure every selectable parent has a draft entry
+              options.forEach((opt) => {
+                if (!drafts[opt.value]) drafts[opt.value] = emptyVlanSlots();
+              });
+              vlanDraftsRef.current = drafts;
 
-              const selectInterface =
-                parentInterface === "eth1" ? "lan2" : "lan1";
-
-              const parentLan =
-                filteredInterfaces.find(
-                  (iface) => iface.interface === parentInterface,
-                ) ||
-                filteredInterfaces[0] ||
-                {};
+              const preferredParent =
+                vlans[0]?.parentInterface ||
+                parents[0] ||
+                options[0]?.value ||
+                filteredInterfaces[0]?.interface ||
+                "";
 
               setVlanEnabled(enabled);
-              setVlanForm({
-                selectInterface,
-                lan1Ip: parentLan.ipAddress || "",
-                lan1Mask: parentLan.subnetMask || "",
-                lan1Gw: parentLan.defaultGateway || "",
-                vlan1Id: vlan0?.vlanId != null ? String(vlan0.vlanId) : "",
-                vlan1Ip: vlan0?.ipAddress || "",
-                vlan1Mask: vlan0?.subnetMask || "",
-                vlan1Gw: vlan0?.gateway || "",
-                vlan2Id: "",
-                vlan2Ip: "",
-                vlan2Mask: "",
-                vlan2Gw: "",
-                vlan3Id: "",
-                vlan3Ip: "",
-                vlan3Mask: "",
-                vlan3Gw: "",
-              });
+              setVlanForm(
+                buildVlanFormForParent(
+                  preferredParent,
+                  drafts,
+                  filteredInterfaces,
+                ),
+              );
             } else {
+              vlanDraftsRef.current = {};
+              setVlanInterfaceOptions(
+                buildVlanInterfaceOptions([], filteredInterfaces),
+              );
               setVlanEnabled(false);
-              setVlanForm(emptyVlanForm());
+              setVlanForm(
+                emptyVlanForm(filteredInterfaces[0]?.interface || ""),
+              );
             }
           } catch (vlanErr) {
             console.warn("VLAN settings fetch failed:", vlanErr);
+            vlanDraftsRef.current = {};
+            setVlanInterfaceOptions(
+              buildVlanInterfaceOptions([], filteredInterfaces),
+            );
             setVlanEnabled(false);
-            setVlanForm(emptyVlanForm());
+            setVlanForm(emptyVlanForm(filteredInterfaces[0]?.interface || ""));
           }
         }
         const dnsSnap = data.data.dnsServers || ["", ""];
@@ -273,17 +284,30 @@ export function useNetworkPage() {
   const handleVlanChange = (field, value) => {
     setHasChanges(true);
     if (field === "selectInterface") {
-      const lan = resolveVlanParentLan(lanInterfaces, value);
-      setVlanForm((prev) => ({
-        ...prev,
-        selectInterface: value,
-        lan1Ip: lan.ipAddress || "",
-        lan1Mask: lan.subnetMask || "",
-        lan1Gw: lan.defaultGateway || "",
-      }));
+      const prev = vlanForm;
+      const nextDrafts = { ...vlanDraftsRef.current };
+      if (prev.selectInterface) {
+        nextDrafts[prev.selectInterface] = extractVlanSlots(prev);
+      }
+      if (!nextDrafts[value]) {
+        nextDrafts[value] = emptyVlanSlots();
+      }
+      vlanDraftsRef.current = nextDrafts;
+      setVlanForm(
+        buildVlanFormForParent(value, nextDrafts, lanInterfaces),
+      );
       return;
     }
-    setVlanForm((prev) => ({ ...prev, [field]: value }));
+    setVlanForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (next.selectInterface) {
+        vlanDraftsRef.current = {
+          ...vlanDraftsRef.current,
+          [next.selectInterface]: extractVlanSlots(next),
+        };
+      }
+      return next;
+    });
   };
 
   const handleArpChange = (e) => {
@@ -294,15 +318,24 @@ export function useNetworkPage() {
 
   const handleEnableVlan = () => {
     try {
-      const selectInterface = vlanForm.selectInterface || "lan1";
-      const lan = resolveVlanParentLan(lanInterfaces, selectInterface);
-      setVlanForm((prev) => ({
-        ...prev,
-        selectInterface,
-        lan1Ip: lan.ipAddress || prev.lan1Ip || "",
-        lan1Mask: lan.subnetMask || prev.lan1Mask || "",
-        lan1Gw: lan.defaultGateway || prev.lan1Gw || "",
-      }));
+      const selectInterface =
+        vlanForm.selectInterface ||
+        vlanInterfaceOptions[0]?.value ||
+        lanInterfaces[0]?.interface ||
+        "";
+      if (selectInterface && !vlanDraftsRef.current[selectInterface]) {
+        vlanDraftsRef.current = {
+          ...vlanDraftsRef.current,
+          [selectInterface]: emptyVlanSlots(),
+        };
+      }
+      setVlanForm(
+        buildVlanFormForParent(
+          selectInterface,
+          vlanDraftsRef.current,
+          lanInterfaces,
+        ),
+      );
     } catch {
       /* ignore */
     }
@@ -500,25 +533,25 @@ export function useNetworkPage() {
         arpMode,
       });
 
-      const selectedLan =
-        vlanForm.selectInterface === "lan2" ? lanInterfaces[1] : lanInterfaces[0];
-
-      const parentInterface =
-        selectedLan?.interface ||
-        (vlanForm.selectInterface === "lan2" ? "eth1" : "eth0");
-
-      const vlanEnablePayload = {
-        enabled: true,
-        vlans: [
-          {
-            parentInterface,
-            vlanId: Number(vlanForm.vlan1Id),
-            ipAddress: (vlanForm.vlan1Ip || "").trim(),
-            subnetMask: (vlanForm.vlan1Mask || "").trim(),
-            gateway: (vlanForm.vlan1Gw || "").trim(),
-          },
-        ],
-      };
+      let vlanEnablePayload = null;
+      if (vlanEnabled) {
+        const { vlans, error: vlanError } = buildVlanEnablePayloadFromDrafts(
+          vlanDraftsRef.current,
+          vlanForm,
+        );
+        if (vlanError) {
+          setLoading(false);
+          setError(vlanError);
+          return;
+        }
+        vlanEnablePayload = { enabled: true, vlans };
+        if (vlanForm.selectInterface) {
+          vlanDraftsRef.current = {
+            ...vlanDraftsRef.current,
+            [vlanForm.selectInterface]: extractVlanSlots(vlanForm),
+          };
+        }
+      }
 
       const vlanDisablePayload = { enabled: false };
 
@@ -526,9 +559,6 @@ export function useNetworkPage() {
 
       if (response.response) {
         if (vlanEnabled) {
-          if (!vlanForm.vlan1Id || !vlanForm.vlan1Ip || !vlanForm.vlan1Mask) {
-            throw new Error("Please fill VLAN ID, IP address and subnet mask.");
-          }
           await saveVlanSettings(vlanEnablePayload);
         } else {
           await saveVlanSettings(vlanDisablePayload);
@@ -600,6 +630,7 @@ export function useNetworkPage() {
     arpError,
     vlanEnabled,
     vlanForm,
+    vlanInterfaceOptions,
     networkRestarting,
     progressMessage,
     handleLanChange,

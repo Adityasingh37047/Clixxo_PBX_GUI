@@ -51,6 +51,7 @@ const Network = () => {
     arpError,
     vlanEnabled,
     vlanForm,
+    vlanInterfaceOptions,
     networkRestarting,
     progressMessage,
     handleLanChange,
@@ -169,6 +170,7 @@ const Network = () => {
                       vlanEnabled={vlanEnabled}
                       lanInterfaces={lanInterfaces}
                       vlanForm={vlanForm}
+                      vlanInterfaceOptions={vlanInterfaceOptions}
                       ipErrors={ipErrors}
                       subnetErrors={subnetErrors}
                       gatewayErrors={gatewayErrors}

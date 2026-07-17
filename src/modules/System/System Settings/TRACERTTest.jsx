@@ -3,6 +3,7 @@ import { Alert, CircularProgress } from "@mui/material";
 import { Tooltip } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { postTracerttest, fetchNetwork } from "../../../api/apiService";
+import { buildNetworkSourceIpOptions } from "./utils/NetworkTransformers";
 import {
   TRACERT_LABELS,
   TRACERT_SOURCE_OPTIONS,
@@ -501,50 +502,7 @@ const TRACERTTest = () => {
         setLoadingSource(true);
         const netData = await fetchNetwork();
         const allIfaces = netData?.data?.interfaces || [];
-
-        const lanIfaces = allIfaces.filter((i) => {
-          const kn = (i.interface || "").toLowerCase();
-          return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
-        });
-
-        const options = lanIfaces
-          .filter((i) => i.ipAddress)
-          .map((iface, idx) => ({
-            value: iface.ipAddress,
-            label: `LAN ${idx + 1}:${iface.ipAddress}`,
-          }));
-
-        const primaryKernel = lanIfaces[0]?.interface || "eth0";
-        for (const iface of allIfaces) {
-          const kn = (iface.interface || "").toString();
-          if (
-            kn.startsWith(`${primaryKernel}.`) &&
-            /\.\d+$/.test(kn) &&
-            iface.ipAddress
-          ) {
-            const vlanId = kn.split(".")[1] || "";
-            options.push({
-              value: iface.ipAddress,
-              label: `VLAN ${vlanId}:${iface.ipAddress}`,
-            });
-          }
-        }
-
-        const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
-        for (const iface of allIfaces) {
-          const kn = (iface.interface || "").toLowerCase();
-          if (
-            iface.ipAddress &&
-            !lanIfaceSet.has(iface.interface) &&
-            kn !== "lo" &&
-            !/^eth\d+\.\d+$/.test(kn)
-          ) {
-            options.push({
-              value: iface.ipAddress,
-              label: `VPN (${iface.interface}):${iface.ipAddress}`,
-            });
-          }
-        }
+        const options = buildNetworkSourceIpOptions(allIfaces);
 
         if (options.length > 0) {
           setSourceOptions(options);
