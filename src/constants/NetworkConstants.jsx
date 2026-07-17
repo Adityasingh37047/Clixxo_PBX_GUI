@@ -39,10 +39,8 @@ export const NETWORK_RADIO_NO = "No";
 export const NETWORK_OPTION_STATIC = "Static";
 export const NETWORK_OPTION_DHCP = "DHCP";
 
-export const NETWORK_VLAN_INTERFACE_OPTIONS = [
-  { value: "lan1", label: "LAN 1" },
-  { value: "lan2", label: "LAN 2" },
-];
+/** Fallback only — live options come from /get-vlan-settings `parents`. */
+export const NETWORK_VLAN_INTERFACE_OPTIONS = [];
 
 export const NETWORK_VLAN_LAN1_FIELDS = [
   {

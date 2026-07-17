@@ -595,6 +595,7 @@ export const NetworkLanVlanColumn = ({
   vlanEnabled,
   lanInterfaces,
   vlanForm,
+  vlanInterfaceOptions = [],
   ipErrors,
   subnetErrors,
   gatewayErrors,
@@ -691,7 +692,11 @@ export const NetworkLanVlanColumn = ({
           NETWORK_VLAN_LAN1_FIELDS.map((f) => (
             <VlanInputField
               key={f.key}
-              fieldDef={f}
+              fieldDef={
+                f.key === "selectInterface"
+                  ? { ...f, options: vlanInterfaceOptions }
+                  : f
+              }
               vlanForm={vlanForm}
               labelColWidth={labelColWidth}
               onVlanChange={onVlanChange}

@@ -53,7 +53,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { fetchNetwork, postLinuxCmd } from "../../../api/apiService";
+import { fetchNetwork, postLinuxCmd, fetchVlanSettings } from "../../../api/apiService";
 import {
   C,
   OUTLINED_BORDER,
@@ -1443,6 +1443,64 @@ WantedBy=multi-user.target
         }))
         .filter((o) => o.ip);
 
+      const seenPortValues = new Set(options.map((o) => o.value));
+      const lanKernelNames = lanIfaces.map((i) => i.interface).filter(Boolean);
+
+      // VLAN sub-interfaces on any physical LAN (eth0.100, eth1.200, …)
+      for (const iface of allIfaces) {
+        const kn = (iface.interface || "").toString();
+        const parent = lanKernelNames.find(
+          (p) => kn.startsWith(`${p}.`) && /\.\d+$/.test(kn),
+        );
+        if (!parent || !iface.ipAddress) continue;
+        const vlanId = kn.split(".")[1] || "";
+        const value = `VLAN ${vlanId}:${iface.ipAddress}`;
+        if (seenPortValues.has(value)) continue;
+        seenPortValues.add(value);
+        options.push({
+          value,
+          label: value,
+          iface: kn,
+          ip: iface.ipAddress || "",
+          mask: iface.subnetMask || "",
+          gateway:
+            iface.activeGateway ||
+            iface.configuredGateway ||
+            iface.defaultGateway ||
+            "",
+        });
+      }
+
+      // VLANs from dedicated API (when not yet in get-network-settings list)
+      try {
+        const vlanRes = await fetchVlanSettings();
+        if (vlanRes?.response && vlanRes.data?.enabled) {
+          for (const vlan of vlanRes.data.vlans || []) {
+            const ip = String(vlan.ipAddress || "").trim();
+            if (!ip) continue;
+            const vlanId = vlan.vlanId != null ? String(vlan.vlanId) : "";
+            const ifaceName =
+              vlan.interface ||
+              (vlan.parentInterface && vlanId
+                ? `${vlan.parentInterface}.${vlanId}`
+                : "");
+            const value = `VLAN ${vlanId}:${ip}`;
+            if (seenPortValues.has(value)) continue;
+            seenPortValues.add(value);
+            options.push({
+              value,
+              label: value,
+              iface: ifaceName,
+              ip,
+              mask: vlan.subnetMask || "",
+              gateway: vlan.gateway || "",
+            });
+          }
+        }
+      } catch (vlanErr) {
+        console.warn("VLAN settings fetch for Network Port:", vlanErr);
+      }
+
       // VPN / non-LAN interfaces (tap0, tun0, vpn_vpn, etc.)
       const lanIfaceSet = new Set(lanIfaces.map((i) => i.interface));
       for (const iface of allIfaces) {
@@ -1453,9 +1511,12 @@ WantedBy=multi-user.target
           kn !== "lo" &&
           !/^eth\d+\.\d+$/.test(kn)
         ) {
+          const vpnValue = `VPN (${iface.interface}):${iface.ipAddress}`;
+          if (seenPortValues.has(vpnValue)) continue;
+          seenPortValues.add(vpnValue);
           options.push({
-            value: `VPN (${iface.interface}):${iface.ipAddress}`,
-            label: `VPN (${iface.interface}):${iface.ipAddress}`,
+            value: vpnValue,
+            label: vpnValue,
             iface: iface.interface,
             ip: iface.ipAddress || "",
             mask: iface.subnetMask || "",
