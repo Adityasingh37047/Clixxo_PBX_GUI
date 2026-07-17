@@ -19,7 +19,9 @@ export const AuthProvider = ({ children }) => {
       ip === "localhost" || ip === "127.0.0.1" || ip === "0.0.0.0";
 
     if (isLocalhost) {
-      let testIp = "192.168.0.98";
+
+      let testIp = "192.168.0.157";  
+
       // Local development → backend usually runs on 5000
       return `https://${testIp}:443/api`;
     } else {

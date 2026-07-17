@@ -20,6 +20,7 @@ import {
   systemInfoPageInnerStyle,
   systemInfoPageWrapStyle,
 } from "./components/SystemInfoTableHelpers";
+import { resolveStorageDetailRows } from "./utils/SystemInfoTransformers";
 
 const SystemInfo = () => {
   const vm = useSystemInfoPage();
@@ -34,7 +35,29 @@ const SystemInfo = () => {
     cpuUsage,
     dcmsStatus,
     packetLoss,
+    storageDetails,
   } = vm;
+
+  const storageDetailRows = resolveStorageDetailRows(storageDetails);
+
+  const storageDetailsCard = (
+    <Card
+      title={SYSTEM_INFO_CARD_TITLES.storageDetails}
+      style={infoCardStretchStyle}
+    >
+      <InfoCardBody rowCount={storageDetailRows.length}>
+        {storageDetailRows.map((row, idx) => (
+          <InfoTableRow
+            key={row.label}
+            label={row.label}
+            value={row.value}
+            keyName={row.label}
+            even={idx % 2 === 1}
+          />
+        ))}
+      </InfoCardBody>
+    </Card>
+  );
 
   return (
     <div style={systemInfoPageWrapStyle}>
@@ -201,6 +224,7 @@ const SystemInfo = () => {
                   ))}
                 </InfoCardBody>
               </Card>
+              {storageDetailsCard}
             </div>
           </>
         ) : (
@@ -283,6 +307,18 @@ const SystemInfo = () => {
                   ))}
                 </InfoCardBody>
               </Card>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 12,
+                marginBottom: 16,
+                alignItems: "stretch",
+              }}
+            >
+              {storageDetailsCard}
             </div>
           </>
         )}
