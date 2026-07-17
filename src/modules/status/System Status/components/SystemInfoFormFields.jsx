@@ -159,22 +159,22 @@ export const InfoTableRow = ({ label, value, keyName, even }) => (
   </div>
 );
 
-/** Stretch paired cards to equal height — fill gap with last row stripe, no extra divider line */
-export const InfoCardBody = ({ rowCount, children }) => {
+/** Optional flex fill for paired equal-height cards; off for natural-height columns. */
+export const InfoCardBody = ({ rowCount, children, stretch = true }) => {
   const fillBg =
     rowCount > 0 && (rowCount - 1) % 2 === 1 ? "#f8fafc" : "#ffffff";
 
   return (
     <div
       style={{
-        flex: 1,
+        flex: stretch ? 1 : undefined,
         display: "flex",
         flexDirection: "column",
-        minHeight: 0,
+        minHeight: stretch ? 0 : undefined,
       }}
     >
       {children}
-      {rowCount > 0 ? (
+      {stretch && rowCount > 0 ? (
         <div
           aria-hidden
           style={{ flex: 1, background: fillBg, minHeight: 0 }}

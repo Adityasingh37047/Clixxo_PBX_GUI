@@ -21,6 +21,13 @@ import {
   systemInfoPageWrapStyle,
 } from "./components/SystemInfoTableHelpers";
 
+const twoColGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, 1fr)",
+  gap: 12,
+  alignItems: "stretch",
+};
+
 const SystemInfo = () => {
   const vm = useSystemInfoPage();
   const {
@@ -35,6 +42,42 @@ const SystemInfo = () => {
     dcmsStatus,
     packetLoss,
   } = vm;
+
+  const lanCount = LAN_INTERFACES.length;
+  const oddLanCount = lanCount > 0 && lanCount % 2 === 1;
+
+  const renderLanCard = (lan, gridPosition) => {
+    const lanEntries = Object.entries(lan.data || {});
+    return (
+      <Card
+        key={lan.name}
+        title={lan.name}
+        style={{
+          ...infoCardStretchStyle,
+          gridRow: gridPosition.row,
+          gridColumn: gridPosition.col,
+        }}
+      >
+        <InfoCardBody rowCount={lanEntries.length}>
+          {lanEntries.map(([key, val], idx) => (
+            <InfoTableRow
+              key={key}
+              label={key}
+              value={val}
+              keyName={key}
+              even={idx % 2 === 1}
+            />
+          ))}
+        </InfoCardBody>
+      </Card>
+    );
+  };
+
+  const lastLanRow = lanCount === 0 ? 0 : Math.ceil(lanCount / 2);
+  const systemDetailsRow = oddLanCount ? lastLanRow : lastLanRow + 1;
+  const systemDetailsCol = oddLanCount ? 2 : 1;
+  const versionRow = oddLanCount ? lastLanRow + 1 : lastLanRow + 1;
+  const versionCol = oddLanCount ? 1 : 2;
 
   return (
     <div style={systemInfoPageWrapStyle}>
@@ -87,7 +130,6 @@ const SystemInfo = () => {
           </Btn>
         </div>
 
-        {/* Top stat cards — equal height, accent borders */}
         <div
           style={{
             display: "grid",
@@ -123,169 +165,56 @@ const SystemInfo = () => {
           />
         </div>
 
-        {LAN_INTERFACES.length === 1 ? (
-          <>
-            {/* Single interface: Interface Card | Version Info */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 12,
-                marginBottom: 14,
-                alignItems: "stretch",
-              }}
-            >
-              {LAN_INTERFACES.map((lan) => {
-                const lanEntries = Object.entries(lan.data || {});
-                return (
-                  <Card
-                    key={lan.name}
-                    title={lan.name}
-                    style={infoCardStretchStyle}
-                  >
-                    <InfoCardBody rowCount={lanEntries.length}>
-                      {lanEntries.map(([key, val], idx) => (
-                        <InfoTableRow
-                          key={key}
-                          label={key}
-                          value={val}
-                          keyName={key}
-                          even={idx % 2 === 1}
-                        />
-                      ))}
-                    </InfoCardBody>
-                  </Card>
-                );
-              })}
-              <Card
-                title={SYSTEM_INFO_CARD_TITLES.versionInfo}
-                style={infoCardStretchStyle}
-              >
-                <InfoCardBody rowCount={(VERSION_INFO || []).length}>
-                  {(VERSION_INFO || []).map((v, idx) => (
-                    <InfoTableRow
-                      key={idx}
-                      label={v.label}
-                      value={v.value}
-                      keyName={v.label}
-                      even={idx % 2 === 1}
-                    />
-                  ))}
-                </InfoCardBody>
-              </Card>
-            </div>
+        <div style={{ ...twoColGridStyle, marginBottom: 16 }}>
+          {LAN_INTERFACES.map((lan, idx) =>
+            renderLanCard(lan, {
+              row: Math.floor(idx / 2) + 1,
+              col: (idx % 2) + 1,
+            }),
+          )}
 
-            {/* System Details — left column only (~50% width), right side empty */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 12,
-                marginBottom: 16,
-                alignItems: "stretch",
-              }}
-            >
-              <Card
-                title={SYSTEM_INFO_CARD_TITLES.systemDetails}
-                style={infoCardStretchStyle}
-              >
-                <InfoCardBody rowCount={(SYSTEM_INFO || []).length}>
-                  {(SYSTEM_INFO || []).map((info, idx) => (
-                    <InfoTableRow
-                      key={idx}
-                      label={info.label}
-                      value={info.value}
-                      keyName={info.label}
-                      even={idx % 2 === 1}
-                    />
-                  ))}
-                </InfoCardBody>
-              </Card>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Multiple interfaces: LAN cards in first row */}
-            {LAN_INTERFACES.length > 1 && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: 12,
-                  marginBottom: 14,
-                  alignItems: "stretch",
-                }}
-              >
-                {LAN_INTERFACES.map((lan) => {
-                  const lanEntries = Object.entries(lan.data || {});
-                  return (
-                    <Card
-                      key={lan.name}
-                      title={lan.name}
-                      style={infoCardStretchStyle}
-                    >
-                      <InfoCardBody rowCount={lanEntries.length}>
-                        {lanEntries.map(([key, val], idx) => (
-                          <InfoTableRow
-                            key={key}
-                            label={key}
-                            value={val}
-                            keyName={key}
-                            even={idx % 2 === 1}
-                          />
-                        ))}
-                      </InfoCardBody>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+          <Card
+            title={SYSTEM_INFO_CARD_TITLES.systemDetails}
+            style={{
+              ...infoCardStretchStyle,
+              gridRow: systemDetailsRow,
+              gridColumn: systemDetailsCol,
+            }}
+          >
+            <InfoCardBody rowCount={(SYSTEM_INFO || []).length}>
+              {(SYSTEM_INFO || []).map((info, idx) => (
+                <InfoTableRow
+                  key={idx}
+                  label={info.label}
+                  value={info.value}
+                  keyName={info.label}
+                  even={idx % 2 === 1}
+                />
+              ))}
+            </InfoCardBody>
+          </Card>
 
-            {/* System Details | Version Info in second row */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 12,
-                marginBottom: 16,
-                alignItems: "stretch",
-              }}
-            >
-              <Card
-                title={SYSTEM_INFO_CARD_TITLES.systemDetails}
-                style={infoCardStretchStyle}
-              >
-                <InfoCardBody rowCount={(SYSTEM_INFO || []).length}>
-                  {(SYSTEM_INFO || []).map((info, idx) => (
-                    <InfoTableRow
-                      key={idx}
-                      label={info.label}
-                      value={info.value}
-                      keyName={info.label}
-                      even={idx % 2 === 1}
-                    />
-                  ))}
-                </InfoCardBody>
-              </Card>
-              <Card
-                title={SYSTEM_INFO_CARD_TITLES.versionInfo}
-                style={infoCardStretchStyle}
-              >
-                <InfoCardBody rowCount={(VERSION_INFO || []).length}>
-                  {(VERSION_INFO || []).map((v, idx) => (
-                    <InfoTableRow
-                      key={idx}
-                      label={v.label}
-                      value={v.value}
-                      keyName={v.label}
-                      even={idx % 2 === 1}
-                    />
-                  ))}
-                </InfoCardBody>
-              </Card>
-            </div>
-          </>
-        )}
+          <Card
+            title={SYSTEM_INFO_CARD_TITLES.versionInfo}
+            style={{
+              ...infoCardStretchStyle,
+              gridRow: versionRow,
+              gridColumn: versionCol,
+            }}
+          >
+            <InfoCardBody rowCount={(VERSION_INFO || []).length}>
+              {(VERSION_INFO || []).map((v, idx) => (
+                <InfoTableRow
+                  key={idx}
+                  label={v.label}
+                  value={v.value}
+                  keyName={v.label}
+                  even={idx % 2 === 1}
+                />
+              ))}
+            </InfoCardBody>
+          </Card>
+        </div>
       </div>
     </div>
   );

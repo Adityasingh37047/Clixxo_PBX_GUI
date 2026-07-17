@@ -21,4 +21,10 @@ export const infoCardStretchStyle = {
   flexDirection: "column",
 };
 
+/** Cards sized by row content (no cross-column equal-height stretch). */
+export const infoCardNaturalStyle = {
+  display: "flex",
+  flexDirection: "column",
+};
+
 export { systemInfoPageWrapStyle, systemInfoPageInnerStyle };
