@@ -40,7 +40,7 @@ const SystemInfo = () => {
     loadSystemInfo,
     runtime,
     cpuUsage,
-    dcmsStatus,
+    memoryUsage,
     packetLoss,
     storageDetails,
   } = vm;
@@ -55,6 +55,7 @@ const SystemInfo = () => {
   const versionCol = oddLanCount ? 1 : 2;
   const storageRow = oddLanCount ? lastLanRow + 1 : lastLanRow + 2;
   const storageCol = oddLanCount ? 2 : 1;
+
 
   const renderLanCard = (lan, gridPosition) => {
     const lanEntries = Object.entries(lan.data || {});
@@ -82,6 +83,27 @@ const SystemInfo = () => {
       </Card>
     );
   };
+
+  const storageDetailsCard = (
+    <Card
+      title={SYSTEM_INFO_CARD_TITLES.storageDetails}
+      style={infoCardStretchStyle}
+    >
+      <InfoCardBody rowCount={storageDetailRows.length}>
+        {storageDetailRows.map((row, idx) => (
+          <InfoTableRow
+            key={row.label}
+            label={row.label}
+            value={row.value}
+            keyName={row.label}
+            even={idx % 2 === 1}
+            valueBadge={row.valueBadge}
+          />
+        ))}
+      </InfoCardBody>
+    </Card>
+  );
+
 
   return (
     <div style={systemInfoPageWrapStyle}>
@@ -156,9 +178,9 @@ const SystemInfo = () => {
             accentColor={C.successGreen}
           />
           <StatCard
-            label={SYSTEM_INFO_STAT_LABELS.dcmsStatus}
-            value={dcmsStatus}
-            type="status"
+            label={SYSTEM_INFO_STAT_LABELS.memoryUsage}
+            value={memoryUsage}
+            type="cpu"
             accentColor={C.successGreen}
           />
           <StatCard

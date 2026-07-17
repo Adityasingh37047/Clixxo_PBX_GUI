@@ -13,6 +13,7 @@ import {
   parseWebVersionPayload,
   updateVersionEntry,
   mapStorageUsageToDetailRows,
+  getStorageUsagePercent,
 } from "../utils/SystemInfoTransformers";
 import { getSystemInfoLoadErrorMessage } from "../utils/SystemInfoValidators";
 
@@ -183,7 +184,7 @@ export function useSystemInfoPage() {
 
   const runtime = getSystemInfoMetric(SYSTEM_INFO, ["runtime", "uptime"]);
   const cpuUsage = getSystemInfoMetric(SYSTEM_INFO, ["cpu"]);
-  const dcmsStatus = getSystemInfoMetric(SYSTEM_INFO, ["dcms"]);
+  const memoryUsage = getStorageUsagePercent(storageDetails);
   const packetLoss = getSystemInfoMetric(SYSTEM_INFO, [
     "packet loss",
     "packet_loss",
@@ -200,7 +201,7 @@ export function useSystemInfoPage() {
     loadSystemInfo,
     runtime,
     cpuUsage,
-    dcmsStatus,
+    memoryUsage,
     packetLoss,
     storageDetails,
   };

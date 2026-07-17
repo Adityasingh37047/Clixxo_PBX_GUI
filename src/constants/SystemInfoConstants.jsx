@@ -11,7 +11,7 @@ export const SYSTEM_INFO_REFRESH_INTERVAL_MS = 5000;
 export const SYSTEM_INFO_STAT_LABELS = {
   runtime: "RUNTIME",
   cpuUsage: "CPU USAGE",
-  dcmsStatus: "DCMS STATUS",
+  memoryUsage: "MEMORY USAGE",
   packetLoss: "PACKET LOSS (RX)",
 };
 
@@ -28,6 +28,7 @@ export const SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS = [
   { key: "usedSpace", label: "Used Space" },
   { key: "availableSpace", label: "Available Space" },
   { key: "usage", label: "Usage" },
+  { key: "memoryHealth", label: "Memory Health" },
 ];
 
 export const SYSTEM_INFO_LAN_NAME_MAP = {

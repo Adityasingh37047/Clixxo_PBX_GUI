@@ -56,6 +56,22 @@ const renderPktsValue = (val) => {
   );
 };
 
+/** Rounded status chip — shared by DCMS rows and Memory Health in Storage Details. */
+export const SystemInfoStatusBadge = ({ children, color, background }) => (
+  <span
+    style={{
+      background: background ?? "#dcfce7",
+      color: color ?? C.successGreen,
+      padding: "1px 8px",
+      borderRadius: SYSTEM_INFO_CARD_RADIUS,
+      fontSize: 11,
+      fontWeight: 700,
+    }}
+  >
+    {children}
+  </span>
+);
+
 export const renderCellValue = (key, val) => {
   if (val === null || val === undefined || val === "")
     return <span style={{ color: C.mutedText }}>—</span>;
@@ -74,18 +90,12 @@ export const renderCellValue = (key, val) => {
   if ((lk.includes("dcms") || lk.includes("status")) && str) {
     const running = str.toLowerCase() === "running";
     return (
-      <span
-        style={{
-          background: running ? "#dcfce7" : "#fee2e2",
-          color: running ? C.successGreen : C.errorRed,
-          padding: "1px 8px",
-          borderRadius: SYSTEM_INFO_CARD_RADIUS,
-          fontSize: 11,
-          fontWeight: 700,
-        }}
+      <SystemInfoStatusBadge
+        background={running ? "#dcfce7" : "#fee2e2"}
+        color={running ? C.successGreen : C.errorRed}
       >
         {str}
-      </span>
+      </SystemInfoStatusBadge>
     );
   }
   return str;
@@ -129,7 +139,7 @@ export const Card = ({ title, children, style }) => (
   </div>
 );
 
-export const InfoTableRow = ({ label, value, keyName, even }) => (
+export const InfoTableRow = ({ label, value, keyName, even, valueBadge }) => (
   <div
     style={{
       display: "flex",
@@ -154,7 +164,19 @@ export const InfoTableRow = ({ label, value, keyName, even }) => (
     <span
       style={{ color: C.valueText, fontSize: 12, flex: 1, fontWeight: 600 }}
     >
-      {renderCellValue(keyName || label, value)}
+      {valueBadge != null &&
+      value !== null &&
+      value !== undefined &&
+      value !== "" ? (
+        <SystemInfoStatusBadge
+          color={valueBadge.color}
+          background={valueBadge.background}
+        >
+          {value}
+        </SystemInfoStatusBadge>
+      ) : (
+        renderCellValue(keyName || label, value)
+      )}
     </span>
   </div>
 );

@@ -11,10 +11,10 @@ export default defineConfig(({ mode }) => ({
     port: 5173, // default Vite dev port (you can change if needed)
     proxy: {
       "/api": {
-        target: "https://192.168.0.98:443", // backend API server
+        target: "https://192.168.0.157:443", // backend API server
         changeOrigin: true,
         secure: false,
-        // rewrite: (path) => path.replace(/^\/api/, ""), 
+        // rewrite: (path) => path.replace(/^\/api/, ""),
         // ^ uncomment if backend doesn't have `/api` prefix
       },
     },

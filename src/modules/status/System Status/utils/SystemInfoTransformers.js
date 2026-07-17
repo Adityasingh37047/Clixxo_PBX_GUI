@@ -91,6 +91,25 @@ export const getSystemInfoMetric = (systemInfo, keywords) => {
   return item?.value ?? null;
 };
 
+/** Derives Memory Health label and color from storage used_pct (0–100). */
+export const getMemoryHealthFromUsedPct = (usedPct) => {
+  if (usedPct === undefined || usedPct === null || usedPct === "") {
+    return null;
+  }
+  const n = Number(usedPct);
+  if (Number.isNaN(n)) return null;
+  const pct = Math.min(100, Math.max(0, n));
+  if (pct <= 50)
+    return { label: "Excellent", color: "#15803d", backgroundColor: "#dcfce7" };
+  if (pct <= 70)
+    return { label: "Good", color: "#16a34a", backgroundColor: "#dcfce7" };
+  if (pct <= 85)
+    return { label: "Fair", color: "#a16207", backgroundColor: "#fef9c3" };
+  if (pct <= 95)
+    return { label: "Poor", color: "#c2410c", backgroundColor: "#ffedd5" };
+  return { label: "Critical", color: "#b91c1c", backgroundColor: "#fee2e2" };
+};
+
 /** Prefer API-mapped rows; otherwise show label rows with empty values for layout. */
 export const resolveStorageDetailRows = (rowsFromApi) => {
   if (Array.isArray(rowsFromApi) && rowsFromApi.length > 0) {
@@ -100,6 +119,17 @@ export const resolveStorageDetailRows = (rowsFromApi) => {
     label,
     value: "",
   }));
+};
+
+/** Usage (%) from Storage Details — matches the Usage row, not Used Space. */
+export const getStorageUsagePercent = (storageDetailRows) => {
+  const usageLabel = SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS.find(
+    (d) => d.key === "usage",
+  )?.label;
+  const row = (storageDetailRows || []).find(
+    (r) => (r.label || "") === usageLabel,
+  );
+  return row?.value || null;
 };
 
 /**
@@ -120,11 +150,25 @@ export const mapStorageUsageToDetailRows = (data) => {
       ? `${usedPct}%`
       : "";
 
+  const memoryHealth = getMemoryHealthFromUsedPct(usedPct);
+
   return [
     { label: labelByKey.storage, value: STORAGE_DEVICE_LOCAL_DISK },
     { label: labelByKey.totalCapacity, value: disk.total?.human ?? "" },
     { label: labelByKey.usedSpace, value: disk.used?.human ?? "" },
     { label: labelByKey.availableSpace, value: disk.avail?.human ?? "" },
     { label: labelByKey.usage, value: usageValue },
+    {
+      label: labelByKey.memoryHealth,
+      value: memoryHealth?.label ?? "",
+      ...(memoryHealth
+        ? {
+            valueBadge: {
+              color: memoryHealth.color,
+              background: memoryHealth.backgroundColor,
+            },
+          }
+        : {}),
+    },
   ];
 };
