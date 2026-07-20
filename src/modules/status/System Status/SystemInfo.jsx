@@ -5,20 +5,23 @@ import { C } from "../../../theme/pbxTokens";
 import {
   SYSTEM_INFO_CARD_TITLES,
   SYSTEM_INFO_STAT_LABELS,
+  SYSTEM_INFO_BREADCRUMB_SEGMENTS,
 } from "../../../constants/SystemInfoConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as SystemInfoBreadcrumb,
+  extensionPageWrapStyle as systemInfoPageWrapStyle,
+  extensionPageInnerStyle as systemInfoPageInnerStyle,
+} from "../../../components/common";
 import { useSystemInfoPage } from "./hooks/useSystemInfoPage";
 import {
   Card,
   InfoCardBody,
   InfoTableRow,
   StatCard,
-  SystemInfoBreadcrumb,
 } from "./components/SystemInfoFormFields";
 import {
   infoCardStretchStyle,
-  systemInfoPageInnerStyle,
-  systemInfoPageWrapStyle,
 } from "./components/SystemInfoTableHelpers";
 import { resolveStorageDetailRows } from "./utils/SystemInfoTransformers";
 
@@ -112,7 +115,12 @@ const SystemInfo = () => {
             flexWrap: "wrap",
           }}
         >
-          <SystemInfoBreadcrumb style={{ marginBottom: 0 }} />
+          <SystemInfoBreadcrumb
+            root={SYSTEM_INFO_BREADCRUMB_SEGMENTS[0]}
+            section={SYSTEM_INFO_BREADCRUMB_SEGMENTS[1]}
+            current={SYSTEM_INFO_BREADCRUMB_SEGMENTS[2]}
+            style={{ marginBottom: 0 }}
+          />
           <Btn
             onClick={() => loadSystemInfo(false)}
             disabled={isRefreshing}

@@ -117,6 +117,7 @@ const ToneGeneratorPage = () => {
             {TONE_GENERATOR_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
     </div>
   );

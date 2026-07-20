@@ -1,8 +1,42 @@
 ---
 description: Visual-lock refactor rules for PBX pages (Tailwind, MUI, tables, modals)
-globs: src/modules/PBX/**/*.jsx,src/modules/CDR/**/*.jsx
+globs: src/modules/**/*.jsx,src/components/common/**/*
 alwaysApply: false
 ---
+
+## Standard common imports (all sidebar pages)
+
+Every sidebar route page must use **page-specific aliases** from `components/common` (SipRegister pattern). Never import unaliased `ExtensionBreadcrumb`, `extensionPageWrapStyle`, etc. on a page file.
+
+**List / table page shell:**
+```jsx
+import { Alert } from "@mui/material";
+import {
+  ExtensionBreadcrumb as XxxBreadcrumb,
+  ExtensionPagination as XxxPagination,
+  ExtensionTableListLoading as XxxTableListLoading,
+  ExtensionTableListEmptyState as XxxTableListEmptyState,
+  Btn, TH, tdStyle,
+  extensionPageWrapStyle as xxxPageWrapStyle,
+  extensionPageInnerStyle as xxxPageInnerStyle,
+  extensionCardStyle as xxxCardStyle,
+  extensionFixedAlertSx as xxxFixedAlertSx,
+  extensionToolbarStyle as xxxToolbarStyle,
+  extensionSelectedBadgeStyle as xxxSelectedBadgeStyle,
+  extensionCancelBtnStyle as xxxCancelBtnStyle,
+  extensionPrimaryBtnStyle as xxxPrimaryBtnStyle,
+  extensionTableCheckboxSx as xxxTableCheckboxSx,
+} from "../../../components/common";
+import { C, FOCUS_RING_SHADOW, OUTLINED_BORDER, OUTLINED_FOCUS, OUTLINED_HOVER } from "../../../theme/pbxTokens";
+```
+
+**Form / settings page shell** (no pagination): omit `ExtensionPagination` and table helpers.
+
+**Rules:**
+- Use `Alert` + `extensionFixedAlertSx` alias — not `MessageBanner` on page files.
+- `Btn`, `TH`, `tdStyle` come from **common**; color tokens from **pbxTokens** (`C`, `OUTLINED_*`, `FOCUS_RING_SHADOW`).
+- Do not duplicate inline CSS that common already exports (page wrap, card, toolbar, breadcrumb, pagination, modal footer).
+- FormFields / modals: use `pbxTokens` for TextField outlines; use common modal kit (`addNewModalFooterStyle`, `ExtensionModalSectionHeading`, etc.).
 
 # PBX visual-lock refactor — do not repeat these mistakes
 

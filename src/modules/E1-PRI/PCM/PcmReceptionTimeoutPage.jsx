@@ -5,33 +5,37 @@ import {
   PCM_RECEPTION_TIMEOUT_FIELD_TOOLTIPS,
   PCM_RECEPTION_TIMEOUT_PAGE_TITLE,
   PCM_RECEPTION_TIMEOUT_MODAL_TITLE_EDIT,
+  PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_ROOT,
+  PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_SECTION,
 } from "../../../constants/PcmReceptionTimeoutConstants";
 import { Alert, useMediaQuery } from "@mui/material";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { usePcmReceptionTimeoutPage } from "./hooks/usePcmReceptionTimeoutPage";
 import { formatPcmReceptionTimeoutCell } from "./utils/PcmReceptionTimeoutTransformers";
-import { Btn } from "../../../components/common";
 import {
-  PcmReceptionTimeoutBreadcrumb,
-  PcmReceptionTimeoutTH,
+  Btn,
+  ExtensionBreadcrumb as PcmReceptionTimeoutBreadcrumb,
+  extensionPageWrapStyle as pcmReceptionTimeoutPageWrapStyle,
+  extensionPageInnerStyle as pcmReceptionTimeoutPageInnerStyle,
+  extensionCardStyle as pcmReceptionTimeoutCardStyle,
+  extensionToolbarStyle as pcmReceptionTimeoutToolbarStyle,
+  extensionFixedAlertSx as pcmReceptionTimeoutFixedAlertSx,
+  TH as PcmReceptionTimeoutTH,
+  tdStyle as pcmReceptionTimeoutTdStyle,
+} from "../../../components/common";
+import { C } from "../../../theme/pbxTokens";
+import {
   PcmReceptionTimeoutFieldLabel,
   pcmReceptionTimeoutFormPanelStyle,
   pcmReceptionTimeoutInputStyle,
   pcmReceptionTimeoutInputInteraction,
   pcmReceptionTimeoutAddNewModalFooterStyle,
   pcmReceptionTimeoutAddNewModalFooterBtnStyle,
-  pcmReceptionTimeoutTdStyle,
-  pcmReceptionTimeoutC as C,
-  pcmReceptionTimeoutCardStyle,
-  pcmReceptionTimeoutToolbarStyle,
   PCM_RECEPTION_TIMEOUT_COMPACT_MQ,
 } from "./components/PcmReceptionTimeoutFormFields";
 import {
   pcmReceptionTimeoutEditIconStyle,
   handlePcmReceptionTimeoutEditIconHover,
-  pcmReceptionTimeoutFixedAlertSx,
-  pcmReceptionTimeoutPageWrapStyle,
-  pcmReceptionTimeoutPageInnerStyle,
   pcmReceptionTimeoutModalCancelBtnStyle,
   pcmReceptionTimeoutTableScrollStyle,
 } from "./components/PcmReceptionTimeoutTableHelpers";
@@ -75,7 +79,11 @@ const PcmReceptionTimeoutPage = () => {
       )}
 
       <div style={pcmReceptionTimeoutPageInnerStyle}>
-        <PcmReceptionTimeoutBreadcrumb />
+        <PcmReceptionTimeoutBreadcrumb
+          root={PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_ROOT}
+          section={PCM_RECEPTION_TIMEOUT_PAGE_BREADCRUMB_SECTION}
+          current={PCM_RECEPTION_TIMEOUT_PAGE_TITLE}
+        />
 
         <div style={pcmReceptionTimeoutCardStyle}>
           <div style={pcmReceptionTimeoutToolbarStyle}>

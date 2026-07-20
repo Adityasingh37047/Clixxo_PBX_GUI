@@ -7,13 +7,20 @@ import {
   SIP_SIP_BTN_RESET,
   SIP_SIP_LOADING_TEXT,
   SIP_SIP_APPLYING_TEXT,
+  SIP_SIP_BREADCRUMB_ROOT,
+  SIP_SIP_BREADCRUMB_SECTION,
+  SIP_SIP_PAGE_TITLE,
 } from "../../../constants/SipSipConstants";
+import {
+  Btn,
+  ExtensionBreadcrumb as SipSipBreadcrumb,
+  extensionPageWrapStyle as sipSipPageWrapStyle,
+  extensionPageInnerStyle as sipSipPageInnerStyle,
+  extensionFixedAlertSx as sipSipFixedAlertSx,
+} from "../../../components/common";
 import { useSipSipPage } from "./hooks/useSipSipPage";
 import {
-  SipSipBtn as Btn,
-  SipSipBreadcrumb,
   SipSipScrollbarStyles,
-  AdvancedPageShell,
   SipSipFormBody,
   SIP_SIP_COMPACT_MQ,
 } from "./components/SipSipFormFields";
@@ -21,7 +28,6 @@ import {
   C,
   CARD_RADIUS,
   SIP_SIP_SCROLL_CLASS,
-  sipSipFixedAlertSx,
   advancedCardShellStyle,
   advancedTableContainerStyle,
   advancedFormInlineFooterStyle,
@@ -48,7 +54,15 @@ const SipSipPage = () => {
   return (
     <>
       <SipSipScrollbarStyles />
-      <AdvancedPageShell isCompact={isCompact}>
+      <div
+        className={SIP_SIP_SCROLL_CLASS}
+        style={{
+          ...sipSipPageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
+        }}
+        data-native-scroll
+      >
+        <div style={sipSipPageInnerStyle}>
         {message.text && !saving && (
           <Alert
             severity={
@@ -91,7 +105,12 @@ const SipSipPage = () => {
           </div>
         )}
 
-        <SipSipBreadcrumb />
+        <SipSipBreadcrumb
+          root={SIP_SIP_BREADCRUMB_ROOT}
+          section={SIP_SIP_BREADCRUMB_SECTION}
+          current={SIP_SIP_PAGE_TITLE}
+          style={{ flexShrink: 0, width: "100%" }}
+        />
 
         <div style={advancedCardShellStyle}>
           <div style={advancedTableContainerStyle}>
@@ -161,7 +180,8 @@ const SipSipPage = () => {
             )}
           </div>
         </div>
-      </AdvancedPageShell>
+        </div>
+      </div>
     </>
   );
 };

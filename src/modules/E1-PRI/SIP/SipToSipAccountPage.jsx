@@ -48,14 +48,33 @@ import {
   SIP_TO_SIP_ACCOUNT_PLACEHOLDER_CONTACT_USER,
   SIP_TO_SIP_ACCOUNT_PLACEHOLDER_OUTBOUND_PROXY,
   SIP_TO_SIP_ACCOUNT_CONTACT_PREFIX,
+  SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_ROOT,
+  SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_SECTION,
+  SIP_TO_SIP_ACCOUNT_PAGE_TITLE,
 } from "../../../constants/SipToSipAccountConstants";
 import { useSipToSipAccountPage } from "./hooks/useSipToSipAccountPage";
-import { Btn } from "../../../components/common";
 import {
-  SipToSipBreadcrumb,
-  TableListLoading,
-  TableListEmptyState,
-  SipToSipPagination,
+  Btn,
+  TH,
+  ExtensionBreadcrumb as SipToSipBreadcrumb,
+  ExtensionPagination as SipToSipPagination,
+  ExtensionTableListLoading as TableListLoading,
+  ExtensionTableListEmptyState as TableListEmptyState,
+  extensionPageWrapStyle as sipToSipPageWrapStyle,
+  extensionPageInnerStyle as sipToSipInnerStyle,
+  extensionFixedAlertSx as sipToSipFixedAlertSx,
+  extensionCardStyle as sipToSipCardStyle,
+  extensionToolbarStyle as sipToSipToolbarStyle,
+  extensionSelectedBadgeStyle as sipToSipSelectedBadgeStyle,
+  extensionCancelBtnStyle as sipToSipCancelBtnStyle,
+  extensionPrimaryBtnStyle as sipToSipPrimaryBtnStyle,
+  extensionTableCheckboxSx as sipToSipTableCheckboxSx,
+  addNewModalFooterStyle,
+  addNewModalFooterBtnStyle,
+  extensionModalCancelBtnStyle as sipToSipModalCancelBtnStyle,
+} from "../../../components/common";
+import { C } from "../../../theme/pbxTokens";
+import {
   SipToSipModalSectionHeading,
   SipToSipAllowCodecsSectionHeading,
   SipToSipSectionCard,
@@ -70,24 +89,10 @@ import {
   sipToSipModalFormPanelStyle,
 } from "./components/SipToSipAccountFormFields";
 import {
-  sipToSipPageWrapStyle,
-  sipToSipInnerStyle,
-  sipToSipFixedAlertSx,
   sipToSipTableStyle,
   sipToSipEditIconStyle,
   getSipToSipRowBg,
   getSipToSipTdStyle,
-  sipToSipCardStyle,
-  sipToSipToolbarStyle,
-  sipToSipSelectedBadgeStyle,
-  sipToSipCancelBtnStyle,
-  sipToSipPrimaryBtnStyle,
-  sipToSipTableCheckboxSx,
-  addNewModalFooterStyle,
-  addNewModalFooterBtnStyle,
-  sipToSipModalCancelBtnStyle,
-  C,
-  TH,
 } from "./components/SipToSipAccountTableHelpers";
 
 const SipToSipAccountPage = () => {
@@ -310,7 +315,11 @@ const SipToSipAccountPage = () => {
             </Alert>
           )}
 
-          <SipToSipBreadcrumb />
+          <SipToSipBreadcrumb
+            root={SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_ROOT}
+            section={SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_SECTION}
+            current={SIP_TO_SIP_ACCOUNT_PAGE_TITLE}
+          />
 
           <div style={sipToSipCardStyle}>
             <div

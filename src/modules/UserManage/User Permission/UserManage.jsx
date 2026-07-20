@@ -15,21 +15,26 @@ import {
   USER_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE,
 } from "../../../constants/UserManageConstants";
 import { C } from "../../../theme/pbxTokens";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as UserManageBreadcrumb,
+  extensionPageWrapStyle as userManagePageWrapStyle,
+  extensionPageInnerStyle as userManagePageInnerStyle,
+  extensionFixedAlertSx as userManageFixedAlertSx,
+  TH as UserManageTH,
+} from "../../../components/common";
+import {
+  USER_MANAGE_BREADCRUMB,
+} from "../../../constants/UserManageConstants";
 import { useUserManagePage } from "./hooks/useUserManagePage";
 import {
-  UserManageBreadcrumb,
   UserManageEditForm,
   UserManagePermissionCard,
 } from "./components/UserManageFormFields";
 import {
   userManageBlueBarStyle,
-  userManageFixedAlertSx,
-  userManagePageInnerStyle,
-  userManagePageWrapStyle,
   userManageTableContainerStyle,
   userManageTdStyle,
-  UserManageTH,
 } from "./components/UserManageTableHelpers";
 import {
   getUserSectionsLabel,
@@ -77,7 +82,11 @@ const UserManage = () => {
           </Alert>
         )}
 
-        <UserManageBreadcrumb />
+        <UserManageBreadcrumb
+          root={USER_MANAGE_BREADCRUMB[0]}
+          section={USER_MANAGE_BREADCRUMB[1]}
+          current={USER_MANAGE_BREADCRUMB[2]}
+        />
 
         <div style={userManageTableContainerStyle}>
           <div style={userManageBlueBarStyle}>

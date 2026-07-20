@@ -33,17 +33,27 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { usePcmTrunkGroupPage } from "./hooks/usePcmTrunkGroupPage";
-import { Btn } from "../../../components/common";
 import {
+  Btn,
   TH,
-  C,
   tdStyle,
-  checkboxSx,
-  PcmTrunkGroupBreadcrumb,
-} from "./components/PcmTrunkGroupFormFields";
+  ExtensionBreadcrumb as PcmTrunkGroupBreadcrumb,
+  ExtensionPagination as PcmTrunkGroupPagination,
+  ExtensionTableListLoading as TableListLoading,
+  ExtensionTableListEmptyState as TableListEmptyState,
+  extensionPageWrapStyle as pcmTrunkGroupPageWrapStyle,
+  extensionPageInnerStyle as pcmTrunkGroupPageInnerStyle,
+  extensionCardStyle as pcmTrunkGroupCardStyle,
+  extensionToolbarStyle as pcmTrunkGroupToolbarStyle,
+  extensionSelectedBadgeStyle as pcmTrunkGroupSelectedBadgeStyle,
+  extensionCancelBtnStyle as pcmTrunkGroupCancelBtnStyle,
+  extensionPrimaryBtnStyle as pcmTrunkGroupPrimaryBtnStyle,
+  extensionFixedAlertSx as pcmTrunkGroupFixedAlertSx,
+  extensionTableCheckboxSx as checkboxSx,
+  EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
+} from "../../../components/common";
+import { C } from "../../../theme/pbxTokens";
 import {
-  CARD_RADIUS,
-  pcmTrunkGroupFixedAlertSx,
   pcmTrunkGroupEditIconStyle,
   handlePcmTrunkGroupEditIconHover,
   getPcmTrunkGroupRowBg,
@@ -242,182 +252,6 @@ const pcmTrunkGroupSelectStyle = {
   cursor: "pointer",
 };
 
-const pcmTrunkGroupPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pcmTrunkGroupPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const PCM_TRUNK_GROUP_TABLE_CARD_RADIUS = 4;
-
-const pcmTrunkGroupCardStyle = {
-  background: "#ffffff",
-  borderRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const pcmTrunkGroupToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  borderTopRightRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-};
-
-const pcmTrunkGroupPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const pcmTrunkGroupSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const pcmTrunkGroupCancelBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const pcmTrunkGroupPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-};
-
-const pcmTrunkGroupPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const PcmTrunkGroupPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-}) => (
-  <div style={{ ...pcmTrunkGroupPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        ← Prev
-      </Btn>
-      <span style={pcmTrunkGroupPageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
-
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -556,40 +390,18 @@ const PcmTrunkGroupPage = () => {
         <Alert
           severity={message.type}
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            minWidth: 300,
-            boxShadow: 3,
-          }}
+          sx={pcmTrunkGroupFixedAlertSx}
         >
           {message.text}
         </Alert>
       )}
 
       <div style={pcmTrunkGroupPageInnerStyle}>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>{PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT}</span>
-          <span>&gt;</span>
-          <span>{PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION}</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            {PCM_TRUNK_GROUP_PAGE_TITLE}
-          </span>
-        </div>
+        <PcmTrunkGroupBreadcrumb
+          root={PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT}
+          section={PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION}
+          current={PCM_TRUNK_GROUP_PAGE_TITLE}
+        />
 
         <div style={pcmTrunkGroupCardStyle}>
           <div

@@ -134,6 +134,7 @@ const CueTonePage = () => {
             <p style={cueToneNoteStyle}>{CUE_TONE_NOTE_TEXT}</p>
           </div>
         </div>
+        </div>
       </div>
     </div>
   );

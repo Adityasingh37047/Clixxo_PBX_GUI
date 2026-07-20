@@ -99,6 +99,7 @@ const DtmfPage = () => {
             {DTMF_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
     </div>
   );
