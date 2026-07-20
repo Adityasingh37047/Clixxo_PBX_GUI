@@ -30,7 +30,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb as AsteriskCliBreadcrumb,
+  ExtensionBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as cliPageWrapStyle,
   extensionPageInnerStyle as cliPageInnerStyleBase,
@@ -272,6 +272,14 @@ const CliPageShell = ({ children }) => (
   </>
 );
 
+const CliBreadcrumb = () => (
+  <ExtensionBreadcrumb
+    root={ASTERISK_CLI_PAGE_BREADCRUMB_ROOT}
+    section={ASTERISK_CLI_PAGE_BREADCRUMB_SECTION}
+    current={ASTERISK_CLI_PAGE_TITLE}
+  />
+);
+
 const AsteriskCLI = () => {
   const isCompact = useMediaQuery(ASTERISK_CLI_COMPACT_MQ);
   const logsRef = useRef(null);
@@ -394,11 +402,7 @@ const AsteriskCLI = () => {
         </Alert>
       )}
 
-      <AsteriskCliBreadcrumb
-        root={ASTERISK_CLI_PAGE_BREADCRUMB_ROOT}
-        section={ASTERISK_CLI_PAGE_BREADCRUMB_SECTION}
-        current={ASTERISK_CLI_PAGE_TITLE}
-      />
+      <CliBreadcrumb />
 
       <div style={cliTableContainerStyle}>
         <div style={cliHeaderStyle}>

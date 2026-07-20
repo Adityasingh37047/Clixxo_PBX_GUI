@@ -1,5 +1,5 @@
 export const IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT = "System";
-export const IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION = "Network Settings";
+export const IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION = "System Settings";
 export const IP_ROUTING_TABLE_PAGE_TITLE = "IP Route Table";
 
 export const IP_ROUTING_TABLE_BTN_DELETE = "Delete";

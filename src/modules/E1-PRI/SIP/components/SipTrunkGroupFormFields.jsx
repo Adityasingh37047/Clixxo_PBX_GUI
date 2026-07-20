@@ -13,7 +13,7 @@ import {
   Btn,
   TH,
   tdStyle,
-  ExtensionBreadcrumb as SipTrunkGroupPageBreadcrumb,
+  ExtensionBreadcrumb,
   extensionPageWrapStyle as sipTrunkGroupPageWrapStyle,
   extensionPageInnerStyle as sipTrunkGroupPageInnerStyle,
   extensionCardStyle as sipTrunkGroupCardStyleBase,
@@ -207,7 +207,7 @@ export const sipTrunkGroupModalSelectSx = {
 };
 
 export const SipTrunkGroupBreadcrumb = ({ style }) => (
-  <SipTrunkGroupPageBreadcrumb
+  <ExtensionBreadcrumb
     root={SIP_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT}
     section={SIP_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION}
     current={SIP_TRUNK_GROUP_PAGE_TITLE}

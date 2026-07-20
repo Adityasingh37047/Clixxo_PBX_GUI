@@ -5,6 +5,9 @@ import {
   PCM_NUM_RECEIVING_RULE_INITIAL_FORM,
   PCM_NUM_RECEIVING_RULE_TABLE_COLUMNS,
   PCM_NUM_RECEIVING_RULE_FIELD_TOOLTIPS,
+  PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_ROOT,
+  PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_SECTION,
+  PCM_NUM_RECEIVING_RULE_PAGE_TITLE,
   PCM_NUM_RECEIVING_RULE_EMPTY_MESSAGE,
   PCM_NUM_RECEIVING_RULE_MODAL_TITLE_ADD,
   PCM_NUM_RECEIVING_RULE_MODAL_TITLE_EDIT,
@@ -354,6 +357,29 @@ const pcmNumRecvRuleSelectStyle = {
   cursor: "pointer",
 };
 
+const PcmNumRecvRuleBreadcrumb = () => (
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+    }}
+  >
+    <span>{PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{PCM_NUM_RECEIVING_RULE_PAGE_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>
+      {PCM_NUM_RECEIVING_RULE_PAGE_TITLE}
+    </span>
+  </div>
+);
+
 const TableListLoading = () => (
   <div
     style={{
@@ -572,7 +598,7 @@ const PcmNumReceivingRulePage = () => {
           </Alert>
         )}
 
-        <PcmNumReceivingRuleBreadcrumb />
+        <PcmNumRecvRuleBreadcrumb />
 
         <div style={pcmNumRecvRuleCardStyle}>
           <div

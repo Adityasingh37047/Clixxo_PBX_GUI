@@ -8,10 +8,7 @@ import {
   OUTLINED_FOCUS,
   FOCUS_RING_SHADOW,
 } from "../../../../theme/pbxTokens";
-import {
-  Btn,
-  ExtensionBreadcrumb as SipToSipPageBreadcrumb,
-} from "../../../../components/common";
+import { Btn, ExtensionBreadcrumb } from "../../../../components/common";
 import {
   SIP_TO_SIP_ACCOUNT_COMPACT_MQ,
   sipToSipPaginationStyle,
@@ -199,7 +196,7 @@ export const sipToSipDialogPaperSx = {
 };
 
 export const SipToSipBreadcrumb = ({ style }) => (
-  <SipToSipPageBreadcrumb
+  <ExtensionBreadcrumb
     root={SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_ROOT}
     section={SIP_TO_SIP_ACCOUNT_PAGE_BREADCRUMB_SECTION}
     current={SIP_TO_SIP_ACCOUNT_PAGE_TITLE}

@@ -1,69 +1,43 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   fetchSystemInfo,
   postLinuxCmd,
-  getStorageUsage,
 } from "../../../../api/apiService";
-import { SYSTEM_INFO_REFRESH_INTERVAL_MS } from "../../../../constants/SystemInfoConstants";
 import {
   extractRawLanInterfaces,
   filterAndNormalizeLanInterfaces,
-  getSystemInfoMetric,
+  mapHardDrivesFromDetails,
+  mapSystemResourcesFromDetails,
   parseAstLicenseSerial,
   parseWebVersionPayload,
   updateVersionEntry,
-  mapStorageUsageToDetailRows,
-  getStorageUsagePercent,
 } from "../utils/SystemInfoTransformers";
 import { getSystemInfoLoadErrorMessage } from "../utils/SystemInfoValidators";
 
 export function useSystemInfoPage() {
-  const [LAN_INTERFACES, setLAN_INTERFACES] = useState([]);
-  const [SYSTEM_INFO, setSYSTEM_INFO] = useState([]);
-  const [VERSION_INFO, setVERSION_INFO] = useState([]);
-  const [storageDetails, setStorageDetails] = useState([]);
+  const [details, setDetails] = useState(null);
   const [error, setErros] = useState("");
   const [licenseSerialNumber, setLicenseSerialNumber] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const silentRefreshRef = useRef(false);
 
-  const loadSystemInfo = useCallback(async (silent = false) => {
-    if (silent) {
-      if (silentRefreshRef.current) return;
-      silentRefreshRef.current = true;
-    } else {
-      setIsRefreshing(true);
-    }
+  const loadSystemInfo = useCallback(async () => {
+    setIsRefreshing(true);
 
     try {
-      // Fetch system info and serial (via astlicense) in parallel
-      const [systemData, versionInfoData, astLicData, storageData] =
-      await Promise.allSettled([
-        fetchSystemInfo(),
-        postLinuxCmd({
-          cmd: "cat /home/clixxo/server/config/web_version.json",
-        }),
-        postLinuxCmd({ cmd: "astlicense" }),
-        getStorageUsage(),
-      ]);
+      const [systemData, versionInfoData, astLicData] =
+        await Promise.allSettled([
+          fetchSystemInfo(),
+          postLinuxCmd({
+            cmd: "cat /home/clixxo/server/config/web_version.json",
+          }),
+          postLinuxCmd({ cmd: "astlicense" }),
+        ]);
 
-      // Handle system info
       if (systemData.status === "fulfilled" && systemData.value.success) {
         const data = systemData.value;
+        const baseDetails = data.details || {};
 
-        // Extract interfaces robustly from multiple possible response shapes
-        const details = data.details || {};
-        const rawInterfaces = extractRawLanInterfaces(details);
-
-        // Filter out loopback and VPN virtual interfaces (tap*/tun*/vpn*) and normalize names
-        const filteredInterfaces =
-          filterAndNormalizeLanInterfaces(rawInterfaces);
-
-        setLAN_INTERFACES(filteredInterfaces);
-        setSYSTEM_INFO(data.details.SYSTEM_INFO);
-
-        // Handle VERSION_INFO with serial number derived from astlicense
-        let versionInfo = data.details.VERSION_INFO || [];
+        let versionInfo = baseDetails.VERSION_INFO || [];
 
         let parsedSerial = "";
         if (
@@ -125,52 +99,31 @@ export function useSystemInfoPage() {
           finalSerial,
         );
 
-        setVERSION_INFO(versionInfo);
+        setDetails({
+          ...baseDetails,
+          VERSION_INFO: versionInfo,
+        });
         setErros("");
-
-        if (storageData.status === "fulfilled") {
-          const usagePayload =
-            storageData.value?.message ?? storageData.value ?? {};
-          setStorageDetails(mapStorageUsageToDetailRows(usagePayload));
-        } else {
-          console.error("Failed to fetch storage details");
-          setStorageDetails([]);
-        }
       } else {
         setErros(
           systemData.status === "rejected"
             ? "Failed to load system information"
             : systemData.value?.error || "Unknown error",
         );
-        setLAN_INTERFACES([]);
-        setSYSTEM_INFO([]);
-        setVERSION_INFO([]);
-        setStorageDetails([]);
+        setDetails(null);
+        setLicenseSerialNumber("");
       }
-    } catch (error) {
-      // Handle different types of errors with user-friendly messages
-      setErros(getSystemInfoLoadErrorMessage(error));
-      setLAN_INTERFACES([]);
-      setSYSTEM_INFO([]);
-      setVERSION_INFO([]);
-      setStorageDetails([]);
+    } catch (err) {
+      setErros(getSystemInfoLoadErrorMessage(err));
+      setDetails(null);
       setLicenseSerialNumber("");
     } finally {
-      if (silent) {
-        silentRefreshRef.current = false;
-      } else {
-        setIsRefreshing(false);
-      }
+      setIsRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
-    loadSystemInfo(false);
-    const interval = setInterval(
-      () => loadSystemInfo(true),
-      SYSTEM_INFO_REFRESH_INTERVAL_MS,
-    );
-    return () => clearInterval(interval);
+    loadSystemInfo();
   }, [loadSystemInfo]);
 
   useEffect(() => {
@@ -182,27 +135,35 @@ export function useSystemInfoPage() {
     };
   }, []);
 
-  const runtime = getSystemInfoMetric(SYSTEM_INFO, ["runtime", "uptime"]);
-  const cpuUsage = getSystemInfoMetric(SYSTEM_INFO, ["cpu"]);
-  const memoryUsage = getStorageUsagePercent(storageDetails);
-  const packetLoss = getSystemInfoMetric(SYSTEM_INFO, [
-    "packet loss",
-    "packet_loss",
-    "rx loss",
-  ]);
+  const LAN_INTERFACES = useMemo(
+    () =>
+      filterAndNormalizeLanInterfaces(
+        extractRawLanInterfaces(details || {}),
+      ),
+    [details],
+  );
+
+  const SYSTEM_INFO = details?.SYSTEM_INFO || [];
+  const VERSION_INFO = details?.VERSION_INFO || [];
+  const systemResources = useMemo(
+    () => mapSystemResourcesFromDetails(details || {}),
+    [details],
+  );
+  const hardDrives = useMemo(
+    () => mapHardDrivesFromDetails(details || {}),
+    [details],
+  );
 
   return {
+    details,
     LAN_INTERFACES,
     SYSTEM_INFO,
     VERSION_INFO,
+    systemResources,
+    hardDrives,
     error,
     licenseSerialNumber,
     isRefreshing,
     loadSystemInfo,
-    runtime,
-    cpuUsage,
-    memoryUsage,
-    packetLoss,
-    storageDetails,
   };
 }

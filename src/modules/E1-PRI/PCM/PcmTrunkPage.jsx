@@ -1,7 +1,7 @@
 import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { PCM_TRUNK_INDEX_OPTIONS, PCM_TRUNK_PCM_NO_OPTIONS, PCM_TRUNK_ITEMS_PER_PAGE, PCM_TRUNK_FIELD_TOOLTIPS, PCM_TRUNK_EMPTY_MESSAGE, PCM_TRUNK_MODAL_TITLE, PCM_TRUNK_SAVE_LABEL, PCM_TRUNK_CLOSE_LABEL } from "../../../constants/PcmTrunkConstants";
+import { PCM_TRUNK_INDEX_OPTIONS, PCM_TRUNK_PCM_NO_OPTIONS, PCM_TRUNK_ITEMS_PER_PAGE, PCM_TRUNK_FIELD_TOOLTIPS, PCM_TRUNK_EMPTY_MESSAGE, PCM_TRUNK_MODAL_TITLE, PCM_TRUNK_SAVE_LABEL, PCM_TRUNK_CLOSE_LABEL, PCM_TRUNK_PAGE_BREADCRUMB_ROOT, PCM_TRUNK_PAGE_BREADCRUMB_SECTION, PCM_TRUNK_PAGE_TITLE } from "../../../constants/PcmTrunkConstants";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -62,7 +62,26 @@ const PcmTrunkPage = () => {
       }}
     >
       <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
-        <PcmTrunkBreadcrumb />
+        {/* Breadcrumb */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>{PCM_TRUNK_PAGE_BREADCRUMB_ROOT}</span>
+          <span>&gt;</span>
+          <span>{PCM_TRUNK_PAGE_BREADCRUMB_SECTION}</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {PCM_TRUNK_PAGE_TITLE}
+          </span>
+        </div>
         {trunks.length === 0 ? (
           <div
             style={{

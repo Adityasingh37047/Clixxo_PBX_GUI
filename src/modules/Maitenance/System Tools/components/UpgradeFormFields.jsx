@@ -13,10 +13,7 @@ import {
   UPGRADE_MESSAGES,
 } from "../../../../constants/UpgradeConstants";
 import { C } from "../../../../theme/pbxTokens";
-import {
-  Btn,
-  ExtensionBreadcrumb as UpgradeBreadcrumb,
-} from "../../../../components/common";
+import { Btn } from "../../../../components/common";
 import {
   upgradePageWrapStyle,
   upgradePageInnerStyle,
@@ -144,11 +141,26 @@ export const UpgradePageView = (props) => {
       )}
 
         {/* ── Breadcrumb ── */}
-        <UpgradeBreadcrumb
-          root={UPGRADE_BREADCRUMB[0]}
-          section={UPGRADE_BREADCRUMB[1]}
-          current={UPGRADE_BREADCRUMB[2]}
-        />
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            flexWrap: "wrap",
+          }}
+        >
+          <span>{UPGRADE_BREADCRUMB[0]}</span>
+          <span>&gt;</span>
+          <span>{UPGRADE_BREADCRUMB[1]}</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {UPGRADE_BREADCRUMB[2]}
+          </span>
+        </div>
 
         {/* Alerts */}
         {error && (

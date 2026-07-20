@@ -31,7 +31,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb as CentralizedManageBreadcrumb,
+  ExtensionBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as centralizedManagePageWrapStyle,
   extensionPageInnerStyle as centralizedManagePageInnerBase,
@@ -325,6 +325,14 @@ const CentralizedManagePageShell = ({ children }) => (
       <div style={centralizedManagePageInnerStyle}>{children}</div>
     </div>
   </>
+);
+
+const CentralizedManageBreadcrumb = () => (
+  <ExtensionBreadcrumb
+    root={CENTRALIZED_MANAGE_PAGE_BREADCRUMB_ROOT}
+    section={CENTRALIZED_MANAGE_PAGE_BREADCRUMB_SECTION}
+    current={CENTRALIZED_MANAGE_PAGE_TITLE}
+  />
 );
 
 const disabledInputStyle = {
@@ -827,11 +835,7 @@ fi`;
         </Alert>
       )}
 
-      <CentralizedManageBreadcrumb
-        root={CENTRALIZED_MANAGE_PAGE_BREADCRUMB_ROOT}
-        section={CENTRALIZED_MANAGE_PAGE_BREADCRUMB_SECTION}
-        current={CENTRALIZED_MANAGE_PAGE_TITLE}
-      />
+      <CentralizedManageBreadcrumb />
 
       <div >
         <div style={centralizedManageTableContainerStyle}>

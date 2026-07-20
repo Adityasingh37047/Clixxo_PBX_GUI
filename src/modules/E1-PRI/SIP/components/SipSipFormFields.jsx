@@ -2,10 +2,7 @@ import React from "react";
 import { SIP_SIP_FIELD_TOOLTIPS, SIP_SIP_BREADCRUMB_ROOT, SIP_SIP_BREADCRUMB_SECTION, SIP_SIP_PAGE_TITLE, SIP_SIP_LABEL_EXTERNAL_BOUND, SIP_SIP_PLACEHOLDER_CALLED_PREFIX, SIP_SIP_CHECKBOX_ENABLE, SIP_SIP_RADIO_YES, SIP_SIP_RADIO_NO, SIP_SIP_SECTION_NETWORK, SIP_SIP_SECTION_REGISTRATION, SIP_SIP_NOTE, SIP_SIP_NOTE_LABEL } from "../../../../constants/SipSipConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 
-import {
-  Btn,
-  ExtensionBreadcrumb as SipSipPageBreadcrumb,
-} from "../../../../components/common";
+import { Btn } from "../../../../components/common";
 import { OUTLINED_BORDER, OUTLINED_HOVER, OUTLINED_FOCUS, FOCUS_RING_SHADOW } from "../../../../theme/pbxTokens";
 
 import {
@@ -300,11 +297,26 @@ export const SipSipScrollbarStyles = () => (
 );
 
 export const SipSipBreadcrumb = () => (
-  <SipSipPageBreadcrumb
-    root={SIP_SIP_BREADCRUMB_ROOT}
-    section={SIP_SIP_BREADCRUMB_SECTION}
-    current={SIP_SIP_PAGE_TITLE}
-  />
+  <div
+    style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      marginBottom: 16,
+      fontWeight: 400,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      flexWrap: "wrap",
+      flexShrink: 0,
+      width: "100%",
+    }}
+  >
+    <span>{SIP_SIP_BREADCRUMB_ROOT}</span>
+    <span>&gt;</span>
+    <span>{SIP_SIP_BREADCRUMB_SECTION}</span>
+    <span>&gt;</span>
+    <span style={{ color: "#1e293b", fontWeight: 600 }}>{SIP_SIP_PAGE_TITLE}</span>
+  </div>
 );
 
 export const AdvancedPageShell = ({ children, isCompact }) => (

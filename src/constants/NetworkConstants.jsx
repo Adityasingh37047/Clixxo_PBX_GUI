@@ -1,5 +1,5 @@
 export const NETWORK_PAGE_BREADCRUMB_ROOT = "System";
-export const NETWORK_PAGE_BREADCRUMB_SECTION = "Network Settings";
+export const NETWORK_PAGE_BREADCRUMB_SECTION = "System Settings";
 export const NETWORK_PAGE_TITLE = "Network";
 export const NETWORK_CARD_TITLE = "Network";
 

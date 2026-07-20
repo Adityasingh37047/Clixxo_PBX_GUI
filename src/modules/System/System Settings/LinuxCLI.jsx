@@ -30,7 +30,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb as LinuxCliBreadcrumb,
+  ExtensionBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as cliPageWrapStyle,
   extensionPageInnerStyle as cliPageInnerStyleBase,
@@ -272,6 +272,14 @@ const CliPageShell = ({ children }) => (
   </>
 );
 
+const CliBreadcrumb = () => (
+  <ExtensionBreadcrumb
+    root={LINUX_CLI_PAGE_BREADCRUMB_ROOT}
+    section={LINUX_CLI_PAGE_BREADCRUMB_SECTION}
+    current={LINUX_CLI_PAGE_TITLE}
+  />
+);
+
 const LinuxCLI = () => {
   const isCompact = useMediaQuery(LINUX_CLI_COMPACT_MQ);
   const logsRef = useRef(null);
@@ -387,11 +395,7 @@ const LinuxCLI = () => {
         </Alert>
       )}
 
-      <LinuxCliBreadcrumb
-        root={LINUX_CLI_PAGE_BREADCRUMB_ROOT}
-        section={LINUX_CLI_PAGE_BREADCRUMB_SECTION}
-        current={LINUX_CLI_PAGE_TITLE}
-      />
+      <CliBreadcrumb />
 
       <div style={cliTableContainerStyle}>
         <div style={cliHeaderStyle}>

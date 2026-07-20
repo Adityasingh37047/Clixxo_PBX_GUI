@@ -45,7 +45,7 @@ import {
   networkFixedAlertSx,
   networkFormBtnStyle,
 } from "./NetworkTableHelpers";
-import { ExtensionBreadcrumb as NetworkPageBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb } from "../../../../components/common";
 
 export const NETWORK_COMPACT_MQ = "(max-width: 768px)";
 export const NETWORK_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
@@ -421,7 +421,7 @@ export const NetworkPageShell = ({ children, isCompact }) => (
 );
 
 export const NetworkBreadcrumb = () => (
-  <NetworkPageBreadcrumb
+  <ExtensionBreadcrumb
     root={NETWORK_PAGE_BREADCRUMB_ROOT}
     section={NETWORK_PAGE_BREADCRUMB_SECTION}
     current={NETWORK_PAGE_TITLE}

@@ -1,6 +1,6 @@
 import React from "react";
 import { C } from "../../../../theme/pbxTokens";
-import { ExtensionBreadcrumb as SystemInfoPageBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb } from "../../../../components/common";
 import { SYSTEM_INFO_BREADCRUMB_SEGMENTS } from "../../../../constants/SystemInfoConstants";
 import {
   SYSTEM_INFO_CARD_RADIUS,
@@ -11,7 +11,7 @@ import {
 } from "./SystemInfoTableHelpers";
 
 export const SystemInfoBreadcrumb = ({ style } = {}) => (
-  <SystemInfoPageBreadcrumb
+  <ExtensionBreadcrumb
     root={SYSTEM_INFO_BREADCRUMB_SEGMENTS[0]}
     section={SYSTEM_INFO_BREADCRUMB_SEGMENTS[1]}
     current={SYSTEM_INFO_BREADCRUMB_SEGMENTS[2]}

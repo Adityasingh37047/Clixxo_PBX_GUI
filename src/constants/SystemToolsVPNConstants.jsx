@@ -1,5 +1,5 @@
 export const SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_ROOT = "System";
-export const SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_SECTION = "Network Settings";
+export const SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_SECTION = "System Settings";
 export const SYSTEM_TOOLS_VPN_PAGE_TITLE = "VPN";
 
 export const SYSTEM_TOOLS_VPN_SECTION_TITLE = "VPN Settings";

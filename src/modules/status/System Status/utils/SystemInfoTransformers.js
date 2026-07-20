@@ -1,9 +1,71 @@
 import {
   SYSTEM_INFO_LAN_NAME_MAP,
   SYSTEM_INFO_LAN_SORT_ORDER,
-  SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS,
 } from "../../../../constants/SystemInfoConstants";
-import { STORAGE_DEVICE_LOCAL_DISK } from "../../../../constants/StorageConstants";
+
+const parsePercent = (value) => {
+  if (value === null || value === undefined || value === "") return 0;
+  if (typeof value === "number") return value;
+  const n = parseFloat(String(value).replace("%", "").trim());
+  return Number.isNaN(n) ? 0 : n;
+};
+
+const formatHumanPair = (used, total) => {
+  const usedHuman = used?.human;
+  const totalHuman = total?.human;
+  if (usedHuman == null && totalHuman == null) return null;
+  return `${usedHuman ?? "—"} / ${totalHuman ?? "—"}`;
+};
+
+/** Build System Resources view-model from /system-info details. */
+export const mapSystemResourcesFromDetails = (details = {}) => {
+  const cpu = details.CPU_INFO || {};
+  const mem = details.MEMORY_INFO || {};
+  const ram = mem.ram || {};
+  const swap = mem.swap || {};
+  const systemInfo = details.SYSTEM_INFO || [];
+
+  const runtimeItem = systemInfo.find((item) => item.label === "Runtime");
+
+  const speedMhz = cpu.speedMHz;
+  const memoryUsage = formatHumanPair(ram.used, ram.total);
+  const swapUsage = formatHumanPair(swap.used, swap.total);
+
+  return {
+    cpuPercent: cpu.usage ?? null,
+    ramPercent: ram.used_pct ?? null,
+    swapPercent: swap.used_pct ?? null,
+    cpuInfo: cpu.model ?? null,
+    uptime: runtimeItem?.value ?? null,
+    cpuSpeed:
+      speedMhz != null && speedMhz !== ""
+        ? `${speedMhz} MHz`
+        : null,
+    memoryUsage:
+      memoryUsage && swapUsage
+        ? `RAM: ${memoryUsage}  SWAP: ${swapUsage}`
+        : memoryUsage || swapUsage
+          ? `RAM: ${memoryUsage ?? "— / —"}  SWAP: ${swapUsage ?? "— / —"}`
+          : null,
+  };
+};
+
+/** Build Hard Drives view-model from /system-info DISK_INFO. */
+export const mapHardDrivesFromDetails = (details = {}) => {
+  const disk = details.DISK_INFO || {};
+
+  return {
+    usedPercent: disk.used_pct ?? null,
+    availablePercent:
+      disk.used_pct != null && disk.used_pct !== ""
+        ? Math.max(0, Math.min(100, 100 - parsePercent(disk.used_pct)))
+        : null,
+    capacity: disk.total?.human ?? null,
+    usedSpace: disk.used?.human ?? null,
+    availableSpace: disk.available?.human ?? null,
+    mountPoint: disk.mountPoint ?? null,
+  };
+};
 
 export const extractRawLanInterfaces = (details = {}) => {
   let rawInterfaces = [];
@@ -32,9 +94,9 @@ export const filterAndNormalizeLanInterfaces = (rawInterfaces) =>
       const name = iface && iface.name ? String(iface.name) : "";
       const lower = name.toLowerCase();
       if (lower === "lo") return false;
-      if (lower.startsWith("tap")) return false; // e.g., tap0
-      if (lower.startsWith("tun")) return false; // e.g., tun0
-      if (lower.includes("vpn")) return false; // e.g., openvpn
+      if (lower.startsWith("tap")) return false;
+      if (lower.startsWith("tun")) return false;
+      if (lower.includes("vpn")) return false;
       return true;
     })
     .map((iface) => {
@@ -80,95 +142,4 @@ export const parseAstLicenseSerial = (responseData) => {
     return fields[1];
   }
   return "";
-};
-
-export const getSystemInfoMetric = (systemInfo, keywords) => {
-  const item = (systemInfo || []).find((i) =>
-    keywords.some((k) =>
-      (i.label || "").toLowerCase().includes(k.toLowerCase()),
-    ),
-  );
-  return item?.value ?? null;
-};
-
-/** Derives Memory Health label and color from storage used_pct (0–100). */
-export const getMemoryHealthFromUsedPct = (usedPct) => {
-  if (usedPct === undefined || usedPct === null || usedPct === "") {
-    return null;
-  }
-  const n = Number(usedPct);
-  if (Number.isNaN(n)) return null;
-  const pct = Math.min(100, Math.max(0, n));
-  if (pct <= 50)
-    return { label: "Excellent", color: "#15803d", backgroundColor: "#dcfce7" };
-  if (pct <= 70)
-    return { label: "Good", color: "#16a34a", backgroundColor: "#dcfce7" };
-  if (pct <= 85)
-    return { label: "Fair", color: "#a16207", backgroundColor: "#fef9c3" };
-  if (pct <= 95)
-    return { label: "Poor", color: "#c2410c", backgroundColor: "#ffedd5" };
-  return { label: "Critical", color: "#b91c1c", backgroundColor: "#fee2e2" };
-};
-
-/** Prefer API-mapped rows; otherwise show label rows with empty values for layout. */
-export const resolveStorageDetailRows = (rowsFromApi) => {
-  if (Array.isArray(rowsFromApi) && rowsFromApi.length > 0) {
-    return rowsFromApi;
-  }
-  return SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS.map(({ label }) => ({
-    label,
-    value: "",
-  }));
-};
-
-/** Usage (%) from Storage Details — matches the Usage row, not Used Space. */
-export const getStorageUsagePercent = (storageDetailRows) => {
-  const usageLabel = SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS.find(
-    (d) => d.key === "usage",
-  )?.label;
-  const row = (storageDetailRows || []).find(
-    (r) => (r.label || "") === usageLabel,
-  );
-  return row?.value || null;
-};
-
-/**
- * Maps Storage Settings get_usage payload to System Info row shape.
- * Wire via setSTORAGE_DETAILS when the API is integrated.
- */
-export const mapStorageUsageToDetailRows = (data) => {
-  const disk = data?.disk;
-  if (!disk) return [];
-
-  const labelByKey = Object.fromEntries(
-    SYSTEM_INFO_STORAGE_DETAIL_ROW_DEFS.map(({ key, label }) => [key, label]),
-  );
-
-  const usedPct = disk.used_pct;
-  const usageValue =
-    usedPct !== undefined && usedPct !== null && usedPct !== ""
-      ? `${usedPct}%`
-      : "";
-
-  const memoryHealth = getMemoryHealthFromUsedPct(usedPct);
-
-  return [
-    { label: labelByKey.storage, value: STORAGE_DEVICE_LOCAL_DISK },
-    { label: labelByKey.totalCapacity, value: disk.total?.human ?? "" },
-    { label: labelByKey.usedSpace, value: disk.used?.human ?? "" },
-    { label: labelByKey.availableSpace, value: disk.avail?.human ?? "" },
-    { label: labelByKey.usage, value: usageValue },
-    {
-      label: labelByKey.memoryHealth,
-      value: memoryHealth?.label ?? "",
-      ...(memoryHealth
-        ? {
-            valueBadge: {
-              color: memoryHealth.color,
-              background: memoryHealth.backgroundColor,
-            },
-          }
-        : {}),
-    },
-  ];
 };
