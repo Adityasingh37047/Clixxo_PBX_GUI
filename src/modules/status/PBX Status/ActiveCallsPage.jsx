@@ -6,20 +6,22 @@ import CallEndIcon from "@mui/icons-material/CallEnd";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { IconButton, CircularProgress, Tooltip } from "@mui/material";
 import {
-  ACTIVE_CALLS_ACTIVE_BADGE_SUFFIX,
+  ACTIVE_CALLS_BREADCRUMB_SEGMENTS,
   ACTIVE_CALLS_EMPTY_SUBTITLE,
   ACTIVE_CALLS_EMPTY_TITLE,
 } from "../../../constants/ActiveCallsConstants";
 import { C } from "../../../theme/pbxTokens";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as ActiveCallsBreadcrumb,
+  extensionPageWrapStyle as activeCallsPageWrapStyle,
+  extensionPageInnerStyle as activeCallsPageInnerStyle,
+} from "../../../components/common";
 import { useActiveCallsPage } from "./hooks/useActiveCallsPage";
-import { ActiveCallsBreadcrumb } from "./components/ActiveCallsFormFields";
 import {
   ACTIVE_CALLS_CARD_RADIUS,
   ACTIVE_CALLS_CARD_SHADOW,
   ACTIVE_CALLS_ITEM_CARD_SHADOW,
-  activeCallsPageInnerStyle,
-  activeCallsPageWrapStyle,
   activeCallsRefreshBtnStyle,
 } from "./components/ActiveCallsTableHelpers";
 import {
@@ -50,7 +52,11 @@ const ActiveCallsPage = () => {
   return (
     <div style={activeCallsPageWrapStyle}>
       <div style={activeCallsPageInnerStyle}>
-        <ActiveCallsBreadcrumb />
+        <ActiveCallsBreadcrumb
+          root={ACTIVE_CALLS_BREADCRUMB_SEGMENTS[0]}
+          section={ACTIVE_CALLS_BREADCRUMB_SEGMENTS[1]}
+          current={ACTIVE_CALLS_BREADCRUMB_SEGMENTS[2]}
+        />
 
         {/* Main card */}
         <div

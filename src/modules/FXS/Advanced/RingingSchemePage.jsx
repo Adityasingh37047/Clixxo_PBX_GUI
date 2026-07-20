@@ -4,21 +4,25 @@ import {
   RINGING_SCHEME_CARD_TITLE,
   RINGING_SCHEME_RESET_LABEL,
   RINGING_SCHEME_SAVE_LABEL,
+  RINGING_SCHEME_PAGE_BREADCRUMB_SECTION,
+  RINGING_SCHEME_PAGE_TITLE,
 } from "../../../constants/RingingSchemeConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as RingingSchemeBreadcrumb,
+  extensionPageWrapStyle as ringingSchemePageWrapStyle,
+  extensionCardStyle as ringingSchemeCardStyle,
+  extensionFixedAlertSx as ringingSchemeFixedAlertSx,
+} from "../../../components/common";
 import { useRingingSchemePage } from "./hooks/useRingingSchemePage";
 import { getRingingSchemeMatchColumn } from "./utils/RingingSchemeTransformers";
 import {
   MatchingSchemeRow,
-  RingingSchemeBreadcrumb,
   RingingSchemeMatchingSelect,
-  RingingSchemePageShell,
   RingingSchemeTable,
 } from "./components/RingingSchemeFormFields";
 import {
-  ringingSchemeCardStyle,
   ringingSchemeCardTitleBarStyle,
-  ringingSchemeFixedAlertSx,
   ringingSchemeFooterStyle,
   ringingSchemeFormBodyStyle,
   ringingSchemeFormBtnStyle,
@@ -43,7 +47,7 @@ const RingingSchemePage = () => {
     getRingingSchemeMatchColumn(isCallerId);
 
   return (
-    <RingingSchemePageShell>
+    <div style={ringingSchemePageWrapStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -54,7 +58,11 @@ const RingingSchemePage = () => {
         </Alert>
       )}
 
-      <RingingSchemeBreadcrumb />
+      <RingingSchemeBreadcrumb
+        root="FXS"
+        section={RINGING_SCHEME_PAGE_BREADCRUMB_SECTION}
+        current={RINGING_SCHEME_PAGE_TITLE}
+      />
 
       <div style={ringingSchemeCardStyle}>
         <div style={ringingSchemeCardTitleBarStyle}>
@@ -99,7 +107,7 @@ const RingingSchemePage = () => {
           </Btn>
         </div>
       </div>
-    </RingingSchemePageShell>
+    </div>
   );
 };
 

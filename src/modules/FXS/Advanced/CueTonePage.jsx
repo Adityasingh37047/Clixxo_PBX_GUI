@@ -3,24 +3,29 @@ import { Alert } from "@mui/material";
 import {
   CUE_TONE_CARD_TITLE,
   CUE_TONE_NOTE_TEXT,
+  CUE_TONE_PAGE_BREADCRUMB_SECTION,
+  CUE_TONE_PAGE_TITLE,
 } from "../../../constants/CueToneConstants";
-import { Btn } from "../../../components/common";
 import { C } from "../../../theme/pbxTokens";
+import {
+  Btn,
+  ExtensionBreadcrumb as CueToneBreadcrumb,
+  extensionPageWrapStyle as cueTonePageWrapStyle,
+  extensionPageInnerStyle as cueTonePageInnerStyle,
+  extensionCardStyle as cueToneCardStyle,
+  extensionFixedAlertSx as cueToneFixedAlertSx,
+} from "../../../components/common";
 import { useCueTonePage } from "./hooks/useCueTonePage";
 import { getCueToneFileTypes } from "./utils/CueToneTransformers";
 import {
-  CueToneBreadcrumb,
   CueToneFieldRow,
-  CueTonePageShell,
   nativeFieldInteraction,
   nativeFieldSelectStyle,
 } from "./components/CueToneFormFields";
 import {
   advancedCardTitleBarStyle,
-  cueToneCardStyle,
   cueToneFieldsColStyle,
   cueToneFileBtnStyle,
-  cueToneFixedAlertSx,
   cueToneFormBodyStyle,
   cueToneNoteStyle,
 } from "./components/CueToneTableHelpers";
@@ -40,20 +45,25 @@ const CueTonePage = () => {
   const fileTypes = getCueToneFileTypes();
 
   return (
-    <CueTonePageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={cueToneFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={cueTonePageWrapStyle}>
+      <div style={cueTonePageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={cueToneFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <CueToneBreadcrumb />
+        <CueToneBreadcrumb
+          root="FXS"
+          section={CUE_TONE_PAGE_BREADCRUMB_SECTION}
+          current={CUE_TONE_PAGE_TITLE}
+        />
 
-      <div style={cueToneCardStyle}>
+        <div style={cueToneCardStyle}>
         <div style={advancedCardTitleBarStyle}>
           <span>{CUE_TONE_CARD_TITLE}</span>
         </div>
@@ -125,7 +135,7 @@ const CueTonePage = () => {
           </div>
         </div>
       </div>
-    </CueTonePageShell>
+    </div>
   );
 };
 

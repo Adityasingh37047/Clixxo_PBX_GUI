@@ -11,15 +11,23 @@ import {
   PORT_FXS_ADVANCED_TABLE_COLUMNS,
   PORT_FXS_ADVANCED_BATCH_MODIFY_TITLE,
   PORT_FXS_ADVANCED_BATCH_MODIFY_LABEL,
+  PORT_FXS_ADVANCED_PAGE_BREADCRUMB_ROOT,
+  PORT_FXS_ADVANCED_PAGE_BREADCRUMB_SECTION,
+  PORT_FXS_ADVANCED_PAGE_TITLE,
 } from "../../../constants/PortFxsAdvancedPageConstants";
 import {
   Btn,
   TH,
+  tdStyle,
+  ExtensionBreadcrumb as PortFxsAdvancedBreadcrumb,
   ExtensionPagination as PortFxsAdvancedPagination,
+  extensionPageWrapStyle as portFxsAdvancedPageWrapStyle,
+  extensionPageInnerStyle as portFxsAdvancedPageInnerStyle,
+  extensionCardStyle as portFxsAdvancedCardStyle,
+  extensionFixedAlertSx as portFxsAdvancedFixedAlertSx,
 } from "../../../components/common";
 import { usePortFxsAdvancedPage } from "./hooks/usePortFxsAdvancedPage";
 import {
-  PortFxsAdvancedBreadcrumb,
   PortFxsAdvancedBatchModifyForm,
   PORT_FXS_ADVANCED_ADD_NEW_DIALOG_PAPER_SX,
   PORT_FXS_ADVANCED_ADD_NEW_DIALOG_SX,
@@ -30,10 +38,7 @@ import {
   addNewModalFooterStyle,
   fxsToolbarPrimaryBtnStyle,
   advancedFormPanelStyle,
-  portFxsAdvancedCardStyle,
   portFxsAdvancedHeaderStyle,
-  portFxsAdvancedPageInnerStyle,
-  portFxsAdvancedPageWrapStyle,
   portFxsAdvancedPaginationStyle,
   portFxsAdvancedTableBodyStyle,
 } from "./components/PortFxsAdvancedFormFields";
@@ -83,20 +88,17 @@ const PortFxsAdvancedPage = () => {
                   : "info"
             }
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: 3,
-            }}
+            sx={portFxsAdvancedFixedAlertSx}
           >
             {message.text}
           </Alert>
         )}
 
-        <PortFxsAdvancedBreadcrumb />
+        <PortFxsAdvancedBreadcrumb
+          root={PORT_FXS_ADVANCED_PAGE_BREADCRUMB_ROOT}
+          section={PORT_FXS_ADVANCED_PAGE_BREADCRUMB_SECTION}
+          current={PORT_FXS_ADVANCED_PAGE_TITLE}
+        />
 
         <div style={portFxsAdvancedCardStyle}>
           <div style={portFxsAdvancedHeaderStyle}>

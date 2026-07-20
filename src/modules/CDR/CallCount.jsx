@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Alert,
   useMediaQuery,
 } from "@mui/material";
 import { C } from "../../theme/pbxTokens";
@@ -25,12 +26,12 @@ import {
 import {
   Btn,
   TH,
-  ExtensionTableListLoading as TableListLoading,
-  ExtensionTableListEmptyState as TableListEmptyState,
+  ExtensionTableListLoading as CallCountTableListLoading,
+  ExtensionTableListEmptyState as CallCountTableListEmptyState,
   ExtensionPagination as CallCountPagination,
-  MessageBanner,
-  extensionPageWrapStyle as pbxPageWrapStyle,
-  extensionPageInnerStyle as pbxPageInnerStyle,
+  extensionFixedAlertSx as callCountFixedAlertSx,
+  extensionPageWrapStyle as callCountPageWrapStyle,
+  extensionPageInnerStyle as callCountPageInnerStyle,
   extensionCardStyle as callCountCardStyle,
   extensionToolbarStyle as callCountToolbarStyle,
   extensionSelectedBadgeStyle as callCountSelectedBadgeStyle,
@@ -119,12 +120,17 @@ const CallCount = () => {
     handleDeleteRecording,
   } = useCallCountPage();
   return (
-    <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
-      <div style={pbxPageInnerStyle}>
-        <MessageBanner
-          message={message}
-          onClose={() => setMessage({ type: "", text: "" })}
-        />
+    <div style={{ ...callCountPageWrapStyle, padding: isCompact ? 12 : 16 }}>
+      <div style={callCountPageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={callCountFixedAlertSx}
+          >
+            {message.text}
+          </Alert>
+        )}
 
         {/* Error banner */}
         {error && (
@@ -267,9 +273,9 @@ const CallCount = () => {
           </div>
 
           {isInitialLoad ? (
-            <TableListLoading />
+            <CallCountTableListLoading />
           ) : rows.length === 0 && !hasActiveFilters ? (
-            <TableListEmptyState
+            <CallCountTableListEmptyState
               message={CALL_COUNT_EMPTY_MESSAGE}
               showButton={false}
             />

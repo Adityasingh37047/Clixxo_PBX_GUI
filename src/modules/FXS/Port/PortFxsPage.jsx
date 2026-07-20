@@ -10,18 +10,25 @@ import {
   PORT_FXS_TABLE_COLUMNS,
   PORT_FXS_BATCH_MODIFY_TITLE,
   PORT_FXS_EMPTY_MESSAGE,
+  PORT_FXS_PAGE_BREADCRUMB_ROOT,
+  PORT_FXS_PAGE_BREADCRUMB_SECTION,
+  PORT_FXS_PAGE_TITLE,
 } from "../../../constants/PortFxsPageConstants";
 import {
   Btn,
   TH,
+  tdStyle,
+  ExtensionBreadcrumb as PortFxsBreadcrumb,
   ExtensionPagination as PortFxsPagination,
+  extensionPageWrapStyle as portFxsPageWrapStyle,
+  extensionPageInnerStyle as portFxsPageInnerStyle,
+  extensionCardStyle as portFxsCardStyle,
 } from "../../../components/common";
 import { C } from "../../../theme/pbxTokens";
 import { usePortFxsPage } from "./hooks/usePortFxsPage";
 import PortFxsBatchModifyPage from "./PortFxsBatchModifyPage";
 import PortFxsModifyPage from "./PortFxsModifyPage";
 import {
-  PortFxsBreadcrumb,
   PortFxsRegStatusBadge,
   addNewModalBackdropSlotProps,
   addNewModalDialogContentSx,
@@ -33,10 +40,7 @@ import {
   fxsDialogTitleStyle,
   fxsToolbarCancelBtnStyle,
   fxsToolbarPrimaryBtnStyle,
-  portFxsCardStyle,
   portFxsHeaderStyle,
-  portFxsPageInnerStyle,
-  portFxsPageWrapStyle,
   portFxsTableBodyStyle,
   renderPortFxsTableColumnHeader,
 } from "./components/PortFxsFormFields";
@@ -153,7 +157,11 @@ const PortFxsPage = () => {
   return (
     <div style={portFxsPageWrapStyle}>
       <div style={portFxsPageInnerStyle}>
-        <PortFxsBreadcrumb />
+        <PortFxsBreadcrumb
+          root={PORT_FXS_PAGE_BREADCRUMB_ROOT}
+          section={PORT_FXS_PAGE_BREADCRUMB_SECTION}
+          current={PORT_FXS_PAGE_TITLE}
+        />
 
         <div style={portFxsCardStyle}>
           <div style={portFxsHeaderStyle}>

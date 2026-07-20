@@ -6,20 +6,23 @@ import {
   FXS_VOIP_MEDIA_RIGHT_SECTION_TITLE,
   FXS_VOIP_MEDIA_SAVE_LABEL,
   FXS_VOIP_MEDIA_RESET_LABEL,
+  FXS_VOIP_MEDIA_BREADCRUMB_SECTION,
+  FXS_VOIP_MEDIA_PAGE_TITLE,
 } from "../../../constants/MediaParametersConstants";
-import { Btn } from "../../../components/common";
-import { useFxsVoipMediaPage } from "./hooks/useFxsVoipMediaPage";
 import {
-  FxsVoipMediaBreadcrumb,
-  FxsVoipMediaFormGrid,
-  FxsVoipMediaPageShell,
-} from "./components/FxsVoipMediaFormFields";
+  Btn,
+  ExtensionBreadcrumb as FxsVoipMediaBreadcrumb,
+  extensionPageWrapStyle as fxsVoipMediaPageWrapStyle,
+  extensionPageInnerStyle as fxsVoipMediaPageInnerStyle,
+  extensionCardStyle as fxsVoipMediaCardStyle,
+  extensionFixedAlertSx as fxsVoipMediaFixedAlertSx,
+} from "../../../components/common";
+import { useFxsVoipMediaPage } from "./hooks/useFxsVoipMediaPage";
+import { FxsVoipMediaFormGrid } from "./components/FxsVoipMediaFormFields";
 import {
   fxsVoipMediaCardTitleBarStyle,
-  fxsVoipMediaFixedAlertSx,
   fxsVoipMediaFormBtnStyle,
   fxsVoipMediaFormInlineFooterStyle,
-  fxsVoipMediaTableContainerStyle,
 } from "./components/FxsVoipMediaTableHelpers";
 
 const FxsVoipMediaPage = () => {
@@ -39,19 +42,26 @@ const FxsVoipMediaPage = () => {
   } = vm;
 
   return (
-    <FxsVoipMediaPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={fxsVoipMediaFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={fxsVoipMediaPageWrapStyle} data-native-scroll>
+      <div style={fxsVoipMediaPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={fxsVoipMediaFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <FxsVoipMediaBreadcrumb />
-      <div style={fxsVoipMediaTableContainerStyle}>
+        <FxsVoipMediaBreadcrumb
+          root="FXS"
+          section={FXS_VOIP_MEDIA_BREADCRUMB_SECTION}
+          current={FXS_VOIP_MEDIA_PAGE_TITLE}
+          style={{ flexShrink: 0 }}
+        />
+
+        <div style={fxsVoipMediaCardStyle}>
         <div style={fxsVoipMediaCardTitleBarStyle}>
           <span>{FXS_VOIP_MEDIA_CARD_TITLE}</span>
         </div>
@@ -84,8 +94,9 @@ const FxsVoipMediaPage = () => {
             {FXS_VOIP_MEDIA_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
-    </FxsVoipMediaPageShell>
+    </div>
   );
 };
 

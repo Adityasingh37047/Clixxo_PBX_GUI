@@ -12,13 +12,21 @@ import {
   DIALING_TIMEOUT_TABLE_COLUMNS,
   DIALING_TIMEOUT_CARD_TITLE,
   DIALING_TIMEOUT_MODAL_TITLE,
+  DIALING_TIMEOUT_PAGE_BREADCRUMB_SECTION,
+  DIALING_TIMEOUT_PAGE_TITLE,
 } from "../../../constants/DialingTimeoutConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  TH,
+  ExtensionBreadcrumb as DialingTimeoutBreadcrumb,
+  extensionPageWrapStyle as dialingTimeoutPageWrapStyle,
+  extensionPageInnerStyle as dialingTimeoutPageInnerStyle,
+  extensionCardStyle as dialingTimeoutCardStyle,
+  extensionFixedAlertSx as dialingTimeoutFixedAlertSx,
+} from "../../../components/common";
 import { useDialingTimeoutPage } from "./hooks/useDialingTimeoutPage";
 import {
-  DialingTimeoutBreadcrumb,
   DialingTimeoutFieldRow,
-  DialingTimeoutPageShell,
   DIALING_TIMEOUT_ADD_NEW_DIALOG_PAPER_SX,
   DIALING_TIMEOUT_ADD_NEW_DIALOG_SX,
   DIALING_TIMEOUT_FIELD_LABEL_WIDTH,
@@ -34,9 +42,6 @@ import {
   dialingTimeoutTextFieldSx,
 } from "./components/DialingTimeoutFormFields";
 import {
-  TH,
-  dialingTimeoutCardStyle,
-  dialingTimeoutFixedAlertSx,
   dialingTimeoutHeaderStyle,
   dialingTimeoutHeaderTitleStyle,
   dialingTimeoutTableBodyStyle,
@@ -63,20 +68,24 @@ const DialingTimeoutPage = () => {
   } = vm;
 
   return (
-    <DialingTimeoutPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={dialingTimeoutFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={dialingTimeoutPageWrapStyle}>
+      <div style={dialingTimeoutPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={dialingTimeoutFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <DialingTimeoutBreadcrumb />
+        <DialingTimeoutBreadcrumb
+          section={DIALING_TIMEOUT_PAGE_BREADCRUMB_SECTION}
+          current={DIALING_TIMEOUT_PAGE_TITLE}
+        />
 
-      <div style={dialingTimeoutCardStyle}>
+        <div style={dialingTimeoutCardStyle}>
         <div style={dialingTimeoutHeaderStyle}>
           <span style={dialingTimeoutHeaderTitleStyle}>
             {DIALING_TIMEOUT_CARD_TITLE}
@@ -232,7 +241,8 @@ const DialingTimeoutPage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-    </DialingTimeoutPageShell>
+      </div>
+    </div>
   );
 };
 

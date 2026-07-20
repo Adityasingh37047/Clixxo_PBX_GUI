@@ -8,23 +8,26 @@ import {
   FXS_NAT_SETTINGS_SAVE_LABEL,
   FXS_NAT_SETTINGS_RESET_LABEL,
   FXS_NAT_SETTINGS_NOTE_LABEL,
+  FXS_NAT_SETTINGS_BREADCRUMB_SECTION,
+  FXS_NAT_SETTINGS_PAGE_TITLE,
 } from "../../../constants/NatSettingsConstants";
-import { Btn } from "../../../components/common";
-import { useNatSettingsPage } from "./hooks/useNatSettingsPage";
 import {
-  NatSettingsBreadcrumb,
-  NatSettingsFormGrid,
-  NatSettingsPageShell,
-} from "./components/NatSettingsFormFields";
+  Btn,
+  ExtensionBreadcrumb as NatSettingsBreadcrumb,
+  extensionPageWrapStyle as natSettingsPageWrapStyle,
+  extensionPageInnerStyle as natSettingsPageInnerStyle,
+  extensionCardStyle as natSettingsCardStyle,
+  extensionFixedAlertSx as natSettingsFixedAlertSx,
+} from "../../../components/common";
+import { useNatSettingsPage } from "./hooks/useNatSettingsPage";
+import { NatSettingsFormGrid } from "./components/NatSettingsFormFields";
 import {
   fxsNatSettingsCardTitleBarStyle,
-  fxsNatSettingsFixedAlertSx,
   fxsNatSettingsFormBtnStyle,
   fxsNatSettingsFormInlineFooterStyle,
   fxsNatSettingsNoteSectionStyle,
   fxsNatSettingsNoteTextStyle,
   fxsNatSettingsNoteTitleStyle,
-  fxsNatSettingsTableContainerStyle,
 } from "./components/NatSettingsTableHelpers";
 
 const NatSettingsPage = () => {
@@ -42,20 +45,26 @@ const NatSettingsPage = () => {
   } = vm;
 
   return (
-    <NatSettingsPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={fxsNatSettingsFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={natSettingsPageWrapStyle} data-native-scroll>
+      <div style={natSettingsPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={natSettingsFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <NatSettingsBreadcrumb />
+        <NatSettingsBreadcrumb
+          root="FXS"
+          section={FXS_NAT_SETTINGS_BREADCRUMB_SECTION}
+          current={FXS_NAT_SETTINGS_PAGE_TITLE}
+          style={{ flexShrink: 0 }}
+        />
 
-      <div style={fxsNatSettingsTableContainerStyle}>
+        <div style={natSettingsCardStyle}>
         <div style={fxsNatSettingsCardTitleBarStyle}>
           <span>{FXS_NAT_SETTINGS_CARD_TITLE}</span>
         </div>
@@ -108,8 +117,9 @@ const NatSettingsPage = () => {
             {FXS_NAT_SETTINGS_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
-    </NatSettingsPageShell>
+    </div>
   );
 };
 

@@ -35,6 +35,11 @@ import {
   PCM_CIRCUIT_MAINTENANCE_IN_SERVICE_NO,
 } from "../../../constants/PcmCircuitMaintenanceConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
+import {
+  ExtensionBreadcrumb as PcmCircuitMaintenanceBreadcrumb,
+  extensionPageWrapStyle as pcmCircuitMaintenancePageWrapStyle,
+  extensionPageInnerStyle as pcmCircuitMaintenancePageInnerStyle,
+} from "../../../components/common";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import RingVolumeIcon from "@mui/icons-material/RingVolume";
 import SettingsPhoneIcon from "@mui/icons-material/SettingsPhone";
@@ -57,7 +62,6 @@ import {
   C,
   tdStyle,
   checkboxSx,
-  PcmCircuitMaintenanceBreadcrumb,
   PcmCircuitMaintenanceFieldLabel,
   pcmCircuitMaintenanceDialogConfig,
   pcmCircuitMaintenanceFormPanelStyle,
@@ -71,10 +75,7 @@ import {
 } from "./components/PcmCircuitMaintenanceFormFields";
 import {
   CARD_RADIUS,
-  pcmCircuitMaintenancePageWrapStyle,
-  pcmCircuitMaintenancePageInnerStyle,
   pcmCircuitMaintenanceSelectedBadgeStyle,
-  pcmCircuitMaintenanceFixedAlertSx,
   pcmCircuitMaintenanceEditIconStyle,
   handlePcmCircuitMaintenanceEditIconHover,
   getPcmCircuitMaintenanceRowBg,
@@ -127,7 +128,11 @@ const PcmCircuitMaintenancePage = () => {
             overflow: "visible",
           }}
         >
-          <PcmCircuitMaintenanceBreadcrumb />
+          <PcmCircuitMaintenanceBreadcrumb
+            root={PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_ROOT}
+            section={PCM_CIRCUIT_MAINTENANCE_PAGE_BREADCRUMB_SECTION}
+            current={PCM_CIRCUIT_MAINTENANCE_PAGE_TITLE}
+          />
 
           {renderPcmMaintenance()}
           {renderPcmLoopback()}

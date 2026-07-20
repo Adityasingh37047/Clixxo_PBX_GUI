@@ -4,19 +4,24 @@ import {
   DTMF_RESET_LABEL,
   DTMF_SAVE_LABEL,
   DTMF_TAB_DETECTOR,
+  DTMF_PAGE_BREADCRUMB_SECTION,
+  DTMF_PAGE_TITLE,
 } from "../../../constants/DtmfConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as DtmfBreadcrumb,
+  extensionPageWrapStyle as dtmfPageWrapStyle,
+  extensionPageInnerStyle as dtmfPageInnerStyle,
+  extensionCardStyle as dtmfCardStyle,
+  extensionFixedAlertSx as dtmfFixedAlertSx,
+} from "../../../components/common";
 import { useDtmfPage } from "./hooks/useDtmfPage";
 import {
-  DtmfBreadcrumb,
   DtmfDetectorSection,
   DtmfGeneratorSection,
-  DtmfPageShell,
   DtmfTabBar,
 } from "./components/DtmfFormFields";
 import {
-  dtmfCardStyle,
-  dtmfFixedAlertSx,
   dtmfFormBodyStyle,
   dtmfFormBtnStyle,
   dtmfFormFooterStyle,
@@ -47,20 +52,25 @@ const DtmfPage = () => {
   };
 
   return (
-    <DtmfPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={dtmfFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={dtmfPageWrapStyle} data-native-scroll>
+      <div style={dtmfPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={dtmfFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <DtmfBreadcrumb />
+        <DtmfBreadcrumb
+          root="FXS"
+          section={DTMF_PAGE_BREADCRUMB_SECTION}
+          current={DTMF_PAGE_TITLE}
+        />
 
-      <div style={dtmfCardStyle}>
+        <div style={dtmfCardStyle}>
         <DtmfTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
         <div style={dtmfFormBodyStyle}>
@@ -90,7 +100,7 @@ const DtmfPage = () => {
           </Btn>
         </div>
       </div>
-    </DtmfPageShell>
+    </div>
   );
 };
 

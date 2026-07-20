@@ -4,21 +4,25 @@ import {
   QOS_CARD_TITLE,
   QOS_RESET_LABEL,
   QOS_SAVE_LABEL,
+  QOS_PAGE_BREADCRUMB_SECTION,
+  QOS_PAGE_TITLE,
 } from "../../../constants/QosConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as QosBreadcrumb,
+  extensionPageWrapStyle as qosPageWrapStyle,
+  extensionCardStyle as qosCardStyle,
+  extensionFixedAlertSx as qosFixedAlertSx,
+} from "../../../components/common";
 import { useQosPage } from "./hooks/useQosPage";
 import {
   nativeFieldInputStyle,
   nativeFieldInteraction,
-  QosBreadcrumb,
   QosFieldRow,
-  QosPageShell,
 } from "./components/QosFormFields";
 import {
-  qosCardStyle,
   qosCardTitleBarStyle,
   qosCheckboxSx,
-  qosFixedAlertSx,
   qosFooterStyle,
   qosFormBodyStyle,
   qosFormBtnStyle,
@@ -39,14 +43,18 @@ const QosPage = () => {
   } = vm;
 
   return (
-    <QosPageShell>
+    <div style={qosPageWrapStyle}>
       {toast.msg && (
         <Alert severity={toast.type} onClose={clearToast} sx={qosFixedAlertSx}>
           {toast.msg}
         </Alert>
       )}
 
-      <QosBreadcrumb />
+      <QosBreadcrumb
+        root="FXS"
+        section={QOS_PAGE_BREADCRUMB_SECTION}
+        current={QOS_PAGE_TITLE}
+      />
 
       <div style={qosCardStyle}>
         <div style={qosCardTitleBarStyle}>{QOS_CARD_TITLE}</div>
@@ -123,7 +131,7 @@ const QosPage = () => {
           </Btn>
         </div>
       </div>
-    </QosPageShell>
+    </div>
   );
 };
 

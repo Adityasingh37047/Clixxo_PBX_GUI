@@ -4,6 +4,7 @@ import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Checkbox, CircularProgress, useMediaQuery } from "@mui/material";
 import {
+  VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS,
   VIEW_VOICEMAIL_COMPACT_MQ,
   VIEW_VOICEMAIL_EMPTY_MESSAGE,
   VIEW_VOICEMAIL_EXTENSION_PLACEHOLDER,
@@ -19,6 +20,9 @@ import {
   RecordingActionBtn,
   RecordingPlayerBar,
   TH,
+  ExtensionBreadcrumb as ViewVoicemailBreadcrumb,
+  extensionPageWrapStyle as viewVoicemailPageWrapStyle,
+  extensionPageInnerStyle as viewVoicemailPageInnerStyle,
 } from "../../../components/common";
 import { useViewVoicemailPage } from "./hooks/useViewVoicemailPage";
 import {
@@ -27,7 +31,6 @@ import {
   TableListEmptyState,
   TableListLoading,
   TD,
-  ViewVoicemailBreadcrumb,
 } from "./components/ViewVoicemailFormFields";
 import {
   getViewVoicemailRowBg,
@@ -38,8 +41,6 @@ import {
   viewVoicemailFilterLabelStyle,
   viewVoicemailFooterStyle,
   viewVoicemailPageBadgeStyle,
-  viewVoicemailPageInnerStyle,
-  viewVoicemailPageWrapStyle,
   viewVoicemailRefreshBtnStyle,
   viewVoicemailTableCheckboxSx,
   viewVoicemailToolbarBtnStyle,
@@ -60,7 +61,12 @@ const ViewVoicemailPage = () => {
   return (
     <div style={{ ...viewVoicemailPageWrapStyle, padding: isCompact ? 8 : 16 }}>
       <div style={viewVoicemailPageInnerStyle}>
-        <ViewVoicemailBreadcrumb style={{ marginBottom: 16 }} />
+        <ViewVoicemailBreadcrumb
+          root={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[0]}
+          section={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[1]}
+          current={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[2]}
+          style={{ marginBottom: 16 }}
+        />
 
         {error && (
           <div style={{

@@ -8,11 +8,11 @@ import {
 } from "../../../constants/PbxMonitorConstants";
 import {
   Btn,
-  ExtensionTableListEmptyState as TableListEmptyState,
-  ExtensionTableListLoading as TableListLoading,
+  ExtensionTableListEmptyState as PbxMonitorTableListEmptyState,
+  ExtensionTableListLoading as PbxMonitorTableListLoading,
   TH,
-  extensionPageInnerStyle as pbxPageInnerStyle,
-  extensionPageWrapStyle as pbxPageWrapStyle,
+  extensionPageInnerStyle as pbxMonitorPageInnerStyle,
+  extensionPageWrapStyle as pbxMonitorPageWrapStyle,
 } from "../../../components/common";
 import { usePbxMonitorPage } from "./hooks/usePbxMonitorPage";
 import {
@@ -65,8 +65,8 @@ const PbxMonitor = () => {
   } = vm;
 
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div style={{ ...pbxMonitorPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={pbxMonitorPageInnerStyle}>
         <div
           style={{
             display: "flex",
@@ -216,9 +216,9 @@ const PbxMonitor = () => {
           </div>
 
           {!hasLoaded && isRefreshing ? (
-            <TableListLoading />
+            <PbxMonitorTableListLoading />
           ) : hasLoaded && tableRows.length === 0 ? (
-            <TableListEmptyState message={emptyMessage} showButton={false} />
+            <PbxMonitorTableListEmptyState message={emptyMessage} showButton={false} />
           ) : (
             <div style={tableWrapStyle}>
               {activeTab === PBX_MONITOR_TAB_VALUES.extension ? (

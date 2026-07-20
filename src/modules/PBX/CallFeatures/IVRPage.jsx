@@ -33,6 +33,7 @@ import {
   ExtensionBreadcrumb as IvrBreadcrumb,
   ExtensionTableListLoading as IvrTableListLoading,
   ExtensionTableListEmptyState as IvrTableListEmptyState,
+  ExtensionPagination as IvrPagination,
   ExtensionModalTabs as IvrModalTabs,
   extensionTableCheckboxSx as ivrTableCheckboxSx,
   extensionFixedAlertSx as ivrFixedAlertSx,
@@ -50,8 +51,6 @@ import {
   C,
   ivrEditIconStyle,
   handleIvrEditIconHover,
-  ivrPageBadgeStyle,
-  ivrPaginationStyle,
 } from "./IVRTableHelpers";
 import {
   IvrFieldRow,
@@ -158,8 +157,6 @@ const IVRPage = () => {
     setExitActionValue,
     setSelectedOutboundRouteIds,
     handleGoToVoicePrompts,
-    handlePrev,
-    handleNext,
     handleToggleRow,
     handleToggleAll,
     handleOpenAddModal,
@@ -633,33 +630,14 @@ const IVRPage = () => {
           </div>
 
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div style={ivrPaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.list || page <= 1}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  ← Prev
-                </Btn>
-                <span style={ivrPageBadgeStyle}>
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.list || page >= totalPages}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <IvrPagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>

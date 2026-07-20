@@ -19,11 +19,20 @@ import {
   ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL,
   ROUTE_IP_PSTN_SAVE_LABEL,
   ROUTE_IP_PSTN_CLOSE_LABEL,
+  ROUTE_IP_PSTN_PAGE_BREADCRUMB_ROOT,
+  ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION,
+  ROUTE_IP_PSTN_PAGE_TITLE,
 } from "../../../constants/RouteIPtoPstnConstants";
+import {
+  ExtensionBreadcrumb as RouteIpPstnBreadcrumb,
+  extensionPageWrapStyle as routeIpPstnPageWrapStyle,
+  extensionPageInnerStyle as routeIpPstnPageInnerStyle,
+  extensionFixedAlertSx as routeIpPstnFixedAlertSx,
+  extensionSelectedBadgeStyle as routeIpPstnSelectedBadgeStyle,
+} from "../../../components/common";
 import { useRouteIpPstnPage } from "./hooks/useRouteIpPstnPage";
 import { formatRouteIpPstnDisplayValue } from "./utils/RouteIpPstnTransformers";
 import {
-  RouteIpPstnBreadcrumb,
   RouteIpPstnBtn,
   RouteIpPstnTH,
   RouteIpPstnModalForm,
@@ -48,10 +57,6 @@ import {
   getRouteIpPstnRowBg,
   getRouteIpPstnEditIconStyle,
   handleRouteIpPstnEditIconHover,
-  routeIpPstnFixedAlertSx,
-  routeIpPstnPageWrapStyle,
-  routeIpPstnPageInnerStyle,
-  routeIpPstnSelectedBadgeStyle,
   routeIpPstnTableScrollStyle,
 } from "./components/RouteIpPstnTableHelpers";
 
@@ -110,7 +115,11 @@ const RouteIpPstnPage = () => {
           </Alert>
         )}
 
-        <RouteIpPstnBreadcrumb />
+        <RouteIpPstnBreadcrumb
+          root={ROUTE_IP_PSTN_PAGE_BREADCRUMB_ROOT}
+          section={ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION}
+          current={ROUTE_IP_PSTN_PAGE_TITLE}
+        />
 
         <div style={routeIpPstnCardStyle}>
           <div style={routeIpPstnToolbarStyle}>

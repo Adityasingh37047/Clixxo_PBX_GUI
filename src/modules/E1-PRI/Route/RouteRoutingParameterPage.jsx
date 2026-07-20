@@ -3,20 +3,25 @@ import { CircularProgress, Alert } from "@mui/material";
 import {
   ROUTE_ROUTING_PARAMETER_CARD_TITLE,
   ROUTE_ROUTING_PARAMETER_SAVE_LABEL,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION,
+  ROUTE_ROUTING_PARAMETER_PAGE_TITLE,
 } from "../../../constants/RouteRoutingParameterPageConstants";
+import {
+  ExtensionBreadcrumb as RouteRoutingParameterBreadcrumb,
+  extensionPageWrapStyle as routeRoutingParameterPageWrapStyle,
+  extensionPageInnerStyle as routeRoutingParameterPageInnerStyle,
+  extensionCardStyle as routeRoutingParameterCardStyle,
+  extensionToolbarStyle as routeRoutingParameterCardTitleBarStyle,
+  extensionFixedAlertSx as routeRoutingParameterFixedAlertSx,
+  Btn as RouteRoutingParameterBtn,
+} from "../../../components/common";
 import { useRouteRoutingParameterPage } from "./hooks/useRouteRoutingParameterPage";
 import {
-  RouteRoutingParameterBreadcrumb,
-  RouteRoutingParameterBtn,
   RouteRoutingParameterFormBody,
-  routeRoutingParameterCardStyle,
-  routeRoutingParameterCardTitleBarStyle,
   routeRoutingParameterFooterBtnStyle,
   routeRoutingParameterFooterStyle,
-  routeRoutingParameterPageInnerStyle,
-  routeRoutingParameterPageWrapStyle,
 } from "./components/RouteRoutingParameterFormFields";
-import { routeRoutingParameterFixedAlertSx } from "./components/RouteRoutingParameterTableHelpers";
 
 const RouteRoutingParameterPage = () => {
   const vm = useRouteRoutingParameterPage();
@@ -35,7 +40,11 @@ const RouteRoutingParameterPage = () => {
           </Alert>
         )}
 
-        <RouteRoutingParameterBreadcrumb />
+        <RouteRoutingParameterBreadcrumb
+          root={ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT}
+          section={ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION}
+          current={ROUTE_ROUTING_PARAMETER_PAGE_TITLE}
+        />
 
         <div style={routeRoutingParameterCardStyle}>
           <div style={routeRoutingParameterCardTitleBarStyle}>

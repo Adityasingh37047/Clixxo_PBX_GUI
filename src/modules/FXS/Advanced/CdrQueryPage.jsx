@@ -3,20 +3,25 @@ import { Alert } from "@mui/material";
 import {
   CDR_QUERY_CARD_TITLE,
   CDR_QUERY_BUTTON_LABEL,
+  CDR_QUERY_PAGE_BREADCRUMB_SECTION,
+  CDR_QUERY_PAGE_TITLE,
 } from "../../../constants/CdrQueryConstants";
-import { Btn } from "../../../components/common";
+import {
+  ExtensionBreadcrumb as CdrQueryBreadcrumb,
+  extensionPageWrapStyle as cdrQueryPageWrapStyle,
+  extensionPageInnerStyle as cdrQueryPageInnerStyle,
+  extensionCardStyle as cdrQueryCardStyle,
+  extensionFixedAlertSx as cdrQueryFixedAlertSx,
+  Btn,
+} from "../../../components/common";
 import { useCdrQueryPage } from "./hooks/useCdrQueryPage";
 import {
-  CdrQueryBreadcrumb,
   CdrQueryFieldsSection,
-  CdrQueryPageShell,
 } from "./components/CdrQueryFormFields";
 import {
   cdrQueryCardTitleBarStyle,
-  cdrQueryFixedAlertSx,
   cdrQueryFooterStyle,
   cdrQueryFormBtnStyle,
-  cdrQueryTableContainerStyle,
 } from "./components/CdrQueryTableHelpers";
 
 const CdrQueryPage = () => {
@@ -32,43 +37,49 @@ const CdrQueryPage = () => {
   } = vm;
 
   return (
-    <CdrQueryPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={cdrQueryFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={cdrQueryPageWrapStyle}>
+      <div style={cdrQueryPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={cdrQueryFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <CdrQueryBreadcrumb />
-
-      <div style={cdrQueryTableContainerStyle}>
-        <div style={cdrQueryCardTitleBarStyle}>
-          <span>{CDR_QUERY_CARD_TITLE}</span>
-        </div>
-
-        <CdrQueryFieldsSection
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleStringKeyPress={handleStringKeyPress}
-          handleNumberKeyPress={handleNumberKeyPress}
+        <CdrQueryBreadcrumb
+          root="FXS"
+          section={CDR_QUERY_PAGE_BREADCRUMB_SECTION}
+          current={CDR_QUERY_PAGE_TITLE}
         />
 
-        <div style={cdrQueryFooterStyle}>
-          <Btn
-            type="button"
-            variant="primary"
-            onClick={handleQuery}
-            style={cdrQueryFormBtnStyle}
-          >
-            {CDR_QUERY_BUTTON_LABEL}
-          </Btn>
+        <div style={cdrQueryCardStyle}>
+          <div style={cdrQueryCardTitleBarStyle}>
+            <span>{CDR_QUERY_CARD_TITLE}</span>
+          </div>
+
+          <CdrQueryFieldsSection
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleStringKeyPress={handleStringKeyPress}
+            handleNumberKeyPress={handleNumberKeyPress}
+          />
+
+          <div style={cdrQueryFooterStyle}>
+            <Btn
+              type="button"
+              variant="primary"
+              onClick={handleQuery}
+              style={cdrQueryFormBtnStyle}
+            >
+              {CDR_QUERY_BUTTON_LABEL}
+            </Btn>
+          </div>
         </div>
       </div>
-    </CdrQueryPageShell>
+    </div>
   );
 };
 
