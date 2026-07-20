@@ -41,7 +41,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb,
+  ExtensionBreadcrumb as TracertBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as tracertPageWrapStyle,
   extensionPageInnerStyle as tracertPageInnerStyleBase,
@@ -450,14 +450,6 @@ const TracertPageShell = ({ children }) => (
   </>
 );
 
-const TracertBreadcrumb = () => (
-  <ExtensionBreadcrumb
-    root={TRACERT_TEST_PAGE_BREADCRUMB_ROOT}
-    section={TRACERT_TEST_PAGE_BREADCRUMB_SECTION}
-    current={TRACERT_TEST_PAGE_TITLE}
-  />
-);
-
 function isValidIp(ip) {
   return /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
     ip,
@@ -648,7 +640,11 @@ const TRACERTTest = () => {
         </Alert>
       )}
 
-      <TracertBreadcrumb />
+      <TracertBreadcrumb
+        root={TRACERT_TEST_PAGE_BREADCRUMB_ROOT}
+        section={TRACERT_TEST_PAGE_BREADCRUMB_SECTION}
+        current={TRACERT_TEST_PAGE_TITLE}
+      />
 
       <div>
         <div style={tracertTableContainerStyle}>

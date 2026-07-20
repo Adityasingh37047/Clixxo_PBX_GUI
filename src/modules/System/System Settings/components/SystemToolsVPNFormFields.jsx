@@ -20,7 +20,7 @@ import {
   vpnFixedAlertSx as vpnFixedAlertSxFromCommon,
   vpnFormBtnStyle,
 } from "./SystemToolsVPNTableHelpers";
-import { ExtensionBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb as VpnPageBreadcrumb } from "../../../../components/common";
 
 /** Keep VPN content stacking; wrap/padding come from common. */
 const vpnPageInnerStyle = {
@@ -245,7 +245,7 @@ export const VpnPageShell = ({ children }) => (
 );
 
 export const VpnBreadcrumb = () => (
-  <ExtensionBreadcrumb
+  <VpnPageBreadcrumb
     root={SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_ROOT}
     section={SYSTEM_TOOLS_VPN_PAGE_BREADCRUMB_SECTION}
     current={SYSTEM_TOOLS_VPN_PAGE_TITLE}

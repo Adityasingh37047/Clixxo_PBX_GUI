@@ -5,9 +5,6 @@ import {
   PCM_TRUNK_GROUP_INITIAL_FORM,
   PCM_TRUNK_GROUP_TABLE_COLUMNS,
   PCM_TRUNK_GROUP_FIELD_TOOLTIPS,
-  PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT,
-  PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION,
-  PCM_TRUNK_GROUP_PAGE_TITLE,
   PCM_TRUNK_GROUP_EMPTY_MESSAGE,
   PCM_TRUNK_GROUP_MODAL_TITLE_ADD,
   PCM_TRUNK_GROUP_MODAL_TITLE_EDIT,
@@ -570,26 +567,7 @@ const PcmTrunkGroupPage = () => {
       )}
 
       <div style={pcmTrunkGroupPageInnerStyle}>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>{PCM_TRUNK_GROUP_PAGE_BREADCRUMB_ROOT}</span>
-          <span>&gt;</span>
-          <span>{PCM_TRUNK_GROUP_PAGE_BREADCRUMB_SECTION}</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            {PCM_TRUNK_GROUP_PAGE_TITLE}
-          </span>
-        </div>
+        <PcmTrunkGroupBreadcrumb />
 
         <div style={pcmTrunkGroupCardStyle}>
           <div

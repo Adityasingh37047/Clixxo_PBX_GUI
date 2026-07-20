@@ -36,7 +36,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb,
+  ExtensionBreadcrumb as DhcpBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as dhcpPageWrapStyle,
   extensionPageInnerStyle as dhcpPageInnerStyleBase,
@@ -464,14 +464,6 @@ const DhcpPageShell = ({ children }) => (
   </>
 );
 
-const DhcpBreadcrumb = () => (
-  <ExtensionBreadcrumb
-    root={DHCP_SERVER_PAGE_BREADCRUMB_ROOT}
-    section={DHCP_SERVER_PAGE_BREADCRUMB_SECTION}
-    current={DHCP_SERVER_PAGE_TITLE}
-  />
-);
-
 const buildSavePayload = (formData, sections) => {
   const payload = {};
   sections.forEach((section) => {
@@ -777,7 +769,11 @@ const DhcpServerSettings = () => {
         </Alert>
       )}
 
-      <DhcpBreadcrumb />
+      <DhcpBreadcrumb
+        root={DHCP_SERVER_PAGE_BREADCRUMB_ROOT}
+        section={DHCP_SERVER_PAGE_BREADCRUMB_SECTION}
+        current={DHCP_SERVER_PAGE_TITLE}
+      />
 
       <div>
         <div style={dhcpTableContainerStyle}>

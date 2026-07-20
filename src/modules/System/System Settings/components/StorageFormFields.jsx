@@ -38,7 +38,10 @@ import {
   OUTLINED_FOCUS,
   FOCUS_RING_SHADOW,
 } from "../../../../theme/pbxTokens";
-import { Btn, ExtensionBreadcrumb } from "../../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as StoragePageBreadcrumb,
+} from "../../../../components/common";
 import {
   CARD_RADIUS,
   getStorageDeviceRowBg,
@@ -528,7 +531,7 @@ export const StoragePageShell = ({ children }) => (
 );
 
 export const StorageBreadcrumb = () => (
-  <ExtensionBreadcrumb
+  <StoragePageBreadcrumb
     root={STORAGE_PAGE_BREADCRUMB_ROOT}
     section={STORAGE_PAGE_BREADCRUMB_SECTION}
     current={STORAGE_PAGE_TITLE}

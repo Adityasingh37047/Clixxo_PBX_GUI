@@ -43,7 +43,7 @@ import {
   getRoutesTdStyle,
   getRoutesRowBg,
 } from "./RoutingInterfaceTableHelpers";
-import { ExtensionBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb as RoutingPageBreadcrumb } from "../../../../components/common";
 
 export const ROUTING_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
 
@@ -231,7 +231,7 @@ export const RoutingPageShell = ({ children }) => (
 );
 
 export const RoutingBreadcrumb = () => (
-  <ExtensionBreadcrumb
+  <RoutingPageBreadcrumb
     root={ROUTING_INTERFACE_PAGE_BREADCRUMB_ROOT}
     section={ROUTING_INTERFACE_PAGE_BREADCRUMB_SECTION}
     current={ROUTING_INTERFACE_PAGE_TITLE}

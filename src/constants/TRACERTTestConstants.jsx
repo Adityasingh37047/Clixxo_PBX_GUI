@@ -1,5 +1,5 @@
 export const TRACERT_TEST_PAGE_BREADCRUMB_ROOT = "System";
-export const TRACERT_TEST_PAGE_BREADCRUMB_SECTION = "System Settings";
+export const TRACERT_TEST_PAGE_BREADCRUMB_SECTION = "Network Settings";
 export const TRACERT_TEST_PAGE_TITLE = "Tracert Test";
 export const TRACERT_TEST_SECTION_CONFIG = "Test Configuration";
 export const TRACERT_TEST_SECTION_OUTPUT = "Tracert Output";

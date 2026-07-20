@@ -43,7 +43,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb,
+  ExtensionBreadcrumb as PingBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as pingPageWrapStyle,
   extensionPageInnerStyle as pingPageInnerStyleBase,
@@ -454,14 +454,6 @@ const PingPageShell = ({ children }) => (
   </>
 );
 
-const PingBreadcrumb = () => (
-  <ExtensionBreadcrumb
-    root={PING_TEST_PAGE_BREADCRUMB_ROOT}
-    section={PING_TEST_PAGE_BREADCRUMB_SECTION}
-    current={PING_TEST_PAGE_TITLE}
-  />
-);
-
 function isValidIp(ip) {
   // Simple IPv4 validation
   return /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
@@ -751,7 +743,11 @@ const PINGTest = () => {
         </Alert>
       )}
 
-      <PingBreadcrumb />
+      <PingBreadcrumb
+        root={PING_TEST_PAGE_BREADCRUMB_ROOT}
+        section={PING_TEST_PAGE_BREADCRUMB_SECTION}
+        current={PING_TEST_PAGE_TITLE}
+      />
 
       <div>
         <div style={pingTableContainerStyle}>

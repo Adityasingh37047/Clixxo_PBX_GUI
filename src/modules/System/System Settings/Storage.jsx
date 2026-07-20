@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { TH, tdStyle } from "../../../components/common/tableKit";
+import { ExtensionBreadcrumb as StorageBreadcrumb } from "../../../components/common";
 import { useEffect } from "react";
 import { getStorageUsage,
   getStorageSettings,
@@ -738,28 +739,6 @@ const StoragePageShell = ({ children }) => (
   </div>
 );
 
-const StorageBreadcrumb = () => (
-  <div
-    style={{
-      fontSize: 12,
-      color: "#94a3b8",
-      marginBottom: 16,
-      fontWeight: 400,
-      display: "flex",
-      alignItems: "center",
-      gap: 4,
-      flexWrap: "wrap",
-      flexShrink: 0,
-    }}
-  >
-    <span>{STORAGE_PAGE_BREADCRUMB_ROOT}</span>
-    <span>&gt;</span>
-    <span>{STORAGE_PAGE_BREADCRUMB_SECTION}</span>
-    <span>&gt;</span>
-    <span style={{ color: "#1e293b", fontWeight: 600 }}>{STORAGE_PAGE_TITLE}</span>
-  </div>
-);
-
 const tooltipProps = {
   arrow: true,
   placement: "top",
@@ -1226,7 +1205,11 @@ const handleRefresh = async () => {
 
   return (
     <StoragePageShell>
-      <StorageBreadcrumb />
+      <StorageBreadcrumb
+        root={STORAGE_PAGE_BREADCRUMB_ROOT}
+        section={STORAGE_PAGE_BREADCRUMB_SECTION}
+        current={STORAGE_PAGE_TITLE}
+      />
 
       <div style={storageTableContainerStyle}>
           <div style={storageHeaderStyle}>

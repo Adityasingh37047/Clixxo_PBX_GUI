@@ -12,7 +12,10 @@ import {
 } from "../../../../constants/SipMediaConstants";
 import { Tooltip, useMediaQuery } from "@mui/material";
 
-import { Btn, ExtensionBreadcrumb } from "../../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as SipMediaPageBreadcrumb,
+} from "../../../../components/common";
 import {
   C,
   OUTLINED_BORDER,
@@ -299,7 +302,7 @@ export const SipMediaScrollbarStyles = () => (
 );
 
 export const SipMediaBreadcrumb = () => (
-  <ExtensionBreadcrumb
+  <SipMediaPageBreadcrumb
     root={SIP_MEDIA_PAGE_BREADCRUMB_ROOT}
     section={SIP_MEDIA_PAGE_BREADCRUMB_SECTION}
     current={SIP_MEDIA_PAGE_TITLE}
