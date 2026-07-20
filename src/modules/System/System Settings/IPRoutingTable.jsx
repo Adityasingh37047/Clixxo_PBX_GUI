@@ -63,7 +63,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb,
+  ExtensionBreadcrumb as IpRouteTableBreadcrumb,
   extensionPageWrapStyle as ipRoutePageWrapStyle,
   extensionPageInnerStyle as ipRoutePageInnerStyle,
   extensionFixedAlertSx as ipRouteFixedAlertSx,
@@ -403,14 +403,6 @@ const IpRouteTableEditIcon = ({ disabled, onClick }) => (
   />
 );
 
-
-const IpRouteTableBreadcrumb = () => (
-  <ExtensionBreadcrumb
-    root={IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT}
-    section={IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION}
-    current={IP_ROUTING_TABLE_PAGE_TITLE}
-  />
-);
 
 const ipRouteCardStyle = {
   background: "#ffffff",
@@ -1621,7 +1613,11 @@ WantedBy=multi-user.target
           </div>
         )}
 
-        <IpRouteTableBreadcrumb />
+        <IpRouteTableBreadcrumb
+          root={IP_ROUTING_TABLE_PAGE_BREADCRUMB_ROOT}
+          section={IP_ROUTING_TABLE_PAGE_BREADCRUMB_SECTION}
+          current={IP_ROUTING_TABLE_PAGE_TITLE}
+        />
 
         <div style={ipRouteCardStyle}>
           <div

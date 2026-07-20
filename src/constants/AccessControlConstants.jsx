@@ -1,4 +1,4 @@
-export const ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT = "Security";
+export const ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT = "System";
 export const ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION = "Security Rules";
 export const ACCESS_CONTROL_PAGE_TITLE = "Access Control";
 

@@ -1,5 +1,5 @@
 export const PING_TEST_PAGE_BREADCRUMB_ROOT = "System";
-export const PING_TEST_PAGE_BREADCRUMB_SECTION = "System Settings";
+export const PING_TEST_PAGE_BREADCRUMB_SECTION = "Network Settings";
 export const PING_TEST_PAGE_TITLE = "Ping Test";
 export const PING_TEST_SECTION_CONFIG = "Test Configuration";
 export const PING_TEST_SECTION_OUTPUT = "Ping Output";

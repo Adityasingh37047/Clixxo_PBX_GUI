@@ -1,5 +1,5 @@
 export const ROUTING_INTERFACE_PAGE_BREADCRUMB_ROOT = "System";
-export const ROUTING_INTERFACE_PAGE_BREADCRUMB_SECTION = "System Settings";
+export const ROUTING_INTERFACE_PAGE_BREADCRUMB_SECTION = "Network Settings";
 export const ROUTING_INTERFACE_PAGE_TITLE = "Routing Interface";
 export const ROUTING_INTERFACE_CARD_TITLE = "Routing Interface";
 

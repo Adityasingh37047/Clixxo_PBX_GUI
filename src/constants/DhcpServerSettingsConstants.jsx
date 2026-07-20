@@ -1,5 +1,5 @@
 export const DHCP_SERVER_PAGE_BREADCRUMB_ROOT = "System";
-export const DHCP_SERVER_PAGE_BREADCRUMB_SECTION = "System Settings";
+export const DHCP_SERVER_PAGE_BREADCRUMB_SECTION = "Network Settings";
 export const DHCP_SERVER_PAGE_TITLE = "DHCP Server";
 export const DHCP_SERVER_CARD_TITLE = "DHCP Server";
 

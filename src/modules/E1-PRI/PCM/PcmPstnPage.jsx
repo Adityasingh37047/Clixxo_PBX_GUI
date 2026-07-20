@@ -6,9 +6,6 @@ import {
   PCM_PSTN_VOICE_FIELDS,
   PCM_PSTN_INITIAL_FORM,
   PCM_PSTN_FIELD_TOOLTIPS,
-  PCM_PSTN_PAGE_BREADCRUMB_ROOT,
-  PCM_PSTN_PAGE_BREADCRUMB_SECTION,
-  PCM_PSTN_PAGE_TITLE,
   PCM_PSTN_EMPTY_MESSAGE,
   PCM_PSTN_MODAL_TITLE_ADD,
   PCM_PSTN_MODAL_TITLE_EDIT,
@@ -136,26 +133,7 @@ const PcmPstnPage = () => {
       )}
 
       <div style={pcmPstnPageInnerStyle}>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            marginBottom: 16,
-            fontWeight: 400,
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <span>{PCM_PSTN_PAGE_BREADCRUMB_ROOT}</span>
-          <span>&gt;</span>
-          <span>{PCM_PSTN_PAGE_BREADCRUMB_SECTION}</span>
-          <span>&gt;</span>
-          <span style={{ color: "#1e293b", fontWeight: 600 }}>
-            {PCM_PSTN_PAGE_TITLE}
-          </span>
-        </div>
+        <PcmPstnBreadcrumb />
 
         <div style={pcmPstnCardStyle}>
           <div

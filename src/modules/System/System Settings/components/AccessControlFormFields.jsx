@@ -16,7 +16,10 @@ import {
   OUTLINED_FOCUS,
   FOCUS_RING_SHADOW,
 } from "../../../../theme/pbxTokens";
-import { Btn, ExtensionBreadcrumb } from "../../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as AccessControlPageBreadcrumb,
+} from "../../../../components/common";
 import {
   CARD_RADIUS,
   FIELD_RADIUS,
@@ -319,7 +322,7 @@ export const AccessControlPageShell = ({ children }) => (
 );
 
 export const AccessControlBreadcrumb = () => (
-  <ExtensionBreadcrumb
+  <AccessControlPageBreadcrumb
     root={ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT}
     section={ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION}
     current={ACCESS_CONTROL_PAGE_TITLE}

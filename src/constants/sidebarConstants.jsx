@@ -636,18 +636,12 @@ export const SIDEBAR_SECTIONS = [
       {
         id: "systemSettings",
         title: "System Settings",
-        icon: NetworkCheckIcon,
+        icon: TuneIcon,
         items: [
-          { id: "sysNetwork", title: "Network", path: "/system-tools/network" },
           {
             id: "sysStorage",
             title: "Storage",
             path: "/system-tools/storage",
-          },
-          {
-            id: "sysRoutingInterface",
-            title: "Routing Interface",
-            path: "/system-tools/routing-interface",
           },
           {
             id: "sysManagement",
@@ -660,26 +654,9 @@ export const SIDEBAR_SECTIONS = [
             path: "/system-tools/global-sip",
           },
           {
-            id: "sysIpRoutingTable",
-            title: "IP Route Table",
-            path: "/system-tools/ip-routing-table",
-          },
-          { id: "sysVpn", title: "VPN", path: "/system-tools/vpn" },
-          {
             id: "sysCentralizedManage",
             title: "Centralized Manage",
             path: "/system-tools/centralized-manage",
-          },
-          { id: "sysDhcp", title: "DHCP", path: "/dhcp/server-settings" },
-          {
-            id: "sysPingTest",
-            title: "Ping Test",
-            path: "/system-tools/ping-test",
-          },
-          {
-            id: "sysTracertTest",
-            title: "Tracert Test",
-            path: "/system-tools/tracert-test",
           },
           {
             id: "sysAsteriskCLI",
@@ -693,18 +670,36 @@ export const SIDEBAR_SECTIONS = [
           },
         ],
       },
-    ],
-  },
-
-  // Security
-
-  {
-    id: "security",
-    title: "Security",
-    icon: SecurityIcon,
-    hasSubmenu: true,
-    path: "/system-tools/access-control",
-    submenuItems: [
+      {
+        id: "networkSettings",
+        title: "Network Settings",
+        icon: NetworkCheckIcon,
+        items: [
+          { id: "sysNetwork", title: "Network", path: "/system-tools/network" },
+          {
+            id: "sysRoutingInterface",
+            title: "Routing Interface",
+            path: "/system-tools/routing-interface",
+          },
+          {
+            id: "sysIpRoutingTable",
+            title: "IP Route Table",
+            path: "/system-tools/ip-routing-table",
+          },
+          { id: "sysDhcp", title: "DHCP", path: "/dhcp/server-settings" },
+          {
+            id: "sysPingTest",
+            title: "Ping Test",
+            path: "/system-tools/ping-test",
+          },
+          {
+            id: "sysTracertTest",
+            title: "Tracert Test",
+            path: "/system-tools/tracert-test",
+          },
+          { id: "sysVpn", title: "VPN", path: "/system-tools/vpn" },
+        ],
+      },
       {
         id: "securityRules",
         title: "Security Rules",

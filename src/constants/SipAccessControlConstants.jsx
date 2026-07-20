@@ -1,4 +1,4 @@
-export const SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT = "Security";
+export const SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT = "System";
 export const SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION = "Security Rules";
 export const SIP_ACCESS_CONTROL_PAGE_TITLE = "SIP Access Control";
 

@@ -42,7 +42,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
-  ExtensionBreadcrumb,
+  ExtensionBreadcrumb as ManagementBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
   extensionPageWrapStyle as managementPageWrapStyle,
   extensionPageInnerStyle as managementPageInnerStyle,
@@ -388,14 +388,6 @@ const ManagementPageShell = ({ children, isCompact }) => (
   >
     <div style={managementPageInnerStyle}>{children}</div>
   </div>
-);
-
-const ManagementBreadcrumb = () => (
-  <ExtensionBreadcrumb
-    root={MANAGEMENT_PAGE_BREADCRUMB_ROOT}
-    section={MANAGEMENT_PAGE_BREADCRUMB_SECTION}
-    current={MANAGEMENT_PAGE_TITLE}
-  />
 );
 
 const tooltipProps = {
@@ -1902,7 +1894,11 @@ const Management = () => {
         </Alert>
       )}
 
-      <ManagementBreadcrumb />
+      <ManagementBreadcrumb
+        root={MANAGEMENT_PAGE_BREADCRUMB_ROOT}
+        section={MANAGEMENT_PAGE_BREADCRUMB_SECTION}
+        current={MANAGEMENT_PAGE_TITLE}
+      />
 
       <div style={managementTableContainerStyle}>
           <div style={managementHeaderStyle}>

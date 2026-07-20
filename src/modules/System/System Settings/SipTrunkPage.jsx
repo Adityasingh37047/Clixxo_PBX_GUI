@@ -71,7 +71,7 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn as SystemSettingsBtn,
-  ExtensionBreadcrumb,
+  ExtensionBreadcrumb as SystemSettingsBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as SIP_TRUNK_TABLE_CARD_RADIUS,
   extensionPageWrapStyle as systemSettingsPageWrapStyle,
   extensionPageInnerStyle as systemSettingsInnerStyle,
@@ -142,14 +142,6 @@ const systemSettingsPaginationStyle = {
   borderBottomRightRadius: SIP_TRUNK_TABLE_CARD_RADIUS,
   overflow: "hidden",
 };
-
-const SystemSettingsBreadcrumb = () => (
-  <ExtensionBreadcrumb
-    root={GLOBAL_SIP_PAGE_BREADCRUMB_ROOT}
-    section={GLOBAL_SIP_PAGE_BREADCRUMB_SECTION}
-    current={GLOBAL_SIP_PAGE_TITLE}
-  />
-);
 
 const setFieldDefault = (el) => {
   el.style.borderColor = OUTLINED_BORDER;
@@ -834,7 +826,11 @@ const SipTrunkPage = () => {
       )}
 
       <div style={systemSettingsInnerStyle}>
-        <SystemSettingsBreadcrumb />
+        <SystemSettingsBreadcrumb
+          root={GLOBAL_SIP_PAGE_BREADCRUMB_ROOT}
+          section={GLOBAL_SIP_PAGE_BREADCRUMB_SECTION}
+          current={GLOBAL_SIP_PAGE_TITLE}
+        />
 
         <div style={systemSettingsCardStyle}>
           <div

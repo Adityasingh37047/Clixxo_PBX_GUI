@@ -17,7 +17,10 @@ import {
   OUTLINED_FOCUS,
   FOCUS_RING_SHADOW,
 } from "../../../../theme/pbxTokens";
-import { Btn, ExtensionBreadcrumb } from "../../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as SipAccessControlPageBreadcrumb,
+} from "../../../../components/common";
 import {
   FIELD_RADIUS,
   sipAccessControlPageWrapStyle,
@@ -289,7 +292,7 @@ export const SipAccessControlPageShell = ({ children, isCompact }) => (
 );
 
 export const SipAccessControlBreadcrumb = () => (
-  <ExtensionBreadcrumb
+  <SipAccessControlPageBreadcrumb
     root={SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_ROOT}
     section={SIP_ACCESS_CONTROL_PAGE_BREADCRUMB_SECTION}
     current={SIP_ACCESS_CONTROL_PAGE_TITLE}
