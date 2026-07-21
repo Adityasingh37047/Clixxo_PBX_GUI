@@ -1,9 +1,5 @@
 import { OPERATIONS_LOG_MESSAGES } from "../../../../constants/OperationsLogConstants";
 
-export function isOperationsLogUnreadable(parsed) {
-  return Boolean(parsed?.unreadable);
-}
-
 export function isOperationsLogEmpty(rows) {
   return !Array.isArray(rows) || rows.length === 0;
 }

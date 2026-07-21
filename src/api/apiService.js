@@ -3858,3 +3858,46 @@ export const updateLicenseLimits = async (data) => {
     throw error;
   }
 };
+
+// ── Operation Log API ────────────────────────────────────────────────────────
+
+export const fetchOperationLogList = async (payload) => {
+  const response = await axiosInstance.post('/operation-log', {
+    type: 'list',
+    page: 1,
+    limit: 50,
+    ...payload,
+  });
+  return response.data;
+};
+
+export const fetchOperationLogFilters = async () => {
+  const response = await axiosInstance.post('/operation-log', {
+    type: 'get_filters',
+  });
+  return response.data;
+};
+
+export const exportOperationLogXlsx = async (payload = {}) => {
+  const response = await axiosInstance.post(
+    '/operation-log',
+    { type: 'export_xlsx', ...payload },
+    { responseType: 'blob', timeout: 60000 }
+  );
+  return response;
+};
+
+export const deleteOperationLogRows = async (ids) => {
+  const response = await axiosInstance.post('/operation-log', {
+    type: 'delete',
+    ids,
+  });
+  return response.data;
+};
+
+export const deleteAllOperationLogs = async () => {
+  const response = await axiosInstance.post('/operation-log', {
+    type: 'delete_all',
+  });
+  return response.data;
+};

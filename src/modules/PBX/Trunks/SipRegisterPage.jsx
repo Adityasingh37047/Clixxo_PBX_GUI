@@ -1,12 +1,11 @@
 import React from "react";
-import { Alert } from "@mui/material";
 import {
   ExtensionBreadcrumb as SipRegisterBreadcrumb,
   ExtensionPagination as SipRegisterPagination,
+  MessageBanner,
   extensionPageWrapStyle as sipRegisterPageWrapStyle,
   extensionPageInnerStyle as sipRegisterPageInnerStyle,
   extensionCardStyle as sipRegisterCardStyle,
-  extensionFixedAlertSx as sipRegisterFixedAlertSx,
 } from "../../../components/common";
 import { useSipRegisterPage } from "./hooks/useSipRegisterPage";
 import SipRegisterToolbar from "./components/SipRegisterToolbar";
@@ -93,15 +92,10 @@ const SipRegisterPage = () => {
       }}
     >
       <div style={sipRegisterPageInnerStyle}>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={sipRegisterFixedAlertSx}
-          >
-            {message.text}
-          </Alert>
-        )}
+        <MessageBanner
+          message={message}
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
 
         <SipRegisterBreadcrumb section="Trunks" current="SIP Register" />
 

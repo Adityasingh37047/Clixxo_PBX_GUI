@@ -1,6 +1,11 @@
 import React from "react";
 import { Tooltip, useMediaQuery } from "@mui/material";
 import {
+  addNewModalFooterBtnStyle,
+  addNewModalFooterStyle,
+  extensionModalCancelBtnStyle as trunkModalCancelBtnStyle,
+} from "../../../../components/common";
+import {
   C,
   OUTLINED_BORDER,
   OUTLINED_HOVER,
@@ -297,37 +302,7 @@ export const trunkModalFormPanelStyle = {
   boxSizing: "border-box",
 };
 
-export const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 8,
-  borderBottomRightRadius: 8,
-};
-
-export const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-export const trunkModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
+export { addNewModalFooterStyle, addNewModalFooterBtnStyle, trunkModalCancelBtnStyle };
 
 export const trunkAdaptRowGridColumns = "1fr 1fr 1fr 32px";
 
@@ -372,25 +347,3 @@ export const trunkDodToolbarBtnStyle = {
   padding: "6px 14px",
   borderRadius: 4,
 };
-
-export const Pill = ({ text, bg, color }) => (
-  <span
-    style={{
-      background: bg,
-      color,
-      padding: "4px 8px",
-      borderRadius: 999,
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: "0.01em",
-      whiteSpace: "nowrap",
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      maxWidth: "100%",
-    }}
-  >
-    {text}
-  </span>
-);

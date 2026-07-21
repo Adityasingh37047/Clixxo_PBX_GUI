@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { useMediaQuery } from "@mui/material";
+import { EXTENSION_COMPACT_MQ } from "../../../../theme/pbxTokens";
 import {
   SIP_REGISTER_INITIAL_FORM,
   SIP_REGISTER_CODEC_OPTIONS,
@@ -30,8 +31,6 @@ import {
 } from "../utils/SipRegisterValidators";
 import { parseCodecList } from "../components/SipRegisterFormFields";
 import { SIP_REGISTER_ZOOM_TABLE_WIDTH } from "../components/SipRegisterTableHelpers";
-
-const SIP_REGISTER_COMPACT_MQ = "(max-width: 768px)";
 
 export function useSipRegisterPage() {
   // State
@@ -64,7 +63,7 @@ export function useSipRegisterPage() {
   );
   const tableScrollRef = useRef(null);
   const [tableContainerWidth, setTableContainerWidth] = useState(0);
-  const isCompact = useMediaQuery(SIP_REGISTER_COMPACT_MQ);
+  const isCompact = useMediaQuery(EXTENSION_COMPACT_MQ);
   const allowHorizontalScroll = false; // browser-zoom table mode removed
   const tableMinWidth = allowHorizontalScroll
     ? Math.max(

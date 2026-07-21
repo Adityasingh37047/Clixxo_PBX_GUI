@@ -1,12 +1,22 @@
 import React from "react";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { Alert, Checkbox, CircularProgress, useMediaQuery } from "@mui/material";
+import {
+  Alert,
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  useMediaQuery,
+} from "@mui/material";
 import { C } from "../../../theme/pbxTokens";
 import {
   OPERATIONS_LOG_COLUMNS,
   OPERATIONS_LOG_COMPACT_MQ,
   OPERATIONS_LOG_EMPTY_MESSAGE,
-  OPERATIONS_LOG_FOOTER_LIMIT_NOTE,
+  OPERATIONS_LOG_FILTER_MODAL_TITLE,
+  OPERATIONS_LOG_FILTERED_EMPTY_MESSAGE,
   OPERATIONS_LOG_TABLE_MIN_WIDTH,
 } from "../../../constants/OperationsLogConstants";
 import {
@@ -25,18 +35,34 @@ import {
   extensionCancelBtnStyle as operationsLogCancelBtnStyle,
   extensionTableCheckboxSx as operationsLogTableCheckboxSx,
   getExtensionRowBg as getOperationsLogRowBg,
+  getExtensionTdStyle as getOperationsLogTdStyle,
 } from "../../../components/common";
 import { useOperationsLogPage } from "./hooks/useOperationsLogPage";
-import { OperationsLogBreadcrumb as OperationsLogPageBreadcrumb } from "./components/OperationsLogFormFields";
+import {
+  FilterDate,
+  FilterField,
+  FilterSearch,
+  FilterSelect,
+  OperationsLogBreadcrumb as OperationsLogPageBreadcrumb,
+} from "./components/OperationsLogFormFields";
 import {
   OPERATIONS_LOG_TABLE_SCROLL_CLASS,
-  operationsLogCheckboxCellStyle,
-  operationsLogFooterNoteStyle,
+  operationsLogFilterModalCancelBtnStyle,
+  operationsLogFilterModalFooterBtnStyle,
+  operationsLogFilterModalFooterStyle,
+  operationsLogFilterModalFormStyle,
+  operationsLogFilterModalGridStyle,
+  operationsLogFilterModalPaperSx,
+  operationsLogFilterModalTitleStyle,
+  OPERATIONS_LOG_FILTER_TIME_RANGE_MAX_WIDTH,
   operationsLogTableScrollStyle,
-  operationsLogToolbarActionBtnStyle,
+  operationsLogToolbarFilterBtnStyle,
   operationsLogToolbarRefreshBtnStyle,
 } from "./components/OperationsLogTableHelpers";
-import { getOperationsLogCellValue } from "./utils/OperationsLogTransformers";
+import {
+  buildFilterSelectOptions,
+  getOperationsLogCellValue,
+} from "./utils/OperationsLogTransformers";
 
 const columns = OPERATIONS_LOG_COLUMNS;
 
@@ -44,25 +70,47 @@ const OperationsLog = () => {
   const isCompact = useMediaQuery(OPERATIONS_LOG_COMPACT_MQ);
   const {
     rows,
-    pagedRows,
     loading,
     isInitialLoad,
     message,
     setMessage,
     page,
     totalPages,
+    totalRecords,
     selectedIds,
     lastUpdated,
     allPageSelected,
     somePageSelected,
     dataEmpty,
+    hasActiveFilters,
+    showFilterModal,
+    setShowFilterModal,
+    filterDraft,
+    setFilterDraft,
+    appliedFilters,
+    filterOptions,
     loadOperationsLog,
     handleToggleRow,
     handleToggleAll,
     handlePageChange,
     handleDownload,
     handleDelete,
+    handleDeleteAll,
+    handleFilterOpen,
+    handleFilterCancel,
+    handleFilterReset,
+    handleFilterSearch,
+    updateFilterDraftDate,
   } = useOperationsLogPage();
+
+  const moduleOptions = buildFilterSelectOptions(filterOptions.modules);
+  const operationOptions = buildFilterSelectOptions(filterOptions.operations);
+  const usernameOptions = buildFilterSelectOptions(filterOptions.usernames);
+  const statusOptions = buildFilterSelectOptions(filterOptions.statuses);
+
+  const emptyMessage = hasActiveFilters
+    ? OPERATIONS_LOG_FILTERED_EMPTY_MESSAGE
+    : OPERATIONS_LOG_EMPTY_MESSAGE;
 
   return (
     <div
@@ -130,8 +178,27 @@ const OperationsLog = () => {
                   : {}),
               }}
             >
+              {!hasActiveFilters ? (
+                <Btn
+                  onClick={handleFilterOpen}
+                  disabled={loading}
+                  variant="cancel"
+                  style={operationsLogToolbarFilterBtnStyle}
+                >
+                  Filter
+                </Btn>
+              ) : (
+                <Btn
+                  onClick={handleFilterReset}
+                  disabled={loading}
+                  variant="cancel"
+                  style={operationsLogToolbarFilterBtnStyle}
+                >
+                  Reset
+                </Btn>
+              )}
               <Btn
-                onClick={() => loadOperationsLog()}
+                onClick={() => loadOperationsLog(page, appliedFilters)}
                 disabled={loading}
                 variant="cancel"
                 style={operationsLogToolbarRefreshBtnStyle}
@@ -152,21 +219,50 @@ const OperationsLog = () => {
                 Delete
               </Btn>
               <Btn
+                onClick={handleDeleteAll}
+                disabled={loading || (totalRecords === 0 && rows.length === 0)}
+                variant="cancel"
+                style={operationsLogCancelBtnStyle}
+              >
+                Clear All
+              </Btn>
+              <Btn
                 onClick={handleDownload}
                 disabled={loading}
                 variant="cancel"
-                style={operationsLogToolbarActionBtnStyle}
+                style={operationsLogCancelBtnStyle}
               >
-                Download
+                ⬇ Download Log
               </Btn>
             </div>
           </div>
 
+          {hasActiveFilters && (
+            <div
+              style={{
+                padding: "10px 14px",
+                fontSize: 12,
+                color: "#64748b",
+                borderBottom: "1px solid #e2e6ec",
+                background: "#f8fafc",
+              }}
+            >
+              Filters active
+              {(appliedFilters.startDate || appliedFilters.endDate) && (
+                <span>
+                  {" "}
+                  · {appliedFilters.startDate || "…"} to{" "}
+                  {appliedFilters.endDate || "…"}
+                </span>
+              )}
+            </div>
+          )}
+
           {isInitialLoad ? (
             <OperationsLogTableListLoading />
-          ) : dataEmpty ? (
+          ) : dataEmpty && !hasActiveFilters ? (
             <OperationsLogTableListEmptyState
-              message={OPERATIONS_LOG_EMPTY_MESSAGE}
+              message={emptyMessage}
               showButton={false}
             />
           ) : (
@@ -184,21 +280,13 @@ const OperationsLog = () => {
                     tableLayout: "auto",
                   }}
                 >
-                  <colgroup>
-                    <col style={{ width: 40 }} />
-                    {columns.map((col) => (
-                      <col key={col.key} style={{ width: col.width }} />
-                    ))}
-                  </colgroup>
                   <thead>
                     <tr>
                       <TH
                         style={{
-                          ...operationsLogCheckboxCellStyle,
+                          width: 40,
+                          padding: 0,
                           borderLeft: "none",
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 10,
                         }}
                       >
                         <Checkbox
@@ -213,10 +301,6 @@ const OperationsLog = () => {
                         <TH
                           key={col.key}
                           style={{
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 10,
-                            ...(colIdx === 0 ? {} : {}),
                             ...(colIdx === columns.length - 1
                               ? { borderRight: "none" }
                               : {}),
@@ -228,83 +312,239 @@ const OperationsLog = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pagedRows.map((row, idx) => {
-                      const isSelected = selectedIds.includes(row.id);
-                      const rowBg = getOperationsLogRowBg(isSelected, idx);
-                      const isLastRow = idx === pagedRows.length - 1;
-                      const lastRowCellStyle = isLastRow
-                        ? { borderBottom: "none" }
-                        : {};
-
-                      return (
-                        <tr
-                          key={row.id}
-                          onClick={() => handleToggleRow(row.id)}
+                    {rows.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={columns.length + 1}
                           style={{
-                            background: rowBg,
-                            cursor: "pointer",
+                            ...tdStyle,
+                            textAlign: "center",
+                            color: "#64748b",
+                            padding: "24px 12px",
                           }}
                         >
-                          <td
+                          {emptyMessage}
+                        </td>
+                      </tr>
+                    ) : (
+                      rows.map((row, idx) => {
+                        const isSelected = selectedIds.includes(row.id);
+                        const rowBg = getOperationsLogRowBg(isSelected, idx);
+                        const isLastRow = idx === rows.length - 1;
+                        const lastRowCellStyle = isLastRow
+                          ? { borderBottom: "none" }
+                          : {};
+
+                        return (
+                          <tr
+                            key={row.id}
                             style={{
-                              ...tdStyle,
-                              ...operationsLogCheckboxCellStyle,
                               background: rowBg,
-                              borderLeft: "none",
-                              ...lastRowCellStyle,
+                              transition: "background 0.15s ease",
                             }}
-                            onClick={(event) => event.stopPropagation()}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.background = "#f8fafc";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                e.currentTarget.style.background = rowBg;
+                              }
+                            }}
                           >
-                            <Checkbox
-                              size="small"
-                              checked={isSelected}
-                              onChange={() => handleToggleRow(row.id)}
-                              sx={operationsLogTableCheckboxSx}
-                            />
-                          </td>
-                          {columns.map((col, colIdx) => (
                             <td
-                              key={`${row.id}-${col.key}`}
-                              title={getOperationsLogCellValue(row, col.key)}
-                              style={{
-                                ...tdStyle,
-                                background: rowBg,
-                                textAlign: col.key === "detail" ? "left" : "center",
-                                maxWidth: col.key === "detail" ? 420 : undefined,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                ...(colIdx === columns.length - 1
-                                  ? { borderRight: "none" }
-                                  : {}),
-                                ...lastRowCellStyle,
-                              }}
+                              style={getOperationsLogTdStyle(
+                                rowBg,
+                                lastRowCellStyle,
+                                { width: 36, borderLeft: "none" },
+                              )}
                             >
-                              {getOperationsLogCellValue(row, col.key) || "—"}
+                              <Checkbox
+                                size="small"
+                                checked={isSelected}
+                                onChange={() => handleToggleRow(row.id)}
+                                sx={operationsLogTableCheckboxSx}
+                              />
                             </td>
-                          ))}
-                        </tr>
-                      );
-                    })}
+                            {columns.map((col, colIdx) => (
+                              <td
+                                key={`${row.id}-${col.key}`}
+                                title={getOperationsLogCellValue(row, col.key)}
+                                style={getOperationsLogTdStyle(
+                                  rowBg,
+                                  lastRowCellStyle,
+                                  {
+                                    maxWidth:
+                                      col.key === "detail" ? 420 : undefined,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    ...(colIdx === columns.length - 1
+                                      ? { borderRight: "none" }
+                                      : {}),
+                                  },
+                                )}
+                              >
+                                {getOperationsLogCellValue(row, col.key) || "—"}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
 
-              <div style={operationsLogFooterNoteStyle}>
-                {OPERATIONS_LOG_FOOTER_LIMIT_NOTE}
-              </div>
-
-              {rows.length > 0 && (
+              {totalRecords > 0 && (
                 <OperationsLogPagination
                   page={page}
                   totalPages={totalPages}
-                  recordCount={pagedRows.length}
-                  recordLabel="entry"
+                  recordCount={rows.length}
+                  recordLabel="record"
                   onPageChange={handlePageChange}
                 />
               )}
             </>
           )}
         </div>
+
+        <Dialog
+          open={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+          maxWidth={false}
+          PaperProps={{ sx: operationsLogFilterModalPaperSx }}
+        >
+          <DialogTitle style={operationsLogFilterModalTitleStyle}>
+            {OPERATIONS_LOG_FILTER_MODAL_TITLE}
+          </DialogTitle>
+
+          <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+            <div style={operationsLogFilterModalFormStyle}>
+              <div style={operationsLogFilterModalGridStyle(isCompact)}>
+                <FilterField label="Module" tooltipKey="module">
+                  <FilterSelect
+                    aria-label="Module"
+                    value={filterDraft.module}
+                    onChange={(e) =>
+                      setFilterDraft((prev) => ({
+                        ...prev,
+                        module: e.target.value,
+                      }))
+                    }
+                    options={moduleOptions}
+                  />
+                </FilterField>
+
+                <FilterField label="Operation" tooltipKey="operation">
+                  <FilterSelect
+                    aria-label="Operation"
+                    value={filterDraft.operation}
+                    onChange={(e) =>
+                      setFilterDraft((prev) => ({
+                        ...prev,
+                        operation: e.target.value,
+                      }))
+                    }
+                    options={operationOptions}
+                  />
+                </FilterField>
+
+                <FilterField label="Username" tooltipKey="username">
+                  <FilterSelect
+                    aria-label="Username"
+                    value={filterDraft.username}
+                    onChange={(e) =>
+                      setFilterDraft((prev) => ({
+                        ...prev,
+                        username: e.target.value,
+                      }))
+                    }
+                    options={usernameOptions}
+                  />
+                </FilterField>
+
+                <FilterField label="Status" tooltipKey="status">
+                  <FilterSelect
+                    aria-label="Status"
+                    value={filterDraft.status}
+                    onChange={(e) =>
+                      setFilterDraft((prev) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }))
+                    }
+                    options={statusOptions}
+                  />
+                </FilterField>
+
+                <FilterField label="IP Address" tooltipKey="ip">
+                  <FilterSearch
+                    placeholder="192.168.0.81"
+                    value={filterDraft.ip}
+                    onChange={(e) =>
+                      setFilterDraft((prev) => ({
+                        ...prev,
+                        ip: e.target.value,
+                      }))
+                    }
+                  />
+                </FilterField>
+
+                <FilterField
+                  label="Time Range"
+                  tooltipKey="time_range"
+                  style={{ maxWidth: OPERATIONS_LOG_FILTER_TIME_RANGE_MAX_WIDTH }}
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 8,
+                      width: "100%",
+                    }}
+                  >
+                    <FilterDate
+                      fill
+                      aria-label="Start Date"
+                      value={filterDraft.startDate}
+                      onChange={(e) =>
+                        updateFilterDraftDate("startDate", e.target.value)
+                      }
+                    />
+                    <FilterDate
+                      fill
+                      aria-label="End Date"
+                      value={filterDraft.endDate}
+                      onChange={(e) =>
+                        updateFilterDraftDate("endDate", e.target.value)
+                      }
+                    />
+                  </div>
+                </FilterField>
+              </div>
+            </div>
+          </DialogContent>
+
+          <DialogActions style={operationsLogFilterModalFooterStyle}>
+              <Btn
+              onClick={handleFilterSearch}
+              disabled={loading}
+              variant="primary"
+              style={operationsLogFilterModalFooterBtnStyle}
+            >
+              Search
+            </Btn>
+            <Btn
+              onClick={handleFilterCancel}
+              variant="cancel"
+              style={operationsLogFilterModalCancelBtnStyle}
+            >
+              Cancel
+            </Btn>
+          
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

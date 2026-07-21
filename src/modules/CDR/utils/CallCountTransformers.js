@@ -370,8 +370,3 @@ export const hasRecording = (row) => {
   const f = row?.recordingfile;
   return typeof f === "string" && f.trim() !== "";
 };
-
-export const formatCallCountFilterTooltipTitle = (text) => {
-  if (!text) return "";
-  return text.replace(/<br\s*\/?>/gi, "\n").replace(/&quot;/g, '"');
-};
