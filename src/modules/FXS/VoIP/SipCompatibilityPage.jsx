@@ -6,20 +6,23 @@ import {
   FXS_SIP_COMPATIBILITY_RIGHT_SECTION_TITLE,
   FXS_SIP_COMPATIBILITY_SAVE_LABEL,
   FXS_SIP_COMPATIBILITY_RESET_LABEL,
+  FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION,
+  FXS_SIP_COMPATIBILITY_PAGE_TITLE,
 } from "../../../constants/SipCompatibilityConstants";
-import { Btn } from "../../../components/common";
-import { useSipCompatibilityPage } from "./hooks/useSipCompatibilityPage";
 import {
-  SipCompatibilityBreadcrumb,
-  SipCompatibilityFormGrid,
-  SipCompatibilityPageShell,
-} from "./components/SipCompatibilityFormFields";
+  Btn,
+  ExtensionBreadcrumb as SipCompatibilityBreadcrumb,
+  extensionPageWrapStyle as sipCompatibilityPageWrapStyle,
+  extensionPageInnerStyle as sipCompatibilityPageInnerStyle,
+  extensionCardStyle as sipCompatibilityCardStyle,
+  extensionFixedAlertSx as sipCompatibilityFixedAlertSx,
+} from "../../../components/common";
+import { useSipCompatibilityPage } from "./hooks/useSipCompatibilityPage";
+import { SipCompatibilityFormGrid } from "./components/SipCompatibilityFormFields";
 import {
   fxsSipCompatibilityCardTitleBarStyle,
-  fxsSipCompatibilityFixedAlertSx,
   fxsSipCompatibilityFormBtnStyle,
   fxsSipCompatibilityFormInlineFooterStyle,
-  fxsSipCompatibilityTableContainerStyle,
 } from "./components/SipCompatibilityTableHelpers";
 
 const SipCompatibilityPage = () => {
@@ -37,20 +40,26 @@ const SipCompatibilityPage = () => {
   } = vm;
 
   return (
-    <SipCompatibilityPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={() => setToast({ msg: "", type: "success" })}
-          sx={fxsSipCompatibilityFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={sipCompatibilityPageWrapStyle} data-native-scroll>
+      <div style={sipCompatibilityPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={() => setToast({ msg: "", type: "success" })}
+            sx={sipCompatibilityFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <SipCompatibilityBreadcrumb />
+        <SipCompatibilityBreadcrumb
+          root="FXS"
+          section={FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION}
+          current={FXS_SIP_COMPATIBILITY_PAGE_TITLE}
+          style={{ flexShrink: 0 }}
+        />
 
-      <div style={fxsSipCompatibilityTableContainerStyle}>
+        <div style={sipCompatibilityCardStyle}>
         <div style={fxsSipCompatibilityCardTitleBarStyle}>
           <span>{FXS_SIP_COMPATIBILITY_CARD_TITLE}</span>
         </div>
@@ -82,8 +91,9 @@ const SipCompatibilityPage = () => {
             {FXS_SIP_COMPATIBILITY_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
-    </SipCompatibilityPageShell>
+    </div>
   );
 };
 

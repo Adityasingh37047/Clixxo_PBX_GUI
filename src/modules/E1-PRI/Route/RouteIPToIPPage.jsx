@@ -19,11 +19,20 @@ import {
   ROUTE_IP_IP_ADD_NEW_EMPTY_LABEL,
   ROUTE_IP_IP_SAVE_LABEL,
   ROUTE_IP_IP_CLOSE_LABEL,
+  ROUTE_IP_IP_PAGE_BREADCRUMB_ROOT,
+  ROUTE_IP_IP_PAGE_BREADCRUMB_SECTION,
+  ROUTE_IP_IP_PAGE_TITLE,
 } from "../../../constants/RouteIPIPConstants";
+import {
+  ExtensionBreadcrumb as RouteIPToIPBreadcrumb,
+  extensionPageWrapStyle as routeIPToIPPageWrapStyle,
+  extensionPageInnerStyle as routeIPToIPPageInnerStyle,
+  extensionFixedAlertSx as routeIPToIPFixedAlertSx,
+  extensionSelectedBadgeStyle as routeIPToIPSelectedBadgeStyle,
+} from "../../../components/common";
 import { useRouteIPToIPPage } from "./hooks/useRouteIPToIPPage";
 import { formatRouteIPToIPDisplayValue } from "./utils/RouteIPToIPTransformers";
 import {
-  RouteIPToIPBreadcrumb,
   RouteIPToIPBtn,
   RouteIPToIPTH,
   RouteIPToIPModalForm,
@@ -48,10 +57,6 @@ import {
   getRouteIPToIPRowBg,
   getRouteIPToIPEditIconStyle,
   handleRouteIPToIPEditIconHover,
-  routeIPToIPFixedAlertSx,
-  routeIPToIPPageWrapStyle,
-  routeIPToIPPageInnerStyle,
-  routeIPToIPSelectedBadgeStyle,
   routeIPToIPTableScrollStyle,
 } from "./components/RouteIPToIPTableHelpers";
 
@@ -103,7 +108,11 @@ const RouteIPIPPage = () => {
           </Alert>
         )}
 
-        <RouteIPToIPBreadcrumb />
+        <RouteIPToIPBreadcrumb
+          root={ROUTE_IP_IP_PAGE_BREADCRUMB_ROOT}
+          section={ROUTE_IP_IP_PAGE_BREADCRUMB_SECTION}
+          current={ROUTE_IP_IP_PAGE_TITLE}
+        />
 
         <div style={routeIPToIPCardStyle}>
           <div style={routeIPToIPToolbarStyle}>

@@ -9,15 +9,25 @@ import {
   PCM_PCM_MODAL_TITLE_EDIT,
   PCM_PCM_SAVE_LABEL,
   PCM_PCM_CLOSE_LABEL,
+  PCM_PCM_PAGE_BREADCRUMB_ROOT,
+  PCM_PCM_PAGE_BREADCRUMB_SECTION,
 } from "../../../constants/PcmPcmConstants";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Checkbox, useMediaQuery } from "@mui/material";
+import {
+  ExtensionBreadcrumb as PcmPcmBreadcrumb,
+  extensionPageWrapStyle as pcmPcmPageWrapStyle,
+  extensionPageInnerStyle as pcmPcmPageInnerStyle,
+  extensionCardStyle as pcmPcmCardStyle,
+  extensionToolbarStyle as pcmPcmToolbarStyle,
+  Btn as PcmPcmBtn,
+  TH as PcmPcmTH,
+  tdStyle as pcmPcmTdStyle,
+} from "../../../components/common";
+import { C } from "../../../theme/pbxTokens";
 import { usePcmPcmPage } from "./hooks/usePcmPcmPage";
 import { renderPcmPcmCell } from "./utils/PcmPcmTransformers";
 import {
-  PcmPcmBreadcrumb,
-  PcmPcmBtn,
-  PcmPcmTH,
   PcmPcmLabeledRow,
   pcmPcmFormPanelStyle,
   pcmPcmInputStyle,
@@ -25,10 +35,6 @@ import {
   pcmPcmInputInteraction,
   pcmPcmAddNewModalFooterStyle,
   pcmPcmAddNewModalFooterBtnStyle,
-  pcmPcmTdStyle,
-  pcmPcmC as C,
-  pcmPcmCardStyle,
-  pcmPcmToolbarStyle,
   pcmPcmCheckboxSx,
   PCM_PCM_COMPACT_MQ,
 } from "./components/PcmPcmFormFields";
@@ -36,8 +42,6 @@ import {
   getPcmPcmRowBg,
   pcmPcmEditIconStyle,
   handlePcmPcmEditIconHover,
-  pcmPcmPageWrapStyle,
-  pcmPcmPageInnerStyle,
   pcmPcmModalCancelBtnStyle,
   pcmPcmTableScrollStyle,
 } from "./components/PcmPcmTableHelpers";
@@ -63,7 +67,11 @@ const PcmPcmPage = () => {
       }}
     >
       <div style={pcmPcmPageInnerStyle}>
-        <PcmPcmBreadcrumb />
+        <PcmPcmBreadcrumb
+          root={PCM_PCM_PAGE_BREADCRUMB_ROOT}
+          section={PCM_PCM_PAGE_BREADCRUMB_SECTION}
+          current={PCM_PCM_PAGE_TITLE}
+        />
 
         <div style={pcmPcmCardStyle}>
           <div style={pcmPcmToolbarStyle}>

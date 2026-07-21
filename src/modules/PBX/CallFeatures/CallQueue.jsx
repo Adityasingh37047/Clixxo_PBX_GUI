@@ -29,6 +29,7 @@ import {
   ExtensionBreadcrumb as CallQueueBreadcrumb,
   ExtensionTableListLoading as CallQueueTableListLoading,
   ExtensionTableListEmptyState as CallQueueTableListEmptyState,
+  ExtensionPagination as CallQueuePagination,
   ExtensionModalTabs as CallQueueModalTabs,
   extensionTableCheckboxSx as callQueueTableCheckboxSx,
   extensionFixedAlertSx as callQueueFixedAlertSx,
@@ -37,6 +38,7 @@ import {
   extensionCardStyle as callQueueCardStyle,
   extensionToolbarStyle as callQueueToolbarStyle,
   extensionSelectedBadgeStyle as callQueueSelectedBadgeStyle,
+  extensionCancelBtnStyle as callQueueCancelBtnStyle,
   extensionPrimaryBtnStyle as callQueuePrimaryBtnStyle,
   ExtensionCodecDualList as CallQueueCodecDualList,
 } from "../../../components/common";
@@ -58,8 +60,6 @@ import {
 } from "./components/CallQueueFormFields";
 import {
   callQueueEditIconStyle,
-  callQueuePageBadgeStyle,
-  callQueuePaginationStyle,
   handleCallQueueEditIconHover,
 } from "./components/CallQueueTableHelpers";
 
@@ -100,8 +100,7 @@ const CallQueue = () => {
     handleInverse,
     handleSelectRow,
     handleToggleAll,
-    handlePrev,
-    handleNext,
+    setPage,
   } = vm;
   return (
     <div
@@ -1235,12 +1234,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || queues.length === 0
                 }
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 4,
-                }}
+                style={callQueueCancelBtnStyle}
               >
                 Inverse
               </Btn>
@@ -1250,12 +1244,7 @@ const CallQueue = () => {
                 disabled={
                   loading.delete || loading.fetch || selected.length === 0
                 }
-                style={{
-                  height: 30,
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  borderRadius: 4,
-                }}
+                style={callQueueCancelBtnStyle}
               >
                 {loading.delete ? (
                   <CircularProgress size={12} color="inherit" />
@@ -1465,33 +1454,14 @@ const CallQueue = () => {
           </div>
 
           {!isInitialLoad && queues.length > 0 && (
-            <div style={callQueuePaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedQueues.length} record
-                {pagedQueues.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.fetch || page <= 1}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  ← Prev
-                </Btn>
-                <span style={callQueuePageBadgeStyle}>
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.fetch || page >= totalPages}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <CallQueuePagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedQueues.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>

@@ -4,16 +4,23 @@ import {
   FXS_LEFT_COLUMN_FIELD_KEYS,
   FXS_RIGHT_COLUMN_FIELD_KEYS,
   FXS_PAGE_CARD_TITLE,
+  FXS_PAGE_BREADCRUMB_SECTION,
+  FXS_PAGE_TITLE,
   FXS_SAVE_LABEL,
   FXS_RESET_LABEL,
 } from "../../../constants/FxsConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as FxsBreadcrumb,
+  extensionPageWrapStyle as fxsPageWrapStyle,
+  extensionPageInnerStyle as fxsPageInnerStyle,
+  extensionCardStyle as fxsCardStyle,
+  extensionFixedAlertSx as fxsFixedAlertSx,
+} from "../../../components/common";
 import { useFxsPage } from "./hooks/useFxsPage";
 import { getFieldByKey } from "./utils/FxsTransformers";
 import {
-  FxsBreadcrumb,
   FxsFieldRow,
-  FxsPageShell,
   controlSlotStyle,
   fxsPageCheckboxSx,
   nativeFieldInputStyle,
@@ -25,13 +32,11 @@ import {
   advancedCardTitleBarStyle,
   advancedFormBtnStyle,
   advancedFormInlineFooterStyle,
-  advancedTableContainerStyle,
   dashboardColumnLeftStyle,
   dashboardColumnRightStyle,
   dashboardDividerCellStyle,
   dashboardDividerLineStyle,
   dashboardGridStyle,
-  fxsFixedAlertSx,
   fxsPageFieldsColStyle,
 } from "./components/FxsTableHelpers";
 
@@ -119,16 +124,21 @@ const FxsPage = () => {
   );
 
   return (
-    <FxsPageShell>
-      {toast.msg && (
-        <Alert severity={toast.type} onClose={clearToast} sx={fxsFixedAlertSx}>
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={fxsPageWrapStyle} data-native-scroll>
+      <div style={fxsPageInnerStyle}>
+        {toast.msg && (
+          <Alert severity={toast.type} onClose={clearToast} sx={fxsFixedAlertSx}>
+            {toast.msg}
+          </Alert>
+        )}
 
-      <FxsBreadcrumb />
+        <FxsBreadcrumb
+          root="FXS"
+          section={FXS_PAGE_BREADCRUMB_SECTION}
+          current={FXS_PAGE_TITLE}
+        />
 
-      <div style={advancedTableContainerStyle}>
+        <div style={fxsCardStyle}>
         <div style={advancedCardTitleBarStyle}>
           <span>{FXS_PAGE_CARD_TITLE}</span>
         </div>
@@ -168,8 +178,9 @@ const FxsPage = () => {
             {FXS_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
-    </FxsPageShell>
+    </div>
   );
 };
 

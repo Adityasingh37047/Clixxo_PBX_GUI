@@ -9,23 +9,26 @@ import {
   FXS_VOIP_SIP_RESET_LABEL,
   FXS_VOIP_SIP_SAVING_LABEL,
   FXS_VOIP_SIP_LOCAL_MODE_PREFIX,
+  FXS_VOIP_SIP_BREADCRUMB_SECTION,
+  FXS_VOIP_SIP_PAGE_TITLE,
 } from "../../../constants/FxsVoipSipConstants";
 import { C } from "../../../theme/pbxTokens";
-import { Btn } from "../../../components/common";
-import { useFxsVoipSipPage } from "./hooks/useFxsVoipSipPage";
 import {
-  FxsVoipSipBreadcrumb,
-  FxsVoipSipFormGrid,
-  FxsVoipSipPageShell,
-} from "./components/FxsVoipSipFormFields";
+  Btn,
+  ExtensionBreadcrumb as FxsVoipSipBreadcrumb,
+  extensionPageWrapStyle as fxsVoipSipPageWrapStyle,
+  extensionPageInnerStyle as fxsVoipSipPageInnerStyle,
+  extensionCardStyle as fxsVoipSipCardStyle,
+  extensionFixedAlertSx as fxsVoipSipFixedAlertSx,
+} from "../../../components/common";
+import { useFxsVoipSipPage } from "./hooks/useFxsVoipSipPage";
+import { FxsVoipSipFormGrid } from "./components/FxsVoipSipFormFields";
 import {
   fxsVoipSipCardTitleBarStyle,
-  fxsVoipSipFixedAlertSx,
   fxsVoipSipFormBtnStyle,
   fxsVoipSipFormInlineFooterStyle,
   fxsVoipSipLoadingWrapStyle,
   fxsVoipSipLocalModeBannerStyle,
-  fxsVoipSipTableContainerStyle,
 } from "./components/FxsVoipSipTableHelpers";
 
 const FxsVoipSipPage = () => {
@@ -47,33 +50,39 @@ const FxsVoipSipPage = () => {
   } = vm;
 
   return (
-    <FxsVoipSipPageShell>
-      {message.text && (
-        <Alert
-          severity={
-            message.type === "error"
-              ? "error"
-              : message.type === "success"
-                ? "success"
-                : "info"
-          }
-          onClose={() => setMessage({ type: "", text: "" })}
-          sx={fxsVoipSipFixedAlertSx}
-        >
-          {message.text}
-        </Alert>
-      )}
+    <div style={fxsVoipSipPageWrapStyle} data-native-scroll>
+      <div style={fxsVoipSipPageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={
+              message.type === "error"
+                ? "error"
+                : message.type === "success"
+                  ? "success"
+                  : "info"
+            }
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={fxsVoipSipFixedAlertSx}
+          >
+            {message.text}
+          </Alert>
+        )}
 
-      <FxsVoipSipBreadcrumb />
+        <FxsVoipSipBreadcrumb
+          root="FXS"
+          section={FXS_VOIP_SIP_BREADCRUMB_SECTION}
+          current={FXS_VOIP_SIP_PAGE_TITLE}
+          style={{ flexShrink: 0 }}
+        />
 
-      {registrationMode === "local" && localModeMsg && (
-        <div style={fxsVoipSipLocalModeBannerStyle}>
-          <span style={{ fontWeight: 700 }}>{FXS_VOIP_SIP_LOCAL_MODE_PREFIX}</span>
-          <span>{localModeMsg}</span>
-        </div>
-      )}
+        {registrationMode === "local" && localModeMsg && (
+          <div style={fxsVoipSipLocalModeBannerStyle}>
+            <span style={{ fontWeight: 700 }}>{FXS_VOIP_SIP_LOCAL_MODE_PREFIX}</span>
+            <span>{localModeMsg}</span>
+          </div>
+        )}
 
-      <div style={fxsVoipSipTableContainerStyle}>
+        <div style={fxsVoipSipCardStyle}>
         <div style={fxsVoipSipCardTitleBarStyle}>
           <span>{FXS_VOIP_SIP_CARD_TITLE}</span>
         </div>
@@ -125,8 +134,9 @@ const FxsVoipSipPage = () => {
             </Btn>
           </div>
         )}
+        </div>
       </div>
-    </FxsVoipSipPageShell>
+    </div>
   );
 };
 

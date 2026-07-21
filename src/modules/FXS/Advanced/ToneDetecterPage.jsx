@@ -8,14 +8,21 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import { TONE_DETECTER_EMPTY_MESSAGE } from "../../../constants/ToneDetecterConstants";
-import { Btn } from "../../../components/common";
+import { TONE_DETECTER_EMPTY_MESSAGE, TONE_DETECTER_PAGE_BREADCRUMB_SECTION, TONE_DETECTER_PAGE_TITLE } from "../../../constants/ToneDetecterConstants";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as ToneDetecterBreadcrumb,
+  extensionPageWrapStyle as toneDetecterPageWrapStyle,
+  extensionPageInnerStyle as toneDetecterPageInnerStyle,
+  extensionCardStyle as toneDetecterCardStyle,
+  extensionFixedAlertSx as toneDetecterFixedAlertSx,
+} from "../../../components/common";
 import { useToneDetecterPage } from "./hooks/useToneDetecterPage";
 import { TONE_DETECTER_DATA_COLUMNS } from "./utils/ToneDetecterTransformers";
 import {
-  ToneDetecterBreadcrumb,
   ToneDetecterModalFormFields,
-  ToneDetecterPageShell,
   getToneDetecterModalTitle,
   toneDetecterAddNewDialogPaperSx,
   toneDetecterAddNewDialogSx,
@@ -30,16 +37,12 @@ import {
   PCM_TRUNK_GROUP_CHECKBOX_SX,
   PCM_TRUNK_GROUP_TD_GAP,
   PCM_TRUNK_GROUP_TH_GAP,
-  TH,
   getToneDetecterLastRowCellStyle,
   getToneDetecterRowBg,
   handleToneDetecterEditIconHover,
-  tdStyle,
-  toneDetecterCardStyle,
   toneDetecterEditIconStyle,
   toneDetecterEmptyMessageStyle,
   toneDetecterEmptyStateStyle,
-  toneDetecterFixedAlertSx,
   toneDetecterHeaderStyle,
   toneDetecterPaginationInfoStyle,
   toneDetecterPaginationNavBtnStyle,
@@ -83,20 +86,24 @@ const ToneDetecterPage = () => {
   } = vm;
 
   return (
-    <ToneDetecterPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={toneDetecterFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={toneDetecterPageWrapStyle}>
+      <div style={toneDetecterPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={toneDetecterFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <ToneDetecterBreadcrumb />
+        <ToneDetecterBreadcrumb
+          section={TONE_DETECTER_PAGE_BREADCRUMB_SECTION}
+          current={TONE_DETECTER_PAGE_TITLE}
+        />
 
-      <div style={toneDetecterCardStyle}>
+        <div style={toneDetecterCardStyle}>
         <div style={toneDetecterHeaderStyle}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {selected.length > 0 && (
@@ -355,7 +362,8 @@ const ToneDetecterPage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-    </ToneDetecterPageShell>
+      </div>
+    </div>
   );
 };
 

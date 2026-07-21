@@ -5,19 +5,21 @@ import {
   FUNCTION_KEY_RESET_LABEL,
   FUNCTION_KEY_SAVE_LABEL,
   FUNCTION_KEY_SECTIONS_ORDER,
+  FUNCTION_KEY_PAGE_BREADCRUMB_SECTION,
+  FUNCTION_KEY_PAGE_TITLE,
 } from "../../../constants/FunctionKeyConstants";
-import { Btn } from "../../../components/common";
-import { useFunctionKeyPage } from "./hooks/useFunctionKeyPage";
 import {
-  FunctionKeyBreadcrumb,
-  FunctionKeyPageShell,
-  FunctionKeySectionTable,
-} from "./components/FunctionKeyFormFields";
+  Btn,
+  ExtensionBreadcrumb as FunctionKeyBreadcrumb,
+  extensionPageWrapStyle as functionKeyPageWrapStyle,
+  extensionCardStyle as functionKeyCardStyle,
+  extensionFixedAlertSx as functionKeyFixedAlertSx,
+} from "../../../components/common";
+import { useFunctionKeyPage } from "./hooks/useFunctionKeyPage";
+import { FunctionKeySectionTable } from "./components/FunctionKeyFormFields";
 import {
   functionKeyCardBodyStyle,
-  functionKeyCardStyle,
   functionKeyCardTitleBarStyle,
-  functionKeyFixedAlertSx,
   functionKeyFooterStyle,
   functionKeyFormBtnStyle,
 } from "./components/FunctionKeyTableHelpers";
@@ -38,7 +40,7 @@ const FunctionKeyPage = () => {
   } = vm;
 
   return (
-    <FunctionKeyPageShell>
+    <div style={functionKeyPageWrapStyle}>
       {toast.msg && (
         <Alert
           severity={toast.type}
@@ -49,7 +51,11 @@ const FunctionKeyPage = () => {
         </Alert>
       )}
 
-      <FunctionKeyBreadcrumb />
+      <FunctionKeyBreadcrumb
+        root="FXS"
+        section={FUNCTION_KEY_PAGE_BREADCRUMB_SECTION}
+        current={FUNCTION_KEY_PAGE_TITLE}
+      />
 
       <div style={functionKeyCardStyle}>
         <div style={functionKeyCardTitleBarStyle}>{FUNCTION_KEY_CARD_TITLE}</div>
@@ -88,7 +94,7 @@ const FunctionKeyPage = () => {
           </Btn>
         </div>
       </div>
-    </FunctionKeyPageShell>
+    </div>
   );
 };
 

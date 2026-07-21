@@ -18,13 +18,24 @@ import {
   ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL,
   ROUTE_IP_PSTN_SAVE_LABEL,
   ROUTE_IP_PSTN_CLOSE_LABEL,
+  ROUTE_IP_PSTN_PAGE_BREADCRUMB_ROOT,
+  ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION,
+  ROUTE_IP_PSTN_PAGE_TITLE,
 } from "../../../constants/FxsRouteIPtoPstnConstants";
 import { C } from "../../../theme/pbxTokens";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as RouteIpToTelBreadcrumb,
+  extensionPageWrapStyle as routeIpToTelPageWrapStyle,
+  extensionPageInnerStyle as routeIpToTelPageInnerStyle,
+  extensionCardStyle as routeIpToTelCardStyle,
+  extensionFixedAlertSx as routeIpToTelFixedAlertSx,
+} from "../../../components/common";
 import { useRouteIpToTelPage } from "./hooks/useRouteIpToTelPage";
 import { formatRouteIpToTelDisplayValue } from "./utils/RouteIpToTelTransformers";
 import {
-  RouteIpToTelBreadcrumb,
-  RouteIpToTelBtn,
   RouteIpToTelModalForm,
   RouteIpToTelTH,
   fxsRouteIpToTelAddNewDialogPaperSx,
@@ -41,15 +52,11 @@ import {
   ROUTE_IP_TO_TEL_PCM_TRUNK_GROUP_TH_GAP,
   getRouteIpToTelRowBg,
   handleRouteIpToTelEditIconHover,
-  routeIpToTelCardStyle,
   routeIpToTelEditIconStyle,
   routeIpToTelEmptyStateTitleStyle,
   routeIpToTelEmptyStateWrapStyle,
-  routeIpToTelFixedAlertSx,
   routeIpToTelHeaderStyle,
   routeIpToTelPageBadgeStyle,
-  routeIpToTelPageInnerStyle,
-  routeIpToTelPageWrapStyle,
   routeIpToTelPaginationCountStyle,
   routeIpToTelPaginationStyle,
   routeIpToTelSelectedBadgeStyle,
@@ -108,7 +115,11 @@ const RouteIpPstnPage = () => {
           </Alert>
         )}
 
-        <RouteIpToTelBreadcrumb />
+        <RouteIpToTelBreadcrumb
+          root={ROUTE_IP_PSTN_PAGE_BREADCRUMB_ROOT}
+          section={ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION}
+          current={ROUTE_IP_PSTN_PAGE_TITLE}
+        />
 
         <div style={routeIpToTelCardStyle}>
           <div style={routeIpToTelHeaderStyle}>
@@ -127,15 +138,15 @@ const RouteIpPstnPage = () => {
                 flexWrap: "wrap",
               }}
             >
-              <RouteIpToTelBtn
+              <Btn
                 variant="cancel"
                 onClick={handleInverse}
                 disabled={rules.length === 0}
                 style={routeIpToTelToolbarCancelBtnStyle}
               >
                 Inverse
-              </RouteIpToTelBtn>
-              <RouteIpToTelBtn
+              </Btn>
+              <Btn
                 variant="cancel"
                 onClick={handleDelete}
                 disabled={selected.length === 0}
@@ -143,22 +154,22 @@ const RouteIpPstnPage = () => {
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
-              </RouteIpToTelBtn>
-              <RouteIpToTelBtn
+              </Btn>
+              <Btn
                 variant="cancel"
                 onClick={handleClearAll}
                 disabled={rules.length === 0}
                 style={routeIpToTelToolbarCancelBtnStyle}
               >
                 Clear All
-              </RouteIpToTelBtn>
-              <RouteIpToTelBtn
+              </Btn>
+              <Btn
                 variant="primary"
                 onClick={() => handleOpenModal()}
                 style={routeIpToTelToolbarPrimaryBtnStyle}
               >
                 {ROUTE_IP_PSTN_ADD_NEW_LABEL}
-              </RouteIpToTelBtn>
+              </Btn>
             </div>
           </div>
 
@@ -168,13 +179,13 @@ const RouteIpPstnPage = () => {
                 <div style={routeIpToTelEmptyStateTitleStyle}>
                   {ROUTE_IP_PSTN_EMPTY_MESSAGE}
                 </div>
-                <RouteIpToTelBtn
+                <Btn
                   variant="cancel"
                   onClick={() => handleOpenModal()}
                   style={routeIpToTelToolbarCancelBtnStyle}
                 >
                   {ROUTE_IP_PSTN_ADD_NEW_EMPTY_LABEL}
-                </RouteIpToTelBtn>
+                </Btn>
               </div>
             ) : (
               <table
@@ -330,25 +341,25 @@ const RouteIpPstnPage = () => {
                 {pagedRules.length !== 1 ? "s" : ""} on page {page}
               </span>
               <div style={{ display: "flex", gap: 8 }}>
-                <RouteIpToTelBtn
+                <Btn
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page <= 1}
                   variant="outline"
                   style={{ borderRadius: 4 }}
                 >
                   ← Prev
-                </RouteIpToTelBtn>
+                </Btn>
                 <span style={routeIpToTelPageBadgeStyle}>
                   Page {page} of {totalPages}
                 </span>
-                <RouteIpToTelBtn
+                <Btn
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page >= totalPages}
                   variant="outline"
                   style={{ borderRadius: 4 }}
                 >
                   Next →
-                </RouteIpToTelBtn>
+                </Btn>
               </div>
             </div>
           )}
@@ -389,20 +400,20 @@ const RouteIpPstnPage = () => {
             />
           </DialogContent>
           <DialogActions sx={{ p: 0, m: 0 }} style={routeIpToTelAddNewModalFooterStyle}>
-            <RouteIpToTelBtn
+            <Btn
               variant="primary"
               onClick={handleSave}
               style={routeIpToTelAddNewModalFooterBtnStyle}
             >
               {ROUTE_IP_PSTN_SAVE_LABEL}
-            </RouteIpToTelBtn>
-            <RouteIpToTelBtn
+            </Btn>
+            <Btn
               variant="cancel"
               onClick={handleCloseModal}
               style={routeIpToTelAddNewModalFooterCancelBtnStyle}
             >
               {ROUTE_IP_PSTN_CLOSE_LABEL}
-            </RouteIpToTelBtn>
+            </Btn>
           </DialogActions>
         </Dialog>
       </div>

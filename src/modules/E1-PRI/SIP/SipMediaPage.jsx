@@ -6,20 +6,26 @@ import {
   SIP_MEDIA_BTN_SAVING,
   SIP_MEDIA_BTN_RESET,
   SIP_MEDIA_LOADING_TEXT,
+  SIP_MEDIA_PAGE_BREADCRUMB_ROOT,
+  SIP_MEDIA_PAGE_BREADCRUMB_SECTION,
+  SIP_MEDIA_PAGE_TITLE,
 } from "../../../constants/SipMediaConstants";
-import { useSipMediaPage } from "./hooks/useSipMediaPage";
-import { Btn } from "../../../components/common";
 import {
-  SipMediaBreadcrumb,
+  Btn,
+  ExtensionBreadcrumb as SipMediaBreadcrumb,
+  extensionPageWrapStyle as sipMediaPageWrapStyle,
+  extensionPageInnerStyle as sipMediaPageInnerStyle,
+  extensionFixedAlertSx as sipMediaFixedAlertSx,
+} from "../../../components/common";
+import { useSipMediaPage } from "./hooks/useSipMediaPage";
+import {
   SipMediaScrollbarStyles,
-  AdvancedPageShell,
   SipMediaFormBody,
   SIP_MEDIA_COMPACT_MQ,
 } from "./components/SipMediaFormFields";
 import {
   C,
   SIP_MEDIA_SCROLL_CLASS,
-  sipMediaFixedAlertSx,
   advancedCardShellStyle,
   advancedTableContainerStyle,
   advancedFormInlineFooterStyle,
@@ -45,7 +51,15 @@ const SipMediaPage = () => {
   return (
     <>
       <SipMediaScrollbarStyles />
-      <AdvancedPageShell isCompact={isCompact}>
+      <div
+        className={SIP_MEDIA_SCROLL_CLASS}
+        style={{
+          ...sipMediaPageWrapStyle,
+          ...(isCompact ? { padding: 8 } : {}),
+        }}
+        data-native-scroll
+      >
+        <div style={sipMediaPageInnerStyle}>
         {message.text && !saving && (
           <Alert
             severity={
@@ -62,7 +76,11 @@ const SipMediaPage = () => {
           </Alert>
         )}
 
-        <SipMediaBreadcrumb />
+        <SipMediaBreadcrumb
+          root={SIP_MEDIA_PAGE_BREADCRUMB_ROOT}
+          section={SIP_MEDIA_PAGE_BREADCRUMB_SECTION}
+          current={SIP_MEDIA_PAGE_TITLE}
+        />
 
         <div style={advancedCardShellStyle}>
           <div style={advancedTableContainerStyle}>
@@ -131,7 +149,8 @@ const SipMediaPage = () => {
             )}
           </div>
         </div>
-      </AdvancedPageShell>
+        </div>
+      </div>
     </>
   );
 };

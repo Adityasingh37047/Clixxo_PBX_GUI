@@ -17,14 +17,23 @@ import {
   DIALING_RULE_EMPTY_MESSAGE,
   DIALING_RULE_MODAL_TITLE_ADD,
   DIALING_RULE_MODAL_TITLE_EDIT,
+  DIALING_RULE_PAGE_BREADCRUMB_SECTION,
+  DIALING_RULE_PAGE_TITLE,
 } from "../../../constants/DialingRuleConstants";
 import { C } from "../../../theme/pbxTokens";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as DialingRuleBreadcrumb,
+  extensionPageWrapStyle as dialingRulePageWrapStyle,
+  extensionPageInnerStyle as dialingRulePageInnerStyle,
+  extensionCardStyle as dialingRuleCardStyle,
+  extensionFixedAlertSx as dialingRuleFixedAlertSx,
+} from "../../../components/common";
 import { useDialingRulePage } from "./hooks/useDialingRulePage";
 import {
-  DialingRuleBreadcrumb,
   DialingRuleFieldRow,
-  DialingRulePageShell,
   DIALING_RULE_ADD_NEW_DIALOG_PAPER_SX,
   DIALING_RULE_ADD_NEW_DIALOG_SX,
   dialingRuleAddHostFormPanelStyle,
@@ -40,12 +49,8 @@ import {
   dialingRuleTextFieldInputProps,
 } from "./components/DialingRuleFormFields";
 import {
-  TH,
-  tdStyle,
-  dialingRuleCardStyle,
   dialingRuleEmptyMessageStyle,
   dialingRuleEmptyStateStyle,
-  dialingRuleFixedAlertSx,
   dialingRuleHeaderStyle,
   dialingRulePaginationPageBadgeStyle,
   dialingRulePaginationStyle,
@@ -101,20 +106,24 @@ const DialingRulePage = () => {
   } = vm;
 
   return (
-    <DialingRulePageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={dialingRuleFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={dialingRulePageWrapStyle}>
+      <div style={dialingRulePageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={dialingRuleFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <DialingRuleBreadcrumb />
+        <DialingRuleBreadcrumb
+          section={DIALING_RULE_PAGE_BREADCRUMB_SECTION}
+          current={DIALING_RULE_PAGE_TITLE}
+        />
 
-      <div style={dialingRuleCardStyle}>
+        <div style={dialingRuleCardStyle}>
         <div style={dialingRuleHeaderStyle}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {selected.length > 0 && (
@@ -423,7 +432,8 @@ const DialingRulePage = () => {
           </Btn>
         </DialogActions>
       </Dialog>
-    </DialingRulePageShell>
+      </div>
+    </div>
   );
 };
 

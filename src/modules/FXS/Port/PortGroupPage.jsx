@@ -16,16 +16,23 @@ import {
   PORT_GROUP_MODAL_TITLE_EDIT,
   PORT_GROUP_SAVE_LABEL,
   PORT_GROUP_CLOSE_LABEL,
+  PORT_GROUP_PAGE_BREADCRUMB_SECTION,
+  PORT_GROUP_PAGE_BREADCRUMB_TITLE,
 } from "../../../constants/PortGroupPageConstants";
 import { C } from "../../../theme/pbxTokens";
 import {
   Btn,
   TH,
+  tdStyle,
+  ExtensionBreadcrumb as PortGroupBreadcrumb,
   ExtensionPagination as PortGroupPagination,
+  extensionPageWrapStyle as portGroupPageWrapStyle,
+  extensionPageInnerStyle as portGroupPageInnerStyle,
+  extensionCardStyle as portGroupCardStyle,
+  extensionFixedAlertSx as portGroupFixedAlertSx,
 } from "../../../components/common";
 import { usePortGroupPage } from "./hooks/usePortGroupPage";
 import {
-  PortGroupBreadcrumb,
   PortGroupFormFields,
   PortGroupPortsSection,
   PORT_GROUP_ADD_NEW_DIALOG_PAPER_SX,
@@ -37,11 +44,8 @@ import {
   addNewModalFooterStyle,
   fxsToolbarCancelBtnStyle,
   fxsToolbarPrimaryBtnStyle,
-  portGroupCardStyle,
   portGroupCheckboxSx,
   portGroupHeaderStyle,
-  portGroupPageInnerStyle,
-  portGroupPageWrapStyle,
   portGroupPaginationStyle,
   portGroupTableBodyStyle,
 } from "./components/PortGroupFormFields";
@@ -181,21 +185,16 @@ const PortGroupPage = () => {
           <Alert
             severity={toast.type}
             onClose={() => setToast({ msg: "", type: "success" })}
-            sx={{
-              position: "fixed",
-              top: 20,
-              right: 20,
-              zIndex: 9999,
-              minWidth: 300,
-              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-              fontWeight: 500,
-            }}
+            sx={portGroupFixedAlertSx}
           >
             {toast.msg}
           </Alert>
         )}
 
-        <PortGroupBreadcrumb />
+        <PortGroupBreadcrumb
+          section={PORT_GROUP_PAGE_BREADCRUMB_SECTION}
+          current={PORT_GROUP_PAGE_BREADCRUMB_TITLE}
+        />
 
         <div style={portGroupCardStyle}>
           <div style={portGroupHeaderStyle}>

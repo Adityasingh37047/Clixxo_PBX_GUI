@@ -4,22 +4,27 @@ import {
   TONE_GENERATOR_CARD_TITLE,
   TONE_GENERATOR_RESET_LABEL,
   TONE_GENERATOR_SAVE_LABEL,
+  TONE_GENERATOR_PAGE_BREADCRUMB_SECTION,
+  TONE_GENERATOR_PAGE_TITLE,
 } from "../../../constants/ToneGeneratorConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as ToneGeneratorBreadcrumb,
+  extensionPageWrapStyle as toneGeneratorPageWrapStyle,
+  extensionPageInnerStyle as toneGeneratorPageInnerStyle,
+  extensionCardStyle as toneGeneratorCardStyle,
+  extensionFixedAlertSx as toneGeneratorFixedAlertSx,
+} from "../../../components/common";
 import { useToneGeneratorPage } from "./hooks/useToneGeneratorPage";
 import { TONE_GENERATOR_HELP_BLOCKS } from "./utils/ToneGeneratorTransformers";
 import {
-  ToneGeneratorBreadcrumb,
   ToneFieldRow,
   ToneGeneratorHelpPanel,
-  ToneGeneratorPageShell,
 } from "./components/ToneGeneratorFormFields";
 import {
   toneGeneratorCardBodyStyle,
-  toneGeneratorCardStyle,
   toneGeneratorCardTitleBarStyle,
   toneGeneratorColumnDividerStyle,
-  toneGeneratorFixedAlertSx,
   toneGeneratorFooterStyle,
   toneGeneratorFormBtnStyle,
   toneGeneratorFormColumnStyle,
@@ -38,20 +43,25 @@ const ToneGeneratorPage = () => {
   } = vm;
 
   return (
-    <ToneGeneratorPageShell>
-      {toast.msg && (
-        <Alert
-          severity={toast.type}
-          onClose={clearToast}
-          sx={toneGeneratorFixedAlertSx}
-        >
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={toneGeneratorPageWrapStyle}>
+      <div style={toneGeneratorPageInnerStyle}>
+        {toast.msg && (
+          <Alert
+            severity={toast.type}
+            onClose={clearToast}
+            sx={toneGeneratorFixedAlertSx}
+          >
+            {toast.msg}
+          </Alert>
+        )}
 
-      <ToneGeneratorBreadcrumb />
+        <ToneGeneratorBreadcrumb
+          root="FXS"
+          section={TONE_GENERATOR_PAGE_BREADCRUMB_SECTION}
+          current={TONE_GENERATOR_PAGE_TITLE}
+        />
 
-      <div style={toneGeneratorCardStyle}>
+        <div style={toneGeneratorCardStyle}>
         <div style={toneGeneratorCardTitleBarStyle}>
           {TONE_GENERATOR_CARD_TITLE}
         </div>
@@ -107,8 +117,9 @@ const ToneGeneratorPage = () => {
             {TONE_GENERATOR_RESET_LABEL}
           </Btn>
         </div>
+        </div>
       </div>
-    </ToneGeneratorPageShell>
+    </div>
   );
 };
 

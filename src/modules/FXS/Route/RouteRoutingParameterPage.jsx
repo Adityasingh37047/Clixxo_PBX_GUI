@@ -4,19 +4,24 @@ import {
   ROUTE_ROUTING_PARAMETER_CARD_TITLE,
   ROUTE_ROUTING_PARAMETER_SAVE_LABEL,
   ROUTE_ROUTING_PARAMETER_RESET_LABEL,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT,
+  ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION,
+  ROUTE_ROUTING_PARAMETER_PAGE_TITLE,
 } from "../../../constants/FxsRouteRoutingParameterPageConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as RouteRoutingParameterBreadcrumb,
+  extensionPageWrapStyle as routeRoutingParameterPageWrapStyle,
+  extensionCardStyle as routeRoutingParameterCardStyle,
+  extensionFixedAlertSx as routeRoutingParameterFixedAlertSx,
+} from "../../../components/common";
 import { useRouteRoutingParameterPage } from "./hooks/useRouteRoutingParameterPage";
 import {
-  RouteRoutingParameterBreadcrumb,
-  routeRoutingParameterCardStyle,
   routeRoutingParameterCardTitleBarStyle,
   routeRoutingParameterFooterBtnStyle,
   routeRoutingParameterFooterStyle,
-  routeRoutingParameterPageWrapStyle,
   RouteRoutingParameterFormBody,
 } from "./components/RouteRoutingParameterFormFields";
-import { routeRoutingParameterFixedAlertSx } from "./components/RouteRoutingParameterTableHelpers";
 
 const RouteRoutingParameterPage = () => {
   const vm = useRouteRoutingParameterPage();
@@ -43,7 +48,11 @@ const RouteRoutingParameterPage = () => {
         </Alert>
       )}
 
-      <RouteRoutingParameterBreadcrumb />
+      <RouteRoutingParameterBreadcrumb
+        root={ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_ROOT}
+        section={ROUTE_ROUTING_PARAMETER_PAGE_BREADCRUMB_SECTION}
+        current={ROUTE_ROUTING_PARAMETER_PAGE_TITLE}
+      />
 
       <div style={routeRoutingParameterCardStyle}>
         <div style={routeRoutingParameterCardTitleBarStyle}>

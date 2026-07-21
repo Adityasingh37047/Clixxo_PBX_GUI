@@ -26,6 +26,7 @@ import {
   ExtensionBreadcrumb as ConferenceBreadcrumb,
   ExtensionTableListLoading as ConferenceTableListLoading,
   ExtensionTableListEmptyState as ConferenceTableListEmptyState,
+  ExtensionPagination as ConferencePagination,
   ExtensionModalTabs as ConferenceModalTabs,
   extensionTableCheckboxSx as conferenceTableCheckboxSx,
   extensionFixedAlertSx as conferenceFixedAlertSx,
@@ -41,8 +42,6 @@ import { useConferencePage } from "./hooks/useConferencePage";
 import {
   C,
   conferenceEditIconStyle,
-  conferencePageBadgeStyle,
-  conferencePaginationStyle,
   handleConferenceEditIconHover,
 } from "./components/ConferenceTableHelpers";
 import {
@@ -122,10 +121,9 @@ const ConferencePage = () => {
     setSayYourName,
     setMuteParticipant,
     setAllowInvite,
-    handlePrev,
-    handleNext,
     handleToggleRow,
     handleToggleAll,
+    setPage,
     handleOpenAddModal,
     handleOpenEditModal,
     handleCloseModal,
@@ -426,35 +424,15 @@ const ConferencePage = () => {
             )}
           </div>
 
-          {/* Footer Pagination */}
           {!isInitialLoad && rows.length > 0 && filteredRows.length > 0 && (
-            <div style={conferencePaginationStyle}>
-              <span style={{ fontSize: 11, color: C.mutedText }}>
-                Showing {pagedRows.length} record
-                {pagedRows.length !== 1 ? "s" : ""} on page {page}
-              </span>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <Btn
-                  onClick={handlePrev}
-                  disabled={loading.list || page <= 1}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  ← Prev
-                </Btn>
-                <span style={conferencePageBadgeStyle}>
-                  Page {page} of {totalPages}
-                </span>
-                <Btn
-                  onClick={handleNext}
-                  disabled={loading.list || page >= totalPages}
-                  variant="outline"
-                  style={{ borderRadius: 4 }}
-                >
-                  Next →
-                </Btn>
-              </div>
-            </div>
+            <ConferencePagination
+              page={page}
+              totalPages={totalPages}
+              recordCount={pagedRows.length}
+              onPageChange={(p) =>
+                setPage(Math.min(totalPages, Math.max(1, p)))
+              }
+            />
           )}
         </div>
       </div>

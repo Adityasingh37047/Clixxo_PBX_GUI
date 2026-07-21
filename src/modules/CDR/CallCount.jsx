@@ -8,6 +8,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Alert,
   useMediaQuery,
 } from "@mui/material";
 import { C } from "../../theme/pbxTokens";
@@ -25,12 +26,12 @@ import {
 import {
   Btn,
   TH,
-  ExtensionTableListLoading as TableListLoading,
-  ExtensionTableListEmptyState as TableListEmptyState,
+  ExtensionTableListLoading as CallCountTableListLoading,
+  ExtensionTableListEmptyState as CallCountTableListEmptyState,
   ExtensionPagination as CallCountPagination,
-  MessageBanner,
-  extensionPageWrapStyle as pbxPageWrapStyle,
-  extensionPageInnerStyle as pbxPageInnerStyle,
+  extensionFixedAlertSx as callCountFixedAlertSx,
+  extensionPageWrapStyle as callCountPageWrapStyle,
+  extensionPageInnerStyle as callCountPageInnerStyle,
   extensionCardStyle as callCountCardStyle,
   extensionToolbarStyle as callCountToolbarStyle,
   extensionSelectedBadgeStyle as callCountSelectedBadgeStyle,
@@ -119,37 +120,25 @@ const CallCount = () => {
     handleDeleteRecording,
   } = useCallCountPage();
   return (
-    <div style={{ ...pbxPageWrapStyle, padding: isCompact ? 12 : 16 }}>
-      <div style={pbxPageInnerStyle}>
-        <MessageBanner
-          message={message}
-          onClose={() => setMessage({ type: "", text: "" })}
-        />
-
-        {/* Error banner */}
+    <div style={{ ...callCountPageWrapStyle, padding: isCompact ? 12 : 16 }}>
+      <div style={callCountPageInnerStyle}>
         {error && (
-          <div
-            style={{
-              background: "#fef2f2",
-              borderLeft: `3px solid ${C.amber}`,
-              color: "#DC2626",
-              padding: "10px 14px",
-              borderRadius: 8,
-              marginBottom: 16,
-              fontSize: 13,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={callCountFixedAlertSx}
           >
-            <span>{error}</span>
-            <span
-              onClick={() => setError("")}
-              style={{ cursor: "pointer", fontSize: 16, color: "#DC2626" }}
-            >
-              ✕
-            </span>
-          </div>
+            {error}
+          </Alert>
+        )}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={callCountFixedAlertSx}
+          >
+            {message.text}
+          </Alert>
         )}
 
         <div
@@ -267,9 +256,9 @@ const CallCount = () => {
           </div>
 
           {isInitialLoad ? (
-            <TableListLoading />
+            <CallCountTableListLoading />
           ) : rows.length === 0 && !hasActiveFilters ? (
-            <TableListEmptyState
+            <CallCountTableListEmptyState
               message={CALL_COUNT_EMPTY_MESSAGE}
               showButton={false}
             />

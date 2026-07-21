@@ -14,24 +14,6 @@ import {
 } from "../utils/SystemInfoTransformers";
 import { getSystemInfoLoadErrorMessage } from "../utils/SystemInfoValidators";
 
-/** Dedupe concurrent fetches (e.g. StrictMode remount, overlapping refresh). */
-let systemInfoFetchPromise = null;
-
-function fetchSystemInfoBundle() {
-  if (!systemInfoFetchPromise) {
-    systemInfoFetchPromise = Promise.allSettled([
-      fetchSystemInfo(),
-      postLinuxCmd({
-        cmd: "cat /home/clixxo/server/config/web_version.json",
-      }),
-      postLinuxCmd({ cmd: "astlicense" }),
-    ]).finally(() => {
-      systemInfoFetchPromise = null;
-    });
-  }
-  return systemInfoFetchPromise;
-}
-
 export function useSystemInfoPage() {
   const [details, setDetails] = useState(null);
   const [error, setErros] = useState("");
@@ -43,7 +25,13 @@ export function useSystemInfoPage() {
 
     try {
       const [systemData, versionInfoData, astLicData] =
-        await fetchSystemInfoBundle();
+        await Promise.allSettled([
+          fetchSystemInfo(),
+          postLinuxCmd({
+            cmd: "cat /home/clixxo/server/config/web_version.json",
+          }),
+          postLinuxCmd({ cmd: "astlicense" }),
+        ]);
 
       if (systemData.status === "fulfilled" && systemData.value.success) {
         const data = systemData.value;

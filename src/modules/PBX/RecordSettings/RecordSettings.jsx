@@ -4,6 +4,7 @@ import { RECORD_SETTINGS_TITLE } from "../../../constants/RecordSettingsConstant
 import {
   Btn,
   ExtensionBreadcrumb as RecordSettingsBreadcrumb,
+  extensionFixedAlertSx as recordSettingsFixedAlertSx,
   extensionPageWrapStyle as recordSettingsPageWrapStyle,
   extensionPageInnerStyle as recordSettingsPageInnerStyle,
   extensionCardStyle as recordSettingsCardStyle,
@@ -39,6 +40,28 @@ const RecordSettings = () => {
       }}
     >
       <div style={recordSettingsPageInnerStyle}>
+        {message.text && (
+          <Alert
+            severity={message.type || "info"}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={{
+              ...recordSettingsFixedAlertSx,
+              ...(isCompact
+                ? {
+                    left: 8,
+                    right: 8,
+                    top: 12,
+                    minWidth: 0,
+                    maxWidth: "none",
+                    width: "calc(100% - 16px)",
+                  }
+                : {}),
+            }}
+          >
+            {message.text}
+          </Alert>
+        )}
+
         <RecordSettingsBreadcrumb
           section={RECORD_SETTINGS_TITLE}
           current={RECORD_SETTINGS_TITLE}
@@ -48,18 +71,6 @@ const RecordSettings = () => {
           <div style={recordSettingsHeaderStyle}>
             <span>{RECORD_SETTINGS_TITLE}</span>
           </div>
-
-          {message.text ? (
-            <div style={{ padding: "12px 20px 0", boxSizing: "border-box" }}>
-              <Alert
-                severity={message.type || "info"}
-                onClose={() => setMessage({ type: "", text: "" })}
-                sx={{ fontSize: 13 }}
-              >
-                {message.text}
-              </Alert>
-            </div>
-          ) : null}
 
           <div style={{ padding: "20px 20px 0", boxSizing: "border-box" }}>
             <RecordSettingsFormBody

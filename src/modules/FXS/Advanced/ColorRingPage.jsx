@@ -1,25 +1,31 @@
 import React from "react";
 import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Alert, Checkbox } from "@mui/material";
-import { COLOR_RING_EMPTY_MESSAGE } from "../../../constants/ColorRingConstants";
-import { Btn } from "../../../components/common";
-import { useColorRingPage } from "./hooks/useColorRingPage";
 import {
-  ColorRingBreadcrumb,
-  ColorRingPageShell,
-  ColorRingUploadModal,
-} from "./components/ColorRingFormFields";
+  COLOR_RING_EMPTY_MESSAGE,
+  COLOR_RING_PAGE_BREADCRUMB_SECTION,
+  COLOR_RING_PAGE_TITLE,
+} from "../../../constants/ColorRingConstants";
+import {
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as ColorRingBreadcrumb,
+  extensionPageWrapStyle as colorRingPageWrapStyle,
+  extensionPageInnerStyle as colorRingPageInnerStyle,
+  extensionCardStyle as colorRingCardStyle,
+  extensionFixedAlertSx as colorRingFixedAlertSx,
+} from "../../../components/common";
+import { useColorRingPage } from "./hooks/useColorRingPage";
+import { ColorRingUploadModal } from "./components/ColorRingFormFields";
 import {
   COLOR_RING_CHECKBOX_SX,
   COLOR_RING_TD_GAP,
   COLOR_RING_TH_GAP,
   DATA_COLUMNS,
-  TH,
-  colorRingCardStyle,
   colorRingEditIconStyle,
   colorRingEmptyMessageStyle,
   colorRingEmptyStateStyle,
-  colorRingFixedAlertSx,
   colorRingHeaderStyle,
   colorRingPaginationBtnStyle,
   colorRingPaginationInfoStyle,
@@ -33,7 +39,6 @@ import {
   colorRingToolbarBtnStyle,
   getColorRingRowBg,
   handleColorRingEditIconHover,
-  tdStyle,
 } from "./components/ColorRingTableHelpers";
 
 const ColorRingPage = () => {
@@ -68,16 +73,20 @@ const ColorRingPage = () => {
   } = vm;
 
   return (
-    <ColorRingPageShell>
-      {toast.msg && (
-        <Alert severity={toast.type} onClose={clearToast} sx={colorRingFixedAlertSx}>
-          {toast.msg}
-        </Alert>
-      )}
+    <div style={colorRingPageWrapStyle}>
+      <div style={colorRingPageInnerStyle}>
+        {toast.msg && (
+          <Alert severity={toast.type} onClose={clearToast} sx={colorRingFixedAlertSx}>
+            {toast.msg}
+          </Alert>
+        )}
 
-      <ColorRingBreadcrumb />
+        <ColorRingBreadcrumb
+          section={COLOR_RING_PAGE_BREADCRUMB_SECTION}
+          current={COLOR_RING_PAGE_TITLE}
+        />
 
-      <div style={colorRingCardStyle}>
+        <div style={colorRingCardStyle}>
         <div style={colorRingHeaderStyle}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {selected.length > 0 && (
@@ -306,7 +315,8 @@ const ColorRingPage = () => {
         onUpload={handleUpload}
         onReturn={handleReturn}
       />
-    </ColorRingPageShell>
+      </div>
+    </div>
   );
 };
 

@@ -13,9 +13,13 @@ import {
   OUTBOUND_ROUTE_REMEMORY_HUNT_OPTIONS, OUTBOUND_ROUTE_TIME_CONDITION_OPTIONS,
 } from "../../../constants/OutboundRouteConstants";
 import {
-  Btn, TH, tdStyle, ExtensionBreadcrumb as OutboundRouteBreadcrumb,
+  Btn,
+  TH,
+  tdStyle,
+  ExtensionBreadcrumb as OutboundRouteBreadcrumb,
   ExtensionTableListLoading as OutboundRouteTableListLoading,
   ExtensionTableListEmptyState as OutboundRouteTableListEmptyState,
+  ExtensionPagination as OutboundRoutePagination,
   extensionTableCheckboxSx as outboundRouteTableCheckboxSx,
   extensionFixedAlertSx as outboundRouteFixedAlertSx,
   extensionPageWrapStyle as outboundRoutePageWrapStyle,
@@ -41,8 +45,8 @@ import {
 } from "./components/OutboundRoutesFormFields";
 import {
   formatOutboundRouteItemListDisplay,
-  OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD, outboundRouteEditIconStyle,
-  outboundRoutePageBadgeStyle, outboundRoutePaginationStyle,
+  OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD,
+  outboundRouteEditIconStyle,
   handleOutboundRouteEditIconHover,
 } from "./components/OutboundRoutesTableHelpers";
 
@@ -61,42 +65,7 @@ const OutboundRoutesPage = () => {
     handleCheckAll, handleUncheckAll, handleSelectRow, handleDelete, handleSave,
     toggleTimeCondition, updateDialPattern, addDialPattern, removeDialPatternAt,
   } = vm;
-  const OutboundRoutePagination = ({
-    page: currentPage,
-    totalPages: pageCount,
-    recordCount,
-    onPageChange,
-    recordLabel = "record",
-    style,
-  }) => (
-    <div style={{ ...outboundRoutePaginationStyle, ...style }}>
-      <span style={{ fontSize: 11, color: C.mutedText }}>
-        Showing {recordCount} {recordLabel}
-        {recordCount !== 1 ? "s" : ""} on page {currentPage}
-      </span>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <Btn
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage <= 1}
-          variant="outline"
-          style={{ borderRadius: 4 }}
-        >
-          {"\u2190"} Prev
-        </Btn>
-        <span style={outboundRoutePageBadgeStyle}>
-          Page {currentPage} of {pageCount}
-        </span>
-        <Btn
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= pageCount}
-          variant="outline"
-          style={{ borderRadius: 4 }}
-        >
-          Next {"\u2192"}
-        </Btn>
-      </div>
-    </div>
-  );
+
   return (
     <div style={{ ...outboundRoutePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={outboundRoutePageInnerStyle}>

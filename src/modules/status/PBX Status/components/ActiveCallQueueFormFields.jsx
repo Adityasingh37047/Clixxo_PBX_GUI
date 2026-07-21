@@ -1,11 +1,12 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
-import { CircularProgress, useMediaQuery } from "@mui/material";
+import { CircularProgress, Alert, useMediaQuery } from "@mui/material";
 import {
   Btn,
   ExtensionBreadcrumb,
   TH,
   extensionPageWrapStyle as pbxPageWrapStyle,
   extensionPageInnerStyle as pbxPageInnerStyle,
+  extensionFixedAlertSx as activeCallQueueFixedAlertSx,
 } from "../../../../components/common";
 import {
   C,
@@ -992,12 +993,22 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
 };
 
 export const ActiveCallQueuePageContent = (props) => {
-  const { queueList, selectedQueue, setSelectedQueue, hasLoaded, isRefreshing, error, lastUpdated, loadActivity, onShowStats } = props;
+  const { queueList, selectedQueue, setSelectedQueue, hasLoaded, isRefreshing, error, setError, lastUpdated, loadActivity, onShowStats } = props;
   const norm = normalizeActiveCallQueue;
   const sel = selectedQueue ? norm(selectedQueue) : null;
   return (
     <div style={pbxPageWrapStyle}>
       <div style={pbxPageInnerStyle}>
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError?.("")}
+            sx={activeCallQueueFixedAlertSx}
+          >
+            {error}
+          </Alert>
+        )}
+
         <div
           style={{
             display: "flex",
@@ -1065,23 +1076,6 @@ export const ActiveCallQueuePageContent = (props) => {
           </div>
 
           <div style={{ padding: "14px 16px 16px" }}>
-            {/* Error state */}
-            {error && (
-              <div
-                style={{
-                  background: "#fef2f2",
-                  borderLeft: `3px solid ${C.errorRed}`,
-                  color: C.errorRed,
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  marginBottom: 14,
-                  fontSize: 13,
-                }}
-              >
-                {error}
-              </div>
-            )}
-
             {/* Initial load */}
             {!hasLoaded && queueList.length === 0 && !error && (
               <TableListLoading />

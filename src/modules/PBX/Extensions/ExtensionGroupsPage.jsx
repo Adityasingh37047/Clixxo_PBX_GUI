@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Alert,
   Checkbox,
   CircularProgress,
   Dialog,
@@ -26,8 +27,8 @@ import {
   extensionSelectedBadgeStyle as extGroupSelectedBadgeStyle,
   extensionCancelBtnStyle as extGroupCancelBtnStyle,
   extensionPrimaryBtnStyle as extGroupPrimaryBtnStyle,
+  extensionFixedAlertSx as extGroupFixedAlertSx,
   ExtensionCodecDualList as ExtGroupCodecDualList,
-  MessageBanner,
   ExtensionEditIcon,
   addNewModalFooterStyle,
   addNewModalFooterBtnStyle,
@@ -89,10 +90,15 @@ const ExtensionGroupsPage = () => {
   return (
     <div style={{ ...extGroupPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
       <div style={extGroupPageInnerStyle}>
-        <MessageBanner
-          message={message}
-          onClose={() => setMessage({ type: "", text: "" })}
-        />
+        {message.text && (
+          <Alert
+            severity={message.type}
+            onClose={() => setMessage({ type: "", text: "" })}
+            sx={extGroupFixedAlertSx}
+          >
+            {message.text}
+          </Alert>
+        )}
         <ExtGroupBreadcrumb section="Extensions" current="Extension Group" />
         <div style={extGroupCardStyle}>
           <div

@@ -2,8 +2,9 @@ import React from "react";
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import { Checkbox, CircularProgress, useMediaQuery } from "@mui/material";
+import { Checkbox, Alert, CircularProgress, useMediaQuery } from "@mui/material";
 import {
+  VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS,
   VIEW_VOICEMAIL_COMPACT_MQ,
   VIEW_VOICEMAIL_EMPTY_MESSAGE,
   VIEW_VOICEMAIL_EXTENSION_PLACEHOLDER,
@@ -19,6 +20,10 @@ import {
   RecordingActionBtn,
   RecordingPlayerBar,
   TH,
+  ExtensionBreadcrumb as ViewVoicemailBreadcrumb,
+  extensionPageWrapStyle as viewVoicemailPageWrapStyle,
+  extensionPageInnerStyle as viewVoicemailPageInnerStyle,
+  extensionFixedAlertSx as viewVoicemailFixedAlertSx,
 } from "../../../components/common";
 import { useViewVoicemailPage } from "./hooks/useViewVoicemailPage";
 import {
@@ -27,7 +32,6 @@ import {
   TableListEmptyState,
   TableListLoading,
   TD,
-  ViewVoicemailBreadcrumb,
 } from "./components/ViewVoicemailFormFields";
 import {
   getViewVoicemailRowBg,
@@ -38,8 +42,6 @@ import {
   viewVoicemailFilterLabelStyle,
   viewVoicemailFooterStyle,
   viewVoicemailPageBadgeStyle,
-  viewVoicemailPageInnerStyle,
-  viewVoicemailPageWrapStyle,
   viewVoicemailRefreshBtnStyle,
   viewVoicemailTableCheckboxSx,
   viewVoicemailToolbarBtnStyle,
@@ -60,24 +62,22 @@ const ViewVoicemailPage = () => {
   return (
     <div style={{ ...viewVoicemailPageWrapStyle, padding: isCompact ? 8 : 16 }}>
       <div style={viewVoicemailPageInnerStyle}>
-        <ViewVoicemailBreadcrumb style={{ marginBottom: 16 }} />
-
         {error && (
-          <div style={{
-            background: "#fef2f2", borderLeft: `3px solid ${C.errorRed}`,
-            color: C.errorRed, padding: "10px 14px", borderRadius: 8,
-            marginBottom: 16, fontSize: 13, display: "flex",
-            alignItems: "center", justifyContent: "space-between",
-          }}>
-            <span>{error}</span>
-            <span
-              onClick={() => setError("")}
-              style={{ cursor: "pointer", fontSize: 16 }}
-            >
-              ✕
-            </span>
-          </div>
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={viewVoicemailFixedAlertSx}
+          >
+            {error}
+          </Alert>
         )}
+
+        <ViewVoicemailBreadcrumb
+          root={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[0]}
+          section={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[1]}
+          current={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[2]}
+          style={{ marginBottom: 16 }}
+        />
 
         <div style={{
           ...viewVoicemailFilterCardStyle,

@@ -13,25 +13,30 @@ import {
   ACCOUNT_MANAGE_TOOLBAR_PRIMARY_BUTTON_STYLE,
 } from "../../../constants/AccountManageConstants";
 import { C } from "../../../theme/pbxTokens";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as AccountManageBreadcrumb,
+  extensionPageWrapStyle as accountManagePageWrapStyle,
+  extensionPageInnerStyle as accountManagePageInnerStyle,
+  extensionFixedAlertSx as accountManageFixedAlertSx,
+  extensionSelectedBadgeStyle as accountManageSelectedBadgeStyle,
+  TH as AccountManageTH,
+  EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
+} from "../../../components/common";
+import {
+  ACCOUNT_MANAGE_BREADCRUMB,
+} from "../../../constants/AccountManageConstants";
 import { useAccountManagePage } from "./hooks/useAccountManagePage";
 import {
-  AccountManageBreadcrumb,
   AccountManageLoadingBanner,
   AccountManageModal,
 } from "./components/AccountManageFormFields";
 import {
   accountManageBlueBarStyle,
   accountManageCheckboxSx,
-  accountManageFixedAlertSx,
   accountManageFooterStyle,
-  accountManagePageInnerStyle,
-  accountManagePageWrapStyle,
-  accountManageSelectedBadgeStyle,
   accountManageTableContainerStyle,
   accountManageTdStyle,
-  AccountManageTH,
-  CARD_RADIUS,
 } from "./components/AccountManageTableHelpers";
 import { getRowBackground } from "./utils/AccountManageTransformers";
 
@@ -66,7 +71,11 @@ const AccountManage = () => {
   return (
     <div style={accountManagePageWrapStyle} data-native-scroll>
       <div style={accountManagePageInnerStyle}>
-        <AccountManageBreadcrumb />
+        <AccountManageBreadcrumb
+          root={ACCOUNT_MANAGE_BREADCRUMB[0]}
+          section={ACCOUNT_MANAGE_BREADCRUMB[1]}
+          current={ACCOUNT_MANAGE_BREADCRUMB[2]}
+        />
 
         {toast.msg && (
           <Alert severity={toast.type} onClose={clearToast} sx={accountManageFixedAlertSx}>
