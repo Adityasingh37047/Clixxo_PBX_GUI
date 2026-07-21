@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
         target: "https://192.168.0.157:443", // backend API server
         changeOrigin: true,
         secure: false,
-        // rewrite: (path) => path.replace(/^\/api/, ""), 
+        // rewrite: (path) => path.replace(/^\/api/, ""),
         // ^ uncomment if backend doesn't have `/api` prefix
       },
     },

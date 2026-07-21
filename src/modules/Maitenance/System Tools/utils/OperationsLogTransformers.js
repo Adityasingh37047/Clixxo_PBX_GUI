@@ -1,127 +1,83 @@
 import {
   OPERATIONS_LOG_COLUMNS,
-  OPERATIONS_LOG_MESSAGES,
+  OPERATIONS_LOG_FILTER_ALL,
 } from "../../../../constants/OperationsLogConstants";
 
 const COLUMN_KEYS = OPERATIONS_LOG_COLUMNS.map((col) => col.key);
 
-function emptyRow(rawLine, index) {
+function isActiveFilter(value) {
+  return value && value !== OPERATIONS_LOG_FILTER_ALL;
+}
+
+export function mapOperationLogRow(apiRow) {
   return {
-    id: `ops-log-${index}`,
-    rawLine,
-    time: "",
-    user: "",
-    ip: "",
-    operation: "",
-    detail: rawLine,
+    id: apiRow.id,
+    createdAt: apiRow.createdAt ?? "",
+    username: apiRow.username ?? "",
+    ip: apiRow.ip ?? "",
+    module: apiRow.module ?? "",
+    operation: apiRow.operation ?? "",
+    status: apiRow.status ?? "",
+    detail: apiRow.detail ?? "",
+    userId: apiRow.userId ?? null,
   };
 }
 
-function fromJsonLine(line, index) {
-  try {
-    const parsed = JSON.parse(line);
-    return {
-      id: `ops-log-${index}`,
-      rawLine: line,
-      time: String(parsed.time ?? parsed.timestamp ?? ""),
-      user: String(parsed.user ?? parsed.username ?? ""),
-      ip: String(parsed.ip ?? parsed.ipAddress ?? parsed.ip_address ?? ""),
-      operation: String(parsed.operation ?? parsed.action ?? ""),
-      detail: String(parsed.detail ?? parsed.message ?? ""),
-    };
-  } catch {
-    return null;
+export function buildOperationLogRequest(appliedFilters, page, limit) {
+  const body = {};
+  if (page != null) body.page = page;
+  if (limit != null) body.limit = limit;
+  if (isActiveFilter(appliedFilters.module)) body.module = appliedFilters.module;
+  if (isActiveFilter(appliedFilters.operation)) {
+    body.operation = appliedFilters.operation;
   }
-}
-
-function fromDelimitedLine(line, delimiter, index) {
-  const parts = line.split(delimiter).map((part) => part.trim());
-  if (parts.length < 5) return null;
-  return {
-    id: `ops-log-${index}`,
-    rawLine: line,
-    time: parts[0] ?? "",
-    user: parts[1] ?? "",
-    ip: parts[2] ?? "",
-    operation: parts[3] ?? "",
-    detail: parts.slice(4).join(delimiter).trim(),
-  };
-}
-
-export function parseOperationsLogText(responseData) {
-  const text = String(responseData ?? "").trim();
-  if (!text || text === OPERATIONS_LOG_MESSAGES.READ_ERROR) {
-    return { rows: [], unreadable: true };
+  if (isActiveFilter(appliedFilters.username)) {
+    body.username = appliedFilters.username;
   }
-
-  const lines = text.split(/\r?\n/).filter(Boolean);
-  const rows = lines.map((line, index) => {
-    const trimmed = line.trim();
-    if (!trimmed) return null;
-
-    if (trimmed.startsWith("{")) {
-      return fromJsonLine(trimmed, index) ?? emptyRow(trimmed, index);
-    }
-
-    const tabRow = fromDelimitedLine(trimmed, "\t", index);
-    if (tabRow) return tabRow;
-
-    const pipeRow = fromDelimitedLine(trimmed, "|", index);
-    if (pipeRow) return pipeRow;
-
-    const commaParts = trimmed.split(",");
-    if (commaParts.length >= 5) {
-      return fromDelimitedLine(trimmed, ",", index);
-    }
-
-    const datetimeMatch = trimmed.match(
-      /^(\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2})\s+(.*)$/,
-    );
-    if (datetimeMatch) {
-      return {
-        id: `ops-log-${index}`,
-        rawLine: trimmed,
-        time: datetimeMatch[1],
-        user: "",
-        ip: "",
-        operation: "",
-        detail: datetimeMatch[2],
-      };
-    }
-
-    return emptyRow(trimmed, index);
-  });
-
-  return {
-    rows: rows.filter(Boolean),
-    unreadable: false,
-  };
+  if (isActiveFilter(appliedFilters.status)) body.status = appliedFilters.status;
+  if (appliedFilters.ip?.trim()) body.ip = appliedFilters.ip.trim();
+  if (appliedFilters.startDate) body.startDate = appliedFilters.startDate;
+  if (appliedFilters.endDate) body.endDate = appliedFilters.endDate;
+  return body;
 }
 
-export function serializeOperationsLogRows(rows) {
-  return rows
-    .map((row) => row.rawLine)
-    .filter(Boolean)
-    .join("\n");
+export function buildFilterSelectOptions(items = []) {
+  return [
+    { value: OPERATIONS_LOG_FILTER_ALL, label: "All" },
+    ...items.map((item) => ({ value: item, label: item })),
+  ];
 }
 
-export function triggerOperationsLogDownload(content, fileName) {
-  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-  const url = window.URL.createObjectURL(blob);
+export function hasOperationsLogActiveFilters(filters) {
+  return (
+    isActiveFilter(filters.module) ||
+    isActiveFilter(filters.operation) ||
+    isActiveFilter(filters.username) ||
+    isActiveFilter(filters.status) ||
+    Boolean(filters.ip?.trim()) ||
+    Boolean(filters.startDate) ||
+    Boolean(filters.endDate)
+  );
+}
+
+export function triggerOperationLogXlsxDownload(blob, fileName) {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-}
-
-export function encodeOperationsLogForShell(content) {
-  return btoa(unescape(encodeURIComponent(content)));
+  URL.revokeObjectURL(url);
 }
 
 export function getOperationsLogCellValue(row, key) {
   if (!row || !COLUMN_KEYS.includes(key)) return "";
+  if (key === "createdAt") {
+    const raw = row.createdAt;
+    if (!raw) return "";
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime()) ? String(raw) : date.toLocaleString();
+  }
   return String(row[key] ?? "");
 }

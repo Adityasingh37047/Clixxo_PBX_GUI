@@ -1,15 +1,16 @@
 import React from "react";
-import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { Checkbox } from "@mui/material";
 import { C } from "../../../../theme/pbxTokens";
 import {
   TH,
-  tdStyle,
+  Pill,
+  ExtensionEditIcon,
+  getExtensionRowBg,
+  getExtensionTdStyle,
   ExtensionTableListLoading as SipRegisterTableListLoading,
   ExtensionTableListEmptyState as SipRegisterTableListEmptyState,
   extensionTableCheckboxSx as sipRegisterTableCheckboxSx,
 } from "../../../../components/common";
-import { Pill } from "./SipRegisterFormFields";
 import {
   TRUNK_TABLE_SCROLL_CLASS,
   trunkTableScrollStyle,
@@ -203,11 +204,7 @@ function SipRegisterTable({
                   const isSelected =
                     trunk.trunk_id && selectedIds.includes(trunk.trunk_id);
                   const isLastRow = idx === pagedRows.length - 1;
-                  const rowBg = isSelected
-                    ? "#f0f9ff"
-                    : idx % 2 === 1
-                      ? "#f8fafc"
-                      : "#ffffff";
+                  const rowBg = getExtensionRowBg(isSelected, idx);
                   const lastRowCellStyle = isLastRow
                     ? { borderBottom: "none" }
                     : {};
@@ -230,15 +227,12 @@ function SipRegisterTable({
                       }}
                     >
                       <td
-                        style={{
-                          ...tdStyle,
+                        style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterCheckboxCellStyle,
                             allowHorizontalScroll,
                           ),
-                          background: rowBg,
-                          ...lastRowCellStyle,
-                        }}
+                        })}
                       >
                         <div style={sipRegisterCheckboxWrapStyle}>
                           <Checkbox
@@ -254,15 +248,12 @@ function SipRegisterTable({
                         </div>
                       </td>
                       <td
-                        style={{
-                          ...tdStyle,
+                        style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterIdCellStyle,
                             allowHorizontalScroll,
                           ),
-                          background: rowBg,
-                          ...lastRowCellStyle,
-                        }}
+                        })}
                       >
                         <div style={sipRegisterIdCenterWrapStyle}>
                           {(page - 1) * itemsPerPage + idx + 1}
@@ -284,31 +275,25 @@ function SipRegisterTable({
                           <td
                             key={field.name}
                             title={String(displayValue)}
-                            style={{
-                              ...tdStyle,
-                              background: rowBg,
+                            style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                               fontWeight:
                                 field.name === "trunk_id" ? 600 : 400,
                               ...getSipRegisterDataCellStyle(
                                 allowHorizontalScroll,
                               ),
-                              ...lastRowCellStyle,
-                            }}
+                            })}
                           >
                             {displayValue}
                           </td>
                         );
                       })}
                       <td
-                        style={{
-                          ...tdStyle,
+                        style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterStatusCellStyle,
                             allowHorizontalScroll,
                           ),
-                          background: rowBg,
-                          ...lastRowCellStyle,
-                        }}
+                        })}
                       >
                         <div style={sipRegisterIdCenterWrapStyle}>
                           {trunk.registerStatus ? (
@@ -325,15 +310,12 @@ function SipRegisterTable({
                         </div>
                       </td>
                       <td
-                        style={{
-                          ...tdStyle,
+                        style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterModifyCellStyle,
                             allowHorizontalScroll,
                           ),
-                          background: rowBg,
-                          ...lastRowCellStyle,
-                        }}
+                        })}
                       >
                         <div
                           style={{
@@ -341,29 +323,9 @@ function SipRegisterTable({
                             justifyContent: "center",
                           }}
                         >
-                          <EditDocumentIcon
-                            titleAccess="Edit"
-                            style={{
-                              cursor: loading.delete
-                                ? "not-allowed"
-                                : "pointer",
-                              color: "#2563eb",
-                              fontSize: 22,
-                              opacity: loading.delete ? 0.4 : 0.7,
-                              transition: "opacity 0.15s ease",
-                            }}
-                            onClick={() =>
-                              !loading.delete &&
-                              handleOpenModal(trunk, realIdx)
-                            }
-                            onMouseEnter={(e) => {
-                              if (!loading.delete)
-                                e.currentTarget.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!loading.delete)
-                                e.currentTarget.style.opacity = "0.7";
-                            }}
+                          <ExtensionEditIcon
+                            disabled={loading.delete}
+                            onClick={() => handleOpenModal(trunk, realIdx)}
                           />
                         </div>
                       </td>

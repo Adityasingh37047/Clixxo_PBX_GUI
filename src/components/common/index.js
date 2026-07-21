@@ -9,6 +9,7 @@ export * from "./modalKit";
 export * from "./DualListBox";
 export * from "./RecordingActionBtn";
 export * from "./RecordingPlayerBar";
+export * from "./filterFormKit";
 
 // Generic aliases for reuse on non-Extensions pages.
 export { ExtensionPagination as Pagination } from "./Pagination";
