@@ -1,14 +1,12 @@
-import React from "react";
-import { Alert } from "@mui/material";
 import {
-  ExtensionBreadcrumb as ExtBreadcrumb,
-  ExtensionTableListLoading as ExtTableListLoading,
-  ExtensionTableListEmptyState as ExtTableListEmptyState,
-  ExtensionPagination as ExtPagination,
-  extensionPageWrapStyle as extPageWrapStyle,
-  extensionPageInnerStyle as extPageInnerStyle,
-  extensionCardStyle as extCardStyle,
-  extensionFixedAlertSx as extFixedAlertSx,
+  ExtensionBreadcrumb,
+  ExtensionTableListLoading,
+  ExtensionTableListEmptyState,
+  ExtensionPagination,
+  extensionPageWrapStyle,
+  extensionPageInnerStyle,
+  extensionCardStyle,
+  MessageBanner,
 } from "../../../components/common";
 import { useExtensionsPage } from "./hooks/useExtensionsPage";
 import ExtensionsToolbar from "./components/ExtensionsToolbar";
@@ -36,30 +34,25 @@ const ExtensionsPage = () => {
   return (
     <div
       style={{
-        ...extPageWrapStyle,
+        ...extensionPageWrapStyle,
         ...(isCompact ? { padding: 8 } : {}),
       }}
     >
-      <div style={extPageInnerStyle}>
-        {message.text && (
-          <Alert
-            severity={message.type}
-            onClose={() => setMessage({ type: "", text: "" })}
-            sx={extFixedAlertSx}
-          >
-            {message.text}
-          </Alert>
-        )}
+      <div style={extensionPageInnerStyle}>
+        <MessageBanner
+          message={message}
+          onClose={() => setMessage({ type: "", text: "" })}
+        />
 
-        <ExtBreadcrumb section="Extensions" current="Extensions" />
+        <ExtensionBreadcrumb section="Extensions" current="Extensions" />
 
-        <div style={extCardStyle}>
+        <div style={extensionCardStyle}>
           <ExtensionsToolbar {...vm} />
 
           {isInitialLoad ? (
-            <ExtTableListLoading />
+            <ExtensionTableListLoading />
           ) : accounts.length === 0 && !searchQuery.trim() ? (
-            <ExtTableListEmptyState
+            <ExtensionTableListEmptyState
               message="No extensions found."
               onAddNew={() => handleOpenModal()}
             />
@@ -68,7 +61,7 @@ const ExtensionsPage = () => {
               <ExtensionsTable {...vm} />
 
               {filteredAccounts.length > 0 && (
-                <ExtPagination
+                <ExtensionPagination
                   page={page}
                   totalPages={totalPages}
                   recordCount={pagedAccounts.length}
