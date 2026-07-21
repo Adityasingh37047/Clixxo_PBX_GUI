@@ -11,18 +11,12 @@ import { usePcmTrunkPage } from "./hooks/usePcmTrunkPage";
 import {
   Btn,
   TH,
-  tdStyle,
-  ExtensionBreadcrumb as PcmTrunkBreadcrumb,
-  extensionPageWrapStyle as pcmTrunkPageWrapStyle,
-  extensionPageInnerStyle as pcmTrunkPageInnerStyle,
-  extensionCardStyle as pcmTrunkCardStyle,
-  extensionToolbarStyle as pcmTrunkToolbarStyle,
-  EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS,
-} from "../../../components/common";
-import { C } from "../../../theme/pbxTokens";
-import {
+  C,
   checkboxSx,
   cellStyle,
+  tableContainerStyle,
+  CARD_RADIUS,
+  PcmTrunkBreadcrumb,
   PcmTrunkFieldLabel,
   PCM_TRUNK_ADD_NEW_DIALOG_SX,
   PCM_TRUNK_ADD_NEW_DIALOG_PAPER_SX,
@@ -61,20 +55,41 @@ const PcmTrunkPage = () => {
   return (
     <div
       style={{
-        ...pcmTrunkPageWrapStyle,
-        ...(isCompact ? { padding: 8 } : {}),
+        backgroundColor: C.pageBg,
+        minHeight: "calc(100vh - 80px)",
+        padding: isCompact ? 8 : 16,
+        boxSizing: "border-box",
       }}
     >
-      <div style={pcmTrunkPageInnerStyle}>
-        <PcmTrunkBreadcrumb
-          root={PCM_TRUNK_PAGE_BREADCRUMB_ROOT}
-          section={PCM_TRUNK_PAGE_BREADCRUMB_SECTION}
-          current={PCM_TRUNK_PAGE_TITLE}
-        />
+      <div style={{ width: "100%", maxWidth: "100%", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <div
+          style={{
+            fontSize: 12,
+            color: C.mutedText,
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span>{PCM_TRUNK_PAGE_BREADCRUMB_ROOT}</span>
+          <span>&gt;</span>
+          <span>{PCM_TRUNK_PAGE_BREADCRUMB_SECTION}</span>
+          <span>&gt;</span>
+          <span style={{ color: C.strongText, fontWeight: 600 }}>
+            {PCM_TRUNK_PAGE_TITLE}
+          </span>
+        </div>
         {trunks.length === 0 ? (
           <div
             style={{
-              ...pcmTrunkCardStyle,
+              background: "#ffffff",
+              borderRadius: CARD_RADIUS,
+              border: `1px solid ${C.cardBorder}`,
+              boxShadow:
+                "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -115,13 +130,20 @@ const PcmTrunkPage = () => {
             </div>
           </div>
         ) : (
-          <div style={pcmTrunkCardStyle}>
+          <div style={tableContainerStyle}>
             <div
               style={{
-                ...pcmTrunkToolbarStyle,
-                ...(isCompact
-                  ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
-                  : {}),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                minHeight: 44,
+                padding: "7px 14px",
+                borderBottom: `1px solid ${C.cardBorder}`,
+                background: "#ffffff",
+                flexWrap: "wrap",
+                gap: 12,
+                borderTopLeftRadius: CARD_RADIUS,
+                borderTopRightRadius: CARD_RADIUS,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

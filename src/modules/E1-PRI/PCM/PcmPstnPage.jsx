@@ -48,24 +48,15 @@ import {
   pcmPstnModalCancelBtnStyle,
   pcmPstnFooterStyle,
   pcmPstnPrimaryBtnStyle,
+  pcmPstnTableCheckboxSx,
 } from "./hooks/usePcmPstnPage";
 import {
   Btn,
   TH,
+  C,
   tdStyle,
-  ExtensionBreadcrumb as PcmPstnBreadcrumb,
-  extensionPageWrapStyle as pcmPstnPageWrapStyle,
-  extensionPageInnerStyle as pcmPstnPageInnerStyle,
-  extensionCardStyle as pcmPstnCardStyle,
-  extensionToolbarStyle as pcmPstnToolbarStyle,
-  extensionSelectedBadgeStyle as pcmPstnSelectedBadgeStyle,
-  extensionFixedAlertSx as pcmPstnFixedAlertSx,
-  extensionCancelBtnStyle as pcmPstnCancelBtnStyle,
-  extensionTableCheckboxSx as pcmPstnTableCheckboxSx,
-} from "../../../components/common";
-import { C } from "../../../theme/pbxTokens";
-import {
   checkboxSx,
+  PcmPstnBreadcrumb,
   PcmPstnFieldLabel,
   pcmPstnDialogConfig,
   pcmPstnFormPanelStyle,
@@ -74,14 +65,21 @@ import {
   pcmPstnInputInteraction,
   pcmPstnAddNewModalFooterStyle,
   pcmPstnAddNewModalFooterBtnStyle,
+  pcmPstnCardStyle,
+  pcmPstnToolbarStyle,
   PcmPstnTableListLoading as TableListLoading,
   PcmPstnTableListEmptyState as TableListEmptyState,
 } from "./components/PcmPstnFormFields";
 import {
   CARD_RADIUS,
+  pcmPstnPageWrapStyle,
+  pcmPstnPageInnerStyle,
+  pcmPstnSelectedBadgeStyle,
+  pcmPstnFixedAlertSx,
   pcmPstnEditIconStyle,
   handlePcmPstnEditIconHover,
   getPcmPstnRowBg,
+  pcmPstnCancelBtnStyle,
 } from "./components/PcmPstnTableHelpers";
 
 const PcmPstnPage = () => {
@@ -124,18 +122,40 @@ const PcmPstnPage = () => {
         <Alert
           severity={message.type}
           onClose={() => setMessage({ type: "", text: "" })}
-          sx={pcmPstnFixedAlertSx}
+          sx={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            zIndex: 9999,
+            minWidth: 300,
+            boxShadow: 3,
+          }}
         >
           {message.text}
         </Alert>
       )}
 
       <div style={pcmPstnPageInnerStyle}>
-        <PcmPstnBreadcrumb
-          root={PCM_PSTN_PAGE_BREADCRUMB_ROOT}
-          section={PCM_PSTN_PAGE_BREADCRUMB_SECTION}
-          current={PCM_PSTN_PAGE_TITLE}
-        />
+        <div
+          style={{
+            fontSize: 12,
+            color: "#94a3b8",
+            marginBottom: 16,
+            fontWeight: 400,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            flexWrap: "wrap",
+          }}
+        >
+          <span>{PCM_PSTN_PAGE_BREADCRUMB_ROOT}</span>
+          <span>&gt;</span>
+          <span>{PCM_PSTN_PAGE_BREADCRUMB_SECTION}</span>
+          <span>&gt;</span>
+          <span style={{ color: "#1e293b", fontWeight: 600 }}>
+            {PCM_PSTN_PAGE_TITLE}
+          </span>
+        </div>
 
         <div style={pcmPstnCardStyle}>
           <div

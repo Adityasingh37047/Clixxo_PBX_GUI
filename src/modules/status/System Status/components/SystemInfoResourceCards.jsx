@@ -6,7 +6,6 @@ import {
   SYSTEM_INFO_CARD_TITLES,
   SYSTEM_INFO_RESOURCE_LABELS,
   SYSTEM_INFO_RESOURCE_COLORS,
-  SYSTEM_INFO_USAGE_GAUGE_THRESHOLDS,
 } from "../../../../constants/SystemInfoConstants";
 import {
   SYSTEM_INFO_CARD_HEADER,
@@ -16,8 +15,6 @@ import {
 import { InfoCardBody, InfoTableRow } from "./SystemInfoFormFields";
 
 const {
-  gaugeUsed,
-  gaugeTrack,
   diskUsed,
   diskAvailable,
   bodyText,
@@ -25,6 +22,10 @@ const {
 } = SYSTEM_INFO_RESOURCE_COLORS;
 
 const L = SYSTEM_INFO_RESOURCE_LABELS;
+
+/** Shared donut dimensions (CPU/RAM/SWAP and Hard Drives). */
+const USAGE_DONUT_SIZE = 96;
+const USAGE_DONUT_THICKNESS = 12;
 
 const appletCardStyle = {
   background: C.cardBg,
@@ -162,30 +163,14 @@ const GaugePercentText = ({ value, size, isDisk = false }) => {
   );
 };
 
-const getUsageGaugeColor = (metricType, percent) => {
-  const thresholds = SYSTEM_INFO_USAGE_GAUGE_THRESHOLDS[metricType];
-  if (!thresholds) return gaugeUsed;
-
-  const pct = parsePercentNumeric(percent);
-  const band = thresholds.find((t) => pct <= t.max);
-  const colorKey = band?.color ?? "gaugeRed";
-  return SYSTEM_INFO_RESOURCE_COLORS[colorKey] ?? gaugeUsed;
-};
-
 /** Circular usage gauge (CPU / RAM / SWAP). */
 export const UsageDonut = ({
   percent = 0,
   label,
-  metricType,
-  size = 96,
-  thickness = 12,
-  color = gaugeUsed,
-  trackColor = gaugeTrack,
+  size = USAGE_DONUT_SIZE,
+  thickness = USAGE_DONUT_THICKNESS,
 }) => {
   const arc = parsePercentNumeric(percent);
-  const progressColor = metricType
-    ? getUsageGaugeColor(metricType, percent)
-    : color;
   const inner = size - thickness * 2;
 
   return (
@@ -208,7 +193,7 @@ export const UsageDonut = ({
           height: size,
           borderRadius: "50%",
           margin: "0 auto",
-          background: `conic-gradient(${progressColor} ${arc * 3.6}deg, ${trackColor} 0deg)`,
+          background: `conic-gradient(${diskUsed} 0deg ${arc * 3.6}deg, ${diskAvailable} ${arc * 3.6}deg 360deg)`,
           display: "grid",
           placeItems: "center",
         }}
@@ -234,8 +219,8 @@ export const UsageDonut = ({
 /** Dual-color disk donut (used / available). */
 export const DiskDonut = ({
   usedPercent = 0,
-  size = 130,
-  thickness = 18,
+  size = USAGE_DONUT_SIZE,
+  thickness = USAGE_DONUT_THICKNESS,
 }) => {
   const arc = parsePercentNumeric(usedPercent);
   const inner = size - thickness * 2;
@@ -246,6 +231,7 @@ export const DiskDonut = ({
         width: size,
         height: size,
         borderRadius: "50%",
+        margin: "0 auto",
         flexShrink: 0,
         background: `conic-gradient(${diskUsed} 0deg ${arc * 3.6}deg, ${diskAvailable} ${arc * 3.6}deg 360deg)`,
         display: "grid",
@@ -310,9 +296,9 @@ export const SystemResourcesCard = ({
           padding: "18px 12px 16px",
         }}
       >
-        <UsageDonut percent={d.cpuPercent} label={L.cpu} metricType="cpu" />
-        <UsageDonut percent={d.ramPercent} label={L.ram} metricType="ram" />
-        <UsageDonut percent={d.swapPercent} label={L.swap} metricType="swap" />
+        <UsageDonut percent={d.cpuPercent} label={L.cpu} />
+        <UsageDonut percent={d.ramPercent} label={L.ram} />
+        <UsageDonut percent={d.swapPercent} label={L.swap} />
       </div>
       <hr style={sectionDividerStyle} />
       <InfoCardBody rowCount={4} stretch={false}>
@@ -399,7 +385,16 @@ export const HardDrivesCard = ({
           flexWrap: "wrap",
         }}
       >
-        <DiskDonut usedPercent={d.usedPercent} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <DiskDonut usedPercent={d.usedPercent} />
+        </div>
         <div
           style={{
             flex: 1,
