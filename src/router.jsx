@@ -206,7 +206,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SystemInfo />,
+        element: <Navigate to={ROUTE_PATHS.SYSTEM_INFO} replace />,
       },
       // Primary routes
       { path: ROUTE_PATHS.SYSTEM_INFO, element: <SystemInfo /> },
