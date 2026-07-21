@@ -24,7 +24,7 @@ import {
 const twoColGridStyle = {
   display: "grid",
   gridTemplateColumns: "repeat(2, 1fr)",
-  gap: 12,
+  gap: 20,
   alignItems: "stretch",
 };
 
@@ -128,7 +128,7 @@ const SystemInfo = () => {
         </div>
 
         {/* Row 1: System Resources | Hard Drives */}
-        <div style={{ ...twoColGridStyle, marginBottom: 12 }}>
+        <div style={{ ...twoColGridStyle, marginBottom: 20 }}>
           <SystemResourcesCard
             data={systemResources}
             onRefresh={() => loadSystemInfo(false)}
