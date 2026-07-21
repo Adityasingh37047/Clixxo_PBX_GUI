@@ -59,5 +59,5 @@ export const useActiveCallQueuePage = () => {
     pollRef.current = setInterval(() => loadActivity(true), ACTIVE_CALL_QUEUE_POLL_INTERVAL_MS);
     return () => clearInterval(pollRef.current);
   }, [loadActivity]);
-  return { showStats, setShowStats, queueList, selectedQueue, setSelectedQueue, hasLoaded, isRefreshing, error, lastUpdated, loadActivity };
+  return { showStats, setShowStats, queueList, selectedQueue, setSelectedQueue, hasLoaded, isRefreshing, error, setError, lastUpdated, loadActivity };
 };

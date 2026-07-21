@@ -4,7 +4,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import HeadsetMicIcon from "@mui/icons-material/HeadsetMic";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { IconButton, CircularProgress, Tooltip } from "@mui/material";
+import { IconButton, Alert, CircularProgress, Tooltip } from "@mui/material";
 import {
   ACTIVE_CALLS_BREADCRUMB_SEGMENTS,
   ACTIVE_CALLS_EMPTY_SUBTITLE,
@@ -16,6 +16,7 @@ import {
   ExtensionBreadcrumb as ActiveCallsBreadcrumb,
   extensionPageWrapStyle as activeCallsPageWrapStyle,
   extensionPageInnerStyle as activeCallsPageInnerStyle,
+  extensionFixedAlertSx as activeCallsFixedAlertSx,
 } from "../../../components/common";
 import { useActiveCallsPage } from "./hooks/useActiveCallsPage";
 import {
@@ -40,6 +41,7 @@ const ActiveCallsPage = () => {
     hasLoaded,
     isRefreshing,
     error,
+    setError,
     hangupChannelId,
     talkingStartedAtRef,
     loadChannels,
@@ -52,6 +54,16 @@ const ActiveCallsPage = () => {
   return (
     <div style={activeCallsPageWrapStyle}>
       <div style={activeCallsPageInnerStyle}>
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError(null)}
+            sx={activeCallsFixedAlertSx}
+          >
+            {error}
+          </Alert>
+        )}
+
         <ActiveCallsBreadcrumb
           root={ACTIVE_CALLS_BREADCRUMB_SEGMENTS[0]}
           section={ACTIVE_CALLS_BREADCRUMB_SEGMENTS[1]}
@@ -123,19 +135,6 @@ const ActiveCallsPage = () => {
             className="min-h-[200px]"
             style={{ padding: "14px 16px 16px" }}
           >
-            {error && (
-              <div
-                style={{
-                  textAlign: "center",
-                  color: C.errorRed,
-                  fontSize: 13,
-                  padding: "32px 0",
-                }}
-              >
-                {error}
-              </div>
-            )}
-
             {!error && hasLoaded && channels.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="text-5xl mb-4">📞</div>

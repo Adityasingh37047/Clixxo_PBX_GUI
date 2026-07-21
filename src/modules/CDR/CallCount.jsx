@@ -122,6 +122,15 @@ const CallCount = () => {
   return (
     <div style={{ ...callCountPageWrapStyle, padding: isCompact ? 12 : 16 }}>
       <div style={callCountPageInnerStyle}>
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={callCountFixedAlertSx}
+          >
+            {error}
+          </Alert>
+        )}
         {message.text && (
           <Alert
             severity={message.type}
@@ -130,32 +139,6 @@ const CallCount = () => {
           >
             {message.text}
           </Alert>
-        )}
-
-        {/* Error banner */}
-        {error && (
-          <div
-            style={{
-              background: "#fef2f2",
-              borderLeft: `3px solid ${C.amber}`,
-              color: "#DC2626",
-              padding: "10px 14px",
-              borderRadius: 8,
-              marginBottom: 16,
-              fontSize: 13,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span>{error}</span>
-            <span
-              onClick={() => setError("")}
-              style={{ cursor: "pointer", fontSize: 16, color: "#DC2626" }}
-            >
-              ✕
-            </span>
-          </div>
         )}
 
         <div

@@ -147,6 +147,7 @@ export function useActiveCallsPage() {
     hasLoaded,
     isRefreshing,
     error,
+    setError: (value) => setError(value),
     hangupChannelId,
     talkingStartedAtRef,
     loadChannels,
