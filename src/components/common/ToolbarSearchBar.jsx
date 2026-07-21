@@ -26,6 +26,7 @@ const ExtensionToolbarSearchBar = ({
   placeholder = "Search...",
   width = EXTENSION_TOOLBAR_SEARCH_WIDTH,
   fitPlaceholder = false,
+  fullWidth = false,
 }) => {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -38,8 +39,9 @@ const ExtensionToolbarSearchBar = ({
     setPlaceholderWidth(measureRef.current.offsetWidth);
   }, [fitPlaceholder, placeholder]);
 
-  const resolvedWidth =
-    fitPlaceholder && placeholderWidth != null
+  const resolvedWidth = fullWidth
+    ? "100%"
+    : fitPlaceholder && placeholderWidth != null
       ? placeholderWidth + EXTENSION_SEARCH_BAR_PADDING_FIT + EXTENSION_SEARCH_ICON_SLOT
       : width;
 
@@ -88,9 +90,10 @@ const ExtensionToolbarSearchBar = ({
         padding: `0 ${horizontalPadding}px`,
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
         width: resolvedWidth,
-        minWidth: resolvedWidth,
-        maxWidth: resolvedWidth,
-        flexShrink: 0,
+        minWidth: fullWidth ? 0 : resolvedWidth,
+        maxWidth: fullWidth ? "100%" : resolvedWidth,
+        flex: fullWidth ? 1 : undefined,
+        flexShrink: fullWidth ? 1 : 0,
         position: "relative",
         ...style,
         }}

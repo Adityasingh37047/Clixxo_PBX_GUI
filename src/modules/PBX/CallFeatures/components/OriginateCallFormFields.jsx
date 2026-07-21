@@ -8,6 +8,9 @@ import {
   OUTLINED_HOVER,
 } from "../../../../theme/pbxTokens";
 import { ORIGINATE_CALL_FIELD_TOOLTIPS } from "../../../../constants/OriginateCallConstants";
+import { extensionTableCheckboxSx as originateCallFormCheckboxSx } from "../../../../components/common";
+
+export { originateCallFormCheckboxSx };
 
 export const ORIGINATE_CALL_CARD_RADIUS = 4;
 
@@ -232,13 +235,6 @@ export const originateCallFormBtnStyle = {
   fontSize: 12,
   borderRadius: 4,
   minWidth: 100,
-};
-
-export const originateCallFormCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 export const originateCallRadioSx = {

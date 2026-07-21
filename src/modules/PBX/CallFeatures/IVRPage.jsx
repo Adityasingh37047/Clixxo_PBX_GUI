@@ -49,6 +49,7 @@ import {
 import { useIVRPage } from "./hooks/useIVRPage";
 import {
   C,
+  getIvrRowBg,
   ivrEditIconStyle,
   handleIvrEditIconHover,
 } from "./IVRTableHelpers";
@@ -452,11 +453,7 @@ const IVRPage = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getIvrRowBg(isSelected, idx);
 
                     return (
                       <tr

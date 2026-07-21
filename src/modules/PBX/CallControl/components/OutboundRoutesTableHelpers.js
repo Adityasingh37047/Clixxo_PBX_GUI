@@ -1,4 +1,7 @@
 import { C } from "../../../../theme/pbxTokens";
+import { getExtensionRowBg as getOutboundRouteRowBg } from "../../../../components/common";
+
+export { getOutboundRouteRowBg };
 
 export const OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD = 10;
 const OUTBOUND_ROUTE_LIST_DISPLAY_LIMIT = 6;

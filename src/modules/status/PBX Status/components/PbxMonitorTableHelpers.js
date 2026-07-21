@@ -12,6 +12,7 @@ import {
   extensionCardStyle,
   extensionCancelBtnStyle,
   EXTENSION_TABLE_CARD_RADIUS,
+  tdStyle as extensionTdStyle,
 } from "../../../../components/common";
 
 export { OUTLINED_BORDER, OUTLINED_HOVER, OUTLINED_FOCUS };
@@ -110,14 +111,11 @@ export const tableStyle = {
   tableLayout: "fixed",
 };
 
-export const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
+export const pbxMonitorTdStyle = {
+  ...extensionTdStyle,
   overflow: "hidden",
   textOverflow: "ellipsis",
 };
+
+/** @deprecated use pbxMonitorTdStyle */
+export const tdStyle = pbxMonitorTdStyle;

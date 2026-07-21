@@ -10,14 +10,15 @@ import {
   Btn,
   ExtensionTableListEmptyState as PbxMonitorTableListEmptyState,
   ExtensionTableListLoading as PbxMonitorTableListLoading,
+  ExtensionToolbarSearchBar as PbxMonitorToolbarSearchBar,
   TH,
+  getExtensionRowBg as getPbxMonitorRowBg,
   extensionPageInnerStyle as pbxMonitorPageInnerStyle,
   extensionPageWrapStyle as pbxMonitorPageWrapStyle,
 } from "../../../components/common";
 import { usePbxMonitorPage } from "./hooks/usePbxMonitorPage";
 import {
   PbxMonitorBreadcrumb,
-  PbxMonitorToolbarSearchBar,
   StatCard,
   StatusBadge,
   TD,
@@ -196,6 +197,7 @@ const PbxMonitor = () => {
                 placeholder={searchPlaceholder}
                 fitPlaceholder={!isCompact}
                 fullWidth={isCompact}
+                style={{ borderRadius: 4 }}
               />
               <Btn
                 variant="cancel"
@@ -242,7 +244,7 @@ const PbxMonitor = () => {
                   <tbody>
                     {filteredExtensions.map((row, idx) => {
                       const status = getStatus(row.status);
-                      const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                      const rowBg = getPbxMonitorRowBg(false, idx);
                       const isLastRow = idx === filteredExtensions.length - 1;
                       const lastRowCellStyle = isLastRow
                         ? { borderBottom: "none" }
@@ -335,7 +337,7 @@ const PbxMonitor = () => {
                   <tbody>
                     {filteredTrunks.map((row, idx) => {
                       const status = getStatus(row.status);
-                      const rowBg = idx % 2 === 1 ? "#f8fafc" : "#ffffff";
+                      const rowBg = getPbxMonitorRowBg(false, idx);
                       const isLastRow = idx === filteredTrunks.length - 1;
                       const lastRowCellStyle = isLastRow
                         ? { borderBottom: "none" }

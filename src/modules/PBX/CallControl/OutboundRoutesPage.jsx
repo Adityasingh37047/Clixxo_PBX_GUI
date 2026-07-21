@@ -45,6 +45,7 @@ import {
 } from "./components/OutboundRoutesFormFields";
 import {
   formatOutboundRouteItemListDisplay,
+  getOutboundRouteRowBg,
   OUTBOUND_ROUTE_LIST_TRUNCATE_THRESHOLD,
   outboundRouteEditIconStyle,
   handleOutboundRouteEditIconHover,
@@ -231,11 +232,7 @@ const OutboundRoutesPage = () => {
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
-                    const rowBg = isSelected
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getOutboundRouteRowBg(isSelected, idx);
                     return (
                       <tr
                         key={row.id}

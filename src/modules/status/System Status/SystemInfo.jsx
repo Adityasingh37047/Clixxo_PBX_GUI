@@ -1,9 +1,11 @@
 import React from "react";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { CircularProgress } from "@mui/material";
-import { C } from "../../../theme/pbxTokens";
+import { Alert, CircularProgress } from "@mui/material";
 import { SYSTEM_INFO_CARD_TITLES } from "../../../constants/SystemInfoConstants";
-import { Btn } from "../../../components/common";
+import {
+  Btn,
+  extensionFixedAlertSx as systemInfoFixedAlertSx,
+} from "../../../components/common";
 import { useSystemInfoPage } from "./hooks/useSystemInfoPage";
 import {
   Card,
@@ -80,19 +82,9 @@ const SystemInfo = () => {
     <div style={systemInfoPageWrapStyle}>
       <div style={systemInfoPageInnerStyle}>
         {error && (
-          <div
-            style={{
-              background: "#fef2f2",
-              borderLeft: `3px solid ${C.errorRed}`,
-              color: C.errorRed,
-              padding: "10px 14px",
-              borderRadius: 4,
-              marginBottom: 16,
-              fontSize: 13,
-            }}
-          >
+          <Alert severity="error" sx={systemInfoFixedAlertSx}>
             {error}
-          </div>
+          </Alert>
         )}
 
         <div

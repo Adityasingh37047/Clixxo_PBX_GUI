@@ -60,6 +60,7 @@ import {
 } from "./components/CallQueueFormFields";
 import {
   callQueueEditIconStyle,
+  getCallQueueRowBg,
   handleCallQueueEditIconHover,
 } from "./components/CallQueueTableHelpers";
 
@@ -1325,11 +1326,7 @@ const CallQueue = () => {
                   {pagedQueues.map((q, i) => {
                     const isSelected = selected.includes(q._idx);
                     const isLastRow = i === pagedQueues.length - 1;
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : i % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getCallQueueRowBg(isSelected, i);
 
                     return (
                       <tr

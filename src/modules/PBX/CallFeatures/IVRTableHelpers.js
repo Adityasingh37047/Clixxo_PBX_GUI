@@ -1,21 +1,6 @@
-const C = {
-  pageBg: "#f8fafc",
-  cardBg: "#ffffff",
-  cardBorder: "#d8dde5",
-  divider: "#e2e6ec",
-  labelText: "#3E5475",
-  valueText: "#0f172a",
-  mutedText: "#6b7280",
-  strongText: "#0f172a",
-  accent: "#3E5475",
-  amber: "#dc2626",
-  errorRed: "#dc2626",
-  successGreen: "#16a34a",
-};
+import { C } from "../../../theme/pbxTokens";
 
 // ── Local page UI ──
-
-
 
 // ── Local page shell UI (pilot: inlined from pbxSharedUi) ──
 const IVR_TABLE_CARD_RADIUS = 4;
@@ -54,5 +39,15 @@ const handleIvrEditIconHover = (e, entering) => {
   e.currentTarget.style.opacity = entering ? "1" : "0.7";
 };
 
+/** Selected row bg differs from getExtensionRowBg (#eff6ff) — keep page-local. */
+export const getIvrRowBg = (isSelected, idx) =>
+  isSelected ? "#e0f2fe" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
-export { C, IVR_TABLE_CARD_RADIUS, ivrPaginationStyle, ivrPageBadgeStyle, ivrEditIconStyle, handleIvrEditIconHover };
+export {
+  C,
+  IVR_TABLE_CARD_RADIUS,
+  ivrPaginationStyle,
+  ivrPageBadgeStyle,
+  ivrEditIconStyle,
+  handleIvrEditIconHover,
+};

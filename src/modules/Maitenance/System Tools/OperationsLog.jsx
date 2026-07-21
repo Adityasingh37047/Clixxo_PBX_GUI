@@ -26,7 +26,6 @@ import {
   ExtensionTableListLoading as OperationsLogTableListLoading,
   ExtensionTableListEmptyState as OperationsLogTableListEmptyState,
   ExtensionPagination as OperationsLogPagination,
-  extensionFixedAlertSx as operationsLogFixedAlertSx,
   extensionPageWrapStyle as operationsLogPageWrapStyle,
   extensionPageInnerStyle as operationsLogPageInnerStyle,
   extensionCardStyle as operationsLogCardStyle,
@@ -47,15 +46,23 @@ import {
 } from "./components/OperationsLogFormFields";
 import {
   OPERATIONS_LOG_TABLE_SCROLL_CLASS,
-  operationsLogFilterModalCancelBtnStyle,
-  operationsLogFilterModalFooterBtnStyle,
-  operationsLogFilterModalFooterStyle,
-  operationsLogFilterModalFormStyle,
+  getOperationsLogCompactAlertSx,
+  getOperationsLogCompactToolbarBtnStyle,
+  getOperationsLogFilterFieldStyle,
+  getOperationsLogFilterModalCancelBtnStyle,
+  getOperationsLogFilterModalContentStyle,
+  getOperationsLogFilterModalFooterBtnStyle,
+  getOperationsLogFilterModalFooterStyle,
+  getOperationsLogFilterModalFormStyle,
+  getOperationsLogFilterModalPaperSx,
+  getOperationsLogFilterTimeRangeStyle,
+  getOperationsLogHeaderRowStyle,
+  getOperationsLogPaginationStyle,
+  getOperationsLogToolbarActionsStyle,
   operationsLogFilterModalGridStyle,
-  operationsLogFilterModalPaperSx,
   operationsLogFilterModalTitleStyle,
-  OPERATIONS_LOG_FILTER_TIME_RANGE_MAX_WIDTH,
   operationsLogTableScrollStyle,
+  OPERATIONS_LOG_FILTER_TIME_RANGE_MAX_WIDTH,
   operationsLogToolbarFilterBtnStyle,
   operationsLogToolbarRefreshBtnStyle,
 } from "./components/OperationsLogTableHelpers";
@@ -112,11 +119,13 @@ const OperationsLog = () => {
     ? OPERATIONS_LOG_FILTERED_EMPTY_MESSAGE
     : OPERATIONS_LOG_EMPTY_MESSAGE;
 
+  const filterFieldStyle = getOperationsLogFilterFieldStyle(isCompact);
+
   return (
     <div
       style={{
         ...operationsLogPageWrapStyle,
-        ...(isCompact ? { padding: 12 } : {}),
+        ...(isCompact ? { padding: 8 } : {}),
       }}
     >
       <div style={operationsLogPageInnerStyle}>
@@ -124,26 +133,21 @@ const OperationsLog = () => {
           <Alert
             severity={message.type}
             onClose={() => setMessage({ type: "", text: "" })}
-            sx={operationsLogFixedAlertSx}
+            sx={getOperationsLogCompactAlertSx(isCompact)}
           >
             {message.text}
           </Alert>
         )}
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-            marginBottom: 16,
-          }}
-        >
+        <div style={getOperationsLogHeaderRowStyle(isCompact)}>
           <OperationsLogPageBreadcrumb style={{ marginBottom: 0 }} />
           {lastUpdated && (
             <span
-              style={{ fontSize: 12, color: C.mutedText, whiteSpace: "nowrap" }}
+              style={{
+                fontSize: 12,
+                color: C.mutedText,
+                whiteSpace: isCompact ? "normal" : "nowrap",
+              }}
             >
               Last updated: {lastUpdated.toLocaleTimeString()}
             </span>
@@ -167,23 +171,16 @@ const OperationsLog = () => {
               )}
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-                ...(isCompact
-                  ? { width: "100%", justifyContent: "flex-end" }
-                  : {}),
-              }}
-            >
+            <div style={getOperationsLogToolbarActionsStyle(isCompact)}>
               {!hasActiveFilters ? (
                 <Btn
                   onClick={handleFilterOpen}
                   disabled={loading}
                   variant="cancel"
-                  style={operationsLogToolbarFilterBtnStyle}
+                  style={getOperationsLogCompactToolbarBtnStyle(
+                    isCompact,
+                    operationsLogToolbarFilterBtnStyle,
+                  )}
                 >
                   Filter
                 </Btn>
@@ -192,7 +189,10 @@ const OperationsLog = () => {
                   onClick={handleFilterReset}
                   disabled={loading}
                   variant="cancel"
-                  style={operationsLogToolbarFilterBtnStyle}
+                  style={getOperationsLogCompactToolbarBtnStyle(
+                    isCompact,
+                    operationsLogToolbarFilterBtnStyle,
+                  )}
                 >
                   Reset
                 </Btn>
@@ -201,7 +201,10 @@ const OperationsLog = () => {
                 onClick={() => loadOperationsLog(page, appliedFilters)}
                 disabled={loading}
                 variant="cancel"
-                style={operationsLogToolbarRefreshBtnStyle}
+                style={getOperationsLogCompactToolbarBtnStyle(
+                  isCompact,
+                  operationsLogToolbarRefreshBtnStyle,
+                )}
               >
                 {loading ? (
                   <CircularProgress size={11} style={{ color: "#374151" }} />
@@ -213,7 +216,10 @@ const OperationsLog = () => {
                 onClick={handleDelete}
                 disabled={loading || selectedIds.length === 0}
                 variant="cancel"
-                style={operationsLogCancelBtnStyle}
+                style={getOperationsLogCompactToolbarBtnStyle(
+                  isCompact,
+                  operationsLogCancelBtnStyle,
+                )}
               >
                 <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
                 Delete
@@ -222,7 +228,10 @@ const OperationsLog = () => {
                 onClick={handleDeleteAll}
                 disabled={loading || (totalRecords === 0 && rows.length === 0)}
                 variant="cancel"
-                style={operationsLogCancelBtnStyle}
+                style={getOperationsLogCompactToolbarBtnStyle(
+                  isCompact,
+                  operationsLogCancelBtnStyle,
+                )}
               >
                 Clear All
               </Btn>
@@ -230,7 +239,10 @@ const OperationsLog = () => {
                 onClick={handleDownload}
                 disabled={loading}
                 variant="cancel"
-                style={operationsLogCancelBtnStyle}
+                style={getOperationsLogCompactToolbarBtnStyle(
+                  isCompact,
+                  operationsLogCancelBtnStyle,
+                )}
               >
                 ⬇ Download Log
               </Btn>
@@ -403,6 +415,10 @@ const OperationsLog = () => {
                   recordCount={rows.length}
                   recordLabel="record"
                   onPageChange={handlePageChange}
+                  style={{
+                    ...getOperationsLogPaginationStyle(isCompact),
+                    ...(isCompact ? { textAlign: "center" } : {}),
+                  }}
                 />
               )}
             </>
@@ -413,17 +429,23 @@ const OperationsLog = () => {
           open={showFilterModal}
           onClose={() => setShowFilterModal(false)}
           maxWidth={false}
-          PaperProps={{ sx: operationsLogFilterModalPaperSx }}
+          fullScreen={isCompact}
+          PaperProps={{ sx: getOperationsLogFilterModalPaperSx(isCompact) }}
         >
           <DialogTitle style={operationsLogFilterModalTitleStyle}>
             {OPERATIONS_LOG_FILTER_MODAL_TITLE}
           </DialogTitle>
 
-          <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
-            <div style={operationsLogFilterModalFormStyle}>
+          <DialogContent style={getOperationsLogFilterModalContentStyle(isCompact)}>
+            <div style={getOperationsLogFilterModalFormStyle(isCompact)}>
               <div style={operationsLogFilterModalGridStyle(isCompact)}>
-                <FilterField label="Module" tooltipKey="module">
+                <FilterField
+                  label="Module"
+                  tooltipKey="module"
+                  fieldStyle={filterFieldStyle}
+                >
                   <FilterSelect
+                    fill={isCompact}
                     aria-label="Module"
                     value={filterDraft.module}
                     onChange={(e) =>
@@ -436,8 +458,13 @@ const OperationsLog = () => {
                   />
                 </FilterField>
 
-                <FilterField label="Operation" tooltipKey="operation">
+                <FilterField
+                  label="Operation"
+                  tooltipKey="operation"
+                  fieldStyle={filterFieldStyle}
+                >
                   <FilterSelect
+                    fill={isCompact}
                     aria-label="Operation"
                     value={filterDraft.operation}
                     onChange={(e) =>
@@ -450,8 +477,13 @@ const OperationsLog = () => {
                   />
                 </FilterField>
 
-                <FilterField label="Username" tooltipKey="username">
+                <FilterField
+                  label="Username"
+                  tooltipKey="username"
+                  fieldStyle={filterFieldStyle}
+                >
                   <FilterSelect
+                    fill={isCompact}
                     aria-label="Username"
                     value={filterDraft.username}
                     onChange={(e) =>
@@ -464,8 +496,13 @@ const OperationsLog = () => {
                   />
                 </FilterField>
 
-                <FilterField label="Status" tooltipKey="status">
+                <FilterField
+                  label="Status"
+                  tooltipKey="status"
+                  fieldStyle={filterFieldStyle}
+                >
                   <FilterSelect
+                    fill={isCompact}
                     aria-label="Status"
                     value={filterDraft.status}
                     onChange={(e) =>
@@ -478,7 +515,11 @@ const OperationsLog = () => {
                   />
                 </FilterField>
 
-                <FilterField label="IP Address" tooltipKey="ip">
+                <FilterField
+                  label="IP Address"
+                  tooltipKey="ip"
+                  fieldStyle={filterFieldStyle}
+                >
                   <FilterSearch
                     placeholder="192.168.0.81"
                     value={filterDraft.ip}
@@ -494,16 +535,14 @@ const OperationsLog = () => {
                 <FilterField
                   label="Time Range"
                   tooltipKey="time_range"
-                  style={{ maxWidth: OPERATIONS_LOG_FILTER_TIME_RANGE_MAX_WIDTH }}
+                  fieldStyle={filterFieldStyle}
+                  style={
+                    isCompact
+                      ? undefined
+                      : { maxWidth: OPERATIONS_LOG_FILTER_TIME_RANGE_MAX_WIDTH }
+                  }
                 >
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 8,
-                      width: "100%",
-                    }}
-                  >
+                  <div style={getOperationsLogFilterTimeRangeStyle(isCompact)}>
                     <FilterDate
                       fill
                       aria-label="Start Date"
@@ -526,23 +565,22 @@ const OperationsLog = () => {
             </div>
           </DialogContent>
 
-          <DialogActions style={operationsLogFilterModalFooterStyle}>
-              <Btn
+          <DialogActions style={getOperationsLogFilterModalFooterStyle(isCompact)}>
+            <Btn
               onClick={handleFilterSearch}
               disabled={loading}
               variant="primary"
-              style={operationsLogFilterModalFooterBtnStyle}
+              style={getOperationsLogFilterModalFooterBtnStyle(isCompact)}
             >
               Search
             </Btn>
             <Btn
               onClick={handleFilterCancel}
               variant="cancel"
-              style={operationsLogFilterModalCancelBtnStyle}
+              style={getOperationsLogFilterModalCancelBtnStyle(isCompact)}
             >
               Cancel
             </Btn>
-          
           </DialogActions>
         </Dialog>
       </div>

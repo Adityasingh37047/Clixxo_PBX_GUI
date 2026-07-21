@@ -4,7 +4,6 @@ import PauseOutlinedIcon from "@mui/icons-material/PauseOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { Checkbox, Alert, CircularProgress, useMediaQuery } from "@mui/material";
 import {
-  VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS,
   VIEW_VOICEMAIL_COMPACT_MQ,
   VIEW_VOICEMAIL_EMPTY_MESSAGE,
   VIEW_VOICEMAIL_EXTENSION_PLACEHOLDER,
@@ -20,9 +19,6 @@ import {
   RecordingActionBtn,
   RecordingPlayerBar,
   TH,
-  ExtensionBreadcrumb as ViewVoicemailBreadcrumb,
-  extensionPageWrapStyle as viewVoicemailPageWrapStyle,
-  extensionPageInnerStyle as viewVoicemailPageInnerStyle,
   extensionFixedAlertSx as viewVoicemailFixedAlertSx,
 } from "../../../components/common";
 import { useViewVoicemailPage } from "./hooks/useViewVoicemailPage";
@@ -32,17 +28,21 @@ import {
   TableListEmptyState,
   TableListLoading,
   TD,
+  ViewVoicemailBreadcrumb,
 } from "./components/ViewVoicemailFormFields";
 import {
   getViewVoicemailRowBg,
-  nativeFieldInteraction,
   viewVoicemailCardStyle,
   viewVoicemailFilterCardStyle,
   viewVoicemailFilterFieldStyle,
   viewVoicemailFilterLabelStyle,
   viewVoicemailFooterStyle,
+  viewVoicemailNativeFieldInteraction,
   viewVoicemailPageBadgeStyle,
+  viewVoicemailPageInnerStyle,
+  viewVoicemailPageWrapStyle,
   viewVoicemailRefreshBtnStyle,
+  viewVoicemailSelectedBadgeStyle,
   viewVoicemailTableCheckboxSx,
   viewVoicemailToolbarBtnStyle,
   viewVoicemailToolbarStyle,
@@ -72,12 +72,7 @@ const ViewVoicemailPage = () => {
           </Alert>
         )}
 
-        <ViewVoicemailBreadcrumb
-          root={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[0]}
-          section={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[1]}
-          current={VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS[2]}
-          style={{ marginBottom: 16 }}
-        />
+        <ViewVoicemailBreadcrumb style={{ marginBottom: 16 }} />
 
         <div style={{
           ...viewVoicemailFilterCardStyle,
@@ -103,7 +98,7 @@ const ViewVoicemailPage = () => {
                   padding: "0 12px",
                   width: isCompact ? "100%" : 180,
                 }}
-                {...nativeFieldInteraction}
+                {...viewVoicemailNativeFieldInteraction}
               />
             </div>
             <div style={{ flex: isCompact ? "1 1 100%" : "0 0 auto" }}>
@@ -127,7 +122,7 @@ const ViewVoicemailPage = () => {
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "right 12px center",
                 }}
-                {...nativeFieldInteraction}
+                {...viewVoicemailNativeFieldInteraction}
               >
                 {VIEW_VOICEMAIL_FOLDER_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -181,9 +176,16 @@ const ViewVoicemailPage = () => {
 
         <div style={viewVoicemailCardStyle}>
           <div style={viewVoicemailToolbarStyle}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: C.labelText }}>
-              {VIEW_VOICEMAIL_TABLE_HEADING}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.labelText }}>
+                {VIEW_VOICEMAIL_TABLE_HEADING}
+              </span>
+              {selected.length > 0 && (
+                <span style={viewVoicemailSelectedBadgeStyle}>
+                  {selected.length} selected
+                </span>
+              )}
+            </div>
           </div>
 
           {loading ? (

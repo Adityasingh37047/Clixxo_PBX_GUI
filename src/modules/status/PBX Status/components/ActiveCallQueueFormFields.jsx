@@ -1,23 +1,36 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+﻿import React from "react";
 import { CircularProgress, Alert, useMediaQuery } from "@mui/material";
 import {
   Btn,
   ExtensionBreadcrumb,
   TH,
-  extensionPageWrapStyle as pbxPageWrapStyle,
-  extensionPageInnerStyle as pbxPageInnerStyle,
   extensionFixedAlertSx as activeCallQueueFixedAlertSx,
 } from "../../../../components/common";
-import {
-  C,
-  FOCUS_RING_SHADOW,
-  OUTLINED_BORDER,
-  OUTLINED_FOCUS,
-  OUTLINED_HOVER,
-} from "../../../../theme/pbxTokens";
+import { C } from "../../../../theme/pbxTokens";
 import { ACTIVE_CALL_QUEUE_AGENT_SEARCH_PLACEHOLDER, ACTIVE_CALL_QUEUE_BREADCRUMB_SEGMENTS, ACTIVE_CALL_QUEUE_COMPACT_MQ, ACTIVE_CALL_QUEUE_EMPTY_MESSAGE, ACTIVE_CALL_QUEUE_LIST_HEADING, ACTIVE_CALL_QUEUE_STATS_BREADCRUMB_SEGMENTS, ACTIVE_CALL_QUEUE_STATS_BTN_LABEL, ACTIVE_CALL_QUEUE_STATS_TABLE_MIN_WIDTH, ACTIVE_CALL_QUEUE_TAB_LABELS, ACTIVE_CALL_QUEUE_TAB_VALUES } from "../../../../constants/ActiveCallQueueConstants";
 import { useActiveCallQueueStatsPage } from "../hooks/useActiveCallQueueStatsPage";
 import { normalizeActiveCallQueue } from "../utils/ActiveCallQueueTransformers";
+import {
+  ACTIVE_CALL_QUEUE_STAT_CARD_SHADOW,
+  ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
+  ActiveCallQueueToolbarSearchBar,
+  ActiveCallQueueTableListEmptyState,
+  ActiveCallQueueTableListLoading,
+  activeCallQueueCancelBtnStyle,
+  activeCallQueueCardStyle,
+  activeCallQueuePageInnerStyle,
+  activeCallQueuePageWrapStyle,
+  activeCallQueuePrimaryBtnStyle,
+  activeCallQueueStatsCardStyle,
+  activeCallQueueStatsFooterStyle,
+  activeCallQueueStatsHeaderLeftStyle,
+  activeCallQueueStatsHeaderStyle,
+  activeCallQueueStatsHeaderToolbarStyle,
+  activeCallQueueStatsToolbarBtnStyle,
+  activeCallQueueTdStyle,
+  activeCallQueueToolbarStyle,
+  getActiveCallQueueRowBg,
+} from "./ActiveCallQueueTableHelpers";
 
 export const ActiveCallQueueBreadcrumb = ({ style } = {}) => (
   <ExtensionBreadcrumb
@@ -54,335 +67,6 @@ export const ActiveCallQueueStatsBreadcrumb = ({ style } = {}) => {
       <span style={{ color: "#1e293b", fontWeight: 600 }}>{s[3]}</span>
     </div>
   );
-};
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ padding: "8px 24px", fontSize: 12, borderRadius: 4 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_HEIGHT = 30;
-const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_WIDTH = 168;
-const ACTIVE_CALL_QUEUE_SEARCH_ICON_SLOT = 18;
-const ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_FIT = 16;
-const ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_DEFAULT = 20;
-const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_FOCUS_RING = FOCUS_RING_SHADOW;
-const ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_INPUT_FONT = {
-  fontSize: 12,
-  fontFamily: "Inter, sans-serif",
-  letterSpacing: "normal",
-  fontWeight: 400,
-};
-
-const ActiveCallQueueToolbarSearchBar = ({
-  value,
-  onChange,
-  placeholder = "Search...",
-  width = ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_WIDTH,
-  fitPlaceholder = false,
-}) => {
-  const wrapRef = useRef(null);
-  const inputRef = useRef(null);
-  const measureRef = useRef(null);
-  const [placeholderWidth, setPlaceholderWidth] = useState(null);
-
-  useLayoutEffect(() => {
-    if (!fitPlaceholder || !measureRef.current) return;
-    measureRef.current.textContent = placeholder;
-    setPlaceholderWidth(measureRef.current.offsetWidth);
-  }, [fitPlaceholder, placeholder]);
-
-  const resolvedWidth =
-    fitPlaceholder && placeholderWidth != null
-      ? placeholderWidth + ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_FIT + ACTIVE_CALL_QUEUE_SEARCH_ICON_SLOT
-      : width;
-
-  const horizontalPadding = fitPlaceholder
-    ? ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_FIT / 2
-    : ACTIVE_CALL_QUEUE_SEARCH_BAR_PADDING_DEFAULT / 2;
-
-  const setDefault = () => {
-    const el = wrapRef.current;
-    if (!el) return;
-    el.style.borderColor = OUTLINED_BORDER;
-    el.style.boxShadow = "none";
-  };
-
-  const setHover = () => {
-    const el = wrapRef.current;
-    if (!el || document.activeElement === inputRef.current) return;
-    el.style.borderColor = OUTLINED_HOVER;
-    el.style.boxShadow = "none";
-  };
-
-  const setFocus = () => {
-    const el = wrapRef.current;
-    if (!el) return;
-    el.style.borderColor = OUTLINED_FOCUS;
-    el.style.boxShadow = ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_FOCUS_RING;
-  };
-
-  const handleMouseLeave = () => {
-    if (document.activeElement === inputRef.current) setFocus();
-    else setDefault();
-  };
-
-  return (
-    <div
-      ref={wrapRef}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        height: ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_HEIGHT,
-        boxSizing: "border-box",
-        background: "#f8fafc",
-        border: `1px solid ${OUTLINED_BORDER}`,
-        borderRadius: 4,
-        padding: `0 ${horizontalPadding}px`,
-        transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-        width: resolvedWidth,
-        minWidth: resolvedWidth,
-        maxWidth: resolvedWidth,
-        flexShrink: 0,
-        position: "relative",
-        fontWeight: 400,
-      }}
-      onMouseEnter={setHover}
-      onMouseLeave={handleMouseLeave}
-    >
-      {fitPlaceholder ? (
-        <span
-          ref={measureRef}
-          aria-hidden
-          style={{
-            position: "absolute",
-            visibility: "hidden",
-            whiteSpace: "pre",
-            pointerEvents: "none",
-            ...ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_INPUT_FONT,
-          }}
-        />
-      ) : null}
-      <span style={{ fontSize: 12, color: C.mutedText, flexShrink: 0 }}>
-        🔍
-      </span>
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={onChange}
-        onFocus={setFocus}
-        onBlur={setDefault}
-        placeholder={placeholder}
-        style={{
-          border: "none",
-          background: "transparent",
-          outline: "none",
-          flex: 1,
-          minWidth: 0,
-          width: 0,
-          padding: 0,
-          paddingRight: value ? 14 : 0,
-          margin: 0,
-          ...ACTIVE_CALL_QUEUE_TOOLBAR_SEARCH_INPUT_FONT,
-          color: C.valueText,
-        }}
-      />
-      <span
-        role="button"
-        tabIndex={value ? 0 : -1}
-        aria-hidden={!value}
-        onClick={() => {
-          if (!value) return;
-          onChange({ target: { value: "" } });
-        }}
-        onKeyDown={(e) => {
-          if (!value) return;
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onChange({ target: { value: "" } });
-          }
-        }}
-        style={{
-          position: "absolute",
-          right: horizontalPadding,
-          top: "50%",
-          transform: "translateY(-50%)",
-          fontSize: 11,
-          color: C.mutedText,
-          cursor: value ? "pointer" : "default",
-          visibility: value ? "visible" : "hidden",
-          lineHeight: 1,
-        }}
-      >
-        ✕
-      </span>
-    </div>
-  );
-};
-
-const CARD_RADIUS = 4;
-const ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS = CARD_RADIUS;
-const ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS = CARD_RADIUS;
-
-const ACTIVE_CALL_QUEUE_CARD_SHADOW =
-  "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)";
-
-const ACTIVE_CALL_QUEUE_STAT_CARD_SHADOW =
-  "0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.05)";
-
-const activeCallQueueCardStyle = {
-  background: "#ffffff",
-  borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: ACTIVE_CALL_QUEUE_CARD_SHADOW,
-};
-
-const activeCallQueueStatsCardStyle = {
-  background: "#ffffff",
-  borderRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: ACTIVE_CALL_QUEUE_CARD_SHADOW,
-};
-
-const activeCallQueueStatsHeaderStyle = {
-  width: "100%",
-  minHeight: 44,
-  background: C.cardBg,
-  borderTopLeftRadius: ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS,
-  borderTopRightRadius: ACTIVE_CALL_QUEUE_FORM_HEADER_RADIUS,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  fontWeight: 700,
-  fontSize: 13,
-  color: C.labelText,
-  borderBottom: `1px solid ${C.divider}`,
-  flexWrap: "wrap",
-  gap: 12,
-  boxSizing: "border-box",
-  flexShrink: 0,
-};
-
-const activeCallQueueStatsHeaderLeftStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  flexWrap: "wrap",
-  minWidth: 0,
-};
-
-const activeCallQueueStatsHeaderToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  flexShrink: 0,
-  flexWrap: "wrap",
-  marginLeft: "auto",
-};
-
-const activeCallQueueToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
-  borderTopRightRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
-};
-
-const activeCallQueueCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  borderRadius: 4,
-};
-
-const activeCallQueuePrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-};
-
-const activeCallQueueStatsToolbarBtnStyle = {
-  ...activeCallQueueCancelBtnStyle,
-  height: 30,
-  fontSize: 12,
-  margin: 0,
-  padding: "6px 14px",
-  lineHeight: 1,
-  boxSizing: "border-box",
-  minWidth: 84,
-  width: 84,
-};
-
-const activeCallQueueStatsFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: ACTIVE_CALL_QUEUE_TABLE_CARD_RADIUS,
 };
 
 // ── Shared: Answered rate progress bar ───────────────────────────────────────
@@ -436,20 +120,10 @@ const StatCard = ({ label, value, color }) => (
   </div>
 );
 
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
-};
-
-// ── Shared: TD ───────────────────────────────────────────────────────────────
 const TD = ({ children, align = "center", mono, muted, bg, style: extra }) => (
   <td
     style={{
-      ...tdStyle,
+      ...activeCallQueueTdStyle,
       color: mono ? C.accent : muted ? C.mutedText : C.valueText,
       textAlign: align,
       fontFamily: mono ? "monospace, monospace" : "inherit",
@@ -578,16 +252,16 @@ const RatePill = ({ value }) => (
   </span>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
 // CALL QUEUE STATISTICS VIEW
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export const CallQueueStatistics = ({ onBack, initialQueue }) => {
   const { activeTab, setActiveTab, agentSearch, setAgentSearch, agentData, setAgentData, queueData, setQueueData, loadingAgent, loadingQueue, lastUpdated, filteredAgents } = useActiveCallQueueStatsPage(initialQueue);
   const isCompact = useMediaQuery(ACTIVE_CALL_QUEUE_COMPACT_MQ);
   return (
-    <div style={{ ...pbxPageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
-      <div style={pbxPageInnerStyle}>
+    <div style={{ ...activeCallQueuePageWrapStyle, ...(isCompact ? { padding: 8 } : {}) }}>
+      <div style={activeCallQueuePageInnerStyle}>
         <div
           style={{
             display: "flex",
@@ -675,6 +349,7 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
                   onChange={(e) => setAgentSearch(e.target.value)}
                   placeholder={ACTIVE_CALL_QUEUE_AGENT_SEARCH_PLACEHOLDER}
                   fitPlaceholder
+                  style={{ borderRadius: 4 }}
                 />
               )}
               <Btn
@@ -702,11 +377,11 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
             <>
               {loadingAgent && agentData.length === 0 ? (
                 <div style={{ padding: "14px 16px 16px" }}>
-                  <TableListLoading />
+                  <ActiveCallQueueTableListLoading />
                 </div>
               ) : filteredAgents.length === 0 ? (
                 <div style={{ padding: "14px 16px 16px" }}>
-                  <TableListEmptyState
+                  <ActiveCallQueueTableListEmptyState
                     message={
                       agentSearch
                         ? `No results for "${agentSearch}"`
@@ -758,7 +433,7 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       </thead>
                       <tbody>
                         {filteredAgents.map((row, i) => {
-                          const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                          const rowBg = getActiveCallQueueRowBg(false, i);
                           const isLastRow = i === filteredAgents.length - 1;
                           const lastRowCellStyle = isLastRow
                             ? { borderBottom: "none" }
@@ -849,11 +524,11 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
             <>
               {loadingQueue && queueData.length === 0 ? (
                 <div style={{ padding: "14px 16px 16px" }}>
-                  <TableListLoading />
+                  <ActiveCallQueueTableListLoading />
                 </div>
               ) : queueData.length === 0 ? (
                 <div style={{ padding: "14px 16px 16px" }}>
-                  <TableListEmptyState
+                  <ActiveCallQueueTableListEmptyState
                     message="No queue data available"
                     showButton={false}
                   />
@@ -901,7 +576,7 @@ export const CallQueueStatistics = ({ onBack, initialQueue }) => {
                       </thead>
                       <tbody>
                         {queueData.map((row, i) => {
-                          const rowBg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+                          const rowBg = getActiveCallQueueRowBg(false, i);
                           const isLastRow = i === queueData.length - 1;
                           const lastRowCellStyle = isLastRow
                             ? { borderBottom: "none" }
@@ -997,8 +672,8 @@ export const ActiveCallQueuePageContent = (props) => {
   const norm = normalizeActiveCallQueue;
   const sel = selectedQueue ? norm(selectedQueue) : null;
   return (
-    <div style={pbxPageWrapStyle}>
-      <div style={pbxPageInnerStyle}>
+    <div style={activeCallQueuePageWrapStyle}>
+      <div style={activeCallQueuePageInnerStyle}>
         {error && (
           <Alert
             severity="error"
@@ -1078,11 +753,11 @@ export const ActiveCallQueuePageContent = (props) => {
           <div style={{ padding: "14px 16px 16px" }}>
             {/* Initial load */}
             {!hasLoaded && queueList.length === 0 && !error && (
-              <TableListLoading />
+              <ActiveCallQueueTableListLoading />
             )}
 
             {hasLoaded && !error && queueList.length === 0 && (
-              <TableListEmptyState
+              <ActiveCallQueueTableListEmptyState
                 message={ACTIVE_CALL_QUEUE_EMPTY_MESSAGE}
                 showButton={false}
               />

@@ -4,8 +4,9 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import HeadsetMicIcon from "@mui/icons-material/HeadsetMic";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { IconButton, Alert, CircularProgress, Tooltip } from "@mui/material";
+import { Alert, CircularProgress, IconButton, Tooltip } from "@mui/material";
 import {
+  ACTIVE_CALLS_ACTIVE_BADGE_SUFFIX,
   ACTIVE_CALLS_BREADCRUMB_SEGMENTS,
   ACTIVE_CALLS_EMPTY_SUBTITLE,
   ACTIVE_CALLS_EMPTY_TITLE,
@@ -14,16 +15,19 @@ import { C } from "../../../theme/pbxTokens";
 import {
   Btn,
   ExtensionBreadcrumb as ActiveCallsBreadcrumb,
-  extensionPageWrapStyle as activeCallsPageWrapStyle,
-  extensionPageInnerStyle as activeCallsPageInnerStyle,
   extensionFixedAlertSx as activeCallsFixedAlertSx,
 } from "../../../components/common";
 import { useActiveCallsPage } from "./hooks/useActiveCallsPage";
 import {
-  ACTIVE_CALLS_CARD_RADIUS,
-  ACTIVE_CALLS_CARD_SHADOW,
-  ACTIVE_CALLS_ITEM_CARD_SHADOW,
+  activeCallsCardStyle,
+  activeCallsPageInnerStyle,
+  activeCallsPageWrapStyle,
   activeCallsRefreshBtnStyle,
+  activeCallsSelectedBadgeStyle,
+  activeCallsToolbarStyle,
+  ActiveCallsTableListLoading,
+  ACTIVE_CALLS_CARD_RADIUS,
+  ACTIVE_CALLS_ITEM_CARD_SHADOW,
 } from "./components/ActiveCallsTableHelpers";
 import {
   callInstanceKey,
@@ -48,7 +52,6 @@ const ActiveCallsPage = () => {
     handleHangup,
   } = useActiveCallsPage();
 
-  // Always reserve two columns on desktop so one card keeps same size
   const gridClass = "grid-cols-1 md:grid-cols-2";
 
   return (
@@ -70,45 +73,11 @@ const ActiveCallsPage = () => {
           current={ACTIVE_CALLS_BREADCRUMB_SEGMENTS[2]}
         />
 
-        {/* Main card */}
-        <div
-          className="w-full max-w-full overflow-hidden"
-          style={{
-            backgroundColor: C.cardBg,
-            border: `1px solid ${C.cardBorder}`,
-            borderRadius: ACTIVE_CALLS_CARD_RADIUS,
-            boxShadow: ACTIVE_CALLS_CARD_SHADOW,
-          }}
-        >
-          {/* Toolbar */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              minHeight: 44,
-              padding: "7px 14px",
-              borderBottom: `1px solid ${C.divider}`,
-              background: "#ffffff",
-              flexWrap: "wrap",
-              gap: 12,
-              borderTopLeftRadius: ACTIVE_CALLS_CARD_RADIUS,
-              borderTopRightRadius: ACTIVE_CALLS_CARD_RADIUS,
-            }}
-          >
+        <div className="w-full max-w-full overflow-hidden" style={activeCallsCardStyle}>
+          <div style={activeCallsToolbarStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {hasLoaded && channels.length > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={activeCallsSelectedBadgeStyle}>
                   {channels.length} {ACTIVE_CALLS_ACTIVE_BADGE_SUFFIX}
                 </span>
               )}
@@ -130,11 +99,11 @@ const ActiveCallsPage = () => {
             </Btn>
           </div>
 
-          {/* Body */}
-          <div
-            className="min-h-[200px]"
-            style={{ padding: "14px 16px 16px" }}
-          >
+          <div className="min-h-[200px]" style={{ padding: "14px 16px 16px" }}>
+            {!error && !hasLoaded && channels.length === 0 && (
+              <ActiveCallsTableListLoading />
+            )}
+
             {!error && hasLoaded && channels.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="text-5xl mb-4">📞</div>
@@ -147,12 +116,6 @@ const ActiveCallsPage = () => {
                 <div className="text-sm mt-1" style={{ color: C.mutedText }}>
                   {ACTIVE_CALLS_EMPTY_SUBTITLE}
                 </div>
-              </div>
-            )}
-
-            {!error && !hasLoaded && channels.length === 0 && (
-              <div className="flex justify-center py-12">
-                <CircularProgress size={32} sx={{ color: C.accent }} />
               </div>
             )}
 

@@ -8,11 +8,12 @@ import {
   filterModalFieldStyle,
   filterModalFormStyle,
   filterModalGridStyle,
-  filterModalNativeFieldInteraction,
+  filterModalNativeFieldInteraction as callCountNativeFieldInteraction,
   filterModalPaperSx,
   filterModalTitleStyle,
   FILTER_MODAL_FIELD_MAX_WIDTH,
   FILTER_MODAL_TIME_RANGE_MAX_WIDTH,
+  getExtensionRowBg as getCallCountRowBg,
 } from "../../../components/common";
 import { C } from "../../../theme/pbxTokens";
 import { CALL_COUNT_COLUMNS } from "../../../constants/CallCountConstants";
@@ -25,7 +26,10 @@ export const callCountToolbarFilterRefreshBtnStyle = {
 };
 export const TRUNK_TABLE_SCROLL_CLASS = "trunk-table-scroll";
 
-export const nativeFieldInteraction = filterModalNativeFieldInteraction;
+export {
+  callCountNativeFieldInteraction,
+  getCallCountRowBg,
+};
 
 const callCountCellPadding = "7px 6px";
 const callCountHeaderPadding = "9px 6px";

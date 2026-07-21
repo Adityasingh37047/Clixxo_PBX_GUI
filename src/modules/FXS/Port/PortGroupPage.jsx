@@ -30,6 +30,7 @@ import {
   extensionPageInnerStyle as portGroupPageInnerStyle,
   extensionCardStyle as portGroupCardStyle,
   extensionFixedAlertSx as portGroupFixedAlertSx,
+  extensionSelectedBadgeStyle as portGroupSelectedBadgeStyle,
 } from "../../../components/common";
 import { usePortGroupPage } from "./hooks/usePortGroupPage";
 import {
@@ -200,17 +201,7 @@ const PortGroupPage = () => {
           <div style={portGroupHeaderStyle}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {selectedCount > 0 && (
-                <span
-                  style={{
-                    background: "#eff6ff",
-                    color: C.accent,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: `1px solid ${C.accent}`,
-                  }}
-                >
+                <span style={portGroupSelectedBadgeStyle}>
                   {selectedCount} selected
                 </span>
               )}

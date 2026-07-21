@@ -764,17 +764,6 @@ export const SIDEBAR_SECTIONS = [
             path: ROUTE_PATHS.DDOS_SETTINGS,
           },
           {
-            id: "certificateManage",
-            title: "Certificate Manage",
-            path: ROUTE_PATHS.CERTIFICATE_MANAGE,
-          },
-          { id: "radius", title: "Radius", path: ROUTE_PATHS.RADIUS },
-          {
-            id: "sipAccountGenerator",
-            title: "SIP Account Generator",
-            path: ROUTE_PATHS.SIP_ACCOUNT_GENERATOR,
-          },
-          {
             id: "configFile",
             title: "Config File",
             path: ROUTE_PATHS.CONFIG_FILE,
@@ -806,6 +795,11 @@ export const SIDEBAR_SECTIONS = [
             path: ROUTE_PATHS.OPERATIONS_LOG,
           },
           {
+            id: "sipLogViewer",
+            title: "SIP Log Viewer",
+            path: ROUTE_PATHS.SIP_LOG_VIEWER,
+          },
+          {
             id: "backupUpload",
             title: "Backup & Upload",
             path: ROUTE_PATHS.BACKUP_UPLOAD,
@@ -816,18 +810,8 @@ export const SIDEBAR_SECTIONS = [
             path: ROUTE_PATHS.FACTORY_RESET,
           },
           { id: "upgrade", title: "Upgrade", path: ROUTE_PATHS.UPGRADE },
-          {
-            id: "deviceLock",
-            title: "Device Lock",
-            path: ROUTE_PATHS.DEVICE_LOCK,
-          },
           { id: "restart", title: "Restart", path: ROUTE_PATHS.RESTART },
           { id: "licence", title: "Licence", path: ROUTE_PATHS.LICENCE },
-          {
-            id: "sqlUpload",
-            title: "SQL Upload",
-            path: ROUTE_PATHS.SQL_UPLOAD,
-          },
           {
             id: "licenseLimits",
             title: "License Limits",

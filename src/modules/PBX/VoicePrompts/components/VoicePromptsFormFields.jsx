@@ -8,6 +8,9 @@ import {
   OUTLINED_HOVER,
 } from "../../../../theme/pbxTokens";
 import { VOICE_PROMPTS_FIELD_TOOLTIPS } from "../../../../constants/VoicePromptsConstants";
+import { extensionTableCheckboxSx as voicePromptsCheckboxSx } from "../../../../components/common";
+
+export { voicePromptsCheckboxSx };
 
 export const VOICE_PROMPTS_CARD_RADIUS = 4;
 
@@ -314,9 +317,3 @@ export const VoicePromptsTooltipLabel = ({ tooltipKey, children }) => (
   </Tooltip>
 );
 
-export const voicePromptsCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};

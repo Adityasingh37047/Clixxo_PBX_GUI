@@ -6,7 +6,7 @@ import {
 } from "../../../../components/common";
 import { VIEW_VOICEMAIL_BREADCRUMB_SEGMENTS } from "../../../../constants/ViewVoicemailConstants";
 import { C } from "../../../../theme/pbxTokens";
-import { tdStyle } from "./ViewVoicemailTableHelpers";
+import { viewVoicemailTdStyle } from "./ViewVoicemailTableHelpers";
 
 export const ViewVoicemailBreadcrumb = ({ style } = {}) => (
   <ExtensionBreadcrumb
@@ -19,7 +19,7 @@ export const ViewVoicemailBreadcrumb = ({ style } = {}) => (
 
 export const TD = ({ children, align = "center", mono, muted, bg, style: extra }) => (
   <td style={{
-    ...tdStyle, textAlign: align, color: mono ? C.accent : muted ? C.mutedText : C.valueText,
+    ...viewVoicemailTdStyle, textAlign: align, color: mono ? C.accent : muted ? C.mutedText : C.valueText,
     fontFamily: mono ? "monospace, monospace" : "inherit", fontWeight: mono ? 600 : 400,
     ...(bg != null ? { background: bg } : {}), ...extra,
   }}>

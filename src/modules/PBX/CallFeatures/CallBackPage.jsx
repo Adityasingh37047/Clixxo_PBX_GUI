@@ -57,6 +57,7 @@ import {
 import {
   callBackEditIconStyle,
   delayCellStyle,
+  getCallBackRowBg,
   handleCallBackEditIconHover,
   renderThrough,
   throughCellStyle,
@@ -355,11 +356,7 @@ const CallBackPage = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getCallBackRowBg(isSelected, idx);
 
                     return (
                       <tr

@@ -44,3 +44,7 @@ export const callBackEditIconStyle = {
 export const handleCallBackEditIconHover = (e, entering) => {
   e.currentTarget.style.opacity = entering ? "1" : "0.7";
 };
+
+/** Selected row bg differs from getExtensionRowBg (#eff6ff) — keep page-local. */
+export const getCallBackRowBg = (isSelected, idx) =>
+  isSelected ? "#e0f2fe" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";

@@ -42,6 +42,7 @@ import { useConferencePage } from "./hooks/useConferencePage";
 import {
   C,
   conferenceEditIconStyle,
+  getConferenceRowBg,
   handleConferenceEditIconHover,
 } from "./components/ConferenceTableHelpers";
 import {
@@ -289,11 +290,7 @@ const ConferencePage = () => {
                     const realIdx = (page - 1) * itemsPerPage + idx;
                     const isSelected = selected.includes(realIdx);
                     const isLastRow = idx === pagedRows.length - 1;
-                    const rowBg = isSelected
-                      ? "#e0f2fe"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getConferenceRowBg(isSelected, idx);
 
                     return (
                       <tr

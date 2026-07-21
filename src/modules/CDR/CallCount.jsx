@@ -65,7 +65,8 @@ import {
   callCountToolbarFilterRefreshBtnStyle,
   getCallCountCellPadding,
   getCallCountHeaderPadding,
-  nativeFieldInteraction,
+  getCallCountRowBg,
+  callCountNativeFieldInteraction,
 } from "./components/CallCountTableHelpers";
 import {
   formatDate,
@@ -339,11 +340,7 @@ const CallCount = () => {
                         const isSelected =
                           row.uniqueid &&
                           selectedIds.includes(String(row.uniqueid));
-                        const rowBg = isSelected
-                          ? "#eff6ff"
-                          : idx % 2 === 1
-                            ? "#f8fafc"
-                            : "#ffffff";
+                        const rowBg = getCallCountRowBg(isSelected, idx);
 
                         return (
                           <tr
@@ -708,7 +705,7 @@ const CallCount = () => {
                       }
                       placeholder="Seconds"
                       style={callCountFilterBoxFillStyle}
-                      {...nativeFieldInteraction}
+                      {...callCountNativeFieldInteraction}
                     />
                   </div>
                 </FilterField>

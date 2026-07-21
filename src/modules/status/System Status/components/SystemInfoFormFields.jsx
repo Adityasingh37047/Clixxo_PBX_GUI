@@ -1,6 +1,9 @@
 import React from "react";
 import { C } from "../../../../theme/pbxTokens";
-import { ExtensionBreadcrumb } from "../../../../components/common";
+import {
+  ExtensionBreadcrumb,
+  getExtensionRowBg as getSystemInfoRowBg,
+} from "../../../../components/common";
 import { SYSTEM_INFO_BREADCRUMB_SEGMENTS } from "../../../../constants/SystemInfoConstants";
 import {
   SYSTEM_INFO_CARD_RADIUS,
@@ -147,7 +150,7 @@ export const InfoTableRow = ({ label, value, keyName, even, valueBadge }) => (
       padding: "5px 14px",
       minHeight: 28,
       alignItems: "center",
-      background: even ? "#f8fafc" : "#ffffff",
+      background: getSystemInfoRowBg(false, even ? 1 : 0),
     }}
   >
     <span

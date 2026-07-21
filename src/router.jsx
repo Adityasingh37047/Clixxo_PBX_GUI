@@ -73,10 +73,7 @@ import AccessControl from "./modules/System/System Settings/AccessControl";
 import IDSSettings from "./modules/Maitenance/System Tools/IDSSettings";
 import DDOSSettings from "./modules/Maitenance/System Tools/DDOSSettings";
 import SystemToolsVPN from "./modules/System/System Settings/SystemToolsVPN";
-import CertificateManage from "./modules/Maitenance/System Tools/CertificateManage";
 import CentralizedManage from "./modules/System/System Settings/CentralizedManage";
-import Radius from "./modules/Maitenance/System Tools/Radius";
-import SIPAccountGenerator from "./modules/Maitenance/System Tools/SIPAccountGenerator";
 import ConfigFile from "./modules/Maitenance/System Tools/ConfigFile";
 import SignalingCapture from "./modules/Maitenance/System Tools/SignalingCapture";
 import SignalingCallTest from "./modules/Maitenance/System Tools/SignalingCallTest";
@@ -92,10 +89,8 @@ import FactoryReset from "./modules/Maitenance/System Tools/FactoryReset";
 import Upgrade from "./modules/Maitenance/System Tools/Upgrade";
 import AccountManage from "./modules/UserManage/User Permission/AccountManage";
 import ChangePassword from "./modules/UserManage/User Permission/ChangePassword";
-import DeviceLock from "./modules/Maitenance/System Tools/DeviceLock";
 import Restart from "./modules/Maitenance/System Tools/Restart";
 import LicenceRouteGate from "./components/LicenceRouteGate";
-import SystemToolsSqlUpload from "./modules/Maitenance/System Tools/SystemToolsSqlUpload";
 import Hosts from "./modules/Maitenance/System Tools/Hosts";
 import ConferencePage from "./modules/PBX/CallFeatures/ConferencePage";
 import PickupGroup from "./modules/PBX/CallFeatures/PickupGroup";
@@ -137,6 +132,7 @@ import VoicemailPage from "./modules/PBX/Voicemail/VoicemailPage";
 import AutoProvision from "./modules/PBX/AutoProvision/AutoProvision";
 import UserManage from "./modules/UserManage/User Permission/UserManage";
 import OperationsLog from "./modules/Maitenance/System Tools/OperationsLog";
+import SipLogViewer from "./modules/Maitenance/System Tools/SipLogViewer";
 // FXS → modules/FXS/Route pages
 import FxsRouteRoutingParameterPage from "./modules/FXS/Route/RouteRoutingParameterPage";
 import FxsRouteIpToTelPage from "./modules/FXS/Route/RouteIpToTelPage";
@@ -321,22 +317,18 @@ export const router = createBrowserRouter([
       { path: ROUTE_PATHS.AUTHORIZATION, element: <Authorization /> },
       { path: ROUTE_PATHS.IDS_SETTINGS, element: <IDSSettings /> },
       { path: ROUTE_PATHS.DDOS_SETTINGS, element: <DDOSSettings /> },
-      { path: ROUTE_PATHS.CERTIFICATE_MANAGE, element: <CertificateManage /> },
-      { path: ROUTE_PATHS.RADIUS, element: <Radius /> },
-      { path: ROUTE_PATHS.SIP_ACCOUNT_GENERATOR, element: <SIPAccountGenerator /> },
       { path: ROUTE_PATHS.CONFIG_FILE, element: <ConfigFile /> },
       { path: ROUTE_PATHS.SIGNALING_CAPTURE, element: <SignalingCapture /> },
       { path: ROUTE_PATHS.SIGNALING_CALL_TEST, element: <SignalingCallTest /> },
       { path: ROUTE_PATHS.SIGNALING_CALL_TRACK, element: <SignalingCallTrack /> },
       { path: ROUTE_PATHS.MODIFICATION_RECORD, element: <ModificationRecord /> },
       { path: ROUTE_PATHS.OPERATIONS_LOG, element: <OperationsLog /> },
+      { path: ROUTE_PATHS.SIP_LOG_VIEWER, element: <SipLogViewer /> },
       { path: ROUTE_PATHS.BACKUP_UPLOAD, element: <BackupUpload /> },
       { path: ROUTE_PATHS.FACTORY_RESET, element: <FactoryReset /> },
       { path: ROUTE_PATHS.UPGRADE, element: <Upgrade /> },
-      { path: ROUTE_PATHS.DEVICE_LOCK, element: <DeviceLock /> },
       { path: ROUTE_PATHS.RESTART, element: <Restart /> },
       { path: ROUTE_PATHS.LICENCE, element: <LicenceRouteGate /> },
-      { path: ROUTE_PATHS.SQL_UPLOAD, element: <SystemToolsSqlUpload /> },
       { path: ROUTE_PATHS.HOSTS, element: <Hosts /> },
       { path: ROUTE_PATHS.LICENSE_LIMITS, element: <LicenseLimits /> },
 
@@ -471,9 +463,6 @@ export const router = createBrowserRouter([
       { path: "/system-tools/authorization", element: <Navigate to={ROUTE_PATHS.AUTHORIZATION} replace /> },
       { path: "/system-tools/ids-settings", element: <Navigate to={ROUTE_PATHS.IDS_SETTINGS} replace /> },
       { path: "/system-tools/ddos-settings", element: <Navigate to={ROUTE_PATHS.DDOS_SETTINGS} replace /> },
-      { path: "/system-tools/certificate-manage", element: <Navigate to={ROUTE_PATHS.CERTIFICATE_MANAGE} replace /> },
-      { path: "/system-tools/radius", element: <Navigate to={ROUTE_PATHS.RADIUS} replace /> },
-      { path: "/system-tools/sip-account-generator", element: <Navigate to={ROUTE_PATHS.SIP_ACCOUNT_GENERATOR} replace /> },
       { path: "/system-tools/config-file", element: <Navigate to={ROUTE_PATHS.CONFIG_FILE} replace /> },
       { path: "/system-tools/hosts", element: <Navigate to={ROUTE_PATHS.HOSTS} replace /> },
       { path: "/system-tools/signaling-capture", element: <Navigate to={ROUTE_PATHS.SIGNALING_CAPTURE} replace /> },
@@ -481,13 +470,12 @@ export const router = createBrowserRouter([
       { path: "/system-tools/signaling-call-track", element: <Navigate to={ROUTE_PATHS.SIGNALING_CALL_TRACK} replace /> },
       { path: "/system-tools/modification-record", element: <Navigate to={ROUTE_PATHS.MODIFICATION_RECORD} replace /> },
       { path: "/system-tools/operations-log", element: <Navigate to={ROUTE_PATHS.OPERATIONS_LOG} replace /> },
+      { path: "/system-tools/sip-log-viewer", element: <Navigate to={ROUTE_PATHS.SIP_LOG_VIEWER} replace /> },
       { path: "/system-tools/backup-upload", element: <Navigate to={ROUTE_PATHS.BACKUP_UPLOAD} replace /> },
       { path: "/system-tools/factory-reset", element: <Navigate to={ROUTE_PATHS.FACTORY_RESET} replace /> },
       { path: "/system-tools/upgrade", element: <Navigate to={ROUTE_PATHS.UPGRADE} replace /> },
-      { path: "/system-tools/device-lock", element: <Navigate to={ROUTE_PATHS.DEVICE_LOCK} replace /> },
       { path: "/system-tools/restart", element: <Navigate to={ROUTE_PATHS.RESTART} replace /> },
       { path: "/system-tools/licence", element: <Navigate to={ROUTE_PATHS.LICENCE} replace /> },
-      { path: "/system-tools/sql-upload", element: <Navigate to={ROUTE_PATHS.SQL_UPLOAD} replace /> },
       { path: "/system-tools/license-limits", element: <Navigate to={ROUTE_PATHS.LICENSE_LIMITS} replace /> },
       { path: "/system-tools/network", element: <Navigate to={ROUTE_PATHS.NETWORK_SETTINGS_NETWORK} replace /> },
       { path: "/system-tools/storage", element: <Navigate to={ROUTE_PATHS.SYSTEM_SETTINGS_STORAGE} replace /> },
