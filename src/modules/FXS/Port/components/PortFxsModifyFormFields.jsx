@@ -1,9 +1,11 @@
 import React from "react";
-import { Alert, Checkbox, Tooltip } from "@mui/material";
+import {
+  Alert, Checkbox, Tooltip } from "@mui/material";
 import {
   Btn,
   addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle,
   addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle,
+  extensionTableCheckboxSx as portFxsModifyCheckboxSx,
 } from "../../../../components/common";
 import { C } from "../../../../theme/pbxTokens";
 import {
@@ -19,6 +21,7 @@ import {
   FORM_TABLE_WIDTH,
   getPortFxsModifyFieldKeyDown,
 } from "./PortFxsModifyTableHelpers";
+
 
 export const fxsFormInlineFooterStyle = {
   display: "flex",
@@ -177,13 +180,7 @@ const nativeFieldSelectStyle = {
   appearance: "auto",
 };
 
-export const portFxsModifyCheckboxSx = {
-  padding: "4px",
-  color: "#64748b",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
-};
+
 
 export const addNewModalFooterBtnStyle = fxsAddNewModalFooterBtnStyle;
 export const addNewModalFooterCancelBtnStyle = fxsAddNewModalFooterCancelBtnStyle;

@@ -1,9 +1,15 @@
 import React from "react";
-import { ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION, ROUTE_IP_PSTN_PAGE_TITLE, ROUTE_IP_PSTN_FIELD_TOOLTIPS } from "../../../../constants/RouteIPtoPstnConstants";
+import {
+  ROUTE_IP_PSTN_PAGE_BREADCRUMB_SECTION, ROUTE_IP_PSTN_PAGE_TITLE, ROUTE_IP_PSTN_FIELD_TOOLTIPS } from "../../../../constants/RouteIPtoPstnConstants";
 import { Checkbox, Tooltip } from "@mui/material";
 
 import { OUTLINED_BORDER, OUTLINED_FOCUS, OUTLINED_HOVER, FOCUS_RING_SHADOW, C } from "../../../../theme/pbxTokens";
-import { Btn, TH, ExtensionBreadcrumb as FxsBreadcrumb, addNewModalFooterStyle as fxsAddNewModalFooterStyle, addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle, addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle } from "../../../../components/common";
+import { Btn, TH, ExtensionBreadcrumb as FxsBreadcrumb, addNewModalFooterStyle as fxsAddNewModalFooterStyle, addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle, addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle,
+  extensionTableCheckboxSx as routeIpToTelCheckboxSx,
+} from "../../../../components/common";
+
+export { routeIpToTelCheckboxSx };
+
 export const fxsModalTitleStyle = {
   background: "#1e2d42",
   color: "#ffffff",
@@ -229,12 +235,7 @@ export const routeIpToTelSelectStyle = {
   width: "100%",
 };
 
-export const routeIpToTelCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const RouteIpToTelBreadcrumb = () => (
   <FxsBreadcrumb root="FXS"

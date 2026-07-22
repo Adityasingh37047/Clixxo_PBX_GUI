@@ -1,9 +1,15 @@
 import React from "react";
-import { PORT_GROUP_PAGE_BREADCRUMB_SECTION, PORT_GROUP_PAGE_BREADCRUMB_TITLE, PORT_GROUP_FIELD_TOOLTIPS, PORT_GROUP_INDEX_OPTIONS, PORT_GROUP_REGISTER_OPTIONS, PORT_GROUP_AUTHENTICATION_MODE_OPTIONS, PORT_GROUP_SELECT_MODE_OPTIONS, PORT_GROUP_MULTI_GROUP_OPTIONS } from "../../../../constants/PortGroupPageConstants";
+import {
+  PORT_GROUP_PAGE_BREADCRUMB_SECTION, PORT_GROUP_PAGE_BREADCRUMB_TITLE, PORT_GROUP_FIELD_TOOLTIPS, PORT_GROUP_INDEX_OPTIONS, PORT_GROUP_REGISTER_OPTIONS, PORT_GROUP_AUTHENTICATION_MODE_OPTIONS, PORT_GROUP_SELECT_MODE_OPTIONS, PORT_GROUP_MULTI_GROUP_OPTIONS } from "../../../../constants/PortGroupPageConstants";
 import { Checkbox, Tooltip } from "@mui/material";
 
 import { OUTLINED_BORDER, OUTLINED_FOCUS, OUTLINED_HOVER, C, FOCUS_RING_SHADOW } from "../../../../theme/pbxTokens";
-import { Btn, TH, ExtensionBreadcrumb as FxsBreadcrumb, extensionCardStyle as fxsCardStyle, extensionToolbarStyle as fxsToolbarStyle, addNewModalFooterBtnStyle as fxsToolbarBtnStyle, addNewModalFooterStyle as fxsAddNewModalFooterStyle, addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle, addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle, extensionPageWrapStyle as fxsPageWrapStyle, extensionPageInnerStyle as fxsPageInnerStyle, extensionPaginationStyle as fxsPaginationStyle, extensionCancelBtnStyle as fxsToolbarCancelBtnStyle, extensionPrimaryBtnStyle as fxsToolbarPrimaryBtnStyle } from "../../../../components/common";
+import { Btn, TH, ExtensionBreadcrumb as FxsBreadcrumb, extensionCardStyle as fxsCardStyle, extensionToolbarStyle as fxsToolbarStyle, addNewModalFooterBtnStyle as fxsToolbarBtnStyle, addNewModalFooterStyle as fxsAddNewModalFooterStyle, addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle, addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle, extensionPageWrapStyle as fxsPageWrapStyle, extensionPageInnerStyle as fxsPageInnerStyle, extensionPaginationStyle as fxsPaginationStyle, extensionCancelBtnStyle as fxsToolbarCancelBtnStyle, extensionPrimaryBtnStyle as fxsToolbarPrimaryBtnStyle,
+  extensionTableCheckboxSx as portGroupCheckboxSx,
+} from "../../../../components/common";
+
+export { portGroupCheckboxSx };
+
 export const fxsModalBackdropSlotProps = {
   backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
 };
@@ -185,12 +191,7 @@ export const portGroupSelectStyle = {
   width: "100%",
 };
 
-export const portGroupCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const portGroupPageWrapStyle = fxsPageWrapStyle;
 export const portGroupPageInnerStyle = fxsPageInnerStyle;

@@ -1,6 +1,10 @@
-export { extensionPageWrapStyle as dialingRulePageWrapStyle, extensionPageInnerStyle as dialingRulePageInnerStyle, extensionCardStyle as dialingRuleCardStyle, extensionToolbarStyle as dialingRuleHeaderStyle, extensionCancelBtnStyle as dialingRuleToolbarCancelBtnStyle,
+export { extensionTableCheckboxSx as dialingRuleTableCheckboxSx } from "../../../../components/common";
+
+export {
+  extensionPageWrapStyle as dialingRulePageWrapStyle, extensionPageInnerStyle as dialingRulePageInnerStyle, extensionCardStyle as dialingRuleCardStyle, extensionToolbarStyle as dialingRuleHeaderStyle, extensionCancelBtnStyle as dialingRuleToolbarCancelBtnStyle,
   extensionPrimaryBtnStyle as dialingRuleToolbarPrimaryBtnStyle,
-  addNewModalFooterBtnStyle as dialingRuleToolbarBtnStyle, extensionSelectedBadgeStyle as dialingRuleSelectedBadgeStyle, extensionPaginationStyle as dialingRulePaginationStyle, extensionPageBadgeStyle as dialingRulePaginationPageBadgeStyle, extensionFixedAlertSx as dialingRuleFixedAlertSx, EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS, TH as TH, tdStyle as tdStyle } from "../../../../components/common";
+  addNewModalFooterBtnStyle as dialingRuleToolbarBtnStyle, extensionSelectedBadgeStyle as dialingRuleSelectedBadgeStyle, extensionPaginationStyle as dialingRulePaginationStyle, extensionPageBadgeStyle as dialingRulePaginationPageBadgeStyle, extensionFixedAlertSx as dialingRuleFixedAlertSx, EXTENSION_TABLE_CARD_RADIUS as CARD_RADIUS, TH as TH, tdStyle as tdStyle,
+} from "../../../../components/common";
 
 
 
@@ -36,12 +40,7 @@ export const dialingRuleEmptyMessageStyle = {
 export const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
 export const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
 
-export const dialingRuleTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const getDialingRuleRowBg = (isSelected, idx) =>
   isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";

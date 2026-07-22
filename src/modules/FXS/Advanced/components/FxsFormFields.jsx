@@ -1,15 +1,20 @@
 import React from "react";
-import { FXS_FIELD_TOOLTIPS, FXS_PAGE_BREADCRUMB_SECTION, FXS_PAGE_TITLE } from "../../../../constants/FxsConstants";
+import {
+  FXS_FIELD_TOOLTIPS, FXS_PAGE_BREADCRUMB_SECTION, FXS_PAGE_TITLE } from "../../../../constants/FxsConstants";
 import { Tooltip } from "@mui/material";
 
 import { OUTLINED_BORDER, OUTLINED_FOCUS, OUTLINED_HOVER, FOCUS_RING_SHADOW } from "../../../../theme/pbxTokens";
-import { TH, ExtensionBreadcrumb as FxsChromeBreadcrumb } from "../../../../components/common";
-
+import { TH, ExtensionBreadcrumb as FxsChromeBreadcrumb,
+  extensionTableCheckboxSx as fxsPageCheckboxSx,
+} from "../../../../components/common";
 import {
   advancedPageInnerStyle,
   advancedPageWrapStyle,
   fxsFieldBg,
 } from "./FxsTableHelpers";
+
+export { fxsPageCheckboxSx };
+
 
 export const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -134,12 +139,7 @@ export const nativeFieldSelectStyle = {
   cursor: "pointer",
 };
 
-export const fxsPageCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const valueColStyle = {
   flex: "0 0 auto",

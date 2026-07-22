@@ -51,6 +51,7 @@ import {
   pSTNCallInCalleeIDEmptyWrapStyle,
   pSTNCallInCalleeIDEmptyTitleStyle,
   pSTNCallInCalleeIDTableScrollStyle,
+  pSTNCallInCalleeIDPageBadgeStyle,
   PSTNCALLINCALLEEID_CARD_RADIUS,
 } from "./components/PSTNCallInCalleeIDTableHelpers";
 
@@ -376,17 +377,7 @@ const PSTNCallInCalleeID = () => {
                     >
                       ← Prev
                     </PSTNCallInCalleeIDBtn>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: C.accent,
-                        background: "#e0f2fe",
-                        padding: "5px 14px",
-                        borderRadius: 4,
-                        border: `1px solid ${C.cardBorder}`,
-                      }}
-                    >
+                    <span style={pSTNCallInCalleeIDPageBadgeStyle}>
                       Page {page} of {totalPages}
                     </span>
                     <PSTNCallInCalleeIDBtn

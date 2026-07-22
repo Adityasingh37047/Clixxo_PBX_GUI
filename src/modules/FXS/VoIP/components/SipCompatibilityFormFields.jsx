@@ -1,5 +1,6 @@
 import React from "react";
-import { SIP_COMPATIBILITY_FIELD_TOOLTIPS, FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT, FXS_SIP_COMPATIBILITY_SECTION_HEADING_COLOR, FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION, FXS_SIP_COMPATIBILITY_PAGE_TITLE } from "../../../../constants/SipCompatibilityConstants";
+import {
+  SIP_COMPATIBILITY_FIELD_TOOLTIPS, FXS_SIP_COMPATIBILITY_SECTION_HEADING_LEFT, FXS_SIP_COMPATIBILITY_SECTION_HEADING_COLOR, FXS_SIP_COMPATIBILITY_BREADCRUMB_SECTION, FXS_SIP_COMPATIBILITY_PAGE_TITLE } from "../../../../constants/SipCompatibilityConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 
 
@@ -10,7 +11,9 @@ import {
   OUTLINED_FOCUS,
   OUTLINED_HOVER,
 } from "../../../../theme/pbxTokens";
-import { ExtensionBreadcrumb as FxsBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb as FxsBreadcrumb,
+  extensionTableCheckboxSx as fxsSipCompatibilityCheckboxSx,
+} from "../../../../components/common";
 import { getSipCompatibilityFieldByKey } from "../utils/SipCompatibilityTransformers";
 import { shouldShowSipCompatibilityField } from "../utils/SipCompatibilityValidators";
 import {
@@ -25,6 +28,7 @@ import {
   fxsSipCompatibilityPageInnerStyle,
   fxsSipCompatibilityPageWrapStyle,
 } from "./SipCompatibilityTableHelpers";
+
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -141,12 +145,7 @@ const nativeFieldSelectStyle = {
   cursor: "pointer",
 };
 
-export const fxsSipCompatibilityCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const SipCompatibilityFieldRow = ({
   label,

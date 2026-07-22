@@ -1,8 +1,11 @@
 import { C } from "../../../../theme/pbxTokens";
 
+export { extensionTableCheckboxSx as PCM_TRUNK_GROUP_CHECKBOX_SX } from "../../../../components/common";
+
 export { extensionPageWrapStyle as toneDetecterPageWrapStyle, extensionPageInnerStyle as toneDetecterPageInnerStyle, extensionCardStyle as toneDetecterCardStyle, extensionToolbarStyle as toneDetecterHeaderStyle, extensionCancelBtnStyle as toneDetecterToolbarCancelBtnStyle,
   extensionPrimaryBtnStyle as toneDetecterToolbarPrimaryBtnStyle,
-  addNewModalFooterBtnStyle as toneDetecterToolbarBtnStyle, extensionSelectedBadgeStyle as toneDetecterSelectedBadgeStyle, extensionPaginationStyle as toneDetecterPaginationStyle, extensionPageBadgeStyle as toneDetecterPaginationPageBadgeStyle, extensionFixedAlertSx as toneDetecterFixedAlertSx, EXTENSION_TABLE_CARD_RADIUS as TONE_DETECTER_CARD_RADIUS, TH as TH, tdStyle as tdStyle } from "../../../../components/common";
+  addNewModalFooterBtnStyle as toneDetecterToolbarBtnStyle, extensionSelectedBadgeStyle as toneDetecterSelectedBadgeStyle, extensionPaginationStyle as toneDetecterPaginationStyle, extensionPageBadgeStyle as toneDetecterPaginationPageBadgeStyle, extensionFixedAlertSx as toneDetecterFixedAlertSx, EXTENSION_TABLE_CARD_RADIUS as TONE_DETECTER_CARD_RADIUS, TH as TH, tdStyle as tdStyle,
+} from "../../../../components/common";
 
 
 
@@ -49,12 +52,7 @@ export const toneDetecterPaginationNavBtnStyle = {
 export const PCM_TRUNK_GROUP_TH_GAP = { padding: "8px 14px" };
 export const PCM_TRUNK_GROUP_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
 
-export const PCM_TRUNK_GROUP_CHECKBOX_SX = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const getToneDetecterRowBg = (isSelected, idx) =>
   isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";

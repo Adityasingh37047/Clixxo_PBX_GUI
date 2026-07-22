@@ -1,5 +1,6 @@
 import React from "react";
-import { FXS_SIP_FIELD_TOOLTIPS, FXS_VOIP_SIP_SECTION_HEADING_LEFT, FXS_VOIP_SIP_SECTION_HEADING_COLOR, FXS_VOIP_SIP_BREADCRUMB_SECTION, FXS_VOIP_SIP_PAGE_TITLE } from "../../../../constants/FxsVoipSipConstants";
+import {
+  FXS_SIP_FIELD_TOOLTIPS, FXS_VOIP_SIP_SECTION_HEADING_LEFT, FXS_VOIP_SIP_SECTION_HEADING_COLOR, FXS_VOIP_SIP_BREADCRUMB_SECTION, FXS_VOIP_SIP_PAGE_TITLE } from "../../../../constants/FxsVoipSipConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 
 
@@ -10,7 +11,9 @@ import {
   OUTLINED_FOCUS,
   OUTLINED_HOVER,
 } from "../../../../theme/pbxTokens";
-import { ExtensionBreadcrumb as FxsBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb as FxsBreadcrumb,
+  extensionTableCheckboxSx as fxsVoipSipCheckboxSx,
+} from "../../../../components/common";
 import { getFxsVoipSipRegisterStatusDisplay } from "../utils/FxsVoipSipTransformers";
 import { shouldShowFxsVoipSipField } from "../utils/FxsVoipSipValidators";
 import {
@@ -24,6 +27,9 @@ import {
   fxsVoipSipPageInnerStyle,
   fxsVoipSipPageWrapStyle,
 } from "./FxsVoipSipTableHelpers";
+
+export { fxsVoipSipCheckboxSx };
+
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -143,12 +149,7 @@ const nativeFieldSelectStyle = {
   cursor: "pointer",
 };
 
-export const fxsVoipSipCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const FxsVoipSipFieldRow = ({ label, tooltipKey, children }) => {
   const tooltip = tooltipKey ? FXS_SIP_FIELD_TOOLTIPS[tooltipKey] || "" : "";

@@ -25,7 +25,11 @@ import {
   extensionCardStyle as fxsCardStyle,
   extensionPaginationStyle as fxsPaginationStyle,
   extensionToolbarStyle as fxsToolbarStyle,
+  extensionTableCheckboxSx as numManipulateCheckboxSx,
 } from "../../../../components/common";
+
+export { numManipulateCheckboxSx };
+
 
 export const fxsModalTitleStyle = {
   background: "#1e2d42",
@@ -145,12 +149,7 @@ export const numManipulateMuiSelectSx = {
   },
 };
 
-export const numManipulateCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 const FIELD_LABEL_COLOR = "#3E5475";
 

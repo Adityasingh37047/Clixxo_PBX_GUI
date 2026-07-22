@@ -1,5 +1,6 @@
 import React from "react";
-import { NAT_SETTINGS_FIELD_TOOLTIPS, FXS_NAT_SETTINGS_SECTION_HEADING_LEFT, FXS_NAT_SETTINGS_SECTION_HEADING_COLOR, FXS_NAT_SETTINGS_BREADCRUMB_SECTION, FXS_NAT_SETTINGS_PAGE_TITLE } from "../../../../constants/NatSettingsConstants";
+import {
+  NAT_SETTINGS_FIELD_TOOLTIPS, FXS_NAT_SETTINGS_SECTION_HEADING_LEFT, FXS_NAT_SETTINGS_SECTION_HEADING_COLOR, FXS_NAT_SETTINGS_BREADCRUMB_SECTION, FXS_NAT_SETTINGS_PAGE_TITLE } from "../../../../constants/NatSettingsConstants";
 import { Checkbox, Tooltip, useMediaQuery } from "@mui/material";
 
 
@@ -10,7 +11,9 @@ import {
   OUTLINED_FOCUS,
   OUTLINED_HOVER,
 } from "../../../../theme/pbxTokens";
-import { ExtensionBreadcrumb as FxsBreadcrumb } from "../../../../components/common";
+import { ExtensionBreadcrumb as FxsBreadcrumb,
+  extensionTableCheckboxSx as fxsNatSettingsCheckboxSx,
+} from "../../../../components/common";
 import {
   isNatSettingsCheckboxDisabled,
   shouldShowNatSettingsField,
@@ -26,6 +29,7 @@ import {
   fxsNatSettingsPageInnerStyle,
   fxsNatSettingsPageWrapStyle,
 } from "./NatSettingsTableHelpers";
+
 
 const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -142,12 +146,7 @@ const nativeFieldSelectStyle = {
   cursor: "pointer",
 };
 
-export const fxsNatSettingsCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const NatSettingsFieldRow = ({ label, tooltipKey, children }) => {
   const tooltip = tooltipKey
