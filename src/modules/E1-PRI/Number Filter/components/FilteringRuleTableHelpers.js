@@ -1,13 +1,23 @@
+import {
+  EXTENSION_TABLE_CARD_RADIUS as FILTERING_RULE_CARD_RADIUS,
+  extensionPageInnerStyle as filteringRulePageInnerStyle,
+  extensionPageWrapStyle as filteringRulePageWrapStyle,
+  extensionPaginationStyle as filteringRuleFooterStyle,
+  extensionSelectedBadgeStyle as filteringRuleSelectedBadgeStyle,
+  getExtensionRowBg as getFilteringRuleRowBg,
+} from "../../../../components/common";
+
 export {
-  getNumberFilterRowBg as getFilteringRuleRowBg,
-  numberFilterFixedAlertSx as filteringRuleFixedAlertSx,
-  numberFilterPageWrapStyle as filteringRulePageWrapStyle,
-  numberFilterPageInnerStyle as filteringRulePageInnerStyle,
-  numberFilterSelectedBadgeStyle as filteringRuleSelectedBadgeStyle,
-  numberFilterCancelBtnStyle as filteringRuleCancelBtnStyle,
-  numberFilterToolbarBtnStyle as filteringRuleToolbarBtnStyle,
-  numberFilterListTableScrollStyle as filteringRuleTableScrollStyle,
-  numberFilterListFooterStyle as filteringRuleFooterStyle,
-  numberFilterC as filteringRuleC,
-  NUMBER_FILTER_CARD_RADIUS as FILTERING_RULE_CARD_RADIUS,
-} from "./NumberFilterSharedTableHelpers";
+  FILTERING_RULE_CARD_RADIUS,
+  filteringRulePageInnerStyle,
+  filteringRulePageWrapStyle,
+  filteringRuleFooterStyle,
+  filteringRuleSelectedBadgeStyle,
+  getFilteringRuleRowBg,
+};
+
+export const filteringRuleTableScrollStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  flex: 1,
+};

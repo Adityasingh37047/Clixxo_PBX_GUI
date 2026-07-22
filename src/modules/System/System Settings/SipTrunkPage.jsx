@@ -71,6 +71,8 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn as SystemSettingsBtn,
+  TH,
+  tdStyle,
   ExtensionBreadcrumb,
   EXTENSION_TABLE_CARD_RADIUS as SIP_TRUNK_TABLE_CARD_RADIUS,
   extensionPageWrapStyle as systemSettingsPageWrapStyle,
@@ -84,52 +86,13 @@ import {
   addNewModalFooterStyle,
   addNewModalFooterBtnStyle,
   extensionModalCancelBtnStyle as systemSettingsModalCancelBtnStyle,
+  extensionTableCheckboxSx as systemSettingsCheckboxSx,
+  getExtensionRowBg as getGlobalSipRowBg,
 } from "../../../components/common";
 
 // ── Page UI (shared chrome + local field helpers) ──
 const GLOBAL_SIP_COMPACT_MQ = "(max-width: 768px)";
 const GLOBAL_SIP_SCROLL_CLASS = "global-sip-scroll";
-
-const systemSettingsTdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
-};
-
-const SystemSettingsTH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const systemSettingsCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
 
 const systemSettingsPaginationStyle = {
   display: "flex",
@@ -954,7 +917,7 @@ const SipTrunkPage = () => {
               >
                 <thead>
                   <tr>
-                    <SystemSettingsTH
+                    <TH
                       style={{
                         width: 40,
                         padding: 0,
@@ -978,16 +941,16 @@ const SipTrunkPage = () => {
                         disabled={loading.delete}
                         sx={systemSettingsCheckboxSx}
                       />
-                    </SystemSettingsTH>
+                    </TH>
                     {SIP_TRUNK_TABLE_COLUMNS.map((col) => (
-                      <SystemSettingsTH
+                      <TH
                         key={col.key}
                         style={{ position: "sticky", top: 0, zIndex: 10 }}
                       >
                         {col.label}
-                      </SystemSettingsTH>
+                      </TH>
                     ))}
-                    <SystemSettingsTH
+                    <TH
                       style={{
                         width: 70,
                         borderRight: "none",
@@ -997,7 +960,7 @@ const SipTrunkPage = () => {
                       }}
                     >
                       {GLOBAL_SIP_COL_MODIFY}
-                    </SystemSettingsTH>
+                    </TH>
                   </tr>
                 </thead>
                 <tbody>
@@ -1005,11 +968,7 @@ const SipTrunkPage = () => {
                     const realIdx = idx;
                     const isLastRow = idx === registers.length - 1;
                     const isRowChecked = selected.includes(realIdx);
-                    const rowBg = isRowChecked
-                      ? "#eff6ff"
-                      : idx % 2 === 1
-                        ? "#f8fafc"
-                        : "#ffffff";
+                    const rowBg = getGlobalSipRowBg(isRowChecked, idx);
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
@@ -1032,7 +991,7 @@ const SipTrunkPage = () => {
                       >
                         <td
                           style={{
-                            ...systemSettingsTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             borderLeft: "none",
                             width: 36,
@@ -1057,7 +1016,7 @@ const SipTrunkPage = () => {
                           <td
                             key={col.key}
                             style={{
-                              ...systemSettingsTdStyle,
+                              ...tdStyle,
                               background: rowBg,
                               ...lastRowCellStyle,
                             }}
@@ -1069,7 +1028,7 @@ const SipTrunkPage = () => {
                         ))}
                         <td
                           style={{
-                            ...systemSettingsTdStyle,
+                            ...tdStyle,
                             background: rowBg,
                             borderRight: "none",
                             ...lastRowCellStyle,

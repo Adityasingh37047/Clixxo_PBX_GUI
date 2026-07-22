@@ -37,6 +37,13 @@ import {
   tdStyle,
   checkboxSx,
   PcmNumReceivingRuleBreadcrumb,
+  pcmNumReceivingRulePaginationStyle as pcmNumRecvRulePaginationStyle,
+  pcmNumReceivingRulePageBadgeStyle as pcmNumRecvRulePageBadgeStyle,
+  pcmNumReceivingRuleAddNewModalFooterStyle as addNewModalFooterStyle,
+  pcmNumReceivingRuleCardStyle as pcmNumRecvRuleCardStyle,
+  pcmNumReceivingRuleToolbarStyle as pcmNumRecvRuleToolbarStyle,
+  pcmNumReceivingRuleCancelBtnStyle as pcmNumRecvRuleCancelBtnStyle,
+  pcmNumReceivingRulePrimaryBtnStyle as pcmNumRecvRulePrimaryBtnStyle,
 } from "./components/PcmNumReceivingRuleFormFields";
 import {
   CARD_RADIUS,
@@ -44,6 +51,9 @@ import {
   pcmNumReceivingRuleEditIconStyle,
   handlePcmNumReceivingRuleEditIconHover,
   getPcmNumReceivingRuleRowBg,
+  pcmNumReceivingRuleSelectedBadgeStyle as pcmNumRecvRuleSelectedBadgeStyle,
+  pcmNumReceivingRulePageWrapStyle as pcmNumRecvRulePageWrapStyle,
+  pcmNumReceivingRulePageInnerStyle as pcmNumRecvRulePageInnerStyle,
 } from "./components/PcmNumReceivingRuleTableHelpers";
 
 /* Page-local styles/helpers preserved from monolith */
@@ -164,110 +174,6 @@ const PcmNumReceivingRuleFieldRow = ({
 );
 
 // ── Color palette (matches Extensions page) ───────────────────────────────────
-
-const PCM_NUM_RECV_RULE_CARD_RADIUS = 4;
-
-const pcmNumRecvRulePageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pcmNumRecvRulePageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-// ── Button (matches Extensions page) ─────────────────────────────────────────
-
-const pcmNumRecvRuleCardStyle = {
-  background: "#ffffff",
-  borderRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const pcmNumRecvRuleToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
-  borderTopRightRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
-};
-
-const pcmNumRecvRulePaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
-  borderBottomRightRadius: PCM_NUM_RECV_RULE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const pcmNumRecvRuleSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const pcmNumRecvRuleCancelBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const pcmNumRecvRulePrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-};
-
-const pcmNumRecvRulePageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
 
 const addNewModalFooterBtnStyle = {
   height: 30,

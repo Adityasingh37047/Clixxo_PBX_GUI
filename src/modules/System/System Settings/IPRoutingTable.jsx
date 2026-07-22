@@ -63,18 +63,24 @@ import {
 } from "../../../theme/pbxTokens";
 import {
   Btn,
+  TH,
+  tdStyle,
   ExtensionBreadcrumb,
+  EXTENSION_TABLE_CARD_RADIUS as IP_ROUTE_TABLE_CARD_RADIUS,
   extensionPageWrapStyle as ipRoutePageWrapStyle,
   extensionPageInnerStyle as ipRoutePageInnerStyle,
   extensionFixedAlertSx as ipRouteFixedAlertSx,
+  extensionCardStyle as ipRouteCardStyle,
+  extensionToolbarStyle as ipRouteToolbarStyle,
+  extensionPaginationStyle as ipRoutePaginationStyle,
+  extensionSelectedBadgeStyle as ipRouteSelectedBadgeStyle,
+  extensionTableCheckboxSx as ipRouteTableCheckboxSx,
+  getExtensionTdStyle as getIpRouteTdStyle,
+  getExtensionRowBg as getIpRouteRowBg,
 } from "../../../components/common";
 
 const IP_ROUTE_TABLE_COMPACT_MQ = "(max-width: 768px)";
 const IP_ROUTE_TABLE_SCROLL_CLASS = "ip-route-table-scroll";
-
-
-
-const IP_ROUTE_TABLE_CARD_RADIUS = 4;
 
 const ipRouteOutlinedInputRootSx = {
   backgroundColor: "#fff",
@@ -329,57 +335,14 @@ const ipRouteModalCancelBtnStyle = {
   boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
 
-const TH = ({ children, style: extra }) => (
-  <th
-    style={{
-      background: "#F8FAFC",
-      color: C.labelText,
-      fontWeight: 700,
-      fontSize: 11,
-      padding: "9px 14px",
-      textAlign: "center",
-      borderBottom: `1px solid ${C.divider}`,
-      borderRight: `1px solid ${C.divider}`,
-      whiteSpace: "nowrap",
-      textTransform: "uppercase",
-      letterSpacing: "0.14em",
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-      ...extra,
-    }}
-  >
-    {children}
-  </th>
-);
-
-const tdStyle = {
-  padding: "7px 14px",
-  fontSize: 13,
-  color: C.valueText,
-  textAlign: "center",
-  borderBottom: `1px solid ${C.divider}`,
-  borderRight: `1px solid ${C.divider}`,
-  whiteSpace: "nowrap",
+const ipRouteCancelBtnStyle = {
+  height: 30,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  borderRadius: 4,
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
 };
-
-const ipRouteTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-
-const getIpRouteTdStyle = (rowBg, lastRowCellStyle, extra = {}) => ({
-  ...tdStyle,
-  background: rowBg,
-  ...lastRowCellStyle,
-  ...extra,
-});
-
-const getIpRouteRowBg = (isSelected, idx) =>
-  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
 const IpRouteTableEditIcon = ({ disabled, onClick }) => (
   <EditDocumentIcon
@@ -411,59 +374,6 @@ const IpRouteTableBreadcrumb = () => (
     current={IP_ROUTING_TABLE_PAGE_TITLE}
   />
 );
-
-const ipRouteCardStyle = {
-  background: "#ffffff",
-  borderRadius: IP_ROUTE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const ipRouteToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: IP_ROUTE_TABLE_CARD_RADIUS,
-  borderTopRightRadius: IP_ROUTE_TABLE_CARD_RADIUS,
-};
-
-const ipRoutePaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: IP_ROUTE_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: IP_ROUTE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const ipRouteSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const ipRouteCancelBtnStyle = {
-  height: 30,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  borderRadius: 4,
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
 
 const ipRoutePrimaryBtnStyle = {
   height: 30,

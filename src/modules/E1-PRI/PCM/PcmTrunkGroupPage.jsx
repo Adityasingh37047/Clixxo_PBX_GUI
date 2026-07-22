@@ -40,6 +40,15 @@ import {
   tdStyle,
   checkboxSx,
   PcmTrunkGroupBreadcrumb,
+  PcmTrunkGroupPagination,
+  PcmTrunkGroupTableListLoading as TableListLoading,
+  PcmTrunkGroupTableListEmptyState as TableListEmptyState,
+  pcmTrunkGroupCardStyle,
+  pcmTrunkGroupToolbarStyle,
+  pcmTrunkGroupCancelBtnStyle,
+  pcmTrunkGroupPrimaryBtnStyle,
+  pcmTrunkGroupPageBadgeStyle,
+  pcmTrunkGroupPaginationStyle,
 } from "./components/PcmTrunkGroupFormFields";
 import {
   CARD_RADIUS,
@@ -47,6 +56,9 @@ import {
   pcmTrunkGroupEditIconStyle,
   handlePcmTrunkGroupEditIconHover,
   getPcmTrunkGroupRowBg,
+  pcmTrunkGroupPageWrapStyle,
+  pcmTrunkGroupPageInnerStyle,
+  pcmTrunkGroupSelectedBadgeStyle,
 } from "./components/PcmTrunkGroupTableHelpers";
 
 /* Page-local styles/helpers preserved from monolith */
@@ -242,182 +254,6 @@ const pcmTrunkGroupSelectStyle = {
   cursor: "pointer",
 };
 
-const pcmTrunkGroupPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pcmTrunkGroupPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
-const TableListLoading = () => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 48,
-    }}
-  >
-    <CircularProgress size={28} style={{ color: C.accent }} />
-  </div>
-);
-
-const TableListEmptyState = ({
-  message,
-  onAddNew,
-  buttonLabel = "+ Add New",
-  showButton = true,
-}) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: 240,
-      padding: 24,
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        color: "#3E5475",
-        fontSize: 13,
-        fontWeight: 600,
-        marginBottom: showButton && onAddNew ? 16 : 0,
-      }}
-    >
-      {message}
-    </div>
-    {showButton && onAddNew ? (
-      <Btn
-        variant="cancel"
-        onClick={onAddNew}
-        style={{ height: 30, padding: "6px 14px", fontSize: 12, borderRadius: 4 }}
-      >
-        {buttonLabel}
-      </Btn>
-    ) : null}
-  </div>
-);
-
-const PCM_TRUNK_GROUP_TABLE_CARD_RADIUS = 4;
-
-const pcmTrunkGroupCardStyle = {
-  background: "#ffffff",
-  borderRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const pcmTrunkGroupToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  borderTopRightRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-};
-
-const pcmTrunkGroupPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: PCM_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const pcmTrunkGroupSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const pcmTrunkGroupCancelBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const pcmTrunkGroupPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-};
-
-const pcmTrunkGroupPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
-
-const PcmTrunkGroupPagination = ({
-  page,
-  totalPages,
-  recordCount,
-  onPageChange,
-  recordLabel = "record",
-  style,
-}) => (
-  <div style={{ ...pcmTrunkGroupPaginationStyle, ...style }}>
-    <span style={{ fontSize: 11, color: C.mutedText }}>
-      Showing {recordCount} {recordLabel}
-      {recordCount !== 1 ? "s" : ""} on page {page}
-    </span>
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <Btn
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        ← Prev
-      </Btn>
-      <span style={pcmTrunkGroupPageBadgeStyle}>
-        Page {page} of {totalPages}
-      </span>
-      <Btn
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= totalPages}
-        variant="outline"
-        style={{ borderRadius: 4 }}
-      >
-        Next →
-      </Btn>
-    </div>
-  </div>
-);
-
 // ── Local modal field UI (inlined from e1PriSharedUi) ──
 const OUTLINED_BORDER = "rgba(0, 0, 0, 0.23)";
 const OUTLINED_HOVER = "rgba(0, 0, 0, 0.87)";
@@ -496,13 +332,6 @@ const pcmTrunkGroupModalFormPanelStyle = {
   border: `1px solid ${C.cardBorder}`,
   borderRadius: 4,
   padding: 20,
-};
-
-const pcmTrunkGroupTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 // const LOCAL_STORAGE_KEY = 'pcmTrunkGroups';
@@ -713,7 +542,7 @@ const PcmTrunkGroupPage = () => {
                           checked={allPageSelected}
                           indeterminate={somePageSelected}
                           onChange={handleToggleAll}
-                          sx={pcmTrunkGroupTableCheckboxSx}
+                          sx={checkboxSx}
                         />
                       </TH>
                       {PCM_TRUNK_GROUP_TABLE_COLUMNS.filter(
@@ -777,7 +606,7 @@ const PcmTrunkGroupPage = () => {
                               checked={isRowChecked}
                               onChange={() => handleSelectRow(realIdx)}
                               disabled={isLoadingData}
-                              sx={pcmTrunkGroupTableCheckboxSx}
+                              sx={checkboxSx}
                             />
                           </td>
 

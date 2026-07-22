@@ -1,31 +1,11 @@
 import { C } from "../../../../theme/pbxTokens";
+import {
+  EXTENSION_TABLE_CARD_RADIUS as CALL_QUEUE_TABLE_CARD_RADIUS,
+  extensionPaginationStyle as callQueuePaginationStyle,
+  extensionPageBadgeStyle as callQueuePageBadgeStyle,
+} from "../../../../components/common";
 
 // ── Local page UI ──
-
-
-const CALL_QUEUE_TABLE_CARD_RADIUS = 4;
-
-const callQueuePaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: CALL_QUEUE_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: CALL_QUEUE_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const callQueuePageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
 
 const callQueueEditIconStyle = {
   cursor: "pointer",
@@ -43,4 +23,10 @@ const handleCallQueueEditIconHover = (e, entering) => {
 export const getCallQueueRowBg = (isSelected, idx) =>
   isSelected ? "#e0f2fe" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
-export { CALL_QUEUE_TABLE_CARD_RADIUS, callQueuePaginationStyle, callQueuePageBadgeStyle, callQueueEditIconStyle, handleCallQueueEditIconHover };
+export {
+  CALL_QUEUE_TABLE_CARD_RADIUS,
+  callQueuePaginationStyle,
+  callQueuePageBadgeStyle,
+  callQueueEditIconStyle,
+  handleCallQueueEditIconHover,
+};

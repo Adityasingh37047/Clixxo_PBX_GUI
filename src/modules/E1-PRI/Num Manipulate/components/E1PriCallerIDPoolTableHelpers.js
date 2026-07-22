@@ -1,15 +1,29 @@
 import { C } from "../../../../theme/pbxTokens";
+import {
+  EXTENSION_TABLE_CARD_RADIUS as E1PRICALLERIDPOOL_CARD_RADIUS,
+  extensionPageInnerStyle as e1PriPageInnerStyle,
+  extensionPageWrapStyle as e1PriPageWrapStyle,
+  getExtensionRowBg as getE1PriCallerIDPoolRowBg,
+} from "../../../../components/common";
 
-import { EXTENSION_TABLE_CARD_RADIUS as E1_PRI_CARD_RADIUS, extensionPageInnerStyle as e1PriPageInnerStyle, extensionPageWrapStyle as e1PriPageWrapStyle } from "../../../../components/common";
+export { E1PRICALLERIDPOOL_CARD_RADIUS, getE1PriCallerIDPoolRowBg };
 
+export const e1PriCallerIDPoolEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
 
-
-export {
-  getE1PriNumManipulateRowBg as getE1PriCallerIDPoolRowBg,
-  e1PriNumManipulateEditIconStyle as e1PriCallerIDPoolEditIconStyle,
-  handleE1PriNumManipulateEditIconHover as handleE1PriCallerIDPoolEditIconHover,
-  E1_PRI_NUM_MANIPULATE_CARD_RADIUS as E1PRICALLERIDPOOL_CARD_RADIUS,
-} from "./E1PriNumManipulateSharedTableHelpers";
+export const handleE1PriCallerIDPoolEditIconHover = (
+  e,
+  entering,
+  loadingDelete = false,
+) => {
+  if (loadingDelete) return;
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
 
 export const e1PriCallerIDPoolPageWrapStyle = {
   ...e1PriPageWrapStyle,
@@ -36,7 +50,7 @@ export const e1PriCallerIDPoolPageInnerStyle = {
 export const e1PriCallerIDPoolPanelCardStyle = {
   background: C.cardBg,
   border: `1px solid ${C.cardBorder}`,
-  borderRadius: E1_PRI_CARD_RADIUS,
+  borderRadius: E1PRICALLERIDPOOL_CARD_RADIUS,
   boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
   overflow: "hidden",
   display: "flex",
