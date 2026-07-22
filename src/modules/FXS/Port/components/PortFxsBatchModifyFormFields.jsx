@@ -1,5 +1,6 @@
 import React from "react";
-import { Alert, Checkbox, Tooltip } from "@mui/material";
+import {
+  Alert, Checkbox, Tooltip } from "@mui/material";
 import {
   OUTLINED_BORDER,
   OUTLINED_FOCUS,
@@ -12,6 +13,7 @@ import {
   TH,
   addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle,
   addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle,
+  extensionTableCheckboxSx as portFxsBatchCheckboxSx,
 } from "../../../../components/common";
 import {
   PORT_FXS_BATCH_MODIFY_FIELDS,
@@ -27,6 +29,7 @@ import {
   BATCH_LABEL_WIDTH,
   getPortFxsBatchFieldKeyDown,
 } from "./PortFxsBatchModifyTableHelpers";
+
 
 export const fxsFormInlineFooterStyle = {
   display: "flex",
@@ -162,12 +165,7 @@ export const portFxsBatchDialogFieldStyle = {
   width: "200px",
 };
 
-export const portFxsBatchCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const addNewModalFooterBtnStyle = fxsAddNewModalFooterBtnStyle;
 export const addNewModalFooterCancelBtnStyle = fxsAddNewModalFooterCancelBtnStyle;

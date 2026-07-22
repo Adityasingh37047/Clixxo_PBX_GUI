@@ -13,5 +13,6 @@ export {
   numManipulateEmptyWrapStyle as iPCallInCalleeIDEmptyWrapStyle,
   numManipulateEmptyTitleStyle as iPCallInCalleeIDEmptyTitleStyle,
   numManipulateTableScrollStyle as iPCallInCalleeIDTableScrollStyle,
+  numManipulatePageBadgeStyle as iPCallInCalleeIDPageBadgeStyle,
   NUM_MANIPULATE_CARD_RADIUS as IPCALLINCALLEEID_CARD_RADIUS,
 } from "./NumManipulateSharedTableHelpers";

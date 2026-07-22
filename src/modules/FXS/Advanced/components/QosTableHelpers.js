@@ -1,6 +1,12 @@
-import { C } from "../../../../theme/pbxTokens";
+import {
+  C } from "../../../../theme/pbxTokens";
 
-import { extensionToolbarStyle as fxsToolbarStyle } from "../../../../components/common";
+import { extensionToolbarStyle as fxsToolbarStyle,
+  extensionTableCheckboxSx as qosCheckboxSx,
+} from "../../../../components/common";
+
+export { qosCheckboxSx };
+
 
 export const fxsFormInlineFooterStyle = {
   display: "flex",
@@ -40,8 +46,4 @@ export const qosFormBodyStyle = {
   boxSizing: "border-box",
 };
 
-export const qosCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-};
+

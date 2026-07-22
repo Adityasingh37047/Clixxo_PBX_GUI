@@ -1,6 +1,12 @@
-import { EXTENSION_TABLE_CARD_RADIUS as FXS_CARD_RADIUS, extensionSelectedBadgeStyle, extensionFixedAlertSx as fxsFixedAlertSx, extensionPageInnerStyle as fxsPageInnerStyle, extensionPageWrapStyle as fxsPageWrapStyle, extensionCancelBtnStyle as fxsToolbarCancelBtnStyle,
+import {
+  EXTENSION_TABLE_CARD_RADIUS as FXS_CARD_RADIUS, extensionSelectedBadgeStyle, extensionFixedAlertSx as fxsFixedAlertSx, extensionPageInnerStyle as fxsPageInnerStyle, extensionPageWrapStyle as fxsPageWrapStyle, extensionCancelBtnStyle as fxsToolbarCancelBtnStyle,
   extensionPrimaryBtnStyle as fxsToolbarPrimaryBtnStyle,
-  addNewModalFooterBtnStyle as fxsToolbarBtnStyle } from "../../../../components/common";
+  addNewModalFooterBtnStyle as fxsToolbarBtnStyle,
+  extensionPageBadgeStyle as numManipulatePageBadgeStyle,
+} from "../../../../components/common";
+
+
+
 
 
 
@@ -64,3 +70,5 @@ export const numManipulateTableScrollStyle = {
 };
 
 export { FXS_CARD_RADIUS as NUM_MANIPULATE_CARD_RADIUS };
+
+export { numManipulatePageBadgeStyle };

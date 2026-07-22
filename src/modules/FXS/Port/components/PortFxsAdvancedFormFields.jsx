@@ -1,9 +1,13 @@
 import React from "react";
-import { PORT_FXS_ADVANCED_PAGE_BREADCRUMB_SECTION, PORT_FXS_ADVANCED_PAGE_TITLE, PORT_FXS_ADVANCED_FIELD_TOOLTIPS, WEEK_DAYS, PORT_FXS_ADVANCED_TOTAL_PORTS, PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES } from "../../../../constants/PortFxsAdvancedPageConstants";
+import {
+  PORT_FXS_ADVANCED_PAGE_BREADCRUMB_SECTION, PORT_FXS_ADVANCED_PAGE_TITLE, PORT_FXS_ADVANCED_FIELD_TOOLTIPS, WEEK_DAYS, PORT_FXS_ADVANCED_TOTAL_PORTS, PORT_FXS_ADVANCED_BATCH_MODIFY_NOTES } from "../../../../constants/PortFxsAdvancedPageConstants";
 import { Checkbox, Tooltip } from "@mui/material";
 
 import { OUTLINED_BORDER, OUTLINED_FOCUS, OUTLINED_HOVER, C, FOCUS_RING_SHADOW } from "../../../../theme/pbxTokens";
-import { Btn, ExtensionBreadcrumb as FxsBreadcrumb, extensionCardStyle as fxsCardStyle, extensionToolbarStyle as fxsToolbarStyle, addNewModalFooterBtnStyle as fxsToolbarBtnStyle, addNewModalFooterStyle as fxsAddNewModalFooterStyle, addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle, addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle, extensionPageWrapStyle as fxsPageWrapStyle, extensionPageInnerStyle as fxsPageInnerStyle, extensionPaginationStyle as fxsPaginationStyle, extensionCancelBtnStyle as fxsToolbarCancelBtnStyle, extensionPrimaryBtnStyle as fxsToolbarPrimaryBtnStyle } from "../../../../components/common";
+import { Btn, ExtensionBreadcrumb as FxsBreadcrumb, extensionCardStyle as fxsCardStyle, extensionToolbarStyle as fxsToolbarStyle, addNewModalFooterBtnStyle as fxsToolbarBtnStyle, addNewModalFooterStyle as fxsAddNewModalFooterStyle, addNewModalFooterBtnStyle as fxsAddNewModalFooterBtnStyle, addNewModalFooterCancelBtnStyle as fxsAddNewModalFooterCancelBtnStyle, extensionPageWrapStyle as fxsPageWrapStyle, extensionPageInnerStyle as fxsPageInnerStyle, extensionPaginationStyle as fxsPaginationStyle, extensionCancelBtnStyle as fxsToolbarCancelBtnStyle, extensionPrimaryBtnStyle as fxsToolbarPrimaryBtnStyle,
+  extensionTableCheckboxSx as portFxsAdvancedCheckboxSx,
+} from "../../../../components/common";
+
 export const fxsModalBackdropSlotProps = {
   backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
 };
@@ -185,12 +189,7 @@ export const portFxsAdvancedSelectStyle = {
   width: "100%",
 };
 
-export const portFxsAdvancedCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const portFxsAdvancedPageWrapStyle = fxsPageWrapStyle;
 export const portFxsAdvancedPageInnerStyle = fxsPageInnerStyle;

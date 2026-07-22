@@ -1,6 +1,8 @@
 import { C } from "../../../../theme/pbxTokens";
 import { COLOR_RING_TABLE_COLUMNS } from "../../../../constants/ColorRingConstants";
 
+export { extensionTableCheckboxSx as COLOR_RING_CHECKBOX_SX } from "../../../../components/common";
+
 export {
   extensionPageWrapStyle as colorRingPageWrapStyle,
   extensionPageInnerStyle as colorRingPageInnerStyle,
@@ -25,12 +27,7 @@ export const DATA_COLUMNS = COLOR_RING_TABLE_COLUMNS.filter(
 export const COLOR_RING_TH_GAP = { padding: "8px 14px" };
 export const COLOR_RING_TD_GAP = { padding: "6px 14px", lineHeight: 1.2 };
 
-export const COLOR_RING_CHECKBOX_SX = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const colorRingTableBodyStyle = {
   overflowX: "auto",

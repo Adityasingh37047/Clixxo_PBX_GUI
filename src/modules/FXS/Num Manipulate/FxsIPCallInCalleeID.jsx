@@ -51,6 +51,7 @@ import {
   iPCallInCalleeIDEmptyWrapStyle,
   iPCallInCalleeIDEmptyTitleStyle,
   iPCallInCalleeIDTableScrollStyle,
+  iPCallInCalleeIDPageBadgeStyle,
   IPCALLINCALLEEID_CARD_RADIUS,
 } from "./components/IPCallInCalleeIDTableHelpers";
 
@@ -374,17 +375,7 @@ const IPCallInCalleeID = () => {
                     >
                       ← Prev
                     </IPCallInCalleeIDBtn>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: C.accent,
-                        background: "#e0f2fe",
-                        padding: "5px 14px",
-                        borderRadius: 4,
-                        border: `1px solid ${C.cardBorder}`,
-                      }}
-                    >
+                    <span style={iPCallInCalleeIDPageBadgeStyle}>
                       Page {page} of {totalPages}
                     </span>
                     <IPCallInCalleeIDBtn

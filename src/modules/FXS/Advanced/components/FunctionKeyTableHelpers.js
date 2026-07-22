@@ -1,6 +1,12 @@
-import { C } from "../../../../theme/pbxTokens";
+import {
+  C } from "../../../../theme/pbxTokens";
 
-import { extensionToolbarStyle as fxsToolbarStyle } from "../../../../components/common";
+import { extensionToolbarStyle as fxsToolbarStyle,
+  extensionTableCheckboxSx as functionKeyCheckboxSx,
+} from "../../../../components/common";
+
+export { functionKeyCheckboxSx };
+
 
 export const fxsFormInlineFooterStyle = {
   display: "flex",
@@ -84,11 +90,7 @@ export const functionKeyThStyle = {
   letterSpacing: "0.1em",
 };
 
-export const functionKeyCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-};
+
 
 export const functionKeyRowAltBg = "#f8fafc";
 export const functionKeyDisabledRowBg = "#fafbfc";

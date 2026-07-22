@@ -1,7 +1,4 @@
 import React from "react";
-
-import { ExtensionBreadcrumb as FxsChromeBreadcrumb } from "../../../../components/common";
-
 import { Checkbox, Tooltip } from "@mui/material";
 import {
   DTMF_DETECTOR_TAB,
@@ -13,7 +10,11 @@ import {
   DTMF_TAB_DETECTOR,
   DTMF_TAB_GENERATOR,
 } from "../../../../constants/DtmfConstants";
-import { Btn } from "../../../../components/common";
+import {
+  Btn,
+  ExtensionBreadcrumb as FxsChromeBreadcrumb,
+  extensionTableCheckboxSx as dtmfCheckboxSx,
+} from "../../../../components/common";
 import {
   C,
   OUTLINED_BORDER,
@@ -30,6 +31,7 @@ import {
   dtmfPageWrapStyle,
   dtmfTabBtnStyle,
 } from "./DtmfTableHelpers";
+
 
 export const FIELD_LABEL_COLOR = "#3E5475";
 
@@ -157,12 +159,7 @@ export const nativeFieldInputStyle = {
   transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
-export const dtmfCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
+
 
 export const DtmfBreadcrumb = () => (
   <FxsChromeBreadcrumb root="FXS"
