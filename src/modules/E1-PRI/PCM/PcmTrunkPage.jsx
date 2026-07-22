@@ -27,6 +27,7 @@ import {
   addNewModalFooterBtnStyle,
   pcmTrunkModalCancelBtnStyle,
 } from "./components/PcmTrunkFormFields";
+import { pcmTrunkSelectedBadgeStyle } from "./components/PcmTrunkTableHelpers";
 
 const PcmTrunkPage = () => {
   const {
@@ -148,17 +149,7 @@ const PcmTrunkPage = () => {
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {selected.length > 0 && (
-                  <span
-                    style={{
-                      background: "#eff6ff",
-                      color: C.accent,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      padding: "5px 12px",
-                      borderRadius: 999,
-                      border: `1px solid ${C.accent}`,
-                    }}
-                  >
+                  <span style={pcmTrunkSelectedBadgeStyle}>
                     {selected.length} selected
                   </span>
                 )}

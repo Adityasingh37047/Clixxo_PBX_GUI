@@ -6,6 +6,7 @@ import {
   extensionToolbarStyle as accountManageToolbarStyle,
   extensionFixedAlertSx as accountManageFixedAlertSx,
   extensionSelectedBadgeStyle as accountManageSelectedBadgeStyle,
+  extensionTableCheckboxSx as accountManageCheckboxSx,
   TH as AccountManageTH,
   tdStyle as accountManageTdBase,
 } from "../../../../components/common";
@@ -62,13 +63,6 @@ export const accountManageFooterStyle = {
   borderTop: `1px solid ${C.cardBorder}`,
   borderBottomLeftRadius: CARD_RADIUS,
   borderBottomRightRadius: CARD_RADIUS,
-};
-
-export const accountManageCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
 };
 
 const setFieldDefault = (el) => {
@@ -256,5 +250,6 @@ export {
   accountManagePageInnerStyle,
   accountManageFixedAlertSx,
   accountManageSelectedBadgeStyle,
+  accountManageCheckboxSx,
   AccountManageTH,
 };

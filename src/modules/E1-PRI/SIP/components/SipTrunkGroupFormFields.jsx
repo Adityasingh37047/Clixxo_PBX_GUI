@@ -23,13 +23,16 @@ import {
   extensionCancelBtnStyle as sipTrunkGroupCancelBtnStyle,
   extensionPrimaryBtnStyle as sipTrunkGroupPrimaryBtnStyle,
   extensionTableCheckboxSx as sipTrunkGroupTableCheckboxSx,
+  extensionPaginationStyle as sipTrunkGroupPaginationStyle,
+  extensionPageBadgeStyle as sipTrunkGroupPageBadgeStyle,
+  getExtensionRowBg as getSipTrunkGroupRowBg,
   addNewModalFooterStyle,
   addNewModalFooterBtnStyle,
   addNewModalFooterCancelBtnStyle as sipTrunkGroupModalCancelBtnStyle,
   EXTENSION_TABLE_CARD_RADIUS as SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
 } from "../../../../components/common";
 
-export { Btn, TH, tdStyle, C, sipTrunkGroupPageWrapStyle, sipTrunkGroupPageInnerStyle, sipTrunkGroupFixedAlertSx, sipTrunkGroupSelectedBadgeStyle, sipTrunkGroupCancelBtnStyle, sipTrunkGroupPrimaryBtnStyle, sipTrunkGroupTableCheckboxSx, addNewModalFooterStyle, addNewModalFooterBtnStyle, sipTrunkGroupModalCancelBtnStyle, SIP_TRUNK_GROUP_TABLE_CARD_RADIUS };
+export { Btn, TH, tdStyle, C, sipTrunkGroupPageWrapStyle, sipTrunkGroupPageInnerStyle, sipTrunkGroupFixedAlertSx, sipTrunkGroupSelectedBadgeStyle, sipTrunkGroupCancelBtnStyle, sipTrunkGroupPrimaryBtnStyle, sipTrunkGroupTableCheckboxSx, sipTrunkGroupPaginationStyle, sipTrunkGroupPageBadgeStyle, getSipTrunkGroupRowBg, addNewModalFooterStyle, addNewModalFooterBtnStyle, sipTrunkGroupModalCancelBtnStyle, SIP_TRUNK_GROUP_TABLE_CARD_RADIUS };
 
 // ── Page-local field label tooltip UI (not shared) ──
 export const FIELD_LABEL_COLOR = "#3E5475";
@@ -130,9 +133,6 @@ export const getSipTrunkGroupTdStyle = (rowBg, lastRowCellStyle, extra = {}) => 
   ...lastRowCellStyle,
   ...extra,
 });
-
-export const getSipTrunkGroupRowBg = (isSelected, idx) =>
-  isSelected ? "#eff6ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
 export const sipTrunkGroupOutlinedInputRootSx = {
   backgroundColor: "#fff",
@@ -311,29 +311,6 @@ export const sipTrunkGroupToolbarStyle = {
   ...sipTrunkGroupToolbarBaseStyle,
 };
 
-
-export const sipTrunkGroupPaginationStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: SIP_TRUNK_GROUP_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-
-export const sipTrunkGroupPageBadgeStyle = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: C.accent,
-  background: "#e0f2fe",
-  padding: "5px 14px",
-  borderRadius: 4,
-  border: `1px solid ${C.cardBorder}`,
-};
 
 export const SipTrunkGroupPagination = ({
   page,

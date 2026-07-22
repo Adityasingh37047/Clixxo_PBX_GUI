@@ -1,32 +1,68 @@
+import { C } from "../../../../theme/pbxTokens";
 import {
-  getPcmSharedRowBg,
-  getPcmSharedEditIconStyle,
-  handlePcmSharedEditIconHover,
-  pcmSharedEditIconStyle,
-  pcmSharedFixedAlertSx,
-  pcmSharedPageWrapStyle,
-  pcmSharedPageInnerStyle,
-  pcmSharedSelectedBadgeStyle,
-  pcmSharedModalCancelBtnStyle,
-  pcmSharedTableScrollStyle,
-  pcmSharedToolbarBtnStyle,
-  pcmSharedCancelBtnStyle,
-  pcmSharedC,
-  PCM_SHARED_CARD_RADIUS,
-} from "./PcmSharedTableHelpers";
+  EXTENSION_TABLE_CARD_RADIUS as PCM_TRUNK_GROUP_CARD_RADIUS,
+  extensionCancelBtnStyle as pcmTrunkGroupCancelBtnStyle,
+  extensionFixedAlertSx as pcmTrunkGroupFixedAlertSx,
+  extensionPageInnerStyle as pcmTrunkGroupPageInnerStyle,
+  extensionPageWrapStyle as pcmTrunkGroupPageWrapStyle,
+  addNewModalFooterBtnStyle as pcmTrunkGroupToolbarBtnStyle,
+  extensionSelectedBadgeStyle as pcmTrunkGroupSelectedBadgeStyle,
+  getExtensionRowBg as getPcmTrunkGroupRowBg,
+} from "../../../../components/common";
 
-export const getPcmTrunkGroupRowBg = getPcmSharedRowBg;
-export const getPcmTrunkGroupEditIconStyle = getPcmSharedEditIconStyle;
-export const handlePcmTrunkGroupEditIconHover = handlePcmSharedEditIconHover;
-export const pcmTrunkGroupEditIconStyle = pcmSharedEditIconStyle;
-export const pcmTrunkGroupFixedAlertSx = pcmSharedFixedAlertSx;
-export const pcmTrunkGroupPageWrapStyle = pcmSharedPageWrapStyle;
-export const pcmTrunkGroupPageInnerStyle = pcmSharedPageInnerStyle;
-export const pcmTrunkGroupSelectedBadgeStyle = pcmSharedSelectedBadgeStyle;
-export const pcmTrunkGroupModalCancelBtnStyle = pcmSharedModalCancelBtnStyle;
-export const pcmTrunkGroupTableScrollStyle = pcmSharedTableScrollStyle;
-export const pcmTrunkGroupToolbarBtnStyle = pcmSharedToolbarBtnStyle;
-export const pcmTrunkGroupCancelBtnStyle = pcmSharedCancelBtnStyle;
-export const pcmTrunkGroupC = pcmSharedC;
-export const PCM_TRUNK_GROUP_CARD_RADIUS = PCM_SHARED_CARD_RADIUS;
-export { PCM_SHARED_CARD_RADIUS as CARD_RADIUS };
+export {
+  PCM_TRUNK_GROUP_CARD_RADIUS,
+  pcmTrunkGroupCancelBtnStyle,
+  pcmTrunkGroupFixedAlertSx,
+  pcmTrunkGroupPageInnerStyle,
+  pcmTrunkGroupPageWrapStyle,
+  pcmTrunkGroupToolbarBtnStyle,
+  pcmTrunkGroupSelectedBadgeStyle,
+  getPcmTrunkGroupRowBg,
+};
+
+export const pcmTrunkGroupEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+export const getPcmTrunkGroupEditIconStyle = (loadingDelete = false) => ({
+  cursor: loadingDelete ? "not-allowed" : "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: loadingDelete ? 0.4 : 0.7,
+  transition: "opacity 0.15s ease",
+});
+
+export const handlePcmTrunkGroupEditIconHover = (
+  e,
+  entering,
+  loadingDelete = false,
+) => {
+  if (loadingDelete) return;
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+export const pcmTrunkGroupTableScrollStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  flex: 1,
+};
+
+export const pcmTrunkGroupModalCancelBtnStyle = {
+  height: 30,
+  padding: "6px 14px",
+  fontSize: 12,
+  borderRadius: 4,
+  minWidth: 100,
+  background: "#cbd5e1",
+  color: "#374151",
+  border: "1px solid #cbd5e1",
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
+};
+
+export { C as pcmTrunkGroupC };
+export { PCM_TRUNK_GROUP_CARD_RADIUS as CARD_RADIUS };

@@ -1,17 +1,53 @@
 import { C } from "../../../../theme/pbxTokens";
 import {
+  EXTENSION_TABLE_CARD_RADIUS as E1PRICALLERIDRESERVEPOOL_CARD_RADIUS,
   extensionPageInnerStyle as e1PriPageInnerStyle,
   extensionPageWrapStyle as e1PriPageWrapStyle,
-  extensionSelectedBadgeStyle,
+  extensionSelectedBadgeStyle as e1PriCallerIDReservePoolSelectedBadgeStyle,
+  getExtensionRowBg as getE1PriCallerIDReservePoolRowBg,
 } from "../../../../components/common";
 
 export {
-  getE1PriNumManipulateRowBg as getE1PriCallerIDReservePoolRowBg,
-  e1PriNumManipulateEditIconStyle as e1PriCallerIDReservePoolEditIconStyle,
-  handleE1PriNumManipulateEditIconHover as handleE1PriCallerIDReservePoolEditIconHover,
-  e1PriNumManipulateEmptyWrapStyle as e1PriCallerIDReservePoolEmptyWrapStyle,
-  e1PriNumManipulateEmptyTitleStyle as e1PriCallerIDReservePoolEmptyTitleStyle,
-} from "./E1PriNumManipulateSharedTableHelpers";
+  E1PRICALLERIDRESERVEPOOL_CARD_RADIUS,
+  e1PriCallerIDReservePoolSelectedBadgeStyle,
+  getE1PriCallerIDReservePoolRowBg,
+};
+
+export const e1PriCallerIDReservePoolEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
+
+export const handleE1PriCallerIDReservePoolEditIconHover = (
+  e,
+  entering,
+  loadingDelete = false,
+) => {
+  if (loadingDelete) return;
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+export const e1PriCallerIDReservePoolEmptyWrapStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: 240,
+  padding: 24,
+  textAlign: "center",
+  borderBottomLeftRadius: E1PRICALLERIDRESERVEPOOL_CARD_RADIUS,
+  borderBottomRightRadius: E1PRICALLERIDRESERVEPOOL_CARD_RADIUS,
+};
+
+export const e1PriCallerIDReservePoolEmptyTitleStyle = {
+  color: "#3E5475",
+  fontSize: 13,
+  fontWeight: 600,
+  marginBottom: 16,
+};
 
 export const e1PriCallerIDReservePoolPageWrapStyle = {
   ...e1PriPageWrapStyle,
@@ -34,9 +70,6 @@ export const e1PriCallerIDReservePoolPageInnerStyle = {
   display: "flex",
   flexDirection: "column",
 };
-
-export const e1PriCallerIDReservePoolSelectedBadgeStyle =
-  extensionSelectedBadgeStyle;
 
 export const e1PriCallerIDReservePoolFooterStyle = {
   display: "flex",

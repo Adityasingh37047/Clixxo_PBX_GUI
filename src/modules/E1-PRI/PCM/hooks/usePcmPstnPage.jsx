@@ -34,9 +34,24 @@ import {
   checkboxSx,
   PcmPstnBreadcrumb,
   PCM_PSTN_COMPACT_MQ,
+  pcmPstnAddNewModalFooterStyle as addNewModalFooterStyle,
+  pcmPstnAddNewModalFooterBtnStyle as addNewModalFooterBtnStyle,
+  pcmPstnAddNewModalFooterCancelBtnStyle,
+  pcmPstnCardStyle,
+  pcmPstnToolbarStyle,
+  pcmPstnPaginationStyle as pcmPstnFooterStyle,
+  pcmPstnPrimaryBtnStyle,
+  pcmPstnCancelBtnStyle,
+  pcmPstnFormPanelStyle as pcmPstnModalFormPanelStyle,
 } from "../components/PcmPstnFormFields";
+import {
+  pcmPstnPageWrapStyle,
+  pcmPstnPageInnerStyle,
+  pcmPstnSelectedBadgeStyle,
+  pcmPstnModalCancelBtnStyle,
+} from "../components/PcmPstnTableHelpers";
 
-/* Page-local styles/helpers used by render functions */
+const pcmPstnTableCheckboxSx = checkboxSx;
 const PCM_PSTN_ADD_NEW_DIALOG_LAYOUT_OFFSET = 80;
 
 const PCM_PSTN_ADD_NEW_DIALOG_SX = {
@@ -218,68 +233,6 @@ const pcmPstnSelectStyle = {
   cursor: "pointer",
 };
 
-const pcmPstnModalFormPanelStyle = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 14,
-  background: "#f8fafc",
-  border: `1px solid ${C.cardBorder}`,
-  borderRadius: 4,
-  padding: 20,
-};
-
-const addNewModalFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 12,
-  width: "100%",
-  margin: 0,
-  padding: "16px 24px",
-  boxSizing: "border-box",
-  background: "#f8fafc",
-  borderTop: `1px solid ${C.cardBorder}`,
-  borderBottomLeftRadius: 4,
-  borderBottomRightRadius: 4,
-};
-
-const addNewModalFooterBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,
-  minWidth: 100,
-};
-
-const pcmPstnModalCancelBtnStyle = {
-  ...addNewModalFooterBtnStyle,
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  borderRadius: 4,
-};
-
-const pcmPstnTableCheckboxSx = {
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
-const pcmPstnPageWrapStyle = {
-  backgroundColor: C.pageBg,
-  minHeight: "calc(100vh - 80px)",
-  padding: 16,
-  boxSizing: "border-box",
-};
-
-const pcmPstnPageInnerStyle = {
-  width: "100%",
-  maxWidth: "100%",
-  margin: "0 auto",
-};
-
 const TableListLoading = () => (
   <div
     style={{
@@ -331,72 +284,6 @@ const TableListEmptyState = ({
     ) : null}
   </div>
 );
-
-const PCM_PSTN_TABLE_CARD_RADIUS = 4;
-
-const pcmPstnCardStyle = {
-  background: "#ffffff",
-  borderRadius: PCM_PSTN_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-  border: `1px solid ${C.cardBorder}`,
-  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
-};
-
-const pcmPstnToolbarStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  minHeight: 44,
-  padding: "7px 14px",
-  borderBottom: `1px solid ${C.divider}`,
-  background: "#ffffff",
-  flexWrap: "wrap",
-  gap: 12,
-  borderTopLeftRadius: PCM_PSTN_TABLE_CARD_RADIUS,
-  borderTopRightRadius: PCM_PSTN_TABLE_CARD_RADIUS,
-};
-
-const pcmPstnFooterStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "7px 14px",
-  background: "#ffffff",
-  borderTop: `1px solid ${C.divider}`,
-  borderBottomLeftRadius: PCM_PSTN_TABLE_CARD_RADIUS,
-  borderBottomRightRadius: PCM_PSTN_TABLE_CARD_RADIUS,
-  overflow: "hidden",
-};
-
-const pcmPstnSelectedBadgeStyle = {
-  background: "#eff6ff",
-  color: C.accent,
-  fontSize: 11,
-  fontWeight: 700,
-  padding: "5px 12px",
-  borderRadius: 999,
-  border: `1px solid ${C.accent}`,
-};
-
-const pcmPstnCancelBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  borderRadius: 4,   
-  background: "#cbd5e1",
-  color: "#374151",
-  border: "1px solid #cbd5e1",
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-};
-
-const pcmPstnPrimaryBtnStyle = {
-  height: 30,
-  padding: "6px 14px",
-  fontSize: 12,
-  
-  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.08)",
-  borderRadius: 4,
-};
 
 const PCM_PSTN_MODAL_TAB_BAR_STYLE = {
   borderBottom: "1px solid #e5e7eb",

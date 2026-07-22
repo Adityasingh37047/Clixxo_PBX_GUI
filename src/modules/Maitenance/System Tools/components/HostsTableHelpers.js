@@ -10,7 +10,7 @@ import {
   addNewModalFooterBtnStyle as hostsFooterBtnStyle,
   tdStyle,
   TH,
-  extensionTableCheckboxSx,
+  extensionTableCheckboxSx as hostsCheckboxSx,
 } from "../../../../components/common";
 import { C } from "../../../../theme/pbxTokens";
 
@@ -63,14 +63,6 @@ export const hostsFooterStyle = {
   borderBottomRightRadius: CARD_RADIUS,
 };
 
-export const hostsCheckboxSx = {
-  ...extensionTableCheckboxSx,
-  padding: "1px",
-  color: "#3E5475",
-  "&.Mui-checked": { color: "#0284c7" },
-  "&.MuiCheckbox-indeterminate": { color: "#0284c7" },
-};
-
 export const getHostsRowBg = (isSelected, idx) =>
   isSelected ? "#f0f9ff" : idx % 2 === 1 ? "#f8fafc" : "#ffffff";
 
@@ -90,6 +82,7 @@ export {
   hostsCancelBtnStyle,
   hostsPrimaryBtnStyle,
   hostsFooterBtnStyle,
+  hostsCheckboxSx,
   tdStyle,
   TH,
 };

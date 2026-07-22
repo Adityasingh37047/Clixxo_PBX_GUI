@@ -1,12 +1,42 @@
+import {
+  extensionCancelBtnStyle as routeIPToIPCancelBtnStyle,
+  extensionFixedAlertSx as routeIPToIPFixedAlertSx,
+  extensionPageInnerStyle as routeIPToIPPageInnerStyle,
+  extensionPageWrapStyle as routeIPToIPPageWrapStyle,
+  addNewModalFooterBtnStyle as routeIPToIPToolbarBtnStyle,
+  extensionSelectedBadgeStyle as routeIPToIPSelectedBadgeStyle,
+  getExtensionRowBg as getRouteIPToIPRowBg,
+} from "../../../../components/common";
+
 export {
-  getRouteSharedRowBg as getRouteIPToIPRowBg,
-  getRouteSharedEditIconStyle as getRouteIPToIPEditIconStyle,
-  handleRouteSharedEditIconHover as handleRouteIPToIPEditIconHover,
-  routeSharedFixedAlertSx as routeIPToIPFixedAlertSx,
-  routeSharedPageWrapStyle as routeIPToIPPageWrapStyle,
-  routeSharedPageInnerStyle as routeIPToIPPageInnerStyle,
-  routeSharedSelectedBadgeStyle as routeIPToIPSelectedBadgeStyle,
-  routeSharedToolbarBtnStyle as routeIPToIPToolbarBtnStyle,
-  routeSharedCancelBtnStyle as routeIPToIPCancelBtnStyle,
-  routeSharedTableScrollStyle as routeIPToIPTableScrollStyle,
-} from "./RouteSharedTableHelpers";
+  routeIPToIPCancelBtnStyle,
+  routeIPToIPFixedAlertSx,
+  routeIPToIPPageInnerStyle,
+  routeIPToIPPageWrapStyle,
+  routeIPToIPToolbarBtnStyle,
+  routeIPToIPSelectedBadgeStyle,
+  getRouteIPToIPRowBg,
+};
+
+export const getRouteIPToIPEditIconStyle = (loadingDelete) => ({
+  cursor: loadingDelete ? "not-allowed" : "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: loadingDelete ? 0.4 : 0.7,
+  transition: "opacity 0.15s ease",
+});
+
+export const handleRouteIPToIPEditIconHover = (
+  e,
+  entering,
+  loadingDelete = false,
+) => {
+  if (loadingDelete) return;
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+export const routeIPToIPTableScrollStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  flex: 1,
+};

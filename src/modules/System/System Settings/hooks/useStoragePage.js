@@ -3,6 +3,7 @@ import {
   getStorageUsage,
   getStorageSettings,
   updateStorageSettings,
+  resetStorageSettings,
 } from "../../../../api/apiService";
 import {
   STORAGE_TAB_STATUS_ID,
@@ -101,6 +102,18 @@ export function useStoragePage() {
     }
   };
 
+  const handleResetStorageSettings = async () => {
+    try {
+      const res = await resetStorageSettings();
+
+      console.log("Reset Response:", res);
+
+      await loadStorageSettings();
+    } catch (err) {
+      console.error("Reset Error:", err);
+    }
+  };
+
   const handleAutoCleanupChange = (name, value) =>
     setAutoCleanupForm((prev) => ({ ...prev, [name]: value }));
 
@@ -116,6 +129,7 @@ export function useStoragePage() {
     errors,
     handleRefresh,
     handleSaveStorageSettings,
+    handleResetStorageSettings,
     handleAutoCleanupChange,
     handleBackupsChange,
   };

@@ -1,35 +1,81 @@
+import {
+  EXTENSION_TABLE_CARD_RADIUS as E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
+  extensionCancelBtnStyle as e1PriIPCallInCalleeIDCancelBtnStyle,
+  extensionFixedAlertSx as e1PriIPCallInCalleeIDFixedAlertSx,
+  extensionPageInnerStyle as e1PriIPCallInCalleeIDPageInnerStyle,
+  extensionPageWrapStyle as e1PriIPCallInCalleeIDPageWrapStyle,
+  addNewModalFooterBtnStyle as e1PriIPCallInCalleeIDToolbarBtnStyle,
+  extensionSelectedBadgeStyle as e1PriIPCallInCalleeIDSelectedBadgeStyle,
+  getExtensionRowBg as getE1PriIPCallInCalleeIDRowBg,
+} from "../../../../components/common";
+
 export {
+  E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
+  e1PriIPCallInCalleeIDCancelBtnStyle,
+  e1PriIPCallInCalleeIDFixedAlertSx,
+  e1PriIPCallInCalleeIDPageInnerStyle,
+  e1PriIPCallInCalleeIDPageWrapStyle,
+  e1PriIPCallInCalleeIDToolbarBtnStyle,
+  e1PriIPCallInCalleeIDSelectedBadgeStyle,
+  getE1PriIPCallInCalleeIDRowBg,
+};
 
-  getE1PriNumManipulateRowBg as getE1PriIPCallInCalleeIDRowBg,
+export const e1PriIPCallInCalleeIDEditIconStyle = {
+  cursor: "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: 0.7,
+  transition: "opacity 0.15s ease",
+};
 
-  e1PriNumManipulateEditIconStyle as e1PriIPCallInCalleeIDEditIconStyle,
+export const getE1PriIPCallInCalleeIDEditIconStyle = (loadingDelete) => ({
+  cursor: loadingDelete ? "not-allowed" : "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: loadingDelete ? 0.4 : 0.7,
+  transition: "opacity 0.15s ease",
+});
 
-  getE1PriNumManipulateEditIconStyle as getE1PriIPCallInCalleeIDEditIconStyle,
+export const handleE1PriIPCallInCalleeIDEditIconHover = (
+  e,
+  entering,
+  loadingDelete = false,
+) => {
+  if (loadingDelete) return;
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
 
-  handleE1PriNumManipulateEditIconHover as handleE1PriIPCallInCalleeIDEditIconHover,
+export const e1PriIPCallInCalleeIDLoadingWrapStyle = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 48,
+  borderBottomLeftRadius: E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
+  borderBottomRightRadius: E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
+};
 
-  e1PriNumManipulateFixedAlertSx as e1PriIPCallInCalleeIDFixedAlertSx,
+export const e1PriIPCallInCalleeIDEmptyWrapStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: 240,
+  padding: 24,
+  textAlign: "center",
+  borderBottomLeftRadius: E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
+  borderBottomRightRadius: E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
+};
 
-  e1PriNumManipulatePageWrapStyle as e1PriIPCallInCalleeIDPageWrapStyle,
+export const e1PriIPCallInCalleeIDEmptyTitleStyle = {
+  color: "#3E5475",
+  fontSize: 13,
+  fontWeight: 600,
+  marginBottom: 16,
+};
 
-  e1PriNumManipulatePageInnerStyle as e1PriIPCallInCalleeIDPageInnerStyle,
-
-  e1PriNumManipulateSelectedBadgeStyle as e1PriIPCallInCalleeIDSelectedBadgeStyle,
-
-  e1PriNumManipulateToolbarBtnStyle as e1PriIPCallInCalleeIDToolbarBtnStyle,
-
-  e1PriNumManipulateCancelBtnStyle as e1PriIPCallInCalleeIDCancelBtnStyle,
-
-  e1PriNumManipulateLoadingWrapStyle as e1PriIPCallInCalleeIDLoadingWrapStyle,
-
-  e1PriNumManipulateEmptyWrapStyle as e1PriIPCallInCalleeIDEmptyWrapStyle,
-
-  e1PriNumManipulateEmptyTitleStyle as e1PriIPCallInCalleeIDEmptyTitleStyle,
-
-  e1PriNumManipulateTableScrollStyle as e1PriIPCallInCalleeIDTableScrollStyle,
-
-  E1_PRI_NUM_MANIPULATE_CARD_RADIUS as E1PRI_IPCALLINCALLEEID_CARD_RADIUS,
-
-} from "./E1PriNumManipulateSharedTableHelpers";
-
-
+export const e1PriIPCallInCalleeIDTableScrollStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  flex: 1,
+  maxHeight: 460,
+};

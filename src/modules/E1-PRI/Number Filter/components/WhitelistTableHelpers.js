@@ -1,19 +1,113 @@
+import { C } from "../../../../theme/pbxTokens";
+import {
+  EXTENSION_TABLE_CARD_RADIUS as WHITELIST_CARD_RADIUS,
+  extensionPageInnerStyle as whitelistPageInnerStyle,
+  extensionPageWrapStyle as whitelistPageWrapStyle,
+  getExtensionRowBg as getWhitelistRowBg,
+} from "../../../../components/common";
+
 export {
-  getNumberFilterRowBg as getWhitelistRowBg,
-  getNumberFilterEditIconStyle as getWhitelistEditIconStyle,
-  handleNumberFilterEditIconHover as handleWhitelistEditIconHover,
-  numberFilterFixedAlertSx as whitelistFixedAlertSx,
-  numberFilterPageWrapStyle as whitelistPageWrapStyle,
-  numberFilterPageInnerStyle as whitelistPageInnerStyle,
-  numberFilterPanelCardStyle as whitelistPanelCardStyle,
-  numberFilterPanelToolbarStyle as whitelistPanelToolbarStyle,
-  numberFilterPanelSectionTitleStyle as whitelistPanelSectionTitleStyle,
-  numberFilterPanelFooterStyle as whitelistPanelFooterStyle,
-  numberFilterPanelNoteStyle as whitelistPanelNoteStyle,
-  numberFilterHeaderCheckThStyle as whitelistHeaderCheckThStyle,
-  numberFilterDualPanelSelectedBadgeStyle as whitelistSelectedBadgeStyle,
-  numberFilterLoadingWrapStyle as whitelistLoadingWrapStyle,
-  numberFilterTableScrollStyle as whitelistTableScrollStyle,
-  numberFilterC as whitelistC,
-  NUMBER_FILTER_CARD_RADIUS as WHITELIST_CARD_RADIUS,
-} from "./NumberFilterSharedTableHelpers";
+  WHITELIST_CARD_RADIUS,
+  whitelistPageInnerStyle,
+  whitelistPageWrapStyle,
+  getWhitelistRowBg,
+};
+
+export const getWhitelistEditIconStyle = (isDeleting) => ({
+  cursor: isDeleting ? "not-allowed" : "pointer",
+  color: "#2563eb",
+  fontSize: 22,
+  opacity: isDeleting ? 0.4 : 0.7,
+  transition: "opacity 0.15s ease",
+});
+
+export const handleWhitelistEditIconHover = (
+  e,
+  entering,
+  isDeleting = false,
+) => {
+  if (isDeleting) return;
+  e.currentTarget.style.opacity = entering ? "1" : "0.7";
+};
+
+export const whitelistPanelCardStyle = {
+  background: C.cardBg,
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: WHITELIST_CARD_RADIUS,
+  boxShadow: "0 0 14px rgba(0, 0, 0, 0.18), 0 0 5px rgba(0, 0, 0, 0.10)",
+  overflow: "hidden",
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minWidth: 0,
+};
+
+export const whitelistPanelToolbarStyle = {
+  minHeight: 44,
+  padding: "10px 16px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: 10,
+  background: C.cardBg,
+  borderBottom: `1px solid ${C.divider}`,
+};
+
+export const whitelistPanelSectionTitleStyle = {
+  fontSize: 13,
+  fontWeight: 700,
+  color: C.labelText,
+  letterSpacing: "-0.01em",
+};
+
+export const whitelistPanelFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "8px 16px",
+  borderTop: `1px solid ${C.divider}`,
+  background: C.cardBg,
+};
+
+export const whitelistPanelNoteStyle = {
+  color: C.accent,
+  fontSize: 11,
+  lineHeight: 1.5,
+  margin: "16px 0 0",
+  padding: "0 4px",
+  textAlign: "center",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
+export const whitelistHeaderCheckThStyle = {
+  padding: "1px 14px",
+  lineHeight: 1,
+};
+
+export const whitelistSelectedBadgeStyle = {
+  background: "#eff6ff",
+  color: C.accent,
+  fontSize: 11,
+  fontWeight: 700,
+  padding: "4px 10px",
+  borderRadius: 999,
+  border: `1px solid #3a4a5e`,
+};
+
+export const whitelistLoadingWrapStyle = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: 64,
+  flexDirection: "column",
+  gap: 12,
+};
+
+export const whitelistTableScrollStyle = {
+  overflowX: "auto",
+  overflowY: "auto",
+  flex: 1,
+  maxHeight: 360,
+};
