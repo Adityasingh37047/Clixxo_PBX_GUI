@@ -106,6 +106,69 @@ export const fetchCallQueueQueueStats = async (queue_number) => {
   }
 };
 
+
+
+// IP  BLACKLIST/ WHITELIST API
+
+// ACL API
+
+export const listACL = async () => {
+  try {
+    const response = await axiosInstance.post("/acl", {
+      type: "list",
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching ACL list:", error.message);
+    throw error;
+  }
+};
+
+export const addACL = async (name, rules) => {
+  try {
+    const response = await axiosInstance.post("/acl", {
+      type: "add",
+      name,
+      rules,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error adding ACL:", error.message);
+    throw error;
+  }
+};
+
+export const updateACL = async (name, rules) => {
+  try {
+    const response = await axiosInstance.post("/acl", {
+      type: "update",
+      name,
+      rules,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error updating ACL:", error.message);
+    throw error;
+  }
+};
+
+export const deleteACL = async (name) => {
+  try {
+    const response = await axiosInstance.post("/acl", {
+      type: "delete",
+      name,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting ACL:", error.message);
+    throw error;
+  }
+};
+
 // GROUP API Functions
 export const listTrunkIds = async () => {
   try {

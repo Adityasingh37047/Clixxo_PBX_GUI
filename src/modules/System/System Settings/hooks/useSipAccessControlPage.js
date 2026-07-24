@@ -1,4 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  listACL,
+  addACL,
+  updateACL,
+  deleteACL,
+} from "../../../../api/apiService";
+
 import {
   SIP_ACCESS_CONTROL_ERR_SELECT_DELETE,
   SIP_ACCESS_CONTROL_ERR_NOTHING_TO_CLEAR,
@@ -43,6 +50,28 @@ export function useSipAccessControlPage() {
     showToast(msg, isErr ? "error" : "success");
   };
 
+  const fetchACLList = async () => {
+    try {
+      const response = await listACL();
+
+      if (response.response) {
+        const mappedRows = (response.message || []).map((acl, index) => ({
+          id: index + 1,
+          name: acl.name,
+          cidr: acl.rules?.[0]?.ip ?? "-",
+          domain: "-",
+          type:
+            acl.rules?.[0]?.action === "permit" ? "Whitelist" : "Blacklist",
+          description: "-",
+        }));
+        setRows(mappedRows);
+      }
+    } catch (error) {
+      console.error("Error fetching ACL:", error);
+      alert("Failed to fetch ACL list");
+    }
+  };
+
   const openModal = (row = null) => {
     if (row) {
       setForm(rowToSipAccessControlForm(row));
@@ -60,12 +89,16 @@ export function useSipAccessControlPage() {
     setForm(createSipAccessControlEmptyForm());
   };
 
+  useEffect(() => {
+    fetchACLList();
+  }, []);
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e?.preventDefault?.();
 
     const validation = validateSipAccessControlForm(form, rows, editingId);
@@ -74,21 +107,31 @@ export function useSipAccessControlPage() {
       return;
     }
 
-    const payload = validation.payload;
+    const rules = [
+      {
+        action: form.default === "whitelist" ? "permit" : "deny",
+        ip: form.cidr,
+      },
+    ];
 
-    if (editingId !== null) {
-      setRows((prev) =>
-        prev.map((row) =>
-          row.id === editingId ? { ...row, ...payload } : row,
-        ),
+    try {
+      if (editingId !== null) {
+        await updateACL(form.name, rules);
+        await fetchACLList();
+        closeModal();
+        alert(SIP_ACCESS_CONTROL_MSG_UPDATED);
+      } else {
+        await addACL(form.name, rules);
+        await fetchACLList();
+        closeModal();
+        alert(SIP_ACCESS_CONTROL_MSG_ADDED);
+      }
+    } catch (error) {
+      console.error("Error saving ACL:", error);
+      alert(
+        editingId !== null ? "Failed to update ACL" : "Failed to add ACL",
       );
-      alert(SIP_ACCESS_CONTROL_MSG_UPDATED);
-    } else {
-      setRows((prev) => [...prev, { id: Date.now(), ...payload }]);
-      alert(SIP_ACCESS_CONTROL_MSG_ADDED);
     }
-
-    closeModal();
   };
 
   const handleRowCheck = (id) => {
@@ -122,7 +165,7 @@ export function useSipAccessControlPage() {
     setCheckedRows(next);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const selected = rows.filter((row) => checkedRows[row.id]);
     if (selected.length === 0) {
       alert(SIP_ACCESS_CONTROL_ERR_SELECT_DELETE);
@@ -131,12 +174,21 @@ export function useSipAccessControlPage() {
     if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_DELETE(selected.length))) {
       return;
     }
-    setRows((prev) => prev.filter((row) => !checkedRows[row.id]));
-    setCheckedRows({});
-    alert(SIP_ACCESS_CONTROL_MSG_DELETED);
+
+    try {
+      for (const row of selected) {
+        await deleteACL(row.name);
+      }
+      await fetchACLList();
+      setCheckedRows({});
+      alert(SIP_ACCESS_CONTROL_MSG_DELETED);
+    } catch (error) {
+      console.error("Error deleting ACL:", error);
+      alert("Failed to delete ACL");
+    }
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (rows.length === 0) {
       alert(SIP_ACCESS_CONTROL_ERR_NOTHING_TO_CLEAR);
       return;
@@ -144,9 +196,18 @@ export function useSipAccessControlPage() {
     if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL(rows.length))) {
       return;
     }
-    setRows([]);
-    setCheckedRows({});
-    alert(SIP_ACCESS_CONTROL_MSG_CLEARED);
+
+    try {
+      for (const row of rows) {
+        await deleteACL(row.name);
+      }
+      await fetchACLList();
+      setCheckedRows({});
+      alert(SIP_ACCESS_CONTROL_MSG_CLEARED);
+    } catch (error) {
+      console.error("Error clearing ACL:", error);
+      alert("Failed to clear ACL list");
+    }
   };
 
   return {
