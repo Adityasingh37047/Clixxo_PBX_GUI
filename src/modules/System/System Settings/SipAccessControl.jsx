@@ -321,7 +321,7 @@ const SipAccessControl = () => {
                             lastRowCellStyle,
                           )}
                         >
-                          {getSipAccessControlDefaultLabel(row.default)}
+                          {row.type || "—"}
                         </td>
                         <td
                           style={getSipAccessControlTdStyle(

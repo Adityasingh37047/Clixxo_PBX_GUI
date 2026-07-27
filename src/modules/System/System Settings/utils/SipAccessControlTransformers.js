@@ -11,13 +11,22 @@ export const createSipAccessControlEmptyForm = () => ({
 });
 
 /** Map a table row into the modal form state. */
-export const rowToSipAccessControlForm = (row) => ({
-  name: row?.name || "",
-  cidr: row?.cidr || "",
-  domain: row?.domain || "",
-  default: row?.default || "blacklist",
-  description: row?.description || "",
-});
+export const rowToSipAccessControlForm = (row) => {
+  const fromType =
+    row?.type === "Whitelist"
+      ? "whitelist"
+      : row?.type === "Blacklist"
+        ? "blacklist"
+        : null;
+
+  return {
+    name: row?.name || "",
+    cidr: row?.cidr || "",
+    domain: row?.domain || "",
+    default: row?.default || fromType || "blacklist",
+    description: row?.description || "",
+  };
+};
 
 /** Label for Blacklist/Whitelist display in the table. */
 export const getSipAccessControlDefaultLabel = (value) =>
