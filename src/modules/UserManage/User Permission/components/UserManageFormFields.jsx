@@ -233,7 +233,7 @@ export function PermissionTree({ permissions, setPermissions }) {
                   style={{
                     paddingLeft: L3,
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))",
                     gap: "8px 10px",
                   }}
                 >
@@ -241,6 +241,7 @@ export function PermissionTree({ permissions, setPermissions }) {
                     <label
                       key={page.id}
                       className="flex items-center gap-1.5 cursor-pointer select-none"
+                      style={{ minWidth: 0 }}
                     >
                       <Checkbox
                         size="small"
@@ -250,7 +251,11 @@ export function PermissionTree({ permissions, setPermissions }) {
                       />
                       <span
                         className="text-[12px]"
-                        style={{ color: C.labelText, lineHeight: 1.35 }}
+                        style={{
+                          color: C.labelText,
+                          lineHeight: 1.35,
+                          whiteSpace: "nowrap",
+                        }}
                       >
                         {page.label}
                       </span>

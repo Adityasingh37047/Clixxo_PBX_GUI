@@ -63,6 +63,7 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "callControlInboundRoutes", label: "Inbound Routes" },
           { id: "callControlOutboundRoutes", label: "Outbound Routes" },
           { id: "OutboundRestrictions", label: "Outbound Restrictions" },
+          { id: "callControlTimeCondition", label: "Time Condition" },
         ],
       },
       {
@@ -87,7 +88,7 @@ export const PAGE_PERMISSION_GROUPS = [
         id: "recordSettings",
         label: "Record Settings",
         pages: [
-          { id: "recordSettings", label: "Record Settings" },
+          { id: "recordSettingsPage", label: "Record Settings" },
         ],
       },
       {
@@ -249,29 +250,27 @@ export const PAGE_PERMISSION_GROUPS = [
         id: "systemSettings",
         label: "System Settings",
         pages: [
-          { id: "sysNetwork", label: "Network" },
           { id: "sysStorage", label: "Storage" },
-          { id: "sysRoutingInterface", label: "Routing Interface" },
           { id: "sysManagement", label: "Management" },
           { id: "sysGlobalSip", label: "Global SIP" },
-          { id: "sysIpRoutingTable", label: "IP Route Table" },
-          { id: "sysVpn", label: "VPN" },
           { id: "sysCentralizedManage", label: "Centralized Manage" },
-          { id: "sysDhcp", label: "DHCP" },
-          { id: "sysPingTest", label: "Ping Test" },
-          { id: "sysTracertTest", label: "Tracert Test" },
           { id: "sysAsteriskCLI", label: "Asterisk CLI" },
           { id: "sysLinuxCLI", label: "Linux CLI" },
         ],
       },
-    ],
-  },
-
-  // ── Security ──────────────────────────────────────────────────────────────
-  {
-    id: "security",
-    label: "Security",
-    subGroups: [
+      {
+        id: "networkSettings",
+        label: "Network Settings",
+        pages: [
+          { id: "sysNetwork", label: "Network" },
+          { id: "sysRoutingInterface", label: "Routing Interface" },
+          { id: "sysIpRoutingTable", label: "IP Route Table" },
+          { id: "sysDhcp", label: "DHCP" },
+          { id: "sysPingTest", label: "Ping Test" },
+          { id: "sysTracertTest", label: "Tracert Test" },
+          { id: "sysVpn", label: "VPN" },
+        ],
+      },
       {
         id: "securityRules",
         label: "Security Rules",
@@ -301,6 +300,8 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "signalingCallTest", label: "Signaling Call Test" },
           { id: "signalingCallTrack", label: "Signaling Call Track" },
           { id: "modificationRecord", label: "Modification Record" },
+          { id: "operationsLog", label: "Operation Log" },
+          { id: "sipLogViewer", label: "SIP Log Viewer" },
           { id: "backupUpload", label: "Backup & Upload" },
           { id: "factoryReset", label: "Factory Reset" },
           { id: "upgrade", label: "Upgrade" },
@@ -321,7 +322,7 @@ export const PAGE_PERMISSION_GROUPS = [
         id: "userPermission",
         label: "User Permission",
         pages: [
-          // { id: 'userList',      label: 'User Permission' },
+          { id: "userList", label: "User Manage" },
           { id: "accountManage", label: "Account Manage" },
           { id: "changePassword", label: "Change Password" },
         ],
