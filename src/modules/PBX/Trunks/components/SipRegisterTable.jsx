@@ -16,6 +16,7 @@ import {
   trunkTableScrollStyle,
   trunkTableInnerStyle,
   SIP_REGISTER_VISIBLE_TABLE_FIELDS,
+  SIP_REGISTER_TABLE_COMPACT_MIN_WIDTH,
   SIP_REGISTER_TABLE_HEADER_LABELS,
   sipRegisterCheckboxCellStyle,
   sipRegisterCheckboxWrapStyle,
@@ -34,6 +35,7 @@ import {
 import { SIP_PREFIX_FIELDS } from "../utils/SipRegisterTransformers";
 
 function SipRegisterTable({
+  isCompact,
   isInitialLoad,
   dataEmpty,
   tableScrollRef,
@@ -50,6 +52,8 @@ function SipRegisterTable({
   loading,
   handleOpenModal,
 }) {
+  const wideTable = allowHorizontalScroll || isCompact;
+
   return (
   <div style={{ position: "relative" }}>
     {isInitialLoad ? (
@@ -66,43 +70,44 @@ function SipRegisterTable({
           className={TRUNK_TABLE_SCROLL_CLASS}
           style={{
             ...trunkTableScrollStyle,
-            overflowX: allowHorizontalScroll ? "auto" : "hidden",
+            overflowX: wideTable ? "auto" : "hidden",
+            WebkitOverflowScrolling: wideTable ? "touch" : undefined,
             borderBottom: "none",
           }}
         >
           <div
             style={{
               ...trunkTableInnerStyle,
-              minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
-              width: allowHorizontalScroll ? tableMinWidth : "100%",
+              minWidth: wideTable ? SIP_REGISTER_TABLE_COMPACT_MIN_WIDTH : "100%",
+              width: wideTable ? SIP_REGISTER_TABLE_COMPACT_MIN_WIDTH : "100%",
               borderBottom: "none",
             }}
           >
             <table
               style={{
-                width: allowHorizontalScroll ? tableMinWidth : "100%",
+                width: wideTable ? SIP_REGISTER_TABLE_COMPACT_MIN_WIDTH : "100%",
                 borderCollapse: "separate",
                 borderSpacing: 0,
-                tableLayout: allowHorizontalScroll ? "auto" : "fixed",
-                minWidth: allowHorizontalScroll ? tableMinWidth : "100%",
+                tableLayout: wideTable ? "auto" : "fixed",
+                minWidth: wideTable ? SIP_REGISTER_TABLE_COMPACT_MIN_WIDTH : "100%",
               }}
             >
               <colgroup>
                 <col
                   style={{
-                    width: allowHorizontalScroll ? 40 : "3%",
+                    width: wideTable ? 40 : "3%",
                   }}
                 />
                 <col
                   style={{
-                    width: allowHorizontalScroll ? 44 : "3%",
+                    width: wideTable ? 44 : "3%",
                   }}
                 />
                 {SIP_REGISTER_VISIBLE_TABLE_FIELDS.map((field) => (
                   <col
                     key={field.name}
                     style={{
-                      width: allowHorizontalScroll
+                      width: wideTable
                         ? sipRegisterFieldColumnWidths[field.name]
                         : sipRegisterFieldColumnPercents[field.name],
                     }}
@@ -110,12 +115,12 @@ function SipRegisterTable({
                 ))}
                 <col
                   style={{
-                    width: allowHorizontalScroll ? 118 : "10%",
+                    width: wideTable ? 118 : "10%",
                   }}
                 />
                 <col
                   style={{
-                    width: allowHorizontalScroll ? 72 : "6%",
+                    width: wideTable ? 72 : "6%",
                   }}
                 />
               </colgroup>
@@ -125,7 +130,7 @@ function SipRegisterTable({
                     style={{
                       ...sipRegisterFixedCellStyle(
                         sipRegisterCheckboxCellStyle,
-                        allowHorizontalScroll,
+                        wideTable,
                       ),
                       position: "sticky",
                       top: 0,
@@ -146,7 +151,7 @@ function SipRegisterTable({
                     style={{
                       ...sipRegisterFixedCellStyle(
                         sipRegisterIdCellStyle,
-                        allowHorizontalScroll,
+                        wideTable,
                       ),
                       textAlign: "center",
                       position: "sticky",
@@ -161,7 +166,7 @@ function SipRegisterTable({
                       key={field.name}
                       title={field.label}
                       style={getSipRegisterHeaderCellStyle(
-                        allowHorizontalScroll,
+                        wideTable,
                       )}
                     >
                       {SIP_REGISTER_TABLE_HEADER_LABELS[field.name] ??
@@ -172,9 +177,9 @@ function SipRegisterTable({
                     style={{
                       ...sipRegisterFixedCellStyle(
                         sipRegisterStatusCellStyle,
-                        allowHorizontalScroll,
+                        wideTable,
                       ),
-                      ...getSipRegisterHeaderCellStyle(allowHorizontalScroll),
+                      ...getSipRegisterHeaderCellStyle(wideTable),
                       position: "sticky",
                       top: 0,
                       zIndex: 10,
@@ -186,9 +191,9 @@ function SipRegisterTable({
                     style={{
                       ...sipRegisterFixedCellStyle(
                         sipRegisterModifyCellStyle,
-                        allowHorizontalScroll,
+                        wideTable,
                       ),
-                      ...getSipRegisterHeaderCellStyle(allowHorizontalScroll),
+                      ...getSipRegisterHeaderCellStyle(wideTable),
                       position: "sticky",
                       top: 0,
                       zIndex: 10,
@@ -230,7 +235,7 @@ function SipRegisterTable({
                         style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterCheckboxCellStyle,
-                            allowHorizontalScroll,
+                            wideTable,
                           ),
                         })}
                       >
@@ -251,7 +256,7 @@ function SipRegisterTable({
                         style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterIdCellStyle,
-                            allowHorizontalScroll,
+                            wideTable,
                           ),
                         })}
                       >
@@ -279,7 +284,7 @@ function SipRegisterTable({
                               fontWeight:
                                 field.name === "trunk_id" ? 600 : 400,
                               ...getSipRegisterDataCellStyle(
-                                allowHorizontalScroll,
+                                wideTable,
                               ),
                             })}
                           >
@@ -291,7 +296,7 @@ function SipRegisterTable({
                         style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterStatusCellStyle,
-                            allowHorizontalScroll,
+                            wideTable,
                           ),
                         })}
                       >
@@ -313,7 +318,7 @@ function SipRegisterTable({
                         style={getExtensionTdStyle(rowBg, lastRowCellStyle, {
                           ...sipRegisterFixedCellStyle(
                             sipRegisterModifyCellStyle,
-                            allowHorizontalScroll,
+                            wideTable,
                           ),
                         })}
                       >

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMediaQuery } from "@mui/material";
 import {
   createUser,
   deleteUser,
@@ -22,9 +23,11 @@ import {
   normalizeUserList,
 } from "../utils/UserManageTransformers";
 import { validateAddUserForm } from "../utils/UserManageValidators";
+import { EXTENSION_COMPACT_MQ } from "../../../../theme/pbxTokens";
 
 export function useUserManagePage() {
   const { canWrite, showReadOnlyToast } = useAuth();
+  const isCompact = useMediaQuery(EXTENSION_COMPACT_MQ);
   const [users, setUsers] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [listError, setListError] = useState("");
@@ -258,5 +261,6 @@ export function useUserManagePage() {
     closeForm,
     handleSave,
     handleDelete,
+    isCompact,
   };
 }

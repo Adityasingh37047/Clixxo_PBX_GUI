@@ -100,12 +100,20 @@ const extensionModalTabsSx = {
   },
 };
 
-const ExtensionModalTabs = ({ value, onChange, tabs, fullWidth = true }) => (
+const ExtensionModalTabs = ({
+  value,
+  onChange,
+  tabs,
+  fullWidth = true,
+  scrollable = false,
+}) => (
   <div style={EXTENSION_MODAL_TAB_BAR_STYLE}>
     <Tabs
       value={value}
       onChange={(_, next) => onChange(next)}
-      variant={fullWidth ? "fullWidth" : "standard"}
+      variant={scrollable ? "scrollable" : fullWidth ? "fullWidth" : "standard"}
+      scrollButtons={scrollable ? "auto" : false}
+      allowScrollButtonsMobile={scrollable}
       TabIndicatorProps={{
         style: { backgroundColor: EXTENSION_MODAL_TAB_ACTIVE_COLOR, height: 2 },
       }}

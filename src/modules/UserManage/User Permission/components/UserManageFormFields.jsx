@@ -148,10 +148,10 @@ export function ResetPasswordDialog({ user, onSave, onCancel, loading }) {
   );
 }
 
-export function PermissionTree({ permissions, setPermissions }) {
-  const L1 = 12;
-  const L2 = 36;
-  const L3 = 60;
+export function PermissionTree({ permissions, setPermissions, isCompact = false }) {
+  const L1 = isCompact ? 8 : 12;
+  const L2 = isCompact ? 24 : 36;
+  const L3 = isCompact ? 40 : 60;
 
   const toggleSection = (section) => {
     const pages = sectionPages(section);
@@ -203,7 +203,13 @@ export function PermissionTree({ permissions, setPermissions }) {
               />
               <span
                 className="ml-2 text-[13px] font-bold"
-                style={{ color: C.labelText, letterSpacing: "0.02em" }}
+                style={{
+                  color: C.labelText,
+                  letterSpacing: "0.02em",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
               >
                 {section.label}
               </span>
@@ -223,7 +229,12 @@ export function PermissionTree({ permissions, setPermissions }) {
                   />
                   <span
                     className="ml-2 text-[12.5px] font-semibold"
-                    style={{ color: C.valueText }}
+                    style={{
+                      color: C.valueText,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                   >
                     {sub.label}
                   </span>
@@ -233,8 +244,12 @@ export function PermissionTree({ permissions, setPermissions }) {
                   style={{
                     paddingLeft: L3,
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))",
+                    gridTemplateColumns: isCompact
+                      ? "1fr"
+                      : "repeat(auto-fill, minmax(210px, 1fr))",
                     gap: "8px 10px",
+                    overflowX: isCompact ? "auto" : undefined,
+                    WebkitOverflowScrolling: isCompact ? "touch" : undefined,
                   }}
                 >
                   {sub.pages.map((page) => (
@@ -272,6 +287,7 @@ export function PermissionTree({ permissions, setPermissions }) {
 }
 
 export function UserManageEditForm({
+  isCompact = false,
   mode,
   editUser,
   username,
@@ -292,7 +308,7 @@ export function UserManageEditForm({
             : `${USER_MANAGE_CARD_TITLES.EDIT_USER_PREFIX}${editUser?.username}`}
         </span>
       </div>
-      <div className="p-6 flex flex-col items-center">
+      <div className={isCompact ? "p-4 flex flex-col items-center" : "p-6 flex flex-col items-center"}>
         <div
           style={{ width: "100%", maxWidth: 520 }}
           className="flex flex-col gap-4"
@@ -376,6 +392,7 @@ export function UserManageEditForm({
 }
 
 export function UserManagePermissionCard({
+  isCompact = false,
   permissions,
   setPermissions,
   saving,
@@ -395,8 +412,17 @@ export function UserManagePermissionCard({
       >
         <span>{USER_MANAGE_CARD_TITLES.PAGE_PERMISSIONS}</span>
       </div>
-      <PermissionTree permissions={permissions} setPermissions={setPermissions} />
-      <div style={userManagePermissionFooterStyle}>
+      <PermissionTree
+        isCompact={isCompact}
+        permissions={permissions}
+        setPermissions={setPermissions}
+      />
+      <div
+        style={{
+          ...userManagePermissionFooterStyle,
+          ...(isCompact ? { padding: "10px 12px" } : {}),
+        }}
+      >
         <Btn
           variant={USER_MANAGE_BUTTON_VARIANTS.PRIMARY}
           onClick={() => {

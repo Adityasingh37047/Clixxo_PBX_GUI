@@ -71,10 +71,17 @@ const UserManage = () => {
     closeForm,
     handleSave,
     handleDelete,
+    isCompact,
   } = useUserManagePage();
 
   return (
-    <div style={userManagePageWrapStyle} data-native-scroll>
+    <div
+      style={{
+        ...userManagePageWrapStyle,
+        ...(isCompact ? { padding: 8 } : {}),
+      }}
+      data-native-scroll
+    >
       <div style={userManagePageInnerStyle}>
         {toast.msg && (
           <Alert severity={toast.type} onClose={clearToast} sx={userManageFixedAlertSx}>
@@ -89,7 +96,14 @@ const UserManage = () => {
         />
 
         <div style={userManageTableContainerStyle}>
-          <div style={userManageBlueBarStyle}>
+          <div
+            style={{
+              ...userManageBlueBarStyle,
+              ...(isCompact
+                ? { flexDirection: "column", alignItems: "stretch", gap: 10 }
+                : {}),
+            }}
+          >
             <span>{USER_MANAGE_CARD_TITLES.USER_LIST}</span>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {mode !== null && (
@@ -177,13 +191,20 @@ const UserManage = () => {
               {USER_MANAGE_MESSAGES.noUsers}
             </p>
           ) : (
-            <div style={{ overflowX: "auto", width: "100%" }}>
+            <div
+              style={{
+                overflowX: "auto",
+                width: "100%",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
               <table
                 style={{
                   width: "100%",
-                  minWidth: 600,
+                  minWidth: isCompact ? 720 : 600,
                   borderCollapse: "separate",
                   borderSpacing: 0,
+                  tableLayout: "fixed",
                 }}
               >
                 <thead>
@@ -191,16 +212,16 @@ const UserManage = () => {
                     <UserManageTH style={{ width: 50, position: "sticky", top: 0, zIndex: 10 }}>
                       {USER_MANAGE_TABLE_HEADERS.ID}
                     </UserManageTH>
-                    <UserManageTH style={{ width: 180, position: "sticky", top: 0, zIndex: 10 }}>
+                    <UserManageTH style={{ width: 140, position: "sticky", top: 0, zIndex: 10 }}>
                       {USER_MANAGE_TABLE_HEADERS.USERNAME}
                     </UserManageTH>
-                    <UserManageTH style={{ width: 140, position: "sticky", top: 0, zIndex: 10 }}>
+                    <UserManageTH style={{ width: 120, position: "sticky", top: 0, zIndex: 10 }}>
                       {USER_MANAGE_TABLE_HEADERS.ACCESS_TYPE}
                     </UserManageTH>
-                    <UserManageTH style={{ width: 160, position: "sticky", top: 0, zIndex: 10 }}>
+                    <UserManageTH style={{ width: 130, position: "sticky", top: 0, zIndex: 10 }}>
                       {USER_MANAGE_TABLE_HEADERS.ROLE_PERMISSION}
                     </UserManageTH>
-                    <UserManageTH style={{ position: "sticky", top: 0, zIndex: 10 }}>
+                    <UserManageTH style={{ width: 180, position: "sticky", top: 0, zIndex: 10 }}>
                       {USER_MANAGE_TABLE_HEADERS.SECTIONS}
                     </UserManageTH>
                     <UserManageTH
@@ -252,8 +273,11 @@ const UserManage = () => {
                             background: rowBg,
                             fontWeight: 500,
                             textAlign: "left",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                             ...lastRowCellStyle,
                           }}
+                          title={user.username}
                         >
                           {user.username}
                         </td>
@@ -285,8 +309,11 @@ const UserManage = () => {
                             ...userManageTdStyle,
                             background: rowBg,
                             fontWeight: 500,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                             ...lastRowCellStyle,
                           }}
+                          title={String(getUserRolePermission(user))}
                         >
                           {getUserRolePermission(user)}
                         </td>
@@ -295,12 +322,16 @@ const UserManage = () => {
                             ...userManageTdStyle,
                             background: rowBg,
                             fontWeight: 500,
-                            maxWidth: 220,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             textAlign: "left",
                             ...lastRowCellStyle,
                           }}
+                          title={
+                            isSuperAdmin
+                              ? USER_MANAGE_LABELS.ALL_SECTIONS
+                              : getUserSectionsLabel(user)
+                          }
                         >
                           {isSuperAdmin ? (
                             <span
@@ -395,6 +426,7 @@ const UserManage = () => {
         {mode && (
           <>
             <UserManageEditForm
+              isCompact={isCompact}
               mode={mode}
               editUser={editUser}
               username={username}
@@ -408,6 +440,7 @@ const UserManage = () => {
             />
 
             <UserManagePermissionCard
+              isCompact={isCompact}
               permissions={permissions}
               setPermissions={setPermissions}
               saving={saving}

@@ -34,6 +34,7 @@ import SipRegisterAdaptTab from "./SipRegisterAdaptTab";
 
 function SipRegisterFormDialog(props) {
   const {
+    isCompact,
     showModal,
     loading,
     handleCloseModal,
@@ -89,12 +90,21 @@ function SipRegisterFormDialog(props) {
     "& .MuiDialog-container": {
       alignItems: "flex-start",
       justifyContent: "center",
-      pt: 8,
+      pt: isCompact ? 2 : 8,
+      px: isCompact ? 1 : 0,
     },
   }}
   PaperProps={{
     sx: {
       ...trunkModalPaperSx,
+      ...(isCompact
+        ? {
+            width: "100%",
+            maxWidth: "calc(100vw - 16px)",
+            maxHeight: "calc(100vh - 16px)",
+            my: 0,
+          }
+        : {}),
       borderRadius:
         editIndex == null ? "4px" : trunkModalPaperSx.borderRadius,
     },
@@ -116,6 +126,8 @@ function SipRegisterFormDialog(props) {
   <SipRegisterModalTabs
     value={modalTab}
     onChange={setModalTab}
+    fullWidth={!isCompact}
+    scrollable={!!isCompact}
     tabs={[
       { id: "basic", label: "BASIC" },
       { id: "codec", label: "CODEC" },
@@ -129,7 +141,7 @@ function SipRegisterFormDialog(props) {
     ref={modalScrollRef}
     className="app-main-scroll"
     style={{
-      padding: "24px",
+      padding: isCompact ? "16px 12px" : "24px",
       backgroundColor: "#ffffff",
     }}
     sx={sipRegisterModalDialogContentSx}

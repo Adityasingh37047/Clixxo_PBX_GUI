@@ -55,10 +55,11 @@ export const getSipRegisterStatusStyle = (raw) => {
   return { bg: "transparent", color: "#475569" };
 };
 
-export const SIP_REGISTER_TABLE_WIDE_MIN = 1400;
+export const SIP_REGISTER_TABLE_WIDE_MIN = 1200;
 
 const SIP_REGISTER_HIDDEN_TABLE_FIELDS = [
   "index",
+  "auth_username",
   "password",
   "provider",
   "Domain name",
@@ -126,30 +127,31 @@ export const sipRegisterModifyCellStyle = {
 };
 
 const sipRegisterHeaderCellStyle100 = {
-  whiteSpace: "normal",
-  overflow: "visible",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
   fontSize: 10,
   letterSpacing: "0.04em",
   padding: "6px 4px",
-  lineHeight: 1.15,
+  lineHeight: 1.3,
   verticalAlign: "middle",
-  wordBreak: "break-word",
 };
 
 const sipRegisterDataCellStyle100 = {
   whiteSpace: "nowrap",
-  overflow: "visible",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
   fontSize: 11,
   paddingLeft: 5,
   paddingRight: 5,
   lineHeight: 1.3,
   verticalAlign: "middle",
+  maxWidth: 0,
 };
 
 export const SIP_REGISTER_TABLE_HEADER_LABELS = {
   trunk_id: "Trunk ID",
   username: "Username",
-  auth_username: "Auth User",
   server_domain: "Server Domain",
   client_domain: "Client Domain",
   identity_ip: "Ident. IP",
@@ -170,18 +172,16 @@ export const getSipRegisterHeaderCellStyle = (zoomed) =>
 export const sipRegisterFieldColumnWidths = {
   trunk_id: 100,
   username: 140,
-  auth_username: 130,
   server_domain: 240,
   client_domain: 320,
   identity_ip: 130,
 };
 
 export const sipRegisterFieldColumnPercents = {
-  trunk_id: "7%",
-  username: "10%",
-  auth_username: "9%",
-  server_domain: "15%",
-  client_domain: "18%",
+  trunk_id: "8%",
+  username: "11%",
+  server_domain: "16%",
+  client_domain: "22%",
   identity_ip: "10%",
 };
 
@@ -196,6 +196,8 @@ export const SIP_REGISTER_ZOOM_TABLE_WIDTH = Math.max(
       0,
     ),
 );
+
+export const SIP_REGISTER_TABLE_COMPACT_MIN_WIDTH = SIP_REGISTER_ZOOM_TABLE_WIDTH;
 
 export const sipRegisterFixedCellStyle = (baseStyle, zoomed) =>
   zoomed

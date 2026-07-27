@@ -112,6 +112,7 @@ const SipRegisterPage = () => {
           />
 
           <SipRegisterTable
+            isCompact={isCompact}
             isInitialLoad={isInitialLoad}
             dataEmpty={dataEmpty}
             tableScrollRef={tableScrollRef}
@@ -141,6 +142,7 @@ const SipRegisterPage = () => {
       </div>
 
       <SipRegisterFormDialog
+        isCompact={isCompact}
         showModal={showModal}
         loading={loading}
         handleCloseModal={handleCloseModal}
