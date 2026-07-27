@@ -11,6 +11,9 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import {
   SIP_ACCESS_CONTROL_COLUMNS,
   SIP_ACCESS_CONTROL_BTN_INVERSE,
@@ -19,17 +22,28 @@ import {
   SIP_ACCESS_CONTROL_BTN_ADD_NEW,
   SIP_ACCESS_CONTROL_BTN_SAVE,
   SIP_ACCESS_CONTROL_BTN_CLOSE,
+  SIP_ACCESS_CONTROL_BTN_ADD_RULE,
   SIP_ACCESS_CONTROL_MODAL_ADD_TITLE,
   SIP_ACCESS_CONTROL_MODAL_EDIT_TITLE,
   SIP_ACCESS_CONTROL_EMPTY_MESSAGE,
   SIP_ACCESS_CONTROL_RECORD_LABEL,
   SIP_ACCESS_CONTROL_SELECTED_SUFFIX,
   SIP_ACCESS_CONTROL_PAGINATION_SHOWING,
+  SIP_ACCESS_CONTROL_MODE_OPTIONS,
+  SIP_ACCESS_CONTROL_ACTION_OPTIONS,
+  SIP_ACCESS_CONTROL_IPV4_CATCHALL,
+  SIP_ACCESS_CONTROL_IPV6_CATCHALL,
+  SIP_ACCESS_CONTROL_RULE_ORDER_NOTE,
 } from "../../../constants/SipAccessControlConstants";
 import { C } from "../../../theme/pbxTokens";
 import { Btn } from "../../../components/common";
 import { useSipAccessControlPage } from "./hooks/useSipAccessControlPage";
-import { getSipAccessControlDefaultLabel } from "./utils/SipAccessControlTransformers";
+import {
+  analyzeAclRules,
+  getSipAccessControlModeLabel,
+  formatAclRuleSummary,
+} from "./utils/SipAccessControlTransformers";
+import { normalizeAction } from "./utils/SipAccessControlValidators";
 import {
   TH,
   getSipAccessControlTdStyle,
@@ -55,9 +69,16 @@ import {
   addNewModalFooterBtnStyle,
   sipAccessControlModalCancelBtnStyle,
   systemModalFieldInputStyle,
-  systemModalTextareaStyle,
   systemModalSelectSx,
   inputInteraction,
+  sipAccessControlRuleListStyle,
+  sipAccessControlRuleRowStyle,
+  sipAccessControlRuleLockedRowStyle,
+  sipAccessControlRuleIconBtnStyle,
+  sipAccessControlModeToggleWrapStyle,
+  sipAccessControlOrderNoteStyle,
+  sipAccessControlModeBadgeStyle,
+  sipAccessControlRuleChipStyle,
 } from "./components/SipAccessControlFormFields";
 
 const SipAccessControl = () => {
@@ -71,12 +92,19 @@ const SipAccessControl = () => {
     form,
     toast,
     setToast,
-    modalFormFields,
+    saving,
+    isWhitelistMode,
     selectedCount,
     allChecked,
     openModal,
     closeModal,
     handleFormChange,
+    handleModeChange,
+    handleBlockIpv6Toggle,
+    handleRuleChange,
+    handleAddRule,
+    handleRemoveRule,
+    handleMoveRule,
     handleSave,
     handleRowCheck,
     handleTableCheckAll,
@@ -188,7 +216,7 @@ const SipAccessControl = () => {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   tableLayout: "auto",
-                  minWidth: 980,
+                  minWidth: 1100,
                 }}
               >
                 <thead>
@@ -239,6 +267,8 @@ const SipAccessControl = () => {
                     const lastRowCellStyle = isLastRow
                       ? { borderBottom: "none" }
                       : {};
+                    const rowMode = analyzeAclRules(row.rules).mode;
+                    const modeLabel = getSipAccessControlModeLabel(rowMode);
 
                     return (
                       <tr
@@ -293,48 +323,41 @@ const SipAccessControl = () => {
                           style={getSipAccessControlTdStyle(
                             rowBg,
                             lastRowCellStyle,
-                            {
-                              maxWidth: 180,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                            },
                           )}
                         >
-                          {row.cidr || "—"}
+                          <span style={sipAccessControlModeBadgeStyle(rowMode)}>
+                            {modeLabel}
+                          </span>
                         </td>
                         <td
                           style={getSipAccessControlTdStyle(
                             rowBg,
                             lastRowCellStyle,
                             {
-                              maxWidth: 200,
+                              maxWidth: 420,
                               whiteSpace: "normal",
                               wordBreak: "break-word",
                             },
                           )}
                         >
-                          {row.domain || "—"}
-                        </td>
-                        <td
-                          style={getSipAccessControlTdStyle(
-                            rowBg,
-                            lastRowCellStyle,
+                          {(row.rules || []).length === 0 ? (
+                            "—"
+                          ) : (
+                            <div
+                              style={{ display: "flex", flexWrap: "wrap" }}
+                            >
+                              {row.rules.map((rule, ruleIdx) => (
+                                <span
+                                  key={ruleIdx}
+                                  style={sipAccessControlRuleChipStyle(
+                                    normalizeAction(rule.action),
+                                  )}
+                                >
+                                  {formatAclRuleSummary(rule)}
+                                </span>
+                              ))}
+                            </div>
                           )}
-                        >
-                          {row.type || "—"}
-                        </td>
-                        <td
-                          style={getSipAccessControlTdStyle(
-                            rowBg,
-                            lastRowCellStyle,
-                            {
-                              maxWidth: 280,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                            },
-                          )}
-                        >
-                          {row.description || "—"}
                         </td>
                         <td
                           style={getSipAccessControlTdStyle(
@@ -386,7 +409,7 @@ const SipAccessControl = () => {
         }}
         PaperProps={{
           sx: {
-            width: 520,
+            width: 620,
             maxWidth: "96vw",
             mx: "auto",
             p: 0,
@@ -424,74 +447,179 @@ const SipAccessControl = () => {
               padding: 20,
             }}
           >
-            {modalFormFields.map((field) => (
+            {/* Name */}
+            <div style={sipAccessControlRuleRowStyle}>
+              <SipAccessControlFieldLabel tooltipKey="name">
+                Name:
+              </SipAccessControlFieldLabel>
+              <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
+                <input
+                  name="name"
+                  type="text"
+                  value={form.name || ""}
+                  onChange={handleFormChange}
+                  disabled={editingId !== null}
+                  placeholder="e.g., office_whitelist"
+                  maxLength={64}
+                  style={{
+                    ...systemModalFieldInputStyle,
+                    width: "100%",
+                    ...(editingId !== null
+                      ? { background: "#eef1f4", color: C.mutedText, cursor: "not-allowed" }
+                      : {}),
+                  }}
+                  {...inputInteraction}
+                />
+              </div>
+            </div>
+
+            {/* Mode */}
+            <div style={sipAccessControlRuleRowStyle}>
+              <SipAccessControlFieldLabel tooltipKey="mode">
+                Mode:
+              </SipAccessControlFieldLabel>
+              <div style={sipAccessControlModeToggleWrapStyle}>
+                {SIP_ACCESS_CONTROL_MODE_OPTIONS.map((opt) => (
+                  <Btn
+                    key={opt.value}
+                    variant={
+                      form.mode === opt.value ? "tabActive" : "tabInactive"
+                    }
+                    onClick={() => handleModeChange(opt.value)}
+                    style={{ flex: 1, borderRadius: 4 }}
+                  >
+                    {opt.label}
+                  </Btn>
+                ))}
+              </div>
+            </div>
+
+            {/* Locked catch-all rule(s) for whitelist mode */}
+            {isWhitelistMode && (
               <div
-                key={field.key}
+                style={{ display: "flex", flexDirection: "column", gap: 8 }}
+              >
+                <div style={sipAccessControlRuleLockedRowStyle}>
+                  <LockOutlinedIcon sx={{ fontSize: 15 }} />
+                  <span>
+                    <strong>deny</strong> {SIP_ACCESS_CONTROL_IPV4_CATCHALL} —
+                    blocks all IPv4 by default (added automatically, always
+                    first)
+                  </span>
+                </div>
+
+                <div style={sipAccessControlRuleRowStyle}>
+                  <SipAccessControlFieldLabel tooltipKey="blockIpv6">
+                    Block IPv6:
+                  </SipAccessControlFieldLabel>
+                  <Checkbox
+                    size="small"
+                    checked={!!form.blockIpv6}
+                    onChange={(e) => handleBlockIpv6Toggle(e.target.checked)}
+                    sx={{ padding: 0 }}
+                  />
+                </div>
+
+                {form.blockIpv6 && (
+                  <div style={sipAccessControlRuleLockedRowStyle}>
+                    <LockOutlinedIcon sx={{ fontSize: 15 }} />
+                    <span>
+                      <strong>deny</strong> {SIP_ACCESS_CONTROL_IPV6_CATCHALL}{" "}
+                      — blocks all IPv6 by default
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Editable rules */}
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: 8 }}
+            >
+              <div
                 style={{
                   display: "flex",
-                  alignItems:
-                    field.type === "textarea" ? "flex-start" : "center",
-                  gap: 12,
-                  width: "100%",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <SipAccessControlFieldLabel
-                  tooltipKey={field.key}
-                  style={{
-                    paddingTop: field.type === "textarea" ? 8 : 0,
-                  }}
-                >
-                  {field.label}:
+                <SipAccessControlFieldLabel style={{ width: "auto" }}>
+                  {isWhitelistMode ? "Permitted IPs:" : "Rules:"}
                 </SipAccessControlFieldLabel>
-                <div style={{ flex: 1, minWidth: 0, width: "100%" }}>
-                  {field.type === "text" ? (
-                    <input
-                      name={field.key}
-                      type="text"
-                      value={form[field.key] || ""}
-                      onChange={handleFormChange}
-                      placeholder={field.placeholder || ""}
-                      style={{ ...systemModalFieldInputStyle, width: "100%" }}
-                      {...inputInteraction}
-                    />
-                  ) : null}
-                  {field.type === "select" ? (
+                <Btn
+                  variant="cancel"
+                  onClick={handleAddRule}
+                  style={{ padding: "4px 10px", fontSize: 11, height: 26 }}
+                >
+                  {SIP_ACCESS_CONTROL_BTN_ADD_RULE}
+                </Btn>
+              </div>
+
+              <div style={sipAccessControlRuleListStyle}>
+                {form.rules.map((rule, idx) => (
+                  <div key={idx} style={sipAccessControlRuleRowStyle}>
                     <Select
-                      name={field.key}
-                      value={form[field.key] || field.initial}
-                      onChange={handleFormChange}
-                      fullWidth
-                      sx={systemModalSelectSx}
+                      value={rule.action}
+                      onChange={(e) =>
+                        handleRuleChange(idx, "action", e.target.value)
+                      }
+                      sx={{ ...systemModalSelectSx, width: 130, flex: "0 0 130px" }}
                       MenuProps={{
-                        PaperProps: {
-                          style: { maxHeight: 200, overflow: "auto" },
-                        },
+                        PaperProps: { style: { maxHeight: 200, overflow: "auto" } },
                       }}
                     >
-                      {(field.options || []).map((opt) => (
-                        <MenuItem
-                          key={opt.value}
-                          value={opt.value}
-                          sx={{ fontSize: 13 }}
-                        >
+                      {SIP_ACCESS_CONTROL_ACTION_OPTIONS.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: 13 }}>
                           {opt.label}
                         </MenuItem>
                       ))}
                     </Select>
-                  ) : null}
-                  {field.type === "textarea" ? (
-                    <textarea
-                      name={field.key}
-                      value={form[field.key] || ""}
-                      onChange={handleFormChange}
-                      rows={4}
-                      style={{ ...systemModalTextareaStyle, width: "100%" }}
+                    <input
+                      type="text"
+                      value={rule.ip}
+                      onChange={(e) =>
+                        handleRuleChange(idx, "ip", e.target.value)
+                      }
+                      placeholder="e.g., 192.168.1.0/24"
+                      style={{ ...systemModalFieldInputStyle, flex: 1, minWidth: 0 }}
                       {...inputInteraction}
                     />
-                  ) : null}
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveRule(idx, -1)}
+                      disabled={idx === 0}
+                      style={sipAccessControlRuleIconBtnStyle(idx === 0)}
+                      title="Move up"
+                    >
+                      <KeyboardArrowUpIcon sx={{ fontSize: 16 }} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveRule(idx, 1)}
+                      disabled={idx === form.rules.length - 1}
+                      style={sipAccessControlRuleIconBtnStyle(
+                        idx === form.rules.length - 1,
+                      )}
+                      title="Move down"
+                    >
+                      <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRule(idx)}
+                      style={sipAccessControlRuleIconBtnStyle(false)}
+                      title="Remove rule"
+                    >
+                      <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+
+              <span style={sipAccessControlOrderNoteStyle}>
+                {SIP_ACCESS_CONTROL_RULE_ORDER_NOTE}
+              </span>
+            </div>
           </div>
         </DialogContent>
         <DialogActions
@@ -501,6 +629,7 @@ const SipAccessControl = () => {
           <Btn
             variant="primary"
             onClick={handleSave}
+            disabled={saving}
             style={addNewModalFooterBtnStyle}
           >
             {SIP_ACCESS_CONTROL_BTN_SAVE}

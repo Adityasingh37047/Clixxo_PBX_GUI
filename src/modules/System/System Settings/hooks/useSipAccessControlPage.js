@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   listACL,
   addACL,
@@ -15,13 +15,23 @@ import {
   SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL,
   SIP_ACCESS_CONTROL_MSG_DELETED,
   SIP_ACCESS_CONTROL_MSG_CLEARED,
+  SIP_ACCESS_CONTROL_ERR_FETCH_LIST,
+  SIP_ACCESS_CONTROL_ERR_ADD,
+  SIP_ACCESS_CONTROL_ERR_UPDATE,
+  SIP_ACCESS_CONTROL_ERR_DELETE,
+  SIP_ACCESS_CONTROL_ERR_CLEAR,
+  SIP_ACCESS_CONTROL_MODE_WHITELIST,
 } from "../../../../constants/SipAccessControlConstants";
 import { validateSipAccessControlForm } from "../utils/SipAccessControlValidators";
 import {
   createSipAccessControlEmptyForm,
   rowToSipAccessControlForm,
-  buildSipAccessControlModalFields,
+  getDefaultRuleAction,
 } from "../utils/SipAccessControlTransformers";
+
+/** Surface the server's own validation message (e.g. "Invalid IP or CIDR: ...") when available. */
+const extractApiErrorMessage = (error, fallback) =>
+  error?.response?.data?.message || error?.message || fallback;
 
 export function useSipAccessControlPage() {
   const [rows, setRows] = useState([]);
@@ -30,8 +40,7 @@ export function useSipAccessControlPage() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(createSipAccessControlEmptyForm);
   const [toast, setToast] = useState({ msg: "", type: "success" });
-
-  const modalFormFields = useMemo(() => buildSipAccessControlModalFields(), []);
+  const [saving, setSaving] = useState(false);
 
   const selectedCount = Object.values(checkedRows).filter(Boolean).length;
   const allChecked =
@@ -42,37 +51,42 @@ export function useSipAccessControlPage() {
     setTimeout(() => setToast({ msg: "", type: "success" }), 3500);
   };
 
-  const alert = (msg) => {
+  const alert = (msg, forceError = false) => {
     const isErr =
-      /error|failed|required|please|invalid|must|choose|select|enter|exists/i.test(
+      forceError ||
+      (/error|failed|required|please|invalid|must|choose|select|enter|exists|not found/i.test(
         msg,
-      ) && !/successfully/i.test(msg);
+      ) &&
+        !/successfully/i.test(msg));
     showToast(msg, isErr ? "error" : "success");
   };
 
   const fetchACLList = async () => {
     try {
       const response = await listACL();
-
-      if (response.response) {
-        const mappedRows = (response.message || []).map((acl, index) => ({
-          id: index + 1,
+      if (response?.response) {
+        const mappedRows = (response.message || []).map((acl) => ({
+          id: acl.name,
           name: acl.name,
-          cidr: acl.rules?.[0]?.ip ?? "-",
-          domain: "-",
-          type:
-            acl.rules?.[0]?.action === "permit" ? "Whitelist" : "Blacklist",
-          description: "-",
+          rules: Array.isArray(acl.rules) ? acl.rules : [],
         }));
         setRows(mappedRows);
+      } else if (response) {
+        alert(response.message || SIP_ACCESS_CONTROL_ERR_FETCH_LIST, true);
       }
     } catch (error) {
       console.error("Error fetching ACL:", error);
-      alert("Failed to fetch ACL list");
+      alert(extractApiErrorMessage(error, SIP_ACCESS_CONTROL_ERR_FETCH_LIST), true);
     }
   };
 
   const openModal = (row = null) => {
+    // Blur whatever triggered the dialog (Add New / Edit) before it mounts —
+    // otherwise MUI marks #root aria-hidden while that button still has DOM
+    // focus, which Chrome flags as an aria-hidden/focus conflict.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     if (row) {
       setForm(rowToSipAccessControlForm(row));
       setEditingId(row.id);
@@ -98,30 +112,100 @@ export function useSipAccessControlPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleModeChange = (mode) => {
+    setForm((prev) => {
+      if (prev.mode === mode) return prev;
+      const prevDefaultAction = getDefaultRuleAction(prev.mode);
+      const nextDefaultAction = getDefaultRuleAction(mode);
+      return {
+        ...prev,
+        mode,
+        // Flip the action of still-blank, untouched rows to the new mode's
+        // default (permit for whitelist, deny for blacklist). Rows the user
+        // already filled in or explicitly changed the action on are left alone.
+        rules: prev.rules.map((rule) =>
+          !String(rule.ip || "").trim() && rule.action === prevDefaultAction
+            ? { ...rule, action: nextDefaultAction }
+            : rule,
+        ),
+      };
+    });
+  };
+
+  const handleBlockIpv6Toggle = (checked) => {
+    setForm((prev) => ({ ...prev, blockIpv6: checked }));
+  };
+
+  const handleRuleChange = (index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      rules: prev.rules.map((rule, i) =>
+        i === index ? { ...rule, [field]: value } : rule,
+      ),
+    }));
+  };
+
+  const handleAddRule = () => {
+    setForm((prev) => ({
+      ...prev,
+      rules: [...prev.rules, { action: getDefaultRuleAction(prev.mode), ip: "" }],
+    }));
+  };
+
+  const handleRemoveRule = (index) => {
+    setForm((prev) => {
+      const nextRules = prev.rules.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        rules: nextRules.length
+          ? nextRules
+          : [{ action: getDefaultRuleAction(prev.mode), ip: "" }],
+      };
+    });
+  };
+
+  const handleMoveRule = (index, direction) => {
+    setForm((prev) => {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= prev.rules.length) return prev;
+      const nextRules = [...prev.rules];
+      [nextRules[index], nextRules[targetIndex]] = [
+        nextRules[targetIndex],
+        nextRules[index],
+      ];
+      return { ...prev, rules: nextRules };
+    });
+  };
+
   const handleSave = async (e) => {
     e?.preventDefault?.();
+    if (saving) return;
 
     const validation = validateSipAccessControlForm(form, rows, editingId);
     if (!validation.valid) {
-      alert(validation.error);
+      alert(validation.error, true);
       return;
     }
 
-    const rules = [
-      {
-        action: form.default === "whitelist" ? "permit" : "deny",
-        ip: form.cidr,
-      },
-    ];
+    const { name, rules } = validation.payload;
 
+    setSaving(true);
     try {
       if (editingId !== null) {
-        await updateACL(form.name, rules);
+        const response = await updateACL(name, rules);
+        if (response?.response === false) {
+          alert(response.message || SIP_ACCESS_CONTROL_ERR_UPDATE, true);
+          return;
+        }
         await fetchACLList();
         closeModal();
         alert(SIP_ACCESS_CONTROL_MSG_UPDATED);
       } else {
-        await addACL(form.name, rules);
+        const response = await addACL(name, rules);
+        if (response?.response === false) {
+          alert(response.message || SIP_ACCESS_CONTROL_ERR_ADD, true);
+          return;
+        }
         await fetchACLList();
         closeModal();
         alert(SIP_ACCESS_CONTROL_MSG_ADDED);
@@ -129,8 +213,14 @@ export function useSipAccessControlPage() {
     } catch (error) {
       console.error("Error saving ACL:", error);
       alert(
-        editingId !== null ? "Failed to update ACL" : "Failed to add ACL",
+        extractApiErrorMessage(
+          error,
+          editingId !== null ? SIP_ACCESS_CONTROL_ERR_UPDATE : SIP_ACCESS_CONTROL_ERR_ADD,
+        ),
+        true,
       );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -168,7 +258,7 @@ export function useSipAccessControlPage() {
   const handleDelete = async () => {
     const selected = rows.filter((row) => checkedRows[row.id]);
     if (selected.length === 0) {
-      alert(SIP_ACCESS_CONTROL_ERR_SELECT_DELETE);
+      alert(SIP_ACCESS_CONTROL_ERR_SELECT_DELETE, true);
       return;
     }
     if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_DELETE(selected.length))) {
@@ -184,13 +274,14 @@ export function useSipAccessControlPage() {
       alert(SIP_ACCESS_CONTROL_MSG_DELETED);
     } catch (error) {
       console.error("Error deleting ACL:", error);
-      alert("Failed to delete ACL");
+      alert(extractApiErrorMessage(error, SIP_ACCESS_CONTROL_ERR_DELETE), true);
+      await fetchACLList();
     }
   };
 
   const handleClearAll = async () => {
     if (rows.length === 0) {
-      alert(SIP_ACCESS_CONTROL_ERR_NOTHING_TO_CLEAR);
+      alert(SIP_ACCESS_CONTROL_ERR_NOTHING_TO_CLEAR, true);
       return;
     }
     if (!window.confirm(SIP_ACCESS_CONTROL_CONFIRM_CLEAR_ALL(rows.length))) {
@@ -206,7 +297,8 @@ export function useSipAccessControlPage() {
       alert(SIP_ACCESS_CONTROL_MSG_CLEARED);
     } catch (error) {
       console.error("Error clearing ACL:", error);
-      alert("Failed to clear ACL list");
+      alert(extractApiErrorMessage(error, SIP_ACCESS_CONTROL_ERR_CLEAR), true);
+      await fetchACLList();
     }
   };
 
@@ -218,12 +310,19 @@ export function useSipAccessControlPage() {
     form,
     toast,
     setToast,
-    modalFormFields,
+    saving,
+    isWhitelistMode: form.mode === SIP_ACCESS_CONTROL_MODE_WHITELIST,
     selectedCount,
     allChecked,
     openModal,
     closeModal,
     handleFormChange,
+    handleModeChange,
+    handleBlockIpv6Toggle,
+    handleRuleChange,
+    handleAddRule,
+    handleRemoveRule,
+    handleMoveRule,
     handleSave,
     handleRowCheck,
     handleTableCheckAll,

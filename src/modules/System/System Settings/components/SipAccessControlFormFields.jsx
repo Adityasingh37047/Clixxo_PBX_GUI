@@ -167,6 +167,89 @@ export {
   sipAccessControlPaginationStyle,
 };
 
+// ---- Rule editor (Add/Edit ACL modal) ----------------------------------
+
+export const sipAccessControlRuleListStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  width: "100%",
+};
+
+export const sipAccessControlRuleRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+};
+
+export const sipAccessControlRuleLockedRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+  padding: "6px 10px",
+  borderRadius: FIELD_RADIUS,
+  background: "#eef2f7",
+  border: `1px dashed ${C.cardBorder}`,
+  fontSize: 12,
+  color: C.mutedText,
+};
+
+export const sipAccessControlRuleIconBtnStyle = (disabled) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 26,
+  height: 26,
+  flexShrink: 0,
+  borderRadius: 4,
+  border: `1px solid ${OUTLINED_BORDER}`,
+  background: "#fff",
+  color: disabled ? "#c3c9d2" : C.labelText,
+  cursor: disabled ? "not-allowed" : "pointer",
+  opacity: disabled ? 0.6 : 1,
+});
+
+export const sipAccessControlModeToggleWrapStyle = {
+  display: "flex",
+  gap: 8,
+  width: "100%",
+};
+
+export const sipAccessControlOrderNoteStyle = {
+  fontSize: 11.5,
+  color: C.mutedText,
+  lineHeight: 1.4,
+};
+
+export const sipAccessControlModeBadgeStyle = (mode) => ({
+  display: "inline-block",
+  padding: "2px 8px",
+  borderRadius: 999,
+  fontSize: 11,
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+  color: mode === "whitelist" ? C.successGreen : C.errorRed,
+  background: mode === "whitelist" ? "rgba(22,163,74,0.1)" : "rgba(220,38,38,0.08)",
+  border: `1px solid ${mode === "whitelist" ? "rgba(22,163,74,0.35)" : "rgba(220,38,38,0.3)"}`,
+});
+
+export const sipAccessControlRuleChipStyle = (action) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
+  padding: "1px 8px",
+  margin: "2px 4px 2px 0",
+  borderRadius: 999,
+  fontSize: 11,
+  fontFamily: "monospace",
+  whiteSpace: "nowrap",
+  color: action === "permit" ? C.successGreen : C.errorRed,
+  background: action === "permit" ? "rgba(22,163,74,0.08)" : "rgba(220,38,38,0.07)",
+  border: `1px solid ${action === "permit" ? "rgba(22,163,74,0.3)" : "rgba(220,38,38,0.25)"}`,
+});
+
 /** Modal footer aligns with shared 4px dialog radius. */
 export const sipAccessControlModalFooterStyle = {
   display: "flex",
