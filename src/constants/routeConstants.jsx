@@ -128,6 +128,7 @@ export const ROUTE_PATHS = {
 
   // System → System Settings
   GLOBAL_SIP: '/system/system-settings/global-sip',
+  SYSTEM_SETTINGS_SIP_SETTINGS: '/system/system-settings/sip-settings',
   SYSTEM_SETTINGS_STORAGE: '/system/system-settings/storage',
   SYSTEM_SETTINGS_MANAGEMENT: '/system/system-settings/management',
   SYSTEM_SETTINGS_CENTRALIZED_MANAGE: '/system/system-settings/centralized-manage',

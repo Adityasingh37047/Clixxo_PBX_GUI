@@ -666,6 +666,11 @@ export const SIDEBAR_SECTIONS = [
             path: ROUTE_PATHS.GLOBAL_SIP,
           },
           {
+            id: "sysSipSettings",
+            title: "SIP Settings",
+            path: ROUTE_PATHS.SYSTEM_SETTINGS_SIP_SETTINGS,
+          },
+          {
             id: "sysCentralizedManage",
             title: "Centralized Manage",
             path: ROUTE_PATHS.SYSTEM_SETTINGS_CENTRALIZED_MANAGE,

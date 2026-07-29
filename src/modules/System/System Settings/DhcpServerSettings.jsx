@@ -49,14 +49,14 @@ const DHCP_CARD_SHADOW =
 const DHCP_SERVER_SCROLL_CLASS = "dhcp-server-scroll";
 const DHCP_SERVER_COMPACT_MQ = "(max-width: 768px)";
 const DHCP_SERVER_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
-const DHCP_SERVER_LABEL_COL_WIDTH = 200;
+const DHCP_SERVER_FORM_MAX_WIDTH = 720;
+const DHCP_SERVER_FORM_HORIZONTAL_PADDING = 24;
+const DHCP_SERVER_LABEL_COL_WIDTH = 260;
 const DHCP_SERVER_CONTROL_COL_WIDTH = 220;
-const DHCP_SERVER_FIELD_COL_GAP = 8;
-const DHCP_SERVER_FORM_PAD_X = 28;
+const DHCP_SERVER_FIELD_COL_GAP = 24;
 const DHCP_SETTINGS_SECTION_HEADING_FIRST_MARGIN = "12px 0 24px 0";
 const DHCP_SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
 const DHCP_SETTINGS_COLUMN_GAP = 12;
-const DHCP_SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
 
 
 const FIELD_RADIUS = 6;
@@ -139,35 +139,48 @@ const systemFieldInputStyle = {
 
 const inputStyle = systemFieldInputStyle;
 
-const dhcpValueColStyle = {
-  flex: "1 1 auto",
-  minWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-end",
-  justifyContent: "flex-start",
-  paddingTop: 2,
-};
+const dhcpFormBodyStyle = (isCompact) => ({
+  width: "100%",
+  maxWidth: DHCP_SERVER_FORM_MAX_WIDTH,
+  margin: "0 auto",
+  padding: isCompact ? "0 12px" : `0 ${DHCP_SERVER_FORM_HORIZONTAL_PADDING}px`,
+  paddingBottom: 16,
+  boxSizing: "border-box",
+});
 
-const dhcpControlSlotStyle = {
-  width: DHCP_SERVER_CONTROL_COL_WIDTH,
-  minWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
-  maxWidth: DHCP_SERVER_CONTROL_COL_WIDTH,
+const dhcpFieldRowStyle = (isCompact) => ({
+  display: "flex",
+  flexDirection: isCompact ? "column" : "row",
+  alignItems: isCompact ? "stretch" : "center",
+  justifyContent: "flex-start",
+  padding: "8px 0",
+  gap: isCompact ? 8 : DHCP_SERVER_FIELD_COL_GAP,
+  width: "100%",
+});
+
+const dhcpFieldLabelStyle = (isCompact, labelStyle = {}) => ({
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  width: isCompact ? "100%" : "auto",
+  maxWidth: isCompact ? "100%" : DHCP_SERVER_LABEL_COL_WIDTH,
+  flexShrink: 0,
+  lineHeight: 1.4,
+  wordBreak: "break-word",
+  ...labelStyle,
+});
+
+const dhcpFieldControlStyle = (isCompact) => ({
+  minWidth: 0,
   flexShrink: 0,
   display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-start",
+  alignItems: "center",
   justifyContent: "flex-start",
-};
-
-const dhcpFieldRowStyle = {
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "flex-start",
-  width: "100%",
-  minHeight: 36,
-  gap: DHCP_SERVER_FIELD_COL_GAP,
-};
+  gap: 8,
+  width: isCompact ? "100%" : DHCP_SERVER_CONTROL_COL_WIDTH,
+  marginLeft: isCompact ? 0 : "auto",
+});
 
 const dhcpFooterStyle = {
   display: "flex",
@@ -226,28 +239,14 @@ const tooltipProps = {
 
 const getTooltipKey = (name) => name.replace(/\d+$/, "");
 
-const FieldRow = ({ name, label, labelStyle, children, labelColWidth }) => {
+const FieldRow = ({ name, label, labelStyle, children, isCompact = false }) => {
   const tooltipKey = getTooltipKey(name);
   const tooltip = DHCP_SERVER_FIELD_TOOLTIPS[tooltipKey];
-  const resolvedLabelWidth = labelColWidth ?? DHCP_SERVER_LABEL_COL_WIDTH;
-  const labelWrapStyle = {
-    flex: `0 0 ${resolvedLabelWidth}px`,
-    width: resolvedLabelWidth,
-    maxWidth: resolvedLabelWidth,
-    minWidth: resolvedLabelWidth,
-  };
   const labelNode = (
     <label
       style={{
-        fontSize: 12,
-        color: C.labelText,
-        fontWeight: 600,
-        width: "100%",
-        minWidth: 0,
-        lineHeight: 1.35,
-        wordBreak: "break-word",
+        ...dhcpFieldLabelStyle(isCompact, labelStyle),
         cursor: tooltip ? "help" : "default",
-        ...labelStyle,
       }}
     >
       {label}
@@ -255,19 +254,15 @@ const FieldRow = ({ name, label, labelStyle, children, labelColWidth }) => {
   );
 
   return (
-    <div style={dhcpFieldRowStyle}>
-      <div style={labelWrapStyle}>
-        {tooltip ? (
-          <Tooltip title={tooltip} disableHoverListener={!tooltip} {...tooltipProps}>
-            {labelNode}
-          </Tooltip>
-        ) : (
-          labelNode
-        )}
-      </div>
-      <div style={dhcpValueColStyle}>
-        <div style={dhcpControlSlotStyle}>{children}</div>
-      </div>
+    <div style={dhcpFieldRowStyle(isCompact)}>
+      {tooltip ? (
+        <Tooltip title={tooltip} disableHoverListener={!tooltip} {...tooltipProps}>
+          {labelNode}
+        </Tooltip>
+      ) : (
+        labelNode
+      )}
+      <div style={dhcpFieldControlStyle(isCompact)}>{children}</div>
     </div>
   );
 };
@@ -380,9 +375,7 @@ const dhcpLanColumnStyle = (isCompact) => ({
   flexDirection: "column",
   gap: DHCP_SETTINGS_COLUMN_GAP,
   minWidth: 0,
-  padding: isCompact
-    ? `16px ${DHCP_SERVER_FORM_PAD_X}px 20px`
-    : DHCP_SETTINGS_COLUMN_PADDING_DESKTOP,
+  padding: "16px 0 20px",
   background: C.cardBg,
   boxSizing: "border-box",
 });
@@ -655,8 +648,6 @@ const DhcpServerSettings = () => {
     }
   };
 
-  const labelColWidth = isCompact ? 160 : DHCP_SERVER_LABEL_COL_WIDTH;
-
   const renderLanSection = (lanGroup, isFirst) => {
     const isEnabled = form[lanGroup.fields[0].name];
 
@@ -668,7 +659,7 @@ const DhcpServerSettings = () => {
           <FieldRow
             name={lanGroup.fields[0].name}
             label={lanGroup.fields[0].label}
-            labelColWidth={labelColWidth}
+            isCompact={isCompact}
           >
             <div
               style={{
@@ -685,7 +676,7 @@ const DhcpServerSettings = () => {
                 onChange={handleChange}
                 sx={checkboxSx}
               />
-              <span style={{ fontSize: 12, color: C.valueText }}>
+              <span style={{ fontSize: 13, color: C.valueText }}>
                 {DHCP_SERVER_ENABLE_LABEL}
               </span>
             </div>
@@ -696,7 +687,7 @@ const DhcpServerSettings = () => {
               key={field.name}
               name={field.name}
               label={field.label}
-              labelColWidth={labelColWidth}
+              isCompact={isCompact}
               labelStyle={{
                 opacity: isEnabled ? 1 : 0.6,
               }}
@@ -725,10 +716,16 @@ const DhcpServerSettings = () => {
   };
 
   const renderLanGrid = () => {
+    const wrapSection = (lanGroup, isFirst) => (
+      <div style={dhcpFormBodyStyle(isCompact)}>
+        {renderLanSection(lanGroup, isFirst)}
+      </div>
+    );
+
     if (isCompact || lanSections.length <= 1) {
       return lanSections.map((lanGroup, idx) => (
         <div key={lanGroup.lan} style={dhcpLanColumnStyle(isCompact)}>
-          {renderLanSection(lanGroup, idx === 0)}
+          {wrapSection(lanGroup, idx === 0)}
         </div>
       ));
     }
@@ -736,7 +733,7 @@ const DhcpServerSettings = () => {
     return (
       <>
         <div style={dhcpLanColumnStyle(isCompact)}>
-          {renderLanSection(lanSections[0], true)}
+          {wrapSection(lanSections[0], true)}
         </div>
         <div
           className="dhcp-lan-divider"
@@ -746,7 +743,7 @@ const DhcpServerSettings = () => {
           <div style={dhcpLanDividerLineStyle} />
         </div>
         <div style={dhcpLanColumnStyle(isCompact)}>
-          {renderLanSection(lanSections[1], true)}
+          {wrapSection(lanSections[1], true)}
         </div>
       </>
     );
@@ -785,7 +782,7 @@ const DhcpServerSettings = () => {
             <span>{DHCP_SERVER_CARD_TITLE}</span>
           </div>
 
-          <div style={dhcpContentStyle}>
+          <div style={{ ...dhcpContentStyle, padding: "12px 0 0" }}>
             {loading && lanSections.length === 0 ? (
               <div
                 style={{

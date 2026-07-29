@@ -61,9 +61,15 @@ const setFieldFocus = (el) => {
   el.style.boxShadow = FOCUS_RING_SHADOW;
 };
 
+const CENTRALIZED_MANAGE_FORM_MAX_WIDTH = 720;
+const CENTRALIZED_MANAGE_FORM_HORIZONTAL_PADDING = 24;
+const CENTRALIZED_MANAGE_LABEL_WIDTH = 260;
+const CENTRALIZED_MANAGE_CONTROL_WIDTH = 220;
+const CENTRALIZED_MANAGE_FIELD_MIDDLE_GAP = 24;
+
 const nativeFieldInputStyle = {
   height: 32,
-  width: 200,
+  width: CENTRALIZED_MANAGE_CONTROL_WIDTH,
   padding: "0 10px",
   fontSize: 13,
   border: `1px solid ${OUTLINED_BORDER}`,
@@ -116,7 +122,7 @@ const systemFieldInputStyle = {
 
 const systemFieldInputStyleNarrow = {
   ...systemFieldInputStyle,
-  maxWidth: "280px",
+  maxWidth: `${CENTRALIZED_MANAGE_CONTROL_WIDTH}px`,
 };
 
 const systemFieldSelectStyle = {
@@ -133,7 +139,7 @@ const systemFieldSelectStyle = {
 const inputStyle = systemFieldInputStyleNarrow;
 const selectStyle = {
   ...systemFieldSelectStyle,
-  maxWidth: "280px",
+  maxWidth: `${CENTRALIZED_MANAGE_CONTROL_WIDTH}px`,
 };
 
 const centralizedManagePageInnerStyle = {
@@ -175,30 +181,38 @@ const centralizedManageContentStyle = {
   flexDirection: "column",
   gap: 12,
   minWidth: 0,
-  padding: "16px 36px 24px",
+  padding: "12px 0 0",
   background: C.cardBg,
+  boxSizing: "border-box",
 };
 
-const centralizedManageFieldsStackStyle = {
-  display: "flex",
-  flexDirection: "column",
+const centralizedManageFormBodyStyle = {
   width: "100%",
-  gap: 10,
-  maxWidth: 550,
-  margin: "0 auto 20px", // top horizontal bottom
+  maxWidth: CENTRALIZED_MANAGE_FORM_MAX_WIDTH,
+  margin: "0 auto",
+  padding: `0 ${CENTRALIZED_MANAGE_FORM_HORIZONTAL_PADDING}px`,
+  paddingBottom: 16,
+  boxSizing: "border-box",
 };
+
 const centralizedManageFieldRowStyle = {
   display: "flex",
   alignItems: "center",
-  gap: 12,
+  justifyContent: "flex-start",
+  padding: "8px 0",
+  gap: CENTRALIZED_MANAGE_FIELD_MIDDLE_GAP,
   width: "100%",
 };
 
 const centralizedManageFieldControlStyle = {
-  flex: 1,
   minWidth: 0,
-  width: "100%",
-  maxWidth: 280,
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  gap: 8,
+  width: CENTRALIZED_MANAGE_CONTROL_WIDTH,
+  marginLeft: "auto",
 };
 
 const centralizedManageFooterStyle = {
@@ -261,8 +275,9 @@ const FieldLabel = ({ name, style, children }) => {
     fontSize: 13,
     fontWeight: 600,
     color: C.labelText,
-    width: "100%",
-    maxWidth: 220,
+    textAlign: "left",
+    width: "auto",
+    maxWidth: CENTRALIZED_MANAGE_LABEL_WIDTH,
     flexShrink: 0,
     cursor: CENTRALIZED_MANAGE_FIELD_TOOLTIPS[name] ? "help" : "default",
     ...style,
@@ -854,7 +869,7 @@ fi`;
 
           <div style={centralizedManageContentStyle}>
             <form id="centralized-manage-form" onSubmit={handleSave}>
-              <div style={centralizedManageFieldsStackStyle}>
+              <div style={centralizedManageFormBodyStyle}>
                 {CENTRALIZED_MANAGE_FIELDS.map((field) => {
                   if (field.name === "monitoringPortValue") return null;
                   if (field.name === "workingStatus") return null;

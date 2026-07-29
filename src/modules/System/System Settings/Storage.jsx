@@ -14,9 +14,8 @@ import { useStoragePage } from "./hooks/useStoragePage";
 import {
   STORAGE_COMPACT_MQ,
   STORAGE_LABEL_COL_WIDTH,
-  STORAGE_BACKUP_LABEL_COL_WIDTH,
-  STORAGE_BACKUP_CONTROL_COL_WIDTH,
-  STORAGE_BACKUP_FIELD_COL_GAP,
+  STORAGE_CONTROL_COL_WIDTH,
+  STORAGE_FIELD_COL_GAP,
   StoragePageShell,
   StorageBreadcrumb,
   storageTableContainerStyle,
@@ -33,20 +32,16 @@ import {
 
 const Storage = () => {
   const isCompact = useMediaQuery(STORAGE_COMPACT_MQ);
-  const labelColWidth = isCompact ? 160 : STORAGE_LABEL_COL_WIDTH;
 
-  const backupLabelColWidth = isCompact
-    ? 180
-    : STORAGE_BACKUP_LABEL_COL_WIDTH;
-
-  const backupControlColWidth = isCompact
-    ? 240
-    : STORAGE_BACKUP_CONTROL_COL_WIDTH;
+  const fieldRowOptions = {
+    isCompact,
+    labelColWidth: STORAGE_LABEL_COL_WIDTH,
+    controlColWidth: STORAGE_CONTROL_COL_WIDTH,
+    fieldColGap: STORAGE_FIELD_COL_GAP,
+  };
 
   const backupFieldRowOptions = {
-    labelColWidth: backupLabelColWidth,
-    controlColWidth: backupControlColWidth,
-    fieldColGap: STORAGE_BACKUP_FIELD_COL_GAP,
+    ...fieldRowOptions,
   };
 
   const {
@@ -135,7 +130,6 @@ const Storage = () => {
             {activeTab === STORAGE_TAB_STATUS_ID && (
               <StorageStatusPanel
                 isCompact={isCompact}
-                labelColWidth={labelColWidth}
                 storageStatus={storageStatus}
               />
             )}
@@ -143,10 +137,10 @@ const Storage = () => {
             {activeTab === STORAGE_TAB_AUTO_CLEANUP_ID && (
               <StorageAutoCleanupPanel
                 isCompact={isCompact}
-                labelColWidth={labelColWidth}
                 autoCleanupForm={autoCleanupForm}
                 errors={errors}
                 onChange={handleAutoCleanupChange}
+                fieldRowOptions={fieldRowOptions}
               />
             )}
 

@@ -53,14 +53,23 @@ export const storageFormBtnStyle = storageFormBtnStyleFromCommon;
 
 export const STORAGE_COMPACT_MQ = "(max-width: 768px)";
 export const STORAGE_LAPTOP_NARROW_MQ = "(max-width: 1366px)";
-export const STORAGE_LABEL_COL_WIDTH = 200;
+export const STORAGE_FORM_MAX_WIDTH = 720;
+export const STORAGE_FORM_HORIZONTAL_PADDING = 24;
+export const STORAGE_LABEL_COL_WIDTH = 260;
 export const STORAGE_CONTROL_COL_WIDTH = 220;
-export const STORAGE_FIELD_COL_GAP = 8;
-export const STORAGE_BACKUP_LABEL_COL_WIDTH = 240;
-export const STORAGE_BACKUP_CONTROL_COL_WIDTH = 320;
-export const STORAGE_BACKUP_FIELD_COL_GAP = 12;
+export const STORAGE_FIELD_COL_GAP = 24;
+export const STORAGE_BACKUP_LABEL_COL_WIDTH = STORAGE_LABEL_COL_WIDTH;
+export const STORAGE_BACKUP_CONTROL_COL_WIDTH = STORAGE_CONTROL_COL_WIDTH;
+export const STORAGE_BACKUP_FIELD_COL_GAP = STORAGE_FIELD_COL_GAP;
 
-const STORAGE_STATUS_VALUE_COL_WIDTH = 200;
+const STORAGE_STATUS_VALUE_COL_WIDTH = Math.floor(
+  (STORAGE_FORM_MAX_WIDTH -
+    STORAGE_FORM_HORIZONTAL_PADDING * 2 -
+    STORAGE_LABEL_COL_WIDTH -
+    STORAGE_FIELD_COL_GAP -
+    12) /
+    2,
+);
 const STORAGE_STATUS_COL_GAP = 12;
 const SECTION_HEADING_COLOR = "#30415A";
 
@@ -68,13 +77,54 @@ const SETTINGS_SECTION_HEADING_FIRST_MARGIN = "12px 0 24px 0";
 const SETTINGS_SECTION_HEADING_NEXT_MARGIN = "28px 0 24px 0";
 const SETTINGS_FIELDS_STACK_GAP = 12;
 const SETTINGS_COLUMN_GAP = 12;
-const SETTINGS_COLUMN_PADDING_DESKTOP = "16px 36px 20px";
-const STORAGE_FORM_PAD_X = 28;
 
-const STORAGE_BACKUP_CONTENT_MAX_WIDTH =
-  STORAGE_BACKUP_LABEL_COL_WIDTH +
-  STORAGE_BACKUP_FIELD_COL_GAP +
-  STORAGE_BACKUP_CONTROL_COL_WIDTH;
+export const storageFormOuterStyle = {
+  padding: "12px 0 0",
+  boxSizing: "border-box",
+  width: "100%",
+};
+
+export const storageFormBodyStyle = (isCompact = false) => ({
+  width: "100%",
+  maxWidth: STORAGE_FORM_MAX_WIDTH,
+  margin: "0 auto",
+  padding: isCompact ? "0 12px" : `0 ${STORAGE_FORM_HORIZONTAL_PADDING}px`,
+  paddingBottom: 16,
+  boxSizing: "border-box",
+});
+
+const storageFieldRowStyle = (isCompact) => ({
+  display: "flex",
+  flexDirection: isCompact ? "column" : "row",
+  alignItems: isCompact ? "stretch" : "center",
+  justifyContent: "flex-start",
+  padding: "8px 0",
+  gap: isCompact ? 8 : STORAGE_FIELD_COL_GAP,
+  width: "100%",
+});
+
+const storageFieldControlStyle = (isCompact, controlColWidth = STORAGE_CONTROL_COL_WIDTH) => ({
+  minWidth: 0,
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  gap: 8,
+  width: isCompact ? "100%" : controlColWidth,
+  marginLeft: isCompact ? 0 : "auto",
+});
+
+const storageFieldLabelStyle = (isCompact, labelColWidth = STORAGE_LABEL_COL_WIDTH) => ({
+  fontSize: 13,
+  fontWeight: 600,
+  color: C.labelText,
+  textAlign: "left",
+  width: isCompact ? "100%" : "auto",
+  maxWidth: isCompact ? "100%" : labelColWidth,
+  flexShrink: 0,
+  lineHeight: 1.4,
+  wordBreak: "break-word",
+});
 
 const storageOutlinedInputRootSx = {
   backgroundColor: "#fff",
@@ -161,7 +211,7 @@ const storageCompactSelectSx = {
 const modalTextFieldSx = {
   ...storageTextFieldSx,
   width: "100%",
-  maxWidth: "100%",
+  maxWidth: STORAGE_CONTROL_COL_WIDTH,
   minWidth: 0,
   "& .MuiOutlinedInput-root": {
     ...storageOutlinedInputRootSx,
@@ -173,9 +223,9 @@ const modalTextFieldSx = {
 
 const storageStatusTextFieldSx = {
   ...storageTextFieldSx,
-  width: "100%",
+  width: STORAGE_STATUS_VALUE_COL_WIDTH,
   minWidth: 0,
-  maxWidth: "100%",
+  maxWidth: STORAGE_STATUS_VALUE_COL_WIDTH,
   "& .MuiOutlinedInput-root": {
     ...storageOutlinedInputRootSx,
     minHeight: 34,
@@ -222,36 +272,36 @@ const storageStatusTextFieldSx = {
   },
 };
 
-const storageStatusGridStyle = (labelColWidth) => ({
-  display: "grid",
-  gridTemplateColumns: `${labelColWidth}px ${STORAGE_STATUS_VALUE_COL_WIDTH}px ${STORAGE_STATUS_VALUE_COL_WIDTH}px`,
-  columnGap: STORAGE_STATUS_COL_GAP,
-  alignItems: "center",
-  width: "100%",
-  minWidth: 0,
-});
-
 const storageStatusLabelStyle = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: C.labelText,
-  lineHeight: 1.35,
-  wordBreak: "break-word",
+  ...storageFieldLabelStyle(false),
+  fontSize: 13,
 };
 
 const storageStatusColHeaderStyle = {
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: 600,
   color: C.labelText,
   lineHeight: 1.35,
-  paddingLeft: 12,
+  width: STORAGE_STATUS_VALUE_COL_WIDTH,
   boxSizing: "border-box",
 };
+
+const storageStatusControlGroupStyle = (isCompact) => ({
+  minWidth: 0,
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-start",
+  gap: STORAGE_STATUS_COL_GAP,
+  width: isCompact
+    ? "100%"
+    : STORAGE_STATUS_VALUE_COL_WIDTH * 2 + STORAGE_STATUS_COL_GAP,
+  marginLeft: isCompact ? 0 : "auto",
+});
 
 const storageStatusRowsStyle = {
   display: "flex",
   flexDirection: "column",
-  gap: STORAGE_STATUS_COL_GAP,
   width: "100%",
   minWidth: 0,
 };
@@ -259,7 +309,7 @@ const storageStatusRowsStyle = {
 const modalSelectSx = {
   ...storageSelectSx,
   width: "100%",
-  maxWidth: "100%",
+  maxWidth: STORAGE_CONTROL_COL_WIDTH,
   minWidth: 0,
 };
 
@@ -360,6 +410,8 @@ const storageBackupActionBtnStyle = {
   minWidth: 88,
 };
 
+export { storageBackupActionBtnStyle };
+
 export const storageDashboardGridStyle = (isCompact) => ({
   display: "grid",
   gridTemplateColumns: isCompact
@@ -378,9 +430,7 @@ const storageDashboardColumnStyle = (isCompact) => ({
   gap: SETTINGS_COLUMN_GAP,
   minWidth: 0,
   overflow: "hidden",
-  padding: isCompact
-    ? `16px ${STORAGE_FORM_PAD_X}px 20px`
-    : SETTINGS_COLUMN_PADDING_DESKTOP,
+  padding: isCompact ? "16px 12px 20px" : "16px 36px 20px",
   background: C.cardBg,
   boxSizing: "border-box",
 });
@@ -416,24 +466,14 @@ const storageFieldGroupStyle = {
   minWidth: 0,
 };
 
-const storageSingleColumnStyle = (isCompact) => ({
+const storageDevicesSectionStyle = (isCompact) => ({
   display: "flex",
   flexDirection: "column",
-  gap: SETTINGS_COLUMN_GAP,
-  minWidth: 0,
-  overflow: "hidden",
-  padding: isCompact
-    ? `16px ${STORAGE_FORM_PAD_X}px 20px`
-    : SETTINGS_COLUMN_PADDING_DESKTOP,
-  background: C.cardBg,
+  gap: 0,
+  width: "100%",
+  padding: isCompact ? "0 28px 20px" : "0 36px 20px",
   boxSizing: "border-box",
 });
-
-const storageBackupContentStyle = {
-  width: "100%",
-  maxWidth: STORAGE_BACKUP_CONTENT_MAX_WIDTH,
-  margin: "0 0 20px 0",
-};
 
 const storageDevicesTableShellStyle = {
   border: `1px solid ${C.cardBorder}`,
@@ -461,8 +501,6 @@ const StorageTableTD = ({
 );
 
 export const StorageDevicesTable = ({ disk }) => {
-  console.log("StorageDevicesTable disk:", disk);
-
   const rowBg = getStorageDeviceRowBg(0);
 
   return (
@@ -558,80 +596,53 @@ export const StorageFieldRow = ({
   label,
   tooltip,
   required = false,
+  isCompact = false,
   labelColWidth = STORAGE_LABEL_COL_WIDTH,
   controlColWidth = STORAGE_CONTROL_COL_WIDTH,
   fieldColGap = STORAGE_FIELD_COL_GAP,
   children,
 }) => {
   const labelNode = (
-    <label
+    <span
       style={{
-        fontSize: 12,
-        color: C.labelText,
-        fontWeight: 600,
-        width: "100%",
-        minWidth: 0,
-        lineHeight: 1.35,
-        wordBreak: "break-word",
+        ...storageFieldLabelStyle(isCompact, labelColWidth),
         cursor: tooltip ? "help" : "default",
       }}
     >
       {label}
       {required && <span style={{ color: C.errorRed }}> *</span>}
-    </label>
+    </span>
   );
-
-  const labelWrapStyle = {
-    flex: `0 0 ${labelColWidth}px`,
-    width: labelColWidth,
-    maxWidth: labelColWidth,
-    minWidth: labelColWidth,
-  };
-
-  const valueColStyle = {
-    flex: "1 1 auto",
-    minWidth: controlColWidth,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    justifyContent: "flex-start",
-    paddingTop: 2,
-  };
-
-  const controlSlotStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    width: controlColWidth,
-    minWidth: controlColWidth,
-    maxWidth: controlColWidth,
-  };
 
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "flex-start",
-        width: "100%",
-        minHeight: 36,
-        gap: fieldColGap,
+        ...storageFieldRowStyle(isCompact),
+        gap: isCompact ? 8 : fieldColGap,
       }}
     >
       {label ? (
-        <div style={labelWrapStyle}>
-          {tooltip ? (
-            <Tooltip title={tooltip} {...tooltipProps}>
-              {labelNode}
-            </Tooltip>
-          ) : (
-            labelNode
-          )}
-        </div>
-      ) : null}
+        tooltip ? (
+          <Tooltip title={tooltip} {...tooltipProps}>
+            {labelNode}
+          </Tooltip>
+        ) : (
+          labelNode
+        )
+      ) : (
+        <span
+          style={{
+            ...storageFieldLabelStyle(isCompact, labelColWidth),
+            visibility: "hidden",
+          }}
+          aria-hidden
+        >
+          Spacer
+        </span>
+      )}
 
-      <div style={valueColStyle}>
-        <div style={controlSlotStyle}>{children}</div>
+      <div style={storageFieldControlStyle(isCompact, controlColWidth)}>
+        {children}
       </div>
     </div>
   );
@@ -714,12 +725,14 @@ export const StorageFormField = ({
   form,
   onChange,
   errors = {},
+  isCompact = false,
   labelColWidth = STORAGE_LABEL_COL_WIDTH,
   controlColWidth = STORAGE_CONTROL_COL_WIDTH,
   fieldColGap = STORAGE_FIELD_COL_GAP,
 }) => {
   const value = form[field.name] ?? "";
   const fieldRowProps = {
+    isCompact,
     labelColWidth,
     controlColWidth,
     fieldColGap,
@@ -782,75 +795,71 @@ export const StorageFormField = ({
 
 export const StorageStatusPanel = ({
   isCompact,
-  labelColWidth,
   storageStatus,
 }) => (
-  <div style={storageSingleColumnStyle(isCompact)}>
-    <div style={storageBackupContentStyle}>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: SETTINGS_COLUMN_GAP,
+      minWidth: 0,
+      overflow: "hidden",
+      padding: "16px 0 0",
+      background: C.cardBg,
+      boxSizing: "border-box",
+    }}
+  >
+    <div style={storageFormBodyStyle(isCompact)}>
       <SectionHeading title={STORAGE_SECTION_STATUS} isFirst />
 
       <div style={storageStatusRowsStyle}>
-        <div style={storageStatusGridStyle(labelColWidth)}>
-          <div />
-          <div style={storageStatusColHeaderStyle}>
-            {STORAGE_STATUS_COL_COUNT}
+        <div style={storageFieldRowStyle(isCompact)}>
+          <span
+            style={{
+              ...storageFieldLabelStyle(isCompact),
+              visibility: "hidden",
+            }}
+            aria-hidden
+          >
+            Spacer
+          </span>
+          <div style={storageStatusControlGroupStyle(isCompact)}>
+            <div style={storageStatusColHeaderStyle}>
+              {STORAGE_STATUS_COL_COUNT}
+            </div>
+            <div style={storageStatusColHeaderStyle}>
+              {STORAGE_STATUS_COL_SIZE}
+            </div>
           </div>
-          <div style={storageStatusColHeaderStyle}>
-            {STORAGE_STATUS_COL_SIZE}
+        </div>
+
+        {[
+          { key: "cdr", label: "CDR" },
+          { key: "voicemail", label: "Voicemail" },
+          { key: "recordings", label: "Recordings" },
+        ].map(({ key, label }) => (
+          <div key={key} style={storageFieldRowStyle(isCompact)}>
+            <span style={storageStatusLabelStyle}>{label}</span>
+            <div style={storageStatusControlGroupStyle(isCompact)}>
+              <TextField
+                size="small"
+                value={storageStatus[key].count}
+                InputProps={{ readOnly: true }}
+                sx={storageStatusTextFieldSx}
+              />
+              <TextField
+                size="small"
+                value={storageStatus[key].size}
+                InputProps={{ readOnly: true }}
+                sx={storageStatusTextFieldSx}
+              />
+            </div>
           </div>
-        </div>
-
-        <div style={storageStatusGridStyle(labelColWidth)}>
-          <div style={storageStatusLabelStyle}>CDR</div>
-          <TextField
-            size="small"
-            value={storageStatus.cdr.count}
-            InputProps={{ readOnly: true }}
-            sx={storageStatusTextFieldSx}
-          />
-          <TextField
-            size="small"
-            value={storageStatus.cdr.size}
-            InputProps={{ readOnly: true }}
-            sx={storageStatusTextFieldSx}
-          />
-        </div>
-
-        <div style={storageStatusGridStyle(labelColWidth)}>
-          <div style={storageStatusLabelStyle}>Voicemail</div>
-          <TextField
-            size="small"
-            value={storageStatus.voicemail.count}
-            InputProps={{ readOnly: true }}
-            sx={storageStatusTextFieldSx}
-          />
-          <TextField
-            size="small"
-            value={storageStatus.voicemail.size}
-            InputProps={{ readOnly: true }}
-            sx={storageStatusTextFieldSx}
-          />
-        </div>
-
-        <div style={storageStatusGridStyle(labelColWidth)}>
-          <div style={storageStatusLabelStyle}>Recordings</div>
-          <TextField
-            size="small"
-            value={storageStatus.recordings.count}
-            InputProps={{ readOnly: true }}
-            sx={storageStatusTextFieldSx}
-          />
-          <TextField
-            size="small"
-            value={storageStatus.recordings.size}
-            InputProps={{ readOnly: true }}
-            sx={storageStatusTextFieldSx}
-          />
-        </div>
+        ))}
       </div>
     </div>
 
-    <div className="flex flex-col gap-0" style={{ width: "100%" }}>
+    <div style={storageDevicesSectionStyle(isCompact)}>
       <SectionHeading title={STORAGE_SECTION_DEVICES} />
       <div style={{ overflowX: "auto" }}>
         <StorageDevicesTable disk={storageStatus.disk} />
@@ -861,10 +870,10 @@ export const StorageStatusPanel = ({
 
 export const StorageAutoCleanupPanel = ({
   isCompact,
-  labelColWidth,
   autoCleanupForm,
   errors,
   onChange,
+  fieldRowOptions,
 }) => (
   <div
     className="settings-dashboard-grid"
@@ -883,7 +892,7 @@ export const StorageAutoCleanupPanel = ({
                   form={autoCleanupForm}
                   onChange={onChange}
                   errors={errors}
-                  labelColWidth={labelColWidth}
+                  {...fieldRowOptions}
                 />
               ))}
             </div>
@@ -915,7 +924,7 @@ export const StorageAutoCleanupPanel = ({
                   form={autoCleanupForm}
                   onChange={onChange}
                   errors={errors}
-                  labelColWidth={labelColWidth}
+                  {...fieldRowOptions}
                 />
               ))}
             </div>
@@ -932,8 +941,8 @@ export const StorageBackupsPanel = ({
   onChange,
   backupFieldRowOptions,
 }) => (
-  <div style={storageSingleColumnStyle(isCompact)}>
-    <div style={storageBackupContentStyle}>
+  <div style={storageFormOuterStyle}>
+    <div style={storageFormBodyStyle(isCompact)}>
       <SectionHeading title={STORAGE_SECTION_RECORD_BACKUP} isFirst />
       <div style={storageFieldGroupStyle}>
         {STORAGE_BACKUP_FIELDS.map((field) => (
@@ -957,6 +966,7 @@ export const StorageBackupsPanel = ({
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
+                      width: "100%",
                     }}
                   >
                     <Select
@@ -1009,17 +1019,19 @@ export const StorageBackupsPanel = ({
           </React.Fragment>
         ))}
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 14,
-        }}
-      >
-        <Btn variant="primary" style={storageBackupActionBtnStyle}>
-          {STORAGE_BTN_FTP_TEST}
-        </Btn>
-      </div>
+    </div>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        width: "100%",
+        padding: "14px 0 4px",
+        boxSizing: "border-box",
+      }}
+    >
+      <Btn variant="primary" style={storageBackupActionBtnStyle}>
+        {STORAGE_BTN_FTP_TEST}
+      </Btn>
     </div>
   </div>
 );
