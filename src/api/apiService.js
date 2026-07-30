@@ -3301,6 +3301,77 @@ export const updateSipSettings = async (settings) => {
 };
 
 // ------------------------------
+//System > System Settings > SIP Settings
+// ------------------------------
+
+// GET
+export const getTlsWebrtcSettings = async () => {
+  const response = await axiosInstance.get('/get-tls-webrtc-settings');
+  return response.data;
+};
+
+// POST body: { tls, webrtc }
+export const saveTlsWebrtcSettings = async (payload) => {
+  const response = await axiosInstance.post('/save-tls-webrtc-settings', payload);
+  return response.data;
+};
+
+// multipart: cert + key
+export const uploadSslCert = async (certFile, keyFile) => {
+  const formData = new FormData();
+  formData.append('cert', certFile);
+  formData.append('key', keyFile);
+  const response = await axiosInstance.post('/upload-ssl-cert', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 120000,
+  });
+  return response.data;
+};
+
+// blob download
+export const downloadSslCert = async () => {
+  try {
+    const response = await axiosInstance.get('/download-ssl-cert', {
+      responseType: 'blob',
+      timeout: 60000,
+    });
+    const cd = response.headers['content-disposition'] || '';
+    const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(cd);
+    const fileName = decodeURIComponent(
+      match?.[1] || match?.[2] || 'asterisk-ssl-cert.zip',
+    );
+    return { blob: response.data, fileName };
+  } catch (error) {
+    console.error('Error downloading SSL certificate:', error.message);
+    const data = error?.response?.data;
+    let message = 'No certificate/key uploaded yet';
+
+    if (typeof data === 'string' && data.trim()) {
+      try {
+        const parsed = JSON.parse(data);
+        message = parsed.message || message;
+      } catch {
+        message = data;
+      }
+    } else if (data instanceof Blob) {
+      try {
+        const text = await data.text();
+        const parsed = JSON.parse(text);
+        message = parsed.message || message;
+      } catch {
+        // keep default 404-style message
+      }
+    } else if (data?.message) {
+      message = data.message;
+    } else if (error?.message) {
+      message = error.message;
+    }
+
+    throw new Error(message);
+  }
+};
+
+// ------------------------------
 // Media Settings API
 // ------------------------------
 export const listMediaSettings = async () => {

@@ -327,6 +327,7 @@ export function SipSettingsFilePicker({
   onChange,
   isCompact,
   labelColWidth = SIP_SETTINGS_LABEL_WIDTH,
+  tooltipKey,
 }) {
   const inputRef = useRef(null);
 
@@ -340,9 +341,13 @@ export function SipSettingsFilePicker({
 
   return (
     <div style={sipSettingsFieldRowStyle(isCompact)}>
-      <div style={isCompact ? { width: "100%" } : sipSettingsLabelWrapStyle(labelColWidth)}>
-        <span style={sipSettingsLabelStyle}>{label}</span>
-      </div>
+      <SipSettingsFieldLabel
+        tooltipKey={tooltipKey}
+        isCompact={isCompact}
+        labelColWidth={labelColWidth}
+      >
+        {label}
+      </SipSettingsFieldLabel>
       <div style={isCompact ? { width: "100%" } : sipSettingsValueColStyle}>
         <div style={sipSettingsFieldControlStyle}>
           <div style={sipSettingsFilePickerActionsStyle}>
@@ -375,9 +380,28 @@ export function SipSettingsFilePicker({
 
 export const sipSettingsCertUploadActionsStyle = {
   display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
   justifyContent: "flex-start",
-  marginTop: 4,
-  width: SIP_SETTINGS_CONTROL_WIDTH,
+  flexWrap: "nowrap",
+  gap: 8,
+  width: "max-content",
+  maxWidth: "none",
+};
+
+export const sipSettingsModalFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 12,
+  width: "100%",
+  margin: 0,
+  padding: "16px 24px",
+  boxSizing: "border-box",
+  background: "#f8fafc",
+  borderTop: `1px solid ${C.cardBorder}`,
+  borderBottomLeftRadius: 4,
+  borderBottomRightRadius: 4,
 };
 
 export function SipSettingsSectionHeading({ title, isFirst = false }) {

@@ -5,16 +5,19 @@ export const SIP_SETTINGS_CARD_TITLE = "SIP Settings";
 
 export const SIP_SETTINGS_BTN_SAVE = "Save";
 export const SIP_SETTINGS_BTN_RESET = "Reset";
+export const SIP_SETTINGS_BTN_CANCEL = "Cancel";
 export const SIP_SETTINGS_BTN_UPLOAD = "Upload Certificate";
+export const SIP_SETTINGS_BTN_UPLOAD_CONFIRM = "Upload";
 export const SIP_SETTINGS_BTN_UPLOADING = "Uploading...";
 export const SIP_SETTINGS_BTN_DOWNLOAD = "Download";
 export const SIP_SETTINGS_BTN_DOWNLOADING = "Downloading...";
 export const SIP_SETTINGS_BTN_CHOOSE_FILE = "Choose File";
 export const SIP_SETTINGS_NO_FILE_CHOSEN = "No file chosen";
 export const SIP_SETTINGS_LABEL_CERTIFICATE = "Certificate";
-export const SIP_SETTINGS_LABEL_PRIVATE_KEY = "Private Key (Optional)";
+export const SIP_SETTINGS_LABEL_PRIVATE_KEY = "Private Key";
 export const SIP_SETTINGS_BTN_SAVING = "Saving...";
 export const SIP_SETTINGS_LOADING_TEXT = "Loading SIP settings...";
+export const SIP_SETTINGS_MODAL_UPLOAD_TITLE = "Upload Certificate";
 
 export const SIP_SETTINGS_SECTION_TLS = "Enable TLS";
 export const SIP_SETTINGS_SECTION_WEBRTC = "Enable WebRTC";
@@ -57,15 +60,20 @@ export const SIP_SETTINGS_FIELD_TOOLTIPS = {
   wsPort: "WebSocket port for WebRTC signaling.",
   wssPort: "Secure WebSocket (WSS) port for WebRTC signaling.",
   bindAddress: "Select the local IP address or interface for WebRTC binding.",
+  certificate: "Select the TLS certificate file (.crt, .cer, or .pem).",
+  privateKey: "Select the matching private key file (.key or .pem). Required with the certificate.",
   uploadCertificate:
-    "Upload TLS certificate and optional private key for SIP TLS.",
+    "Upload TLS certificate and private key for SIP TLS. Both files are required.",
+  downloadCertificate:
+    "Download the currently uploaded TLS certificate and private key as a zip file.",
 };
 
 export const SIP_SETTINGS_MESSAGES = {
   loadFailed: "Failed to load SIP settings.",
-  saveSuccess: "SIP settings saved successfully.",
+  saveSuccess: "TLS/WebRTC settings saved.",
   saveFailed: "Failed to save SIP settings.",
-  uploadSuccess: "Certificate uploaded successfully.",
+  resetSuccess: "SIP settings reset.",
+  uploadSuccess: "Certificate and key uploaded.",
   uploadFailed: "Failed to upload certificate.",
   downloadSuccess: "Certificate downloaded successfully.",
   downloadFailed: "Failed to download certificate.",

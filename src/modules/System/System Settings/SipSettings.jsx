@@ -2,6 +2,10 @@ import React from "react";
 import {
   Alert,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   MenuItem,
   Select,
   TextField,
@@ -12,14 +16,17 @@ import {
   SIP_SETTINGS_BTN_SAVE,
   SIP_SETTINGS_BTN_SAVING,
   SIP_SETTINGS_BTN_UPLOAD,
+  SIP_SETTINGS_BTN_UPLOAD_CONFIRM,
   SIP_SETTINGS_BTN_UPLOADING,
   SIP_SETTINGS_BTN_DOWNLOAD,
   SIP_SETTINGS_BTN_DOWNLOADING,
+  SIP_SETTINGS_BTN_CANCEL,
   SIP_SETTINGS_CARD_TITLE,
   SIP_SETTINGS_LABEL_CERTIFICATE,
   SIP_SETTINGS_LABEL_ENABLE,
   SIP_SETTINGS_LABEL_PRIVATE_KEY,
   SIP_SETTINGS_LOADING_TEXT,
+  SIP_SETTINGS_MODAL_UPLOAD_TITLE,
   SIP_SETTINGS_PAGE_BREADCRUMB_ROOT,
   SIP_SETTINGS_PAGE_BREADCRUMB_SECTION,
   SIP_SETTINGS_PAGE_TITLE,
@@ -36,6 +43,8 @@ import { getLocalIpDisplayLabel } from "./utils/localIpOptionsUtils";
 import {
   sipSettingsPageWrapStyle,
   sipSettingsPageInnerStyle,
+  sipSettingsCancelBtnStyle,
+  sipSettingsFormBtnStyle,
   sipSettingsFixedAlertSx,
 } from "./components/SipSettingsTableHelpers";
 import {
@@ -49,13 +58,18 @@ import {
   sipSettingsDashboardGridStyle,
   sipSettingsFieldGroupStyle,
   sipSettingsFooterStyle,
-  sipSettingsFormBtnStyle,
   sipSettingsFormOuterStyle,
   SipSettingsFilePicker,
   sipSettingsHeaderStyle,
   SipSettingsSectionHeading,
   SipSettingsSectionEnableRow,
+  SipSettingsFieldLabel,
   SipSettingsFieldRow,
+  sipSettingsCertUploadActionsStyle,
+  sipSettingsFieldControlStyle,
+  sipSettingsFieldRowStyle,
+  sipSettingsModalFooterStyle,
+  sipSettingsValueColStyle,
   sipSettingsSelectSx,
   sipSettingsTableContainerStyle,
   sipSettingsTextFieldSx,
@@ -71,12 +85,15 @@ const SipSettings = () => {
     saving,
     uploading,
     downloading,
+    uploadModalOpen,
     message,
     certFile,
     keyFile,
     setMessage,
     setCertFile,
     setKeyFile,
+    openUploadModal,
+    closeUploadModal,
     handleChange,
     handleToggle,
     handleReset,
@@ -326,62 +343,58 @@ const SipSettings = () => {
                       title={SIP_SETTINGS_SECTION_CERTIFICATE}
                     />
                     <div style={sipSettingsFieldGroupStyle}>
-                      <SipSettingsFilePicker
-                        label={SIP_SETTINGS_LABEL_CERTIFICATE}
-                        accept=".crt,.cer,.pem"
-                        file={certFile}
-                        disabled={uploading}
-                        onChange={setCertFile}
-                        isCompact={isCompact}
-                        labelColWidth={labelColWidth}
-                      />
-                      <SipSettingsFilePicker
-                        label={SIP_SETTINGS_LABEL_PRIVATE_KEY}
-                        accept=".key,.pem"
-                        file={keyFile}
-                        disabled={uploading}
-                        onChange={setKeyFile}
-                        isCompact={isCompact}
-                        labelColWidth={labelColWidth}
-                      />
-                      <SipSettingsFieldRow
-                        label=""
-                        isCompact={isCompact}
-                        labelColWidth={labelColWidth}
-                        wideControl
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: 8,
-                            width: "max-content",
-                            maxWidth: "100%",
-                          }}
+                      <div style={sipSettingsFieldRowStyle(isCompact)}>
+                        <SipSettingsFieldLabel
+                          tooltipKey="certificate"
+                          isCompact={isCompact}
+                          labelColWidth={labelColWidth}
                         >
-                          <Btn
-                            variant="primary"
-                            onClick={handleUploadCertificate}
-                            disabled={uploading || downloading}
-                            style={sipSettingsFormBtnStyle}
+                          {SIP_SETTINGS_LABEL_CERTIFICATE}
+                        </SipSettingsFieldLabel>
+                        <div
+                          style={
+                            isCompact
+                              ? { width: "100%" }
+                              : sipSettingsValueColStyle
+                          }
+                        >
+                          <div
+                            style={{
+                              ...sipSettingsFieldControlStyle,
+                              overflow: "visible",
+                            }}
                           >
-                            {uploading
-                              ? SIP_SETTINGS_BTN_UPLOADING
-                              : SIP_SETTINGS_BTN_UPLOAD}
-                          </Btn>
-                          <Btn
-                            variant="primary"
-                            onClick={handleDownloadCertificate}
-                            disabled={uploading || downloading}
-                            style={sipSettingsFormBtnStyle}
-                          >
-                            {downloading
-                              ? SIP_SETTINGS_BTN_DOWNLOADING
-                              : SIP_SETTINGS_BTN_DOWNLOAD}
-                          </Btn>
+                            <div style={sipSettingsCertUploadActionsStyle}>
+                              <Btn
+                                variant="primary"
+                                onClick={openUploadModal}
+                                disabled={uploading || downloading}
+                                style={{
+                                  ...sipSettingsFormBtnStyle,
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {SIP_SETTINGS_BTN_UPLOAD}
+                              </Btn>
+                              <Btn
+                                variant="primary"
+                                onClick={handleDownloadCertificate}
+                                disabled={uploading || downloading}
+                                style={{
+                                  ...sipSettingsFormBtnStyle,
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {downloading
+                                  ? SIP_SETTINGS_BTN_DOWNLOADING
+                                  : SIP_SETTINGS_BTN_DOWNLOAD}
+                              </Btn>
+                            </div>
+                          </div>
                         </div>
-                      </SipSettingsFieldRow>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -545,6 +558,100 @@ const SipSettings = () => {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={uploadModalOpen}
+        onClose={() => {
+          if (!uploading) closeUploadModal();
+        }}
+        maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        PaperProps={{
+          sx: {
+            width: 560,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "4px",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+          }}
+        >
+          {SIP_SETTINGS_MODAL_UPLOAD_TITLE}
+        </DialogTitle>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              width: "100%",
+              background: "#f8fafc",
+              border: `1px solid ${C.cardBorder}`,
+              borderRadius: 4,
+              padding: 20,
+            }}
+          >
+            <SipSettingsFilePicker
+              label={SIP_SETTINGS_LABEL_CERTIFICATE}
+              tooltipKey="certificate"
+              accept=".crt,.cer,.pem"
+              file={certFile}
+              disabled={uploading}
+              onChange={setCertFile}
+              isCompact={false}
+              labelColWidth={140}
+            />
+            <SipSettingsFilePicker
+              label={SIP_SETTINGS_LABEL_PRIVATE_KEY}
+              tooltipKey="privateKey"
+              accept=".key,.pem"
+              file={keyFile}
+              disabled={uploading}
+              onChange={setKeyFile}
+              isCompact={false}
+              labelColWidth={140}
+            />
+          </div>
+        </DialogContent>
+        <DialogActions sx={{ p: 0, m: 0 }} style={sipSettingsModalFooterStyle}>
+          <Btn
+            variant="primary"
+            onClick={handleUploadCertificate}
+            disabled={uploading}
+            style={sipSettingsFormBtnStyle}
+          >
+            {uploading
+              ? SIP_SETTINGS_BTN_UPLOADING
+              : SIP_SETTINGS_BTN_UPLOAD_CONFIRM}
+          </Btn>
+          <Btn
+            variant="cancel"
+            onClick={closeUploadModal}
+            disabled={uploading}
+            style={{
+              ...sipSettingsCancelBtnStyle,
+              minWidth: sipSettingsFormBtnStyle.minWidth || 100,
+            }}
+          >
+            {SIP_SETTINGS_BTN_CANCEL}
+          </Btn>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

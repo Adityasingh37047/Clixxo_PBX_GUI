@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { fetchNetwork } from "../../../../api/apiService";
+import {
+  downloadSslCert,
+  fetchNetwork,
+  getTlsWebrtcSettings,
+  saveTlsWebrtcSettings,
+  uploadSslCert,
+} from "../../../../api/apiService";
 import {
   SIP_SETTINGS_INITIAL_FORM,
   SIP_SETTINGS_MESSAGES,
@@ -8,17 +14,43 @@ import {
   buildLocalIpOptions,
   LOCAL_IP_FALLBACK_OPTIONS,
 } from "../utils/localIpOptionsUtils";
+import {
+  buildTlsWebrtcPayload,
+  mapTlsWebrtcApiToForm,
+} from "../utils/SipSettingsTransformers";
+
+const getErrorMessage = (error, fallback) => {
+  const data = error?.response?.data;
+  if (typeof data === "string" && data.trim()) return data;
+  if (data?.message) return data.message;
+  if (error?.message) return error.message;
+  return fallback;
+};
+
+const triggerBlobDownload = (blob, fileName) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName || "asterisk-ssl-cert.zip";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
 
 export function useSipSettingsPage() {
   const [form, setForm] = useState({ ...SIP_SETTINGS_INITIAL_FORM });
   const [bindAddressOptions, setBindAddressOptions] = useState(
     LOCAL_IP_FALLBACK_OPTIONS,
   );
+  const [certInfo, setCertInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [certFile, setCertFile] = useState(null);
   const [keyFile, setKeyFile] = useState(null);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const showMessage = useCallback((type, text) => {
@@ -26,20 +58,63 @@ export function useSipSettingsPage() {
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
   }, []);
 
-  const loadBindAddressOptions = useCallback(async (currentValue = "") => {
+  const openUploadModal = useCallback(() => {
+    setUploadModalOpen(true);
+  }, []);
+
+  const closeUploadModal = useCallback(() => {
+    setUploadModalOpen(false);
+    setCertFile(null);
+    setKeyFile(null);
+  }, []);
+
+  const loadBindAddressOptions = useCallback(async (currentValues = []) => {
+    const values = (Array.isArray(currentValues) ? currentValues : [currentValues])
+      .filter(Boolean);
     try {
       const netData = await fetchNetwork();
       const allIfaces = netData?.data?.interfaces || [];
-      setBindAddressOptions(buildLocalIpOptions(allIfaces, currentValue));
+      let options = buildLocalIpOptions(allIfaces, values[0] || "");
+      for (const value of values.slice(1)) {
+        if (!options.some((opt) => opt.value === value)) {
+          options = [...options, { value, label: value }];
+        }
+      }
+      setBindAddressOptions(options);
     } catch (error) {
       console.warn("Failed to load network interfaces for Bind Address", error);
       setBindAddressOptions(LOCAL_IP_FALLBACK_OPTIONS);
     }
   }, []);
 
+  const loadSettings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getTlsWebrtcSettings();
+      if (res?.response === false) {
+        throw new Error(res?.message || SIP_SETTINGS_MESSAGES.loadFailed);
+      }
+      const data = res?.data || {};
+      const mapped = mapTlsWebrtcApiToForm(data);
+      setForm(mapped);
+      setCertInfo(data.certificate || null);
+      await loadBindAddressOptions([mapped.tlsBindAddress, mapped.bindAddress]);
+      return true;
+    } catch (error) {
+      showMessage("error", getErrorMessage(error, SIP_SETTINGS_MESSAGES.loadFailed));
+      await loadBindAddressOptions([
+        SIP_SETTINGS_INITIAL_FORM.tlsBindAddress,
+        SIP_SETTINGS_INITIAL_FORM.bindAddress,
+      ]);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadBindAddressOptions, showMessage]);
+
   useEffect(() => {
-    loadBindAddressOptions(SIP_SETTINGS_INITIAL_FORM.bindAddress);
-  }, [loadBindAddressOptions]);
+    loadSettings();
+  }, [loadSettings]);
 
   useEffect(() => {
     const values = [form.bindAddress, form.tlsBindAddress].filter(Boolean);
@@ -68,41 +143,63 @@ export function useSipSettingsPage() {
     setForm((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleReset = () => {
-    setForm({ ...SIP_SETTINGS_INITIAL_FORM });
+  const handleReset = async () => {
     setCertFile(null);
     setKeyFile(null);
+    setUploadModalOpen(false);
+    const ok = await loadSettings();
+    if (ok) {
+      showMessage("success", SIP_SETTINGS_MESSAGES.resetSuccess);
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
+      const res = await saveTlsWebrtcSettings(buildTlsWebrtcPayload(form));
+      if (res?.response === false) {
+        throw new Error(res?.message || SIP_SETTINGS_MESSAGES.saveFailed);
+      }
+      if (res?.data) setForm(mapTlsWebrtcApiToForm(res.data));
       showMessage("success", SIP_SETTINGS_MESSAGES.saveSuccess);
+    } catch (error) {
+      showMessage("error", getErrorMessage(error, SIP_SETTINGS_MESSAGES.saveFailed));
     } finally {
       setSaving(false);
     }
   };
 
-  const handleUploadCertificate = () => {
-    if (!certFile) {
-      showMessage("error", SIP_SETTINGS_MESSAGES.certRequired);
+  const handleUploadCertificate = async () => {
+    if (!certFile || !keyFile) {
+      showMessage("error", "Both cert and key files are required");
       return;
     }
-
     setUploading(true);
     try {
-      showMessage("success", SIP_SETTINGS_MESSAGES.uploadSuccess);
+      const res = await uploadSslCert(certFile, keyFile);
+      if (res?.response === false) {
+        throw new Error(res?.message || SIP_SETTINGS_MESSAGES.uploadFailed);
+      }
+      if (res?.data) setCertInfo(res.data);
       setCertFile(null);
       setKeyFile(null);
+      setUploadModalOpen(false);
+      showMessage("success", SIP_SETTINGS_MESSAGES.uploadSuccess);
+    } catch (error) {
+      showMessage("error", getErrorMessage(error, SIP_SETTINGS_MESSAGES.uploadFailed));
     } finally {
       setUploading(false);
     }
   };
 
-  const handleDownloadCertificate = () => {
+  const handleDownloadCertificate = async () => {
     setDownloading(true);
     try {
+      const { blob, fileName } = await downloadSslCert();
+      triggerBlobDownload(blob, fileName);
       showMessage("success", SIP_SETTINGS_MESSAGES.downloadSuccess);
+    } catch (error) {
+      showMessage("error", getErrorMessage(error, SIP_SETTINGS_MESSAGES.downloadFailed));
     } finally {
       setDownloading(false);
     }
@@ -111,16 +208,20 @@ export function useSipSettingsPage() {
   return {
     form,
     bindAddressOptions,
-    loading: false,
+    certInfo,
+    loading,
     saving,
     uploading,
     downloading,
+    uploadModalOpen,
     message,
     certFile,
     keyFile,
     setMessage,
     setCertFile,
     setKeyFile,
+    openUploadModal,
+    closeUploadModal,
     handleChange,
     handleToggle,
     handleReset,
