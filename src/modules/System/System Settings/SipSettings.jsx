@@ -27,6 +27,7 @@ import {
   SIP_SETTINGS_SECTION_TLS,
   SIP_SETTINGS_SECTION_WEBRTC,
   SIP_SETTINGS_TLS_VERSION_OPTIONS,
+  SIP_SETTINGS_YES_NO_OPTIONS,
 } from "../../../constants/SipSettingsConstants";
 import { Btn, ExtensionBreadcrumb } from "../../../components/common";
 import { C } from "../../../theme/pbxTokens";
@@ -86,6 +87,8 @@ const SipSettings = () => {
 
   const tlsDisabled = !form.enableTls;
   const webrtcDisabled = !form.enableWebrtc;
+  const requireClientCertDisabled =
+    tlsDisabled || form.verifyClient !== "yes";
 
   return (
     <div
@@ -193,6 +196,126 @@ const SipSettings = () => {
                               sx={{ fontSize: 13, color: C.valueText }}
                             >
                               {opt}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </SipSettingsFieldRow>
+
+                      <SipSettingsFieldRow
+                        label="Verify Client"
+                        tooltipKey="verifyClient"
+                        isCompact={isCompact}
+                        labelColWidth={labelColWidth}
+                      >
+                        <Select
+                          size="small"
+                          value={form.verifyClient}
+                          disabled={tlsDisabled}
+                          onChange={(e) =>
+                            handleChange("verifyClient", e.target.value)
+                          }
+                          sx={sipSettingsSelectSx}
+                        >
+                          {SIP_SETTINGS_YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt.value}
+                              value={opt.value}
+                              sx={{ fontSize: 13, color: C.valueText }}
+                            >
+                              {opt.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </SipSettingsFieldRow>
+
+                      <SipSettingsFieldRow
+                        label="Require Client Cert"
+                        tooltipKey="requireClientCert"
+                        isCompact={isCompact}
+                        labelColWidth={labelColWidth}
+                      >
+                        <Select
+                          size="small"
+                          value={form.requireClientCert}
+                          disabled={requireClientCertDisabled}
+                          onChange={(e) =>
+                            handleChange("requireClientCert", e.target.value)
+                          }
+                          sx={sipSettingsSelectSx}
+                        >
+                          {SIP_SETTINGS_YES_NO_OPTIONS.map((opt) => (
+                            <MenuItem
+                              key={opt.value}
+                              value={opt.value}
+                              sx={{ fontSize: 13, color: C.valueText }}
+                            >
+                              {opt.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </SipSettingsFieldRow>
+
+                      <SipSettingsFieldRow
+                        label="Bind Address"
+                        tooltipKey="tlsBindAddress"
+                        isCompact={isCompact}
+                        labelColWidth={labelColWidth}
+                      >
+                        <Select
+                          size="small"
+                          value={form.tlsBindAddress || ""}
+                          disabled={tlsDisabled}
+                          displayEmpty
+                          onChange={(e) =>
+                            handleChange("tlsBindAddress", e.target.value)
+                          }
+                          renderValue={(selected) =>
+                            getLocalIpDisplayLabel(
+                              bindAddressOptions.find(
+                                (option) => option.value === selected,
+                              ),
+                              selected,
+                            )
+                          }
+                          sx={sipSettingsBindAddressSelectSx}
+                          MenuProps={{
+                            PaperProps: {
+                              sx: { maxWidth: 360 },
+                            },
+                          }}
+                        >
+                          {bindAddressOptions.map((option) => (
+                            <MenuItem
+                              key={`tls-${option.value}`}
+                              value={option.value}
+                              disabled={option.disabled}
+                              title={option.title || option.label}
+                              sx={{
+                                fontSize: 13,
+                                maxWidth: 360,
+                                color: C.valueText,
+                              }}
+                            >
+                              {option.title ? (
+                                <div style={{ minWidth: 0, width: "100%" }}>
+                                  <div>
+                                    {option.shortLabel || option.label}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      color: C.mutedText,
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {option.value}
+                                  </div>
+                                </div>
+                              ) : (
+                                option.label
+                              )}
                             </MenuItem>
                           ))}
                         </Select>

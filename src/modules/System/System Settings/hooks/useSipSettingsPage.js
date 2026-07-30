@@ -42,15 +42,26 @@ export function useSipSettingsPage() {
   }, [loadBindAddressOptions]);
 
   useEffect(() => {
-    if (!form.bindAddress) return;
+    const values = [form.bindAddress, form.tlsBindAddress].filter(Boolean);
+    if (!values.length) return;
     setBindAddressOptions((prev) => {
-      if (prev.some((opt) => opt.value === form.bindAddress)) return prev;
-      return [...prev, { value: form.bindAddress, label: form.bindAddress }];
+      let next = prev;
+      for (const value of values) {
+        if (next.some((opt) => opt.value === value)) continue;
+        next = [...next, { value, label: value }];
+      }
+      return next === prev ? prev : next;
     });
-  }, [form.bindAddress]);
+  }, [form.bindAddress, form.tlsBindAddress]);
 
   const handleChange = (key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "verifyClient" && value === "no") {
+        next.requireClientCert = "no";
+      }
+      return next;
+    });
   };
 
   const handleToggle = (key) => {

@@ -4,6 +4,9 @@ export const SIP_SETTINGS_UI_TO_API = {
   enableTls: "tls_enable",
   tlsSipPort: "sip_tls_signaling_port",
   tlsVersion: "sip_tls_version",
+  verifyClient: "verifyClient",
+  requireClientCert: "requireClientCert",
+  tlsBindAddress: "sip_tls_bind_address",
   enableWebrtc: "webrtc_enable",
   wsPort: "webrtc_ws_port",
   wssPort: "webrtc_wss_port",
@@ -17,11 +20,15 @@ const WEBRTC_API_ALIASES = {
   webrtc_enable: ["webrtc_enable"],
 };
 
+const TLS_API_ALIASES = {
+  sip_tls_bind_address: ["tls_bind_address", "sip_tls_bind_address"],
+};
+
 const getApiValue = (settings, apiKey) => {
   if (settings[apiKey] !== undefined && settings[apiKey] !== null) {
     return settings[apiKey];
   }
-  const aliases = WEBRTC_API_ALIASES[apiKey];
+  const aliases = WEBRTC_API_ALIASES[apiKey] || TLS_API_ALIASES[apiKey];
   if (!aliases) return undefined;
   for (const alias of aliases) {
     if (settings[alias] !== undefined && settings[alias] !== null) {
