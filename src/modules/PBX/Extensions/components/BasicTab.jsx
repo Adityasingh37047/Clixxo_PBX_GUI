@@ -260,8 +260,11 @@ function BasicTab(props) {
                           }
                           sx={extensionModalSelectSx}
                         >
-                          <MenuItem value="udp">udp</MenuItem>
+                  <MenuItem value="udp">udp</MenuItem>
                           <MenuItem value="tcp">tcp</MenuItem>
+                          <MenuItem value="tls">tls</MenuItem>
+                          <MenuItem value="ws">ws</MenuItem>
+                          <MenuItem value="wss">wss</MenuItem>
                           <MenuItem value="udp-ipv6">udp-ipv6</MenuItem>
                           <MenuItem value="tcp-ipv6">tcp-ipv6</MenuItem>
                         </MuiSelect>
