@@ -3328,6 +3328,13 @@ export const uploadSslCert = async (certFile, keyFile) => {
   return response.data;
 };
 
+export const generateSslCert = async () => {
+  const response = await axiosInstance.post('/generate-ssl-cert', {}, {
+    timeout: 120000,
+  });
+  return response.data;
+};
+
 // blob download
 export const downloadSslCert = async () => {
   try {

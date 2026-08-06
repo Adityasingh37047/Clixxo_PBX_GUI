@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   downloadSslCert,
   fetchNetwork,
+  generateSslCert,
   getTlsWebrtcSettings,
   saveTlsWebrtcSettings,
   uploadSslCert,
@@ -17,14 +18,34 @@ import {
 import {
   buildTlsWebrtcPayload,
   mapTlsWebrtcApiToForm,
+  mapCertificateInfoToView,
 } from "../utils/SipSettingsTransformers";
 
+const stripHtmlToText = (html) =>
+  String(html)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const getErrorMessage = (error, fallback) => {
+  const status = error?.response?.status;
   const data = error?.response?.data;
-  if (typeof data === "string" && data.trim()) return data;
-  if (data?.message) return data.message;
-  if (error?.message) return error.message;
-  return fallback;
+
+  if (status === 404 || status === 405) return fallback;
+
+  let message = "";
+  if (typeof data === "string" && data.trim()) {
+    message = data.includes("<") ? stripHtmlToText(data) : data.trim();
+  } else if (data?.message) {
+    message = String(data.message).trim();
+  } else if (error?.message) {
+    message = String(error.message).trim();
+  }
+
+  if (!message) return fallback;
+  if (/cannot\s+(get|post|put|delete)\s+\/api\//i.test(message)) return fallback;
+  if (message.length > 120) return fallback;
+  return message;
 };
 
 const triggerBlobDownload = (blob, fileName) => {
@@ -47,6 +68,7 @@ export function useSipSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [certFile, setCertFile] = useState(null);
   const [keyFile, setKeyFile] = useState(null);
@@ -192,6 +214,31 @@ export function useSipSettingsPage() {
     }
   };
 
+  const handleGenerateCertificate = async () => {
+    setGenerating(true);
+    try {
+      const res = await generateSslCert();
+      if (res?.response === false) {
+        throw new Error(res?.message || SIP_SETTINGS_MESSAGES.generateFailed);
+      }
+      if (res?.data?.certificate) {
+        setCertInfo(res.data.certificate);
+      } else if (res?.data && typeof res.data === "object" && !res.data.tls) {
+        setCertInfo(res.data);
+      } else {
+        await loadSettings();
+      }
+      showMessage("success", SIP_SETTINGS_MESSAGES.generateSuccess);
+    } catch (error) {
+      showMessage(
+        "error",
+        getErrorMessage(error, SIP_SETTINGS_MESSAGES.generateFailed),
+      );
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const handleDownloadCertificate = async () => {
     setDownloading(true);
     try {
@@ -205,13 +252,17 @@ export function useSipSettingsPage() {
     }
   };
 
+  const certificateView = mapCertificateInfoToView(certInfo);
+
   return {
     form,
     bindAddressOptions,
     certInfo,
+    certificateView,
     loading,
     saving,
     uploading,
+    generating,
     downloading,
     uploadModalOpen,
     message,
@@ -227,6 +278,7 @@ export function useSipSettingsPage() {
     handleReset,
     handleSave,
     handleUploadCertificate,
+    handleGenerateCertificate,
     handleDownloadCertificate,
   };
 }

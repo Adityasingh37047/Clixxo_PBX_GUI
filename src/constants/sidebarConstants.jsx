@@ -671,6 +671,11 @@ export const SIDEBAR_SECTIONS = [
             path: ROUTE_PATHS.SYSTEM_SETTINGS_SIP_SETTINGS,
           },
           {
+            id: "sysHaConfig",
+            title: "High Availability",
+            path: ROUTE_PATHS.SYSTEM_SETTINGS_HA_CONFIG,
+          },
+          {
             id: "sysCentralizedManage",
             title: "Centralized Manage",
             path: ROUTE_PATHS.SYSTEM_SETTINGS_CENTRALIZED_MANAGE,

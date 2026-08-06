@@ -254,6 +254,7 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "sysManagement", label: "Management" },
           { id: "sysGlobalSip", label: "Global SIP" },
           { id: "sysSipSettings", label: "SIP Settings" },
+          { id: "sysHaConfig", label: "High Availability" },
           { id: "sysCentralizedManage", label: "Centralized Manage" },
           { id: "sysAsteriskCLI", label: "Asterisk CLI" },
           { id: "sysLinuxCLI", label: "Linux CLI" },

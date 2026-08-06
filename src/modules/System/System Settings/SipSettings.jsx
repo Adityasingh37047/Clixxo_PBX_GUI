@@ -16,6 +16,8 @@ import {
   SIP_SETTINGS_BTN_SAVE,
   SIP_SETTINGS_BTN_SAVING,
   SIP_SETTINGS_BTN_UPLOAD,
+  SIP_SETTINGS_BTN_GENERATE,
+  SIP_SETTINGS_BTN_GENERATING,
   SIP_SETTINGS_BTN_UPLOAD_CONFIRM,
   SIP_SETTINGS_BTN_UPLOADING,
   SIP_SETTINGS_BTN_DOWNLOAD,
@@ -65,6 +67,7 @@ import {
   SipSettingsSectionEnableRow,
   SipSettingsFieldLabel,
   SipSettingsFieldRow,
+  SipSettingsCurrentCertificate,
   sipSettingsCertUploadActionsStyle,
   sipSettingsFieldControlStyle,
   sipSettingsFieldRowStyle,
@@ -84,11 +87,13 @@ const SipSettings = () => {
     loading,
     saving,
     uploading,
+    generating,
     downloading,
     uploadModalOpen,
     message,
     certFile,
     keyFile,
+    certificateView,
     setMessage,
     setCertFile,
     setKeyFile,
@@ -99,6 +104,7 @@ const SipSettings = () => {
     handleReset,
     handleSave,
     handleUploadCertificate,
+    handleGenerateCertificate,
     handleDownloadCertificate,
   } = useSipSettingsPage();
 
@@ -338,64 +344,6 @@ const SipSettings = () => {
                         </Select>
                       </SipSettingsFieldRow>
                     </div>
-
-                    <SipSettingsSectionHeading
-                      title={SIP_SETTINGS_SECTION_CERTIFICATE}
-                    />
-                    <div style={sipSettingsFieldGroupStyle}>
-                      <div style={sipSettingsFieldRowStyle(isCompact)}>
-                        <SipSettingsFieldLabel
-                          tooltipKey="certificate"
-                          isCompact={isCompact}
-                          labelColWidth={labelColWidth}
-                        >
-                          {SIP_SETTINGS_LABEL_CERTIFICATE}
-                        </SipSettingsFieldLabel>
-                        <div
-                          style={
-                            isCompact
-                              ? { width: "100%" }
-                              : sipSettingsValueColStyle
-                          }
-                        >
-                          <div
-                            style={{
-                              ...sipSettingsFieldControlStyle,
-                              overflow: "visible",
-                            }}
-                          >
-                            <div style={sipSettingsCertUploadActionsStyle}>
-                              <Btn
-                                variant="primary"
-                                onClick={openUploadModal}
-                                disabled={uploading || downloading}
-                                style={{
-                                  ...sipSettingsFormBtnStyle,
-                                  flexShrink: 0,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {SIP_SETTINGS_BTN_UPLOAD}
-                              </Btn>
-                              <Btn
-                                variant="primary"
-                                onClick={handleDownloadCertificate}
-                                disabled={uploading || downloading}
-                                style={{
-                                  ...sipSettingsFormBtnStyle,
-                                  flexShrink: 0,
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {downloading
-                                  ? SIP_SETTINGS_BTN_DOWNLOADING
-                                  : SIP_SETTINGS_BTN_DOWNLOAD}
-                              </Btn>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -524,6 +472,99 @@ const SipSettings = () => {
                           ))}
                         </Select>
                       </SipSettingsFieldRow>
+                    </div>
+
+                    <SipSettingsSectionHeading
+                      title={SIP_SETTINGS_SECTION_CERTIFICATE}
+                    />
+                    <div style={sipSettingsFieldGroupStyle}>
+                      <div style={sipSettingsFieldRowStyle(isCompact)}>
+                        <SipSettingsFieldLabel
+                          tooltipKey="uploadCertificate"
+                          isCompact={isCompact}
+                          labelColWidth={labelColWidth}
+                        >
+                          {SIP_SETTINGS_LABEL_CERTIFICATE}
+                        </SipSettingsFieldLabel>
+                        <div
+                          style={
+                            isCompact
+                              ? { width: "100%" }
+                              : {
+                                  ...sipSettingsValueColStyle,
+                                  alignItems: "flex-end",
+                                }
+                          }
+                        >
+                          <div
+                            style={{
+                              ...sipSettingsFieldControlStyle,
+                              overflow: "visible",
+                              width: "auto",
+                              maxWidth: "100%",
+                              alignItems: "flex-end",
+                            }}
+                          >
+                            <div
+                              style={{
+                                ...sipSettingsCertUploadActionsStyle,
+                                justifyContent: "flex-end",
+                                marginLeft: "auto",
+                              }}
+                            >
+                              <Btn
+                                variant="primary"
+                                onClick={openUploadModal}
+                                disabled={
+                                  uploading || generating || downloading
+                                }
+                                style={{
+                                  ...sipSettingsFormBtnStyle,
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {SIP_SETTINGS_BTN_UPLOAD}
+                              </Btn>
+                              <Btn
+                                variant="primary"
+                                onClick={handleGenerateCertificate}
+                                disabled={
+                                  uploading || generating || downloading
+                                }
+                                style={{
+                                  ...sipSettingsFormBtnStyle,
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {generating
+                                  ? SIP_SETTINGS_BTN_GENERATING
+                                  : SIP_SETTINGS_BTN_GENERATE}
+                              </Btn>
+                              <Btn
+                                variant="primary"
+                                onClick={handleDownloadCertificate}
+                                disabled={
+                                  uploading || generating || downloading
+                                }
+                                style={{
+                                  ...sipSettingsFormBtnStyle,
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {downloading
+                                  ? SIP_SETTINGS_BTN_DOWNLOADING
+                                  : SIP_SETTINGS_BTN_DOWNLOAD}
+                              </Btn>
+                            </div>
+                            <SipSettingsCurrentCertificate
+                              view={certificateView}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

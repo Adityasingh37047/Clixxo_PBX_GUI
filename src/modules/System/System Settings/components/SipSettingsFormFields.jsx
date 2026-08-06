@@ -6,6 +6,11 @@ import {
   SIP_SETTINGS_FIELD_TOOLTIPS,
   SIP_SETTINGS_NO_FILE_CHOSEN,
   SIP_SETTINGS_SECTION_HEADING_LEFT,
+  SIP_SETTINGS_CURRENT_CERT_TITLE,
+  SIP_SETTINGS_CURRENT_CERT_SUBJECT,
+  SIP_SETTINGS_CURRENT_CERT_VALID,
+  SIP_SETTINGS_CURRENT_CERT_COVERS,
+  SIP_SETTINGS_CURRENT_CERT_VIRTUAL_IP,
 } from "../../../../constants/SipSettingsConstants";
 import { Btn } from "../../../../components/common";
 import {
@@ -383,10 +388,10 @@ export const sipSettingsCertUploadActionsStyle = {
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "flex-start",
-  flexWrap: "nowrap",
+  flexWrap: "wrap",
   gap: 8,
   width: "max-content",
-  maxWidth: "none",
+  maxWidth: "100%",
 };
 
 export const sipSettingsModalFooterStyle = {
@@ -404,8 +409,18 @@ export const sipSettingsModalFooterStyle = {
   borderBottomRightRadius: 4,
 };
 
-export function SipSettingsSectionHeading({ title, isFirst = false }) {
+export function SipSettingsSectionHeading({
+  title,
+  isFirst = false,
+  titleLeft,
+}) {
   const isLaptopNarrow = useMediaQuery(SIP_SETTINGS_LAPTOP_NARROW_MQ);
+  const resolvedTitleLeft =
+    titleLeft !== undefined
+      ? titleLeft
+      : isLaptopNarrow
+        ? 0
+        : SIP_SETTINGS_SECTION_HEADING_LEFT;
   return (
     <div
       style={{
@@ -423,7 +438,7 @@ export function SipSettingsSectionHeading({ title, isFirst = false }) {
         style={{
           position: "absolute",
           top: -10,
-          left: isLaptopNarrow ? 0 : SIP_SETTINGS_SECTION_HEADING_LEFT,
+          left: resolvedTitleLeft,
           background: C.cardBg,
           paddingRight: 8,
           fontSize: 14,
@@ -439,6 +454,7 @@ export function SipSettingsSectionHeading({ title, isFirst = false }) {
 
 export function SipSettingsFieldLabel({
   tooltipKey,
+  fieldTooltips = SIP_SETTINGS_FIELD_TOOLTIPS,
   children,
   style,
   isCompact = false,
@@ -457,8 +473,8 @@ export function SipSettingsFieldLabel({
   );
   const wrapped = (
     <div style={isCompact ? { width: "100%" } : sipSettingsLabelWrapStyle(labelColWidth)}>
-      {tooltipKey && SIP_SETTINGS_FIELD_TOOLTIPS[tooltipKey] ? (
-        <Tooltip title={SIP_SETTINGS_FIELD_TOOLTIPS[tooltipKey]} {...SIP_SETTINGS_TOOLTIP_PROPS}>
+      {tooltipKey && fieldTooltips[tooltipKey] ? (
+        <Tooltip title={fieldTooltips[tooltipKey]} {...SIP_SETTINGS_TOOLTIP_PROPS}>
           {label}
         </Tooltip>
       ) : (
@@ -472,6 +488,7 @@ export function SipSettingsFieldLabel({
 export function SipSettingsFieldRow({
   label,
   tooltipKey,
+  fieldTooltips = SIP_SETTINGS_FIELD_TOOLTIPS,
   isCompact = false,
   labelColWidth = SIP_SETTINGS_LABEL_WIDTH,
   wideControl = false,
@@ -482,6 +499,7 @@ export function SipSettingsFieldRow({
       {label ? (
         <SipSettingsFieldLabel
           tooltipKey={tooltipKey}
+          fieldTooltips={fieldTooltips}
           isCompact={isCompact}
           labelColWidth={labelColWidth}
         >
@@ -549,5 +567,101 @@ export function SipSettingsSectionEnableRow({
         sx={sipSettingsCheckboxSx}
       />
     </SipSettingsFieldRow>
+  );
+}
+
+const sipSettingsCurrentCertPanelStyle = {
+  marginTop: 12,
+  width: "100%",
+  maxWidth: 420,
+  marginLeft: "auto",
+  padding: "14px 16px",
+  background: "#f8fafc",
+  border: `1px solid ${C.cardBorder}`,
+  borderRadius: 6,
+  boxSizing: "border-box",
+};
+
+const sipSettingsCurrentCertTitleStyle = {
+  fontSize: 13,
+  fontWeight: 700,
+  letterSpacing: "0.02em",
+  color: C.labelText,
+  marginBottom: 12,
+};
+
+const sipSettingsCurrentCertRowStyle = {
+  display: "flex",
+  gap: 12,
+  marginBottom: 8,
+  fontSize: 12,
+  lineHeight: 1.45,
+};
+
+const sipSettingsCurrentCertLabelStyle = {
+  flex: "0 0 52px",
+  fontWeight: 600,
+  color: C.labelText,
+};
+
+export function SipSettingsCurrentCertificate({ view }) {
+  if (!view) return null;
+
+  const validRange =
+    view.validFrom && view.validTo
+      ? `${view.validFrom}  →  ${view.validTo}`
+      : view.validFrom || view.validTo || null;
+
+  return (
+    <div style={sipSettingsCurrentCertPanelStyle}>
+      <div style={sipSettingsCurrentCertTitleStyle}>
+        {SIP_SETTINGS_CURRENT_CERT_TITLE}
+      </div>
+      {view.subject ? (
+        <div style={sipSettingsCurrentCertRowStyle}>
+          <span style={sipSettingsCurrentCertLabelStyle}>
+            {SIP_SETTINGS_CURRENT_CERT_SUBJECT}
+          </span>
+          <span style={{ color: C.valueText, flex: 1, minWidth: 0 }}>
+            {view.subject}
+          </span>
+        </div>
+      ) : null}
+      {validRange ? (
+        <div style={sipSettingsCurrentCertRowStyle}>
+          <span style={sipSettingsCurrentCertLabelStyle}>
+            {SIP_SETTINGS_CURRENT_CERT_VALID}
+          </span>
+          <span style={{ color: C.valueText, flex: 1 }}>{validRange}</span>
+        </div>
+      ) : null}
+      {view.covers?.length ? (
+        <div style={{ ...sipSettingsCurrentCertRowStyle, marginBottom: 0 }}>
+          <span style={sipSettingsCurrentCertLabelStyle}>
+            {SIP_SETTINGS_CURRENT_CERT_COVERS}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {view.covers.map((cover, idx) => (
+              <div
+                key={`${cover.label}-${idx}`}
+                style={{
+                  color: C.valueText,
+                  marginBottom: idx < view.covers.length - 1 ? 4 : 0,
+                }}
+              >
+                <span style={{ color: C.successGreen, marginRight: 6 }}>●</span>
+                {cover.label}
+                {cover.isVirtualIp ? (
+                  <span style={{ color: C.mutedText }}>
+                    {" "}
+                    ({SIP_SETTINGS_CURRENT_CERT_VIRTUAL_IP})
+                  </span>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

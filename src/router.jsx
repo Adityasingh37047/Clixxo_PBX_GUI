@@ -21,6 +21,7 @@ import SipSipPage from "./modules/E1-PRI/SIP/SipSipPage";
 import HaPage from "./modules/E1-PRI/SIP/HaPage";
 import SipTrunkPage from "./modules/System/System Settings/SipTrunkPage";
 import SipSettings from "./modules/System/System Settings/SipSettings";
+import HaConfig from "./modules/System/System Settings/HaConfig";
 import SipRegisterPage from "./modules/PBX/Trunks/SipRegisterPage";
 import Extensions from "./modules/PBX/Extensions/Extensions";
 import SipTrunkGroup from "./modules/E1-PRI/SIP/SipTrunkGroup";
@@ -242,6 +243,7 @@ export const router = createBrowserRouter([
       { path: "/sip/ha", element: <HaPage /> },
       { path: ROUTE_PATHS.GLOBAL_SIP, element: <SipTrunkPage /> },
       { path: ROUTE_PATHS.SYSTEM_SETTINGS_SIP_SETTINGS, element: <SipSettings /> },
+      { path: ROUTE_PATHS.SYSTEM_SETTINGS_HA_CONFIG, element: <HaConfig /> },
       { path: ROUTE_PATHS.SIP_REGISTER, element: <SipRegisterPage /> },
       { path: ROUTE_PATHS.EXTENSIONS, element: <Extensions /> },
       { path: ROUTE_PATHS.SIP_TO_SIP_ACCOUNT, element: <SipToSipAccountPage /> },
@@ -362,6 +364,8 @@ export const router = createBrowserRouter([
       // Legacy redirects (old paths -> new hierarchy)
       { path: "/system-status/system-info", element: <Navigate to={ROUTE_PATHS.SYSTEM_INFO} replace /> },
       { path: "/pbx-status/pbx-monitor", element: <Navigate to={ROUTE_PATHS.PBX_MONITOR} replace /> },
+      { path: "/pbx-status/ha-status", element: <Navigate to={ROUTE_PATHS.SYSTEM_SETTINGS_HA_CONFIG} replace /> },
+      { path: "/status/pbx-status/ha-status", element: <Navigate to={ROUTE_PATHS.SYSTEM_SETTINGS_HA_CONFIG} replace /> },
       { path: "/pbx-status/active-calls", element: <Navigate to={ROUTE_PATHS.ACTIVE_CALLS} replace /> },
       { path: "/pbx-status/active-call-queue", element: <Navigate to={ROUTE_PATHS.ACTIVE_CALL_QUEUE} replace /> },
       { path: "/pbx-status/view-voicemail", element: <Navigate to={ROUTE_PATHS.VIEW_VOICEMAIL} replace /> },
