@@ -9,6 +9,7 @@ import {
 } from "../../../../constants/HaStatusConstants";
 import { getLocalIpDisplayLabel } from "../utils/localIpOptionsUtils";
 import { C } from "../../../../theme/pbxTokens";
+import { Btn } from "../../../../components/common";
 import {
   CARD_RADIUS,
   HA_STATUS_AMBER,
@@ -25,6 +26,7 @@ import {
   sipSettingsFieldGroupStyle,
   sipSettingsLabelWrapStyle,
   sipSettingsLabelStyle,
+  sipSettingsFormBtnStyle,
 } from "./SipSettingsFormFields";
 
 const StatusBadge = ({ children, color, background }) => (
@@ -100,23 +102,14 @@ export const HaStatusNotEnabledPanel = ({ onConfigure, embedded = false }) => (
           justifyContent: embedded ? "flex-start" : "center",
         }}
       >
-        <button
+        <Btn
           type="button"
+          variant="primary"
           onClick={onConfigure}
-          style={{
-            height: 32,
-            padding: "0 18px",
-            fontSize: 12,
-            fontWeight: 600,
-            borderRadius: 4,
-            border: `1px solid ${C.accent}`,
-            background: C.accent,
-            color: "#fff",
-            cursor: "pointer",
-          }}
+          style={sipSettingsFormBtnStyle}
         >
           {HA_STATUS_BTN_CONFIGURE}
-        </button>
+        </Btn>
       </div>
     )}
   </div>
