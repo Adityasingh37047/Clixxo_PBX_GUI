@@ -60,13 +60,27 @@ export const buildLocalIpOptions = (interfaces = [], currentValue = "") => {
   return orderedOptions;
 };
 
-/** Bind Address options without Any LAN (0.0.0.0) — for HA Interface. */
+/** HA Interface options: value = kernel name (enp4s0), label = enp4s0 (ip). */
 export const buildHaInterfaceOptions = (interfaces = [], currentValue = "") => {
+  const lanIfaces = filterLanInterfaces(interfaces);
+  const options = lanIfaces.map((iface, idx) => {
+    const name = (iface.interface || "").trim();
+    const ip = readIfaceIpv4(iface);
+    const displayName = name || `lan${idx + 1}-unavailable`;
+    return {
+      value: displayName,
+      label: ip ? `${displayName} (${ip})` : `${displayName} (Unavailable)`,
+      shortLabel: ip ? `${displayName} (${ip})` : `${displayName} (Unavailable)`,
+      disabled: !name,
+    };
+  });
+
   const value =
     currentValue && currentValue !== "0.0.0.0" ? currentValue : "";
-  return buildLocalIpOptions(interfaces, value).filter(
-    (opt) => opt.value !== "0.0.0.0",
-  );
+  if (value && !options.some((opt) => opt.value === value)) {
+    options.unshift({ value, label: value });
+  }
+  return options;
 };
 
 export const pickDefaultLocalIpValue = (options = []) => {

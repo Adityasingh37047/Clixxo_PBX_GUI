@@ -3328,13 +3328,6 @@ export const uploadSslCert = async (certFile, keyFile) => {
   return response.data;
 };
 
-export const generateSslCert = async () => {
-  const response = await axiosInstance.post('/generate-ssl-cert', {}, {
-    timeout: 120000,
-  });
-  return response.data;
-};
-
 // blob download
 export const downloadSslCert = async () => {
   try {
@@ -4041,4 +4034,66 @@ export const deleteAllOperationLogs = async () => {
     type: 'delete_all',
   });
   return response.data;
+};
+
+// ── HA Config API ────────────────────────────────────────────────────────
+
+export const getHaConfig = async () => {
+  const res = await axiosInstance.get("/ha/config");
+  return res.data;
+};
+
+export const saveHaConfig = async (payload) => {
+  const res = await axiosInstance.post("/ha/config", payload, {
+    timeout: 120000, // apply can restart MySQL
+  });
+  return res.data;
+};
+
+export const disableHaConfig = async () => {
+  const res = await axiosInstance.post("/ha/disable", {}, { timeout: 120000 });
+  return res.data;
+};
+
+// ── HA Status API ────────────────────────────────────────────────────────
+
+export const getHaStatus = async () => {
+  const res = await axiosInstance.get("/ha/status");
+  return res.data;
+};
+
+export const getHaPeerStatus = async () => {
+  const res = await axiosInstance.get("/ha/peer-status");
+  return res.data;
+};
+
+export const getHaPhoneCheck = async () => {
+  const res = await axiosInstance.get("/ha/phone-check", { timeout: 60000 });
+  return res.data;
+};
+
+export const getHaCheck = async () => {
+  const res = await axiosInstance.get("/ha/check", { timeout: 60000 });
+  return res.data;
+};
+
+export const postHaSyncDb = async () => {
+  const res = await axiosInstance.post(
+    "/ha/sync-db",
+    {},
+    { timeout: 900000 },
+  );
+  return res.data;
+};
+
+export const getHaCertificate = async () => {
+  const res = await axiosInstance.get("/ha/certificate");
+  return res.data;
+};
+
+export const postHaCertificate = async (payload = {}) => {
+  const res = await axiosInstance.post("/ha/certificate", payload, {
+    timeout: 360000,
+  });
+  return res.data;
 };

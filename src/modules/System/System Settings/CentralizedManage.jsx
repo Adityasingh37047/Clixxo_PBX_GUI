@@ -36,6 +36,7 @@ import {
   extensionPageWrapStyle as centralizedManagePageWrapStyle,
   extensionPageInnerStyle as centralizedManagePageInnerBase,
   extensionFixedAlertSx as centralizedManageFixedAlertSx,
+  extensionTableCheckboxSx as centralizedManageCheckboxSx,
 } from "../../../components/common";
 
 const CENTRALIZED_MANAGE_SCROLL_CLASS = "centralized-manage-scroll";
@@ -238,14 +239,6 @@ const centralizedManageFooterBtnStyle = {
   fontSize: 12,
   borderRadius: 4,
   minWidth: 100,
-};
-
-const checkboxSx = {
-  padding: "4px",
-  color: OUTLINED_BORDER,
-  "&.Mui-checked": { color: OUTLINED_FOCUS },
-  "&.MuiCheckbox-indeterminate": { color: OUTLINED_FOCUS },
-  "& .MuiSvgIcon-root": { fontSize: 18 },
 };
 
 const tooltipProps = {
@@ -923,7 +916,7 @@ fi`;
                               onChange={handleChange}
                               name="monitoringPort"
                               disabled={!isEditable}
-                              sx={checkboxSx}
+                              sx={centralizedManageCheckboxSx}
                             />
                             <input
                               type="text"
@@ -976,7 +969,7 @@ fi`;
                                 !form.centralizedManage &&
                                 field.name !== "centralizedManage"
                               }
-                              sx={checkboxSx}
+                              sx={centralizedManageCheckboxSx}
                             />
                             <span style={{ fontSize: 12, color: C.valueText }}>
                               {CENTRALIZED_MANAGE_ENABLE_LABEL}

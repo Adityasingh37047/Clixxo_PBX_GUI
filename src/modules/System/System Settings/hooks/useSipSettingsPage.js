@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import {
   downloadSslCert,
   fetchNetwork,
-  generateSslCert,
+  getHaCertificate,
   getTlsWebrtcSettings,
+  postHaCertificate,
   saveTlsWebrtcSettings,
   uploadSslCert,
 } from "../../../../api/apiService";
@@ -30,6 +31,10 @@ const stripHtmlToText = (html) =>
 const getErrorMessage = (error, fallback) => {
   const status = error?.response?.status;
   const data = error?.response?.data;
+
+  if (status === 409 || data?.busy) {
+    return data?.message || data?.error || fallback;
+  }
 
   if (status === 404 || status === 405) return fallback;
 
@@ -73,6 +78,7 @@ export function useSipSettingsPage() {
   const [certFile, setCertFile] = useState(null);
   const [keyFile, setKeyFile] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const showMessage = useCallback((type, text) => {
@@ -88,6 +94,29 @@ export function useSipSettingsPage() {
     setUploadModalOpen(false);
     setCertFile(null);
     setKeyFile(null);
+  }, []);
+
+  const openGenerateModal = useCallback(() => {
+    setGenerateModalOpen(true);
+  }, []);
+
+  const closeGenerateModal = useCallback(() => {
+    if (!generating) setGenerateModalOpen(false);
+  }, [generating]);
+
+  const loadCertificate = useCallback(async () => {
+    try {
+      const res = await getHaCertificate();
+      if (res?.response === false) {
+        throw new Error(res?.message || res?.error || SIP_SETTINGS_MESSAGES.loadFailed);
+      }
+      setCertInfo(res || null);
+      return res;
+    } catch (error) {
+      console.warn("Failed to load HA certificate", error);
+      setCertInfo(null);
+      return null;
+    }
   }, []);
 
   const loadBindAddressOptions = useCallback(async (currentValues = []) => {
@@ -119,7 +148,7 @@ export function useSipSettingsPage() {
       const data = res?.data || {};
       const mapped = mapTlsWebrtcApiToForm(data);
       setForm(mapped);
-      setCertInfo(data.certificate || null);
+      await loadCertificate();
       await loadBindAddressOptions([mapped.tlsBindAddress, mapped.bindAddress]);
       return true;
     } catch (error) {
@@ -132,7 +161,7 @@ export function useSipSettingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [loadBindAddressOptions, showMessage]);
+  }, [loadBindAddressOptions, loadCertificate, showMessage]);
 
   useEffect(() => {
     loadSettings();
@@ -202,7 +231,7 @@ export function useSipSettingsPage() {
       if (res?.response === false) {
         throw new Error(res?.message || SIP_SETTINGS_MESSAGES.uploadFailed);
       }
-      if (res?.data) setCertInfo(res.data);
+      await loadCertificate();
       setCertFile(null);
       setKeyFile(null);
       setUploadModalOpen(false);
@@ -217,18 +246,22 @@ export function useSipSettingsPage() {
   const handleGenerateCertificate = async () => {
     setGenerating(true);
     try {
-      const res = await generateSslCert();
+      const res = await postHaCertificate({});
       if (res?.response === false) {
-        throw new Error(res?.message || SIP_SETTINGS_MESSAGES.generateFailed);
+        throw new Error(res?.message || res?.error || SIP_SETTINGS_MESSAGES.generateFailed);
       }
-      if (res?.data?.certificate) {
-        setCertInfo(res.data.certificate);
-      } else if (res?.data && typeof res.data === "object" && !res.data.tls) {
-        setCertInfo(res.data);
+      if (res?.certificate && typeof res.certificate === "object") {
+        setCertInfo(res.certificate);
       } else {
-        await loadSettings();
+        await loadCertificate();
       }
-      showMessage("success", SIP_SETTINGS_MESSAGES.generateSuccess);
+      setGenerateModalOpen(false);
+      showMessage("success", res?.message || SIP_SETTINGS_MESSAGES.generateSuccess);
+      if (res?.warning) {
+        setTimeout(() => {
+          showMessage("error", String(res.warning));
+        }, 200);
+      }
     } catch (error) {
       showMessage(
         "error",
@@ -265,6 +298,7 @@ export function useSipSettingsPage() {
     generating,
     downloading,
     uploadModalOpen,
+    generateModalOpen,
     message,
     certFile,
     keyFile,
@@ -273,6 +307,8 @@ export function useSipSettingsPage() {
     setKeyFile,
     openUploadModal,
     closeUploadModal,
+    openGenerateModal,
+    closeGenerateModal,
     handleChange,
     handleToggle,
     handleReset,

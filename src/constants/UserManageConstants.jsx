@@ -19,6 +19,7 @@ export const PAGE_PERMISSION_GROUPS = [
           { id: "ActiveCalls", label: "Active Calls" },
           { id: "activecallqueue", label: "Active Call Queue" },
           { id: "viewVoicemail", label: "View Voicemail" },
+          { id: "haStatus", label: "HA Status" },
         ],
       },
     ],

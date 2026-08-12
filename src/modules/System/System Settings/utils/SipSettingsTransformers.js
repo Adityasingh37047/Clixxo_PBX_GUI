@@ -111,13 +111,23 @@ const normalizeCoverEntry = (entry) => {
 export const mapCertificateInfoToView = (certInfo) => {
   if (!certInfo || typeof certInfo !== "object") return null;
 
-  const present =
+  if (certInfo.exists === false) {
+    return {
+      empty: true,
+      message:
+        certInfo.message ||
+        "No certificate has been generated yet.",
+    };
+  }
+
+  const haPresent = certInfo.exists === true;
+  const legacyPresent =
     certInfo.present === true ||
     certInfo.uploaded === true ||
     certInfo.hasCertificate === true ||
     Boolean(certInfo.subject || certInfo.cn || certInfo.validFrom || certInfo.notBefore);
 
-  if (!present) return null;
+  if (!haPresent && !legacyPresent) return null;
 
   let subject = certInfo.subject ? String(certInfo.subject) : "";
   if (!subject && certInfo.cn) {
@@ -127,32 +137,51 @@ export const mapCertificateInfoToView = (certInfo) => {
   }
 
   const validFrom = formatCertDate(
-    certInfo.validFrom ?? certInfo.notBefore ?? certInfo.valid_from,
+    certInfo.validFrom ?? certInfo.notBefore ?? certInfo.not_before ?? certInfo.valid_from,
   );
   const validTo = formatCertDate(
-    certInfo.validTo ?? certInfo.notAfter ?? certInfo.valid_to,
+    certInfo.validTo ??
+      certInfo.notAfter ??
+      certInfo.not_after ??
+      certInfo.expires_at ??
+      certInfo.valid_to,
   );
 
-  const rawCovers =
-    certInfo.covers ??
-    certInfo.sans ??
-    certInfo.altNames ??
-    certInfo.alt_names ??
-    certInfo.subjectAltNames ??
-    [];
-
   let covers = [];
-  if (Array.isArray(rawCovers)) {
-    covers = rawCovers.map(normalizeCoverEntry).filter(Boolean);
-  } else if (typeof rawCovers === "string" && rawCovers.trim()) {
-    covers = rawCovers
-      .split(/[,;\n]+/)
-      .map((s) => normalizeCoverEntry(s.trim()))
-      .filter(Boolean);
-  }
+  const vip = String(certInfo.vip || "").trim();
 
-  if (!covers.length && certInfo.coverList && Array.isArray(certInfo.coverList)) {
-    covers = certInfo.coverList.map(normalizeCoverEntry).filter(Boolean);
+  if (Array.isArray(certInfo.ips) || Array.isArray(certInfo.dns)) {
+    covers = [
+      ...(Array.isArray(certInfo.ips) ? certInfo.ips : []).map((ip) => ({
+        label: String(ip),
+        isVirtualIp: vip ? String(ip) === vip : false,
+      })),
+      ...(Array.isArray(certInfo.dns) ? certInfo.dns : []).map((name) => ({
+        label: String(name),
+        isVirtualIp: false,
+      })),
+    ].filter((entry) => entry.label);
+  } else {
+    const rawCovers =
+      certInfo.covers ??
+      certInfo.sans ??
+      certInfo.altNames ??
+      certInfo.alt_names ??
+      certInfo.subjectAltNames ??
+      [];
+
+    if (Array.isArray(rawCovers)) {
+      covers = rawCovers.map(normalizeCoverEntry).filter(Boolean);
+    } else if (typeof rawCovers === "string" && rawCovers.trim()) {
+      covers = rawCovers
+        .split(/[,;\n]+/)
+        .map((s) => normalizeCoverEntry(s.trim()))
+        .filter(Boolean);
+    }
+
+    if (!covers.length && certInfo.coverList && Array.isArray(certInfo.coverList)) {
+      covers = certInfo.coverList.map(normalizeCoverEntry).filter(Boolean);
+    }
   }
 
   return {
@@ -160,5 +189,9 @@ export const mapCertificateInfoToView = (certInfo) => {
     validFrom,
     validTo,
     covers,
+    warning: certInfo.warning || null,
+    coversVip: certInfo.covers_vip,
+    daysRemaining: certInfo.days_remaining,
+    expired: certInfo.expired,
   };
 };

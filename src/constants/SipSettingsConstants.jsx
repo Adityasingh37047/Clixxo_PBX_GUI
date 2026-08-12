@@ -20,6 +20,11 @@ export const SIP_SETTINGS_LABEL_PRIVATE_KEY = "Private Key";
 export const SIP_SETTINGS_BTN_SAVING = "Saving...";
 export const SIP_SETTINGS_LOADING_TEXT = "Loading SIP settings...";
 export const SIP_SETTINGS_MODAL_UPLOAD_TITLE = "Upload Certificate and Key";
+export const SIP_SETTINGS_MODAL_GENERATE_TITLE = "Generate Certificate";
+export const SIP_SETTINGS_MODAL_GENERATE_TEXT =
+  "This generates a new certificate, copies it to the peer server, and restarts Asterisk on both nodes. Active TLS calls will drop. Continue?";
+export const SIP_SETTINGS_MODAL_GENERATE_CONFIRM = "Generate";
+export const SIP_SETTINGS_CERT_NONE = "No certificate has been generated yet.";
 
 export const SIP_SETTINGS_SECTION_TLS = "Enable TLS";
 export const SIP_SETTINGS_SECTION_WEBRTC = "Enable WebRTC";
@@ -74,7 +79,7 @@ export const SIP_SETTINGS_FIELD_TOOLTIPS = {
   downloadCertificate:
     "Download the currently uploaded TLS certificate and private key as a zip file.",
   generateCertificate:
-    "Generate a new self-signed TLS certificate and private key on the PBX.",
+    "Generate a TLS certificate for this server and the HA peer. Asterisk restarts on both nodes.",
 };
 
 export const SIP_SETTINGS_MESSAGES = {
@@ -86,6 +91,7 @@ export const SIP_SETTINGS_MESSAGES = {
   uploadFailed: "Failed to upload certificate.",
   generateSuccess: "Certificate generated successfully.",
   generateFailed: "Failed to generate certificate.",
+  generateBusy: "Another HA operation is already running. Please wait.",
   downloadSuccess: "Certificate downloaded successfully.",
   downloadFailed: "Failed to download certificate.",
   certRequired: "Please select a certificate file to upload.",

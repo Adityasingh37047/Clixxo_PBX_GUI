@@ -12,6 +12,7 @@ export const ROUTE_PATHS = {
   ACTIVE_CALLS: '/status/pbx-status/active-calls',
   ACTIVE_CALL_QUEUE: '/status/pbx-status/active-call-queue',
   VIEW_VOICEMAIL: '/status/pbx-status/view-voicemail',
+  HA_STATUS: '/status/pbx-status/ha-status',
 
   // CDR
   CALL_COUNT: '/cdr/call-detail-records/call-count',

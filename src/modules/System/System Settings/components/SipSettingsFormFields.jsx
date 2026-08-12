@@ -607,6 +607,16 @@ const sipSettingsCurrentCertLabelStyle = {
 export function SipSettingsCurrentCertificate({ view }) {
   if (!view) return null;
 
+  if (view.empty) {
+    return (
+      <div style={sipSettingsCurrentCertPanelStyle}>
+        <div style={{ fontSize: 12, color: C.mutedText, lineHeight: 1.45 }}>
+          {view.message}
+        </div>
+      </div>
+    );
+  }
+
   const validRange =
     view.validFrom && view.validTo
       ? `${view.validFrom}  →  ${view.validTo}`
@@ -617,6 +627,18 @@ export function SipSettingsCurrentCertificate({ view }) {
       <div style={sipSettingsCurrentCertTitleStyle}>
         {SIP_SETTINGS_CURRENT_CERT_TITLE}
       </div>
+      {view.warning ? (
+        <div
+          style={{
+            fontSize: 12,
+            color: C.errorRed,
+            lineHeight: 1.45,
+            marginBottom: 12,
+          }}
+        >
+          {view.warning}
+        </div>
+      ) : null}
       {view.subject ? (
         <div style={sipSettingsCurrentCertRowStyle}>
           <span style={sipSettingsCurrentCertLabelStyle}>

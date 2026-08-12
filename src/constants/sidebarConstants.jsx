@@ -67,6 +67,11 @@ export const SIDEBAR_SECTIONS = [
             title: "View Voicemail",
             path: ROUTE_PATHS.VIEW_VOICEMAIL,
           },
+          {
+            id: "haStatus",
+            title: "HA Status",
+            path: ROUTE_PATHS.HA_STATUS,
+          },
         ],
       },
     ],

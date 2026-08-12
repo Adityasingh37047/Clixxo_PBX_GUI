@@ -105,6 +105,7 @@ import DisaPage from "./modules/PBX/CallFeatures/DisaPage";
 import VoicePromptsPage from "./modules/PBX/VoicePrompts/VoicePromptsPage";
 import PbxMonitor from "./modules/status/PBX Status/PbxMonitor";
 import ViewVoicemailPage from "./modules/status/PBX Status/ViewVoicemailPage";
+import HaStatusPage from "./modules/status/PBX Status/HaStatusPage";
 
 import PortFxsPage from "./modules/FXS/Port/PortFxsPage";
 import PortFxsAdvancedPage from "./modules/FXS/Port/PortFxsAdvancedPage";
@@ -216,6 +217,7 @@ export const router = createBrowserRouter([
       { path: ROUTE_PATHS.ACTIVE_CALLS, element: <ActiveCallsPage /> },
       { path: ROUTE_PATHS.ACTIVE_CALL_QUEUE, element: <ActiveCallQueue /> },
       { path: ROUTE_PATHS.VIEW_VOICEMAIL, element: <ViewVoicemailPage /> },
+      { path: ROUTE_PATHS.HA_STATUS, element: <HaStatusPage /> },
 
       { path: ROUTE_PATHS.PCM, element: <PcmPage /> },
       { path: ROUTE_PATHS.ISDN, element: <IsdnPage /> },
@@ -364,8 +366,7 @@ export const router = createBrowserRouter([
       // Legacy redirects (old paths -> new hierarchy)
       { path: "/system-status/system-info", element: <Navigate to={ROUTE_PATHS.SYSTEM_INFO} replace /> },
       { path: "/pbx-status/pbx-monitor", element: <Navigate to={ROUTE_PATHS.PBX_MONITOR} replace /> },
-      { path: "/pbx-status/ha-status", element: <Navigate to={ROUTE_PATHS.SYSTEM_SETTINGS_HA_CONFIG} replace /> },
-      { path: "/status/pbx-status/ha-status", element: <Navigate to={ROUTE_PATHS.SYSTEM_SETTINGS_HA_CONFIG} replace /> },
+      { path: "/pbx-status/ha-status", element: <Navigate to={ROUTE_PATHS.HA_STATUS} replace /> },
       { path: "/pbx-status/active-calls", element: <Navigate to={ROUTE_PATHS.ACTIVE_CALLS} replace /> },
       { path: "/pbx-status/active-call-queue", element: <Navigate to={ROUTE_PATHS.ACTIVE_CALL_QUEUE} replace /> },
       { path: "/pbx-status/view-voicemail", element: <Navigate to={ROUTE_PATHS.VIEW_VOICEMAIL} replace /> },

@@ -3,7 +3,6 @@ export const HA_CONFIG_PAGE_BREADCRUMB_SECTION = "System Settings";
 export const HA_CONFIG_PAGE_TITLE = "High Availability";
 export const HA_CONFIG_CARD_TITLE = "High Availability";
 export const HA_CONFIG_SECTION_CONFIG = "HA Config";
-export const HA_CONFIG_SECTION_STATUS = "HA Status";
 
 export const HA_CONFIG_BTN_SAVE = "Save";
 export const HA_CONFIG_BTN_RESET = "Reset";
@@ -36,8 +35,12 @@ export const HA_CONFIG_INITIAL_FORM = {
 export const HA_CONFIG_MESSAGES = {
   saved: "HA configuration saved.",
   reset: "HA configuration reset.",
+  loadFailed: "Failed to load HA configuration.",
+  saveFailed: "Failed to save HA configuration.",
+  busy: "Another HA operation is already running. Please wait.",
   invalidVirtualIp: "Enter a valid Virtual IP (IPv4) when HA is enabled.",
   invalidPeerIp: "Enter a valid Peer Server IP (IPv4) when HA is enabled.",
+  invalidInterface: "Select an Interface when HA is enabled.",
 };
 
 export const HA_CONFIG_FIELD_TOOLTIPS = {
@@ -51,5 +54,3 @@ export const HA_CONFIG_FIELD_TOOLTIPS = {
   autoFailback:
     "When enabled, automatically fail back to the primary node when it recovers.",
 };
-
-export const HA_CONFIG_STORAGE_KEY = "haConfigFormV1";

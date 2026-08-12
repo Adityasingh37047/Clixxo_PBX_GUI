@@ -28,6 +28,9 @@ import {
   SIP_SETTINGS_LABEL_ENABLE,
   SIP_SETTINGS_LABEL_PRIVATE_KEY,
   SIP_SETTINGS_LOADING_TEXT,
+  SIP_SETTINGS_MODAL_GENERATE_CONFIRM,
+  SIP_SETTINGS_MODAL_GENERATE_TEXT,
+  SIP_SETTINGS_MODAL_GENERATE_TITLE,
   SIP_SETTINGS_MODAL_UPLOAD_TITLE,
   SIP_SETTINGS_PAGE_BREADCRUMB_ROOT,
   SIP_SETTINGS_PAGE_BREADCRUMB_SECTION,
@@ -90,6 +93,7 @@ const SipSettings = () => {
     generating,
     downloading,
     uploadModalOpen,
+    generateModalOpen,
     message,
     certFile,
     keyFile,
@@ -99,6 +103,8 @@ const SipSettings = () => {
     setKeyFile,
     openUploadModal,
     closeUploadModal,
+    openGenerateModal,
+    closeGenerateModal,
     handleChange,
     handleToggle,
     handleReset,
@@ -528,7 +534,7 @@ const SipSettings = () => {
                               </Btn>
                               <Btn
                                 variant="primary"
-                                onClick={handleGenerateCertificate}
+                                onClick={openGenerateModal}
                                 disabled={
                                   uploading || generating || downloading
                                 }
@@ -692,6 +698,84 @@ const SipSettings = () => {
             {SIP_SETTINGS_BTN_CANCEL}
           </Btn>
         </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={generateModalOpen}
+        onClose={closeGenerateModal}
+        disableEscapeKeyDown={generating}
+        maxWidth={false}
+        slotProps={{
+          backdrop: { sx: { backgroundColor: "rgba(0, 0, 0, 0.5)" } },
+        }}
+        PaperProps={{
+          sx: {
+            width: 520,
+            maxWidth: "96vw",
+            mx: "auto",
+            p: 0,
+            borderRadius: "4px",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <DialogTitle
+          style={{
+            background: "#1e2d42",
+            color: "#ffffff",
+            fontWeight: 600,
+            fontSize: 16,
+            padding: "16px 24px",
+            textAlign: "center",
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4,
+          }}
+        >
+          {SIP_SETTINGS_MODAL_GENERATE_TITLE}
+        </DialogTitle>
+        <DialogContent style={{ padding: "24px", backgroundColor: "#ffffff" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: generating ? "center" : "stretch",
+              gap: generating ? 14 : 0,
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: C.labelText,
+            }}
+          >
+            {generating ? (
+              <>
+                <CircularProgress size={28} sx={{ color: C.accent }} />
+                {SIP_SETTINGS_BTN_GENERATING}
+              </>
+            ) : (
+              SIP_SETTINGS_MODAL_GENERATE_TEXT
+            )}
+          </div>
+        </DialogContent>
+        {!generating ? (
+          <DialogActions sx={{ p: 0, m: 0 }} style={sipSettingsModalFooterStyle}>
+            <Btn
+              variant="primary"
+              onClick={handleGenerateCertificate}
+              style={sipSettingsFormBtnStyle}
+            >
+              {SIP_SETTINGS_MODAL_GENERATE_CONFIRM}
+            </Btn>
+            <Btn
+              variant="cancel"
+              onClick={closeGenerateModal}
+              style={{
+                ...sipSettingsCancelBtnStyle,
+                minWidth: sipSettingsFormBtnStyle.minWidth || 100,
+              }}
+            >
+              {SIP_SETTINGS_BTN_CANCEL}
+            </Btn>
+          </DialogActions>
+        ) : null}
       </Dialog>
     </div>
   );
