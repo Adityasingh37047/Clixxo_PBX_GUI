@@ -1336,10 +1336,18 @@ WantedBy=multi-user.target
       const netData = await fetchNetwork();
       const allIfaces = netData?.data?.interfaces || [];
 
-      // Physical LAN interfaces only (eth* or enp*s*)
+      // All NICs except VPN / tunnel / loopback (tap, tun, vpn, lo)
       const lanIfaces = allIfaces.filter((i) => {
         const name = (i.interface || "").toLowerCase();
-        return /^eth\d+$/.test(name) || /^enp\d+s\d+/.test(name);
+        if (!name || name === "lo") return false;
+        return !(
+          /^tap\d*$/.test(name) ||
+          /^top\d*$/.test(name) ||
+          /^tun\d*$/.test(name) ||
+          /^wg\d*$/.test(name) ||
+          /^vpn/.test(name) ||
+          name.includes("vpn")
+        );
       });
 
       const options = lanIfaces

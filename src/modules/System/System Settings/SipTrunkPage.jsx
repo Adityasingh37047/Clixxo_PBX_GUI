@@ -63,6 +63,11 @@ import {
   fetchNetwork,
 } from "../../../api/apiService";
 import {
+  buildLocalIpOptions,
+  getLocalIpDisplayLabel,
+  LOCAL_IP_FALLBACK_OPTIONS,
+} from "./utils/localIpOptionsUtils";
+import {
   C,
   OUTLINED_BORDER,
   OUTLINED_HOVER,
@@ -392,28 +397,6 @@ const modalFieldRowStyle = {
   margin: "0 auto",
 };
 
-const getLocalIpDisplayLabel = (option, fallback = "") => {
-  if (!option) return fallback;
-  return option.shortLabel || option.label || fallback;
-};
-
-const buildLanIpv4Option = (idx, ipAddress) => ({
-  value: ipAddress || `lan${idx + 1}-unavailable`,
-  label: ipAddress
-    ? `LAN ${idx + 1} (${ipAddress})`
-    : `LAN ${idx + 1} (Unavailable)`,
-  shortLabel: ipAddress
-    ? `LAN ${idx + 1} (${ipAddress})`
-    : `LAN ${idx + 1} (Unavailable)`,
-  disabled: !ipAddress,
-});
-
-const buildLanIpv6Option = (idx, ipv6) => ({
-  value: ipv6,
-  label: `LAN ${idx + 1} IPv6 (${ipv6})`,
-  shortLabel: `LAN ${idx + 1} IPv6`,
-  title: ipv6,
-});
 const SipTrunkPage = () => {
   const isCompact = useMediaQuery(GLOBAL_SIP_COMPACT_MQ);
   // State
@@ -526,54 +509,10 @@ const SipTrunkPage = () => {
         try {
           const netData = await fetchNetwork();
           const allIfaces = netData?.data?.interfaces || [];
-
-          // Keep only physical LAN interfaces (eth0/eth1 or enp*s*)
-          const lanIfaces = allIfaces.filter((i) => {
-            const name = (i.interface || "").toLowerCase();
-            return /^eth\d+$/.test(name) || /^enp\d+s\d+/.test(name);
-          });
-
-          const orderedOptions = [];
-          lanIfaces.forEach((iface, idx) => {
-            orderedOptions.push(
-              buildLanIpv4Option(idx, iface.ipAddress),
-            );
-            const ipv6 =
-              iface.ipv6Address || iface.ipv6 || iface.ipv6_address || "";
-            if (ipv6) {
-              orderedOptions.push(buildLanIpv6Option(idx, ipv6));
-            }
-          });
-
-          orderedOptions.push({ value: "0.0.0.0", label: "Any LAN (0.0.0.0)" });
-
-          // Keep current form value selectable even if not in the list
-          if (
-            form.local_ip &&
-            !orderedOptions.some((opt) => opt.value === form.local_ip)
-          ) {
-            orderedOptions.unshift({
-              value: form.local_ip,
-              label: form.local_ip,
-            });
-          }
-
-          setLocalIpOptions(orderedOptions);
+          setLocalIpOptions(buildLocalIpOptions(allIfaces, form.local_ip));
         } catch (error) {
           console.warn("Failed to load network interfaces for Local IP", error);
-          setLocalIpOptions([
-            {
-              value: "lan1-unavailable",
-              label: "LAN 1 (Unavailable)",
-              disabled: true,
-            },
-            {
-              value: "lan2-unavailable",
-              label: "LAN 2 (Unavailable)",
-              disabled: true,
-            },
-            { value: "0.0.0.0", label: "Any LAN (0.0.0.0)" },
-          ]);
+          setLocalIpOptions(LOCAL_IP_FALLBACK_OPTIONS);
         }
       };
       loadLocalIps();

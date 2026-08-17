@@ -81,8 +81,16 @@ export const filterAndNormalizeLanInterfaces = (allIfaces = []) =>
   allIfaces
     .filter((iface) => {
       const kn = (iface.interface || "").toLowerCase();
-      // Only physical LAN interfaces: eth0/eth1/... or enp4s0/enp4s1/...
-      return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
+      // Show all NICs; hide VPN / tunnel / loopback only (tap/tun/vpn/lo)
+      if (!kn || kn === "lo") return false;
+      return !(
+        /^tap\d*$/.test(kn) ||
+        /^top\d*$/.test(kn) ||
+        /^tun\d*$/.test(kn) ||
+        /^wg\d*$/.test(kn) ||
+        /^vpn/.test(kn) ||
+        kn.includes("vpn")
+      );
     })
     // Assign sequential "LAN 1", "LAN 2", … — ignore API name field which
     // may reflect a different device numbering (e.g. "LAN 6", "LAN 7")
@@ -337,11 +345,19 @@ export const buildNetworkSavePayload = ({
 export const NETWORK_REBOOT_CMD =
   'nohup sh -c "sleep 5; reboot" >/dev/null 2>&1 & echo REBOOT_TRIGGERED';
 
-/** Source IP dropdown options for PING / TRACERT (LAN + all VLAN parents + VPN). */
+/** Source IP dropdown options for PING / TRACERT (LAN + VLAN; VPN excluded). */
 export const buildNetworkSourceIpOptions = (allIfaces = []) => {
   const lanIfaces = (allIfaces || []).filter((i) => {
     const kn = (i.interface || "").toLowerCase();
-    return /^eth\d+$/.test(kn) || /^enp\d+s\d+/.test(kn);
+    if (!kn || kn === "lo") return false;
+    return !(
+      /^tap\d*$/.test(kn) ||
+      /^top\d*$/.test(kn) ||
+      /^tun\d*$/.test(kn) ||
+      /^wg\d*$/.test(kn) ||
+      /^vpn/.test(kn) ||
+      kn.includes("vpn")
+    );
   });
 
   const options = [];
