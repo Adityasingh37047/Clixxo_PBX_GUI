@@ -15,6 +15,7 @@ import {
   pagingFormFromRow,
 } from "../utils/PagingTransformers";
 import { validatePagingForm } from "../utils/PagingValidators";
+import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 
 const PAGING_COMPACT_MQ = "(max-width: 768px)";
 
@@ -228,7 +229,7 @@ export function usePagingPage() {
           if (res?.response === false)
             return showMessage(
               "error",
-              res?.message || "Failed to update paging group.",
+              cleanErrorText(res?.message, "Failed to update paging group."),
             );
           showMessage("success", "Paging group updated successfully.");
         } else {
@@ -236,14 +237,14 @@ export function usePagingPage() {
           if (res?.response === false)
             return showMessage(
               "error",
-              res?.message || "Failed to create paging group.",
+              cleanErrorText(res?.message, "Failed to create paging group."),
             );
           showMessage("success", "Paging group created successfully.");
         }
         await refreshPagingGroups();
         handleCloseModal();
       } catch (err) {
-        showMessage("error", err?.message || "Failed to save paging group.");
+        showMessage("error", getApiErrorMessage(err, "Failed to save paging group."));
       } finally {
         setLoading((prev) => ({ ...prev, save: false }));
       }

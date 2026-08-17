@@ -16,10 +16,10 @@ export const CONFERENCE_MODERATOR_NOTE =
 /** Field tooltips for Conference */
 export const CONFERENCE_FIELD_TOOLTIPS = {
   room_name:
-    "The number dialed to reach this conference room, with the default value ranges of 6400~6499 which can be modified in 'PBX->Preference->Extension Preferences'. It is null by default and must be filled in: otherwise the configuration will fail to be saved.",
+    "User-defined name of this conference room. It is null by default and must be filled in: otherwise the configuration will fail to be saved.",
 
   conference_number:
-    "The conference number is the number that will be used to dial into the conference.",
+    "The number dialed to reach this conference room. Enter a number of 1 to 9 digits that is not already used by another extension or feature. It is null by default and must be filled in: otherwise the configuration will fail to be saved.",
 
   greeting:
     "The greeting played upon joining this conference room. The default setting is default.",

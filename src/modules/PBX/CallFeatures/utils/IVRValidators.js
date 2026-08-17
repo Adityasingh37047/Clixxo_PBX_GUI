@@ -4,9 +4,9 @@ export const validateIvrName = (name) => {
   return /^[A-Za-z0-9_]+$/.test(trimmedName) ? null : "Name may contain only letters, numbers, and underscore.";
 };
 export const validateIvrNumber = (value) => {
-  if (!String(value || "").trim()) return "IVR Number is required.";
-  const number = parseInt(String(value).trim(), 10);
-  return !Number.isNaN(number) && number >= 6500 && number <= 6599 ? null : "IVR Number must be an integer between 6500 and 6599.";
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return "IVR Number is required.";
+  return /^\d{1,9}$/.test(trimmed) ? null : "IVR Number must be numeric, 1 to 9 digits.";
 };
 export const validateResponseTimeout = (value) => {
   const number = parseInt(value, 10);

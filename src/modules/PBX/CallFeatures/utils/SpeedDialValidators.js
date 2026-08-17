@@ -5,6 +5,9 @@ export const validateSpeedDialForm = ({ name, speedDialNumber, destination }) =>
 
   if (!trimmedName) return "Name is required.";
   if (!trimmedSpeed) return "Speed Dial Number is required.";
+  if (!/^\d{1,9}$/.test(trimmedSpeed)) {
+    return "Speed Dial Number must be numeric, 1 to 9 digits.";
+  }
   if (!trimmedDest) return "Destination is required.";
   return null;
 };

@@ -28,7 +28,7 @@ export const IVR_FIELD_TOOLTIPS = {
     "User-defined IVR name. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_only.",
 
   ivr_number:
-    "The extension number dialed to reach this IVR. Range of value: 6500-6599. You can modified in the submenu preference in the menu PBX.",
+    "The number dialed to reach this IVR. Enter a number of 1 to 9 digits that is not already used by another extension or feature.",
 
   greet_long:
     "It is played as the first prompt for entering the IVR menu. The default setting is default.",

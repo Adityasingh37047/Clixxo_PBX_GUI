@@ -57,7 +57,7 @@ export const RING_GROUP_FIELD_TOOLTIPS = {
     'If set to Yes, the extension user will hear the following prompts upon picking up the call: Press 1 to answer: press 2 to reject. The default setting is No.',
 
   ring_group_number:
-    'The number dialed to reach this ring group. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.',
+    'The number dialed to reach this ring group. Enter a number of 1 to 9 digits that is not already used by another extension or feature. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.',
 
   timeout_destination:
     'Select the destination to ring when the timeout period is reached. Call Queue: Ring the call queue. CallBacks: Ring the callbacks. Conference Rooms: Ring the conference rooms. DISA: Ring the DISA. Extensions: Ring the extensions. Fax To Mail: Ring the fax to mail. IVR Menus: Ring the IVR menus. Ring Group: Ring the ring group. Voicemails: Ring the voicemails. Other: Hang up the call.',

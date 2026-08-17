@@ -4,6 +4,7 @@ import { createCallQueue, deleteCallQueue, fetchCallQueues, listCustomPrompts, l
 import { CALL_QUEUE_INITIAL_FORM } from "../../../../constants/CallQueueConstants";
 import { buildCallQueuePayload, formatRingStrategyLabel, getDestOptions, mapCallQueueApiToForm, mapCustomPrompts, normalizeRingBackOptions } from "../utils/CallQueueTransformers";
 import { validateCallQueueForm } from "../utils/CallQueueValidators";
+import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 
 const CALL_QUEUE_COMPACT_MQ = "(max-width: 768px)";
 const EMPTY_RING_BACK_OPTIONS = { moh_categories: [], custom_prompts: [], country_tones: [] };
@@ -47,8 +48,8 @@ export function useCallQueuePage() {
   const handleSave = async () => {
     const error = validateCallQueueForm(form); if (error) return showMsg("error", error);
     setLoading((prev) => ({ ...prev, save: true }));
-    try { const fn = editIndex !== null ? updateCallQueue : createCallQueue; const res = await fn(buildCallQueuePayload(form, ringBackOptions)); if (res?.response) { showMsg("success", editIndex !== null ? "Queue updated" : "Queue created"); handleCloseModal(); await loadQueues(); } else showMsg("error", res?.message || "Save failed"); }
-    catch (e) { showMsg("error", e.message || "Save failed"); }
+    try { const fn = editIndex !== null ? updateCallQueue : createCallQueue; const res = await fn(buildCallQueuePayload(form, ringBackOptions)); if (res?.response) { showMsg("success", editIndex !== null ? "Queue updated" : "Queue created"); handleCloseModal(); await loadQueues(); } else showMsg("error", cleanErrorText(res?.message, "Save failed")); }
+    catch (e) { showMsg("error", getApiErrorMessage(e, "Save failed")); }
     finally { setLoading((prev) => ({ ...prev, save: false })); }
   };
   const handleDelete = async () => {

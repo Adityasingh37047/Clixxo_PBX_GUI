@@ -10,7 +10,7 @@ export const PAGING_FIELD_TOOLTIPS = {
     'User-defined name of a paging group. It must be filled in: otherwise the configuration will fail to be saved. You can user letters, digits, chinese,_ only. Maximum 32 characters.',
 
   number:
-    'The number dialed to reach this paging group. The default range is 6200–6299 and can be modified in PBX → Preference → Extension Preferences. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.',
+    'The number dialed to reach this paging group. Enter a number of 1 to 9 digits that is not already used by another extension or feature. This field is empty by default and must be filled in, otherwise the configuration cannot be saved.',
 
   type:
     'Select the type of paging group. One-way: The paging group rings the selected extensions one by one. Two-way: The paging group rings the selected extensions one by one and the extensions can also ring back to the paging group.',

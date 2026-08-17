@@ -94,7 +94,7 @@ export const CALL_QUEUE_FIELD_TOOLTIPS = {
     'The maximum time for each agent to ring. the default value is 15 seconds.',
 
   queue_number:
-    "The number dialed to reach this call queue, with the default value range of 6700~6750 which can be modiied in 'PBX-Preference->Extension Preferences'. It is null by default and must be filled in: otherwise the configuration will fail to be saved.",
+    "The number dialed to reach this call queue. Enter a number of 1 to 9 digits that is not already used by another extension or feature. It is null by default and must be filled in: otherwise the configuration will fail to be saved.",
 
   agent_announcement:
     'Announcement played to the Agent prior to bridging in the caller.',

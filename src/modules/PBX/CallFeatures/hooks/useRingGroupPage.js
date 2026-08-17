@@ -14,6 +14,7 @@ import {
   RING_GROUP_EMPTY_RING_BACK_OPTIONS,
   RING_GROUP_ITEMS_PER_PAGE,
 } from "../../../../constants/RingGroupConstants";
+import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 import { EXTENSION_COMPACT_MQ } from "../../../../theme/pbxTokens";
 import {
   buildRingGroupApiPayload,
@@ -329,14 +330,14 @@ export function useRingGroupPage() {
         }
 
         if (res?.response === false) {
-          showMessage("error", res?.message || "Failed to save ring group.");
+          showMessage("error", cleanErrorText(res?.message, "Failed to save ring group."));
           return;
         }
         await refreshRingGroups();
         handleCloseModal();
         showMessage("success", "Ring group saved successfully.");
       } catch (err) {
-        showMessage("error", err?.message || "Failed to save ring group.");
+        showMessage("error", getApiErrorMessage(err, "Failed to save ring group."));
       } finally {
         setLoading((prev) => ({ ...prev, save: false }));
       }

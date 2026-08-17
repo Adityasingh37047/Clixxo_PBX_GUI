@@ -5,15 +5,11 @@ export const validateConferenceForm = ({
   maxMembers,
 }) => {
   if (!roomName.trim()) return "Room Name is required.";
-  if (!conferenceNumber.trim()) return "Conference Center Number is required.";
+  const trimmedConferenceNumber = conferenceNumber.trim();
+  if (!trimmedConferenceNumber) return "Conference Center Number is required.";
 
-  const conferenceNumberValue = parseInt(conferenceNumber.trim(), 10);
-  if (
-    Number.isNaN(conferenceNumberValue) ||
-    conferenceNumberValue < 6400 ||
-    conferenceNumberValue > 6499
-  ) {
-    return "Conference Center Number must be between 6400 and 6499.";
+  if (!/^\d{1,9}$/.test(trimmedConferenceNumber)) {
+    return "Conference Center Number must be numeric, 1 to 9 digits.";
   }
 
   if (!Array.isArray(moderatorMembers) || moderatorMembers.length === 0) {

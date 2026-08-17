@@ -346,6 +346,13 @@ const VoicePromptsPage = () => {
                     >
                       Choose File
                     </Btn>
+                    <Btn
+                      onClick={handleUploadMoh}
+                      variant="primary"
+                      style={voicePromptsPrimaryBtnStyle}
+                    >
+                      UPLOAD
+                    </Btn>
                     <span
                       style={{
                         fontSize: 12,
@@ -359,17 +366,6 @@ const VoicePromptsPage = () => {
                       {mohFile?.name || "No file chosen"}
                     </span>
                   </div>
-
-                  <Btn
-                    onClick={handleUploadMoh}
-                    variant="primary"
-                    style={{
-                      ...voicePromptsPrimaryBtnStyle,
-                      marginLeft: "auto",
-                    }}
-                  >
-                    UPLOAD
-                  </Btn>
                 </div>
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}
@@ -595,6 +591,13 @@ const VoicePromptsPage = () => {
                     >
                       Choose File
                     </Btn>
+                    <Btn
+                      onClick={handleUploadCustomPrompt}
+                      variant="primary"
+                      style={voicePromptsPrimaryBtnStyle}
+                    >
+                      UPLOAD
+                    </Btn>
                     <span
                       style={{
                         fontSize: 12,
@@ -608,16 +611,6 @@ const VoicePromptsPage = () => {
                       {customFile?.name || "No file chosen"}
                     </span>
                   </div>
-                  <Btn
-                    onClick={handleUploadCustomPrompt}
-                    variant="primary"
-                    style={{
-                      ...voicePromptsPrimaryBtnStyle,
-                      marginLeft: "auto",
-                    }}
-                  >
-                    UPLOAD
-                  </Btn>
                 </div>
                 <div
                   style={{ fontSize: 11, color: C.mutedText, marginBottom: 5 }}

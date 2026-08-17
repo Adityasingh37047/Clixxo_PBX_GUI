@@ -8,10 +8,11 @@ export const validateRingGroupForm = ({
 }) => {
   const trimmed = name.trim();
   if (!trimmed) return "Name is required.";
-  if (!ringGroupNumber.trim()) return "Ring Group Number is required.";
-
-  const rgNumber = parseInt(ringGroupNumber, 10);
-  if (Number.isNaN(rgNumber)) return "Ring Group Number must be numeric.";
+  const trimmedRingGroupNumber = ringGroupNumber.trim();
+  if (!trimmedRingGroupNumber) return "Ring Group Number is required.";
+  if (!/^\d{1,9}$/.test(trimmedRingGroupNumber)) {
+    return "Ring Group Number must be numeric, 1 to 9 digits.";
+  }
 
   const ringTimeoutInt = parseInt(ringTimeout, 10);
   if (Number.isNaN(ringTimeoutInt)) return "Ring Timeout must be numeric.";

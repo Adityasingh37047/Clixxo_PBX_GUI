@@ -63,64 +63,64 @@ const Storage = () => {
       <StorageBreadcrumb />
 
       <div style={storageTableContainerStyle}>
-        <div style={storageHeaderStyle}>
-          <div style={storageTabButtonsStyle}>
-            {STORAGE_TABS.map((tabItem) => (
-              <Btn
-                key={tabItem.id}
-                type="button"
-                variant={
-                  activeTab === tabItem.id ? "tabActive" : "tabInactive"
-                }
-                onClick={() => setActiveTab(tabItem.id)}
-                style={storageHeaderTabBtnStyle}
-              >
-                {tabItem.label}
-              </Btn>
-            ))}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "10px",
-            }}
-          >
-            {activeTab === STORAGE_TAB_STATUS_ID && (
-              <Btn
-                variant="cancel"
-                type="button"
-                style={storageHeaderBtnStyle}
-                onClick={handleRefresh}
-              >
-                {STORAGE_BTN_REFRESH}
-              </Btn>
-            )}
-
-            {activeTab === STORAGE_TAB_AUTO_CLEANUP_ID && (
-              <>
+          <div style={storageHeaderStyle}>
+            <div style={storageTabButtonsStyle}>
+              {STORAGE_TABS.map((tabItem) => (
                 <Btn
-                  variant="cancel"
+                  key={tabItem.id}
                   type="button"
-                  style={storageHeaderBtnStyle}
-                  onClick={handleRefresh}
+                  variant={
+                    activeTab === tabItem.id ? "tabActive" : "tabInactive"
+                  }
+                  onClick={() => setActiveTab(tabItem.id)}
+                  style={storageHeaderTabBtnStyle}
                 >
-                  {STORAGE_BTN_REFRESH}
+                  {tabItem.label}
                 </Btn>
-                <Btn
-                  variant="cancel"
-                  type="button"
-                  style={storageHeaderBtnStyle}
-                  onClick={handleResetStorageSettings}
-                >
-                  {STORAGE_BTN_RESET}
-                </Btn>
-              </>
-            )}
-          </div>
-        </div>
+              ))}
+            </div>
+            <div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+  }}
+>
+  {activeTab === STORAGE_TAB_STATUS_ID && (
+    <Btn
+      variant="cancel"
+      type="button"
+      style={storageHeaderBtnStyle}
+      onClick={handleRefresh}
+    >
+      {STORAGE_BTN_REFRESH}
+    </Btn>
+  )}
 
-        <div style={{ padding: 0, boxSizing: "border-box" }}>
+  {activeTab === STORAGE_TAB_AUTO_CLEANUP_ID && (
+    <>
+      <Btn
+        variant="cancel"
+        type="button"
+        style={storageHeaderBtnStyle}
+        onClick={handleRefresh}
+      >
+        {STORAGE_BTN_REFRESH}
+      </Btn>
+      <Btn
+        variant="cancel"
+        type="button"
+        style={storageHeaderBtnStyle}
+        onClick={handleResetStorageSettings}
+      >
+        {STORAGE_BTN_RESET}
+      </Btn>
+    </>
+  )}
+</div>
+          </div>
+
+          <div style={{ padding: 0, boxSizing: "border-box" }}>
           <form
             id="storage-settings-form"
             onSubmit={(e) => e.preventDefault()}
@@ -153,22 +153,22 @@ const Storage = () => {
               />
             )}
           </form>
-        </div>
-
-        {activeTab !== STORAGE_TAB_STATUS_ID && (
-          <div style={advancedFormInlineFooterStyle}>
-            <Btn
-              variant="primary"
-              type="submit"
-              form="storage-settings-form"
-              onClick={handleSaveStorageSettings}
-              style={storageFormBtnStyle}
-            >
-              {STORAGE_BTN_SAVE}
-            </Btn>
           </div>
-        )}
-      </div>
+
+          {activeTab !== STORAGE_TAB_STATUS_ID && (
+  <div style={advancedFormInlineFooterStyle}>
+    <Btn
+      variant="primary"
+      type="submit"
+      form="storage-settings-form"
+      onClick={handleSaveStorageSettings}
+      style={storageFormBtnStyle}
+    >
+      {STORAGE_BTN_SAVE}
+    </Btn>
+  </div>
+)}
+        </div>
     </StoragePageShell>
   );
 };

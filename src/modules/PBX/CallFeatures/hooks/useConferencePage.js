@@ -4,6 +4,7 @@ import { createConference, deleteConference, fetchExtensionGroups, getConference
 import { CONFERENCE_DEFAULT_MAX_MEMBERS } from "../../../../constants/ConferenceConstants";
 import { buildConferencePayload, mapConferenceApiToRows, mapConferenceDetailToRow, mapConferenceExtensions, mapExtensionGroups, mapModeratorExtensions } from "../utils/ConferenceTransformers";
 import { validateConferenceForm } from "../utils/ConferenceValidators";
+import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 
 const CONFERENCE_COMPACT_MQ = "(max-width: 768px)";
 
@@ -317,14 +318,19 @@ export function useConferencePage() {
     setLoading((prev) => ({ ...prev, save: true }));
     try {
       const payloadForApi = buildConferencePayload(form);
-      if (editId != null) await updateConference(editId, payloadForApi);
-      else await createConference(payloadForApi);
+      const res = editId != null
+        ? await updateConference(editId, payloadForApi)
+        : await createConference(payloadForApi);
+      if (res?.response === false) {
+        showMessage("error", cleanErrorText(res?.message, "Failed to save conference room."));
+        return;
+      }
       await loadInitialData();
       setShowModal(false);
       resetForm();
       showMessage("success", "Conference room saved successfully.");
     } catch (err) {
-      showMessage("error", err?.message || "Failed to save conference room.");
+      showMessage("error", getApiErrorMessage(err, "Failed to save conference room."));
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }

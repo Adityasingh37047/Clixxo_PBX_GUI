@@ -5,6 +5,7 @@ import { listIvrDestinations, listIvrs, listIvrOptions, listIvrDirectOutboundOpt
 import { IVR_EMPTY_PROMPT_OPTIONS, IVR_EMPTY_RING_BACK_OPTIONS, IVR_KEYS } from "../../../../constants/IVRConstants";
 import { buildIvrApiPayload, buildKeyActions, buildPromptOptions, mapIvrApiItemToFormState, mapIvrRowFallbackToFormState, normalizeArrayFromApi, normalizeDestinationOptions, normalizeOutboundRoutesList, transformIvrListItemToRow } from "../utils/IVRTransformers";
 import { validateIvrForm } from "../utils/IVRValidators";
+import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 const IVR_COMPACT_MQ = "(max-width: 768px)"; const EMPTY_PROMPT_OPTIONS = IVR_EMPTY_PROMPT_OPTIONS; const EMPTY_RING_BACK_OPTIONS = IVR_EMPTY_RING_BACK_OPTIONS; const KEYS = IVR_KEYS;
 export function useIVRPage() {
   const isCompact = useMediaQuery(IVR_COMPACT_MQ);
@@ -378,9 +379,23 @@ export function useIVRPage() {
     const payloadForApi = buildIvrApiPayload(fields);
     setLoading((prev) => ({ ...prev, save: true }));
     try {
-      if (editId != null) { await updateIvr(editId, payloadForApi); await setIvrKeys(editId, keyActions); } else { await createIvr({ ...payloadForApi, key_actions: keyActions }); }
+      let res;
+      if (editId != null) {
+        res = await updateIvr(editId, payloadForApi);
+        if (res?.response === false) {
+          showMessage("error", cleanErrorText(res?.message, "Failed to save IVR."));
+          return;
+        }
+        await setIvrKeys(editId, keyActions);
+      } else {
+        res = await createIvr({ ...payloadForApi, key_actions: keyActions });
+        if (res?.response === false) {
+          showMessage("error", cleanErrorText(res?.message, "Failed to save IVR."));
+          return;
+        }
+      }
       await fetchInitialData(); handleCloseModal(); showMessage("success", "IVR saved successfully.");
-    } catch (err) { showMessage("error", err?.message || "Failed to save IVR."); }
+    } catch (err) { showMessage("error", getApiErrorMessage(err, "Failed to save IVR.")); }
     finally { setLoading((prev) => ({ ...prev, save: false })); }
   };
 

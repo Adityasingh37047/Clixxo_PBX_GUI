@@ -16,6 +16,7 @@ import {
   speedDialFormFromRow,
 } from "../utils/SpeedDialTransformers";
 import { validateSpeedDialForm } from "../utils/SpeedDialValidators";
+import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 
 const SPEED_DIAL_COMPACT_MQ = "(max-width: 768px)";
 
@@ -205,7 +206,7 @@ export function useSpeedDialPage() {
           : await createSpeedDial(apiPayload);
 
       if (!res?.response) {
-        showMessage("error", res?.message || "Failed to save speed dial.");
+        showMessage("error", cleanErrorText(res?.message, "Failed to save speed dial."));
         return;
       }
       showMessage(
@@ -217,7 +218,7 @@ export function useSpeedDialPage() {
       await fetchSpeedDials();
       handleCloseModal();
     } catch (err) {
-      showMessage("error", err?.message || "Failed to save speed dial.");
+      showMessage("error", getApiErrorMessage(err, "Failed to save speed dial."));
     } finally {
       setLoading((prev) => ({ ...prev, save: false }));
     }
