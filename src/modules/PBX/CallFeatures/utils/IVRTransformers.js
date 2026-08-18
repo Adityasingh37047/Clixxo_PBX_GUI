@@ -52,6 +52,67 @@ export const normalizeDestinationOptions = (list) => !Array.isArray(list) ? [] :
   return value ? { value, label: label || value } : null;
 }).filter(Boolean);
 
+/**
+ * IVR destination targets only: value = dial number, label = "600 - Name".
+ * Other destination types are left unchanged by callers.
+ */
+export const formatIvrDestinationOptions = (rawList, ivrRows = []) => {
+  const nameByNumber = new Map();
+  (ivrRows || []).forEach((row) => {
+    const num = String(row?.ivrNumber ?? row?.ivr_number ?? "").trim();
+    const name = String(row?.name || "").trim();
+    if (num) nameByNumber.set(num, name);
+  });
+
+  const list = Array.isArray(rawList) ? rawList : [];
+  return list
+    .map((item) => {
+      if (item == null) return null;
+
+      if (typeof item === "string" || typeof item === "number") {
+        const value = String(item).trim();
+        if (!value) return null;
+        const name = nameByNumber.get(value) || "";
+        return { value, label: name ? `${value} - ${name}` : value };
+      }
+
+      const value = String(
+        item.value ?? item.ivr_number ?? item.extension ?? item.id ?? "",
+      ).trim();
+      if (!value) return null;
+
+      const nameFromItem = String(
+        item.label ?? item.display_name ?? item.name ?? "",
+      ).trim();
+      const name =
+        nameByNumber.get(value) ||
+        (nameFromItem && nameFromItem !== value ? nameFromItem : "");
+      return { value, label: name ? `${value} - ${name}` : value };
+    })
+    .filter(Boolean);
+};
+
+/** Re-apply "number - name" labels onto already-normalized IVR options. */
+export const enrichIvrDestinationLabels = (list, ivrRows = []) => {
+  const nameByNumber = new Map();
+  (ivrRows || []).forEach((row) => {
+    const num = String(row?.ivrNumber ?? row?.ivr_number ?? "").trim();
+    const name = String(row?.name || "").trim();
+    if (num) nameByNumber.set(num, name);
+  });
+
+  return (Array.isArray(list) ? list : []).map((item) => {
+    const value = String(item?.value ?? "").trim();
+    if (!value) return item;
+    const existing = String(item?.label || "").trim();
+    if (existing.includes(" - ") && existing !== value) return item;
+    const name =
+      nameByNumber.get(value) ||
+      (existing && existing !== value ? existing : "");
+    return { ...item, value, label: name ? `${value} - ${name}` : value };
+  });
+};
+
 export const normalizePromptForApi = (value, defaultKeyword) => {
   if (value == null || value === "") return defaultKeyword;
   return String(value).toLowerCase() === String(defaultKeyword).toLowerCase() ? defaultKeyword : value;

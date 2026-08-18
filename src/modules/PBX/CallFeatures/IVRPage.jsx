@@ -199,7 +199,12 @@ const IVRPage = () => {
           value={value || ""}
           displayEmpty
           onChange={(e) => onChange(e.target.value)}
-          renderValue={(v) => (v ? v : "Select destination")}
+          renderValue={(v) => {
+            if (!v) return "Select destination";
+            // Show option label (name) after select — not only the raw value/number.
+            const opt = list.find((i) => String(i.value) === String(v));
+            return opt?.label || v;
+          }}
           sx={{ fontSize: 13, background: "#fff" }}
         >
           <MenuItem value="">

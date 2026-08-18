@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMediaQuery } from "@mui/material";
 import { listIvrDestinations, listIvrs, listIvrOptions, listIvrDirectOutboundOptions, createIvr, updateIvr, deleteIvr, getIvr, setIvrKeys } from "../../../../api/apiService";
 import { IVR_EMPTY_PROMPT_OPTIONS, IVR_EMPTY_RING_BACK_OPTIONS, IVR_KEYS } from "../../../../constants/IVRConstants";
-import { buildIvrApiPayload, buildKeyActions, buildPromptOptions, mapIvrApiItemToFormState, mapIvrRowFallbackToFormState, normalizeArrayFromApi, normalizeDestinationOptions, normalizeOutboundRoutesList, transformIvrListItemToRow } from "../utils/IVRTransformers";
+import { buildIvrApiPayload, buildKeyActions, buildPromptOptions, enrichIvrDestinationLabels, formatIvrDestinationOptions, mapIvrApiItemToFormState, mapIvrRowFallbackToFormState, normalizeArrayFromApi, normalizeDestinationOptions, normalizeOutboundRoutesList, transformIvrListItemToRow } from "../utils/IVRTransformers";
 import { validateIvrForm } from "../utils/IVRValidators";
 import { getApiErrorMessage, cleanErrorText } from "../../../../utils/getApiErrorMessage";
 const IVR_COMPACT_MQ = "(max-width: 768px)"; const EMPTY_PROMPT_OPTIONS = IVR_EMPTY_PROMPT_OPTIONS; const EMPTY_RING_BACK_OPTIONS = IVR_EMPTY_RING_BACK_OPTIONS; const KEYS = IVR_KEYS;
@@ -164,7 +164,8 @@ export function useIVRPage() {
         : Array.isArray(ivrRes?.data)
           ? ivrRes.data
           : [];
-      setRows(ivrList.map(transformIvrListItemToRow));
+      const ivrRows = ivrList.map(transformIvrListItemToRow);
+      setRows(ivrRows);
 
       try {
         const obRes = await listIvrDirectOutboundOptions();
@@ -185,7 +186,10 @@ export function useIVRPage() {
       ) {
         const normalizedMap = {};
         Object.entries(destMessage).forEach(([type, options]) => {
-          normalizedMap[type] = normalizeDestinationOptions(options);
+          normalizedMap[type] =
+            type === "IVR"
+              ? formatIvrDestinationOptions(options, ivrRows)
+              : normalizeDestinationOptions(options);
         });
         setDestinationMap(normalizedMap);
         setDestinationOptions(Object.keys(normalizedMap));
@@ -466,7 +470,11 @@ export function useIVRPage() {
     if (!type) return [];
     if (!destinationMap) return [];
     const list = destinationMap[type];
-    if (Array.isArray(list) && list.length > 0) return list;
+    if (Array.isArray(list) && list.length > 0) {
+      // Only IVR targets get "number - name"; other types stay as-is.
+      if (type === "IVR") return enrichIvrDestinationLabels(list, rows);
+      return list;
+    }
     if (
       (type === "Voicemails" || type === "FaxToMail") &&
       Array.isArray(destinationMap.Extensions)
