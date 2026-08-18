@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "@mui/material";
-import { SPEED_DIAL_ITEMS_PER_PAGE } from "../../../../constants/SpeedDialConstants";
+import {
+  SPEED_DIAL_CONFIRM_CLEAR_ALL,
+  SPEED_DIAL_ITEMS_PER_PAGE,
+} from "../../../../constants/SpeedDialConstants";
 import {
   createSpeedDial,
   deleteSpeedDial,
@@ -149,33 +152,82 @@ export function useSpeedDialPage() {
     }
     if (
       !window.confirm(
-        `Are you sure you want to delete ${selected.length} records?`,
+        `Are you sure you want to delete ${selected.length} record(s)?`,
       )
     )
       return;
 
+    const idsToDelete = selected
+      .map((idx) => filteredRows[idx]?.id)
+      .filter((id) => id != null);
+    if (idsToDelete.length === 0) {
+      showMessage("error", "No valid speed dials selected to delete.");
+      return;
+    }
+
     setLoading((prev) => ({ ...prev, delete: true }));
     try {
-      const idsToDelete = selected
-        .map((idx) => filteredRows[idx]?.id)
-        .filter((id) => id != null);
-      const results = await Promise.all(
-        idsToDelete.map((id) => deleteSpeedDial(id)),
-      );
-      const failed = results.find((r) => !r?.response);
-      if (failed) {
-        showMessage(
-          "error",
-          failed?.message || "Failed to delete one or more speed dials.",
-        );
-      } else {
-        showMessage("success", "Speed dial(s) deleted successfully.");
+      const res =
+        idsToDelete.length === 1
+          ? await deleteSpeedDial(idsToDelete[0])
+          : await deleteSpeedDial(idsToDelete);
+
+      if (!res?.response) {
+        showMessage("error", res?.message || "Failed to delete speed dial(s).");
+        return;
       }
+
+      showMessage(
+        "success",
+        res.message ||
+          `${res.deleted_count ?? idsToDelete.length} speed dial(s) deleted successfully.`,
+      );
       await fetchSpeedDials();
       setSelected([]);
       setPage(1);
     } catch (err) {
       showMessage("error", err?.message || "Failed to delete speed dial(s).");
+    } finally {
+      setLoading((prev) => ({ ...prev, delete: false }));
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (rows.length === 0) {
+      showMessage("info", "No speed dials to clear.");
+      return;
+    }
+    if (!window.confirm(SPEED_DIAL_CONFIRM_CLEAR_ALL.FIRST(rows.length))) return;
+    if (!window.confirm(SPEED_DIAL_CONFIRM_CLEAR_ALL.SECOND)) return;
+
+    const idsToDelete = rows.map((row) => row.id).filter((id) => id != null);
+    if (idsToDelete.length === 0) {
+      showMessage("error", "No valid speed dials to clear.");
+      return;
+    }
+
+    setLoading((prev) => ({ ...prev, delete: true }));
+    try {
+      const res =
+        idsToDelete.length === 1
+          ? await deleteSpeedDial(idsToDelete[0])
+          : await deleteSpeedDial(idsToDelete);
+
+      if (!res?.response) {
+        showMessage("error", res?.message || "Failed to clear all speed dials.");
+        return;
+      }
+
+      showMessage(
+        "success",
+        res.message ||
+          `${res.deleted_count ?? idsToDelete.length} speed dial(s) deleted successfully.`,
+      );
+      await fetchSpeedDials();
+      setSelected([]);
+      setPage(1);
+    } catch (err) {
+      showMessage("error", err?.message || "Failed to clear all speed dials.");
     } finally {
       setLoading((prev) => ({ ...prev, delete: false }));
     }
@@ -328,6 +380,7 @@ export function useSpeedDialPage() {
     handleToggleRow,
     handleToggleAll,
     handleDelete,
+    handleClearAll,
     handleOpenAddModal,
     handleOpenEditModal,
     handleCloseModal,

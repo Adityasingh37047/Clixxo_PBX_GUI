@@ -12,7 +12,10 @@ import {
   TextField,
 } from "@mui/material";
 import { C } from "../../../theme/pbxTokens";
-import { SPEED_DIAL_TITLE } from "../../../constants/SpeedDialConstants";
+import {
+  SPEED_DIAL_BTN_CLEAR_ALL,
+  SPEED_DIAL_TITLE,
+} from "../../../constants/SpeedDialConstants";
 import {
   Btn,
   TH,
@@ -83,6 +86,7 @@ const SpeedDialPage = () => {
     handleToggleRow,
     handleToggleAll,
     handleDelete,
+    handleClearAll,
     handleOpenAddModal,
     handleOpenEditModal,
     handleCloseModal,
@@ -157,6 +161,17 @@ const SpeedDialPage = () => {
               }}
             >
               <Btn
+                onClick={handleClearAll}
+                disabled={loading.delete || loading.list || rows.length === 0}
+                variant="cancel"
+                style={speedDialCancelBtnStyle}
+              >
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : null}
+                {SPEED_DIAL_BTN_CLEAR_ALL}
+              </Btn>
+              <Btn
                 onClick={handleDelete}
                 disabled={
                   loading.delete || loading.list || selected.length === 0
@@ -164,7 +179,11 @@ const SpeedDialPage = () => {
                 variant="cancel"
                 style={speedDialCancelBtnStyle}
               >
-                <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                {loading.delete ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <DeleteOutlineOutlinedIcon sx={{ fontSize: 16 }} />
+                )}
                 Delete
               </Btn>
               <Btn

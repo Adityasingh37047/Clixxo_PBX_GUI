@@ -57,7 +57,7 @@ export function useInboundRoutesPage() {
   const [availableTrunks, setAvailableTrunks] = useState([]);
   const [selectedTrunks, setSelectedTrunks] = useState([]);
 
-  const itemsPerPage = 20;
+  const itemsPerPage = 50;
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(rows.length / itemsPerPage));
   const pagedRows = rows.slice((page - 1) * itemsPerPage, page * itemsPerPage);

@@ -1,6 +1,14 @@
-export const SPEED_DIAL_ITEMS_PER_PAGE = 20;
+export const SPEED_DIAL_ITEMS_PER_PAGE = 50;
 
 export const SPEED_DIAL_TITLE = 'Speed Dial';
+
+export const SPEED_DIAL_BTN_CLEAR_ALL = 'Clear All';
+
+export const SPEED_DIAL_CONFIRM_CLEAR_ALL = {
+  FIRST: (count) =>
+    `Are you sure you want to delete all ${count} speed dial(s)? This action cannot be undone.`,
+  SECOND: 'Are you absolutely sure you want to clear all speed dials?',
+};
 
 /** Field tooltips for Speed Dial */
 export const SPEED_DIAL_FIELD_TOOLTIPS = {

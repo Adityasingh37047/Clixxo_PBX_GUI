@@ -3193,9 +3193,12 @@ export const updateSpeedDial = async (id, data) => {
   }
 };
 
-export const deleteSpeedDial = async (id) => {
+export const deleteSpeedDial = async (idOrIds) => {
   try {
-    const response = await axiosInstance.post('/speed-dial', { type: 'delete', id: Number(id) });
+    const payload = Array.isArray(idOrIds)
+      ? { type: 'delete', ids: idOrIds.map(Number) }
+      : { type: 'delete', id: Number(idOrIds) };
+    const response = await axiosInstance.post('/speed-dial', payload);
     return response.data;
   } catch (error) {
     console.error('Error deleting speed dial:', error.message);
