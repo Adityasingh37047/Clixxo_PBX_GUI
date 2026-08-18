@@ -183,7 +183,8 @@ const ExtensionCodecListBox = ({
   const itemIdsRef = useRef([]);
   const onDragSelectRef = useRef(onDragSelect);
 
-  const getItemId = (item) => (typeof item === "string" ? item : item.value);
+  const getItemId = (item) =>
+    typeof item === "string" || typeof item === "number" ? item : item.value;
   const itemIds = useMemo(() => items.map(getItemId), [items]);
   itemIdsRef.current = itemIds;
   onDragSelectRef.current = onDragSelect;
@@ -399,7 +400,10 @@ const ExtensionCodecListBox = ({
         <div style={extensionCodecListEmptyStyle}>{emptyText}</div>
       ) : (
         items.map((item) => {
-          const id = typeof item === "string" ? item : item.value;
+          const id =
+            typeof item === "string" || typeof item === "number"
+              ? item
+              : item.value;
           const label = getLabel ? getLabel(id) : item.label || id;
           const isSelected = selectedIds.includes(id);
           return (
