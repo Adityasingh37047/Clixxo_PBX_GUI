@@ -1,4 +1,7 @@
 import axiosInstance from "./axiosInstance";
+
+// Large CSV imports can take longer than the global axios timeout (20s).
+const CSV_IMPORT_TIMEOUT_MS = 120000; // 2 minutes
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 import axios from "axios";
@@ -1527,10 +1530,15 @@ export const importSipAccountsCsv = async ({ csv, mode = 'skip', dryRun = false 
     const response = await axiosInstance.post('/pjsip', {
       type: 'import_csv',
       data: { csv, mode, dry_run: dryRun },
+    }, {
+      timeout: CSV_IMPORT_TIMEOUT_MS,
     });
     return response.data;
   } catch (error) {
     if (error.response?.data) return error.response.data;
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      throw new Error('Import timed out. Please try a smaller file or retry.');
+    }
     throw new Error(error.message || 'Import failed');
   }
 };
@@ -3220,11 +3228,16 @@ export const importSpeedDialCsv = async ({ csv, dryRun = false }) => {
     const response = await axiosInstance.post('/speed-dial', {
       type: 'import_csv',
       data: { csv, dry_run: dryRun },
+    }, {
+      timeout: CSV_IMPORT_TIMEOUT_MS,
     });
     return response.data;
   } catch (error) {
     // 400 = validation failed — return the body so the UI can show errors
     if (error.response?.data) return error.response.data;
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      throw new Error('Import timed out. Please try a smaller file or retry.');
+    }
     throw new Error(error.message || 'Import failed');
   }
 };
