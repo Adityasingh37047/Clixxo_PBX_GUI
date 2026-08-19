@@ -20,6 +20,7 @@ export const INBOUND_ROUTE_DESTINATION_OPTIONS = [
   "Fax To Mail",
   "IVR Menus",
   "Ring Groups",
+  "Speed Dial",
   "Trunks",
   "Outbound",
   "Voicemails",
@@ -41,6 +42,7 @@ export const INBOUND_ROUTE_DEST_TYPE_TO_UI = {
   disa: "DISA",
   trunk: "Trunks",
   outbound_route: "Outbound",
+  speed_dial: "Speed Dial",
 };
 
 export const INBOUND_ROUTE_UI_TO_DEST_TYPE = {
@@ -57,6 +59,7 @@ export const INBOUND_ROUTE_UI_TO_DEST_TYPE = {
   DISA: "disa",
   Trunks: "trunk",
   Outbound: "outbound_route",
+  "Speed Dial": "speed_dial",
 };
 
 export const INBOUND_ROUTE_OTHER_DESTINATION_OPTIONS = ["Hangup", "Hold Music"];
@@ -79,6 +82,7 @@ export const INBOUND_ROUTE_DESTINATION_NEEDS_TARGET = new Set([
   "DISA",
   "Trunks",
   "Outbound",
+  "Speed Dial",
   "Other",
 ]);
 

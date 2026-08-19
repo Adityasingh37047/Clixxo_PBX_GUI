@@ -121,6 +121,7 @@ export const DEST_UI_TO_API_KEY = {
   DISA: "DISA",
   Trunks: "Trunks",
   Outbound: "Outbound",
+  "Speed Dial": "SpeedDial",
   Other: "Other",
 };
 
