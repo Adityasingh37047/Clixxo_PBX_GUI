@@ -4061,7 +4061,7 @@ export const getHaConfig = async () => {
 
 export const saveHaConfig = async (payload) => {
   const res = await axiosInstance.post("/ha/config", payload, {
-    timeout: 120000, // apply can restart MySQL
+    timeout: 300000, // 300s for MySQL/keepalived restart
   });
   return res.data;
 };
@@ -4111,5 +4111,43 @@ export const postHaCertificate = async (payload = {}) => {
   const res = await axiosInstance.post("/ha/certificate", payload, {
     timeout: 360000,
   });
+  return res.data;
+};
+
+// ── HA Pairing APIs ────────────────────────────────────────────────────────
+
+export const startHaPairing = async () => {
+  const res = await axiosInstance.post("/ha/pairing/start", {}, { timeout: 30000 });
+  return res.data;
+};
+
+export const cancelHaPairing = async () => {
+  const res = await axiosInstance.post("/ha/pairing/cancel", {}, { timeout: 30000 });
+  return res.data;
+};
+
+export const getHaPairingStatus = async (fresh = false) => {
+  const res = await axiosInstance.get(`/ha/pairing${fresh ? "?fresh=1" : ""}`, { timeout: 30000 });
+  return res.data;
+};
+
+export const joinHaPairing = async (peerIp, code) => {
+  const res = await axiosInstance.post(
+    "/ha/pairing/join",
+    { peerIp, code },
+    { timeout: 300000 }
+  );
+  return res.data;
+};
+
+// ── HA Unpair & Reset APIs ──────────────────────────────────────────────────
+
+export const unpairHa = async () => {
+  const res = await axiosInstance.post("/ha/unpair", {}, { timeout: 30000 });
+  return res.data;
+};
+
+export const resetHa = async (payload = { removeTrust: true, stopReplication: true }) => {
+  const res = await axiosInstance.post("/ha/reset", payload, { timeout: 120000 });
   return res.data;
 };
