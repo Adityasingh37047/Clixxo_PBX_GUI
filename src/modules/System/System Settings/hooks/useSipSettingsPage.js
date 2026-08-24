@@ -3,6 +3,7 @@ import {
   downloadSslCert,
   fetchNetwork,
   getHaCertificate,
+  getHaConfig,
   getTlsWebrtcSettings,
   postHaCertificate,
   saveTlsWebrtcSettings,
@@ -123,9 +124,29 @@ export function useSipSettingsPage() {
     const values = (Array.isArray(currentValues) ? currentValues : [currentValues])
       .filter(Boolean);
     try {
-      const netData = await fetchNetwork();
-      const allIfaces = netData?.data?.interfaces || [];
-      let options = buildLocalIpOptions(allIfaces, values[0] || "");
+      const [netData, haData] = await Promise.allSettled([
+        fetchNetwork(),
+        getHaConfig(),
+      ]);
+
+      const netVal = netData.status === "fulfilled" ? netData.value : {};
+      const haVal = haData.status === "fulfilled" ? haData.value : {};
+
+      const allIfaces = netVal?.data?.interfaces || netVal?.interfaces || [];
+      const rawVips =
+        netVal?.data?.virtualIps ||
+        netVal?.virtualIps ||
+        netVal?.data?.virtual_ips ||
+        netVal?.virtual_ips ||
+        [];
+      const haVip = haVal?.config?.vip || haVal?.vip || "";
+
+      const combinedVips = [
+        ...(Array.isArray(rawVips) ? rawVips : rawVips ? [rawVips] : []),
+        ...(haVip ? [haVip] : []),
+      ];
+
+      let options = buildLocalIpOptions(allIfaces, values[0] || "", combinedVips);
       for (const value of values.slice(1)) {
         if (!options.some((opt) => opt.value === value)) {
           options = [...options, { value, label: value }];

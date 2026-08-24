@@ -61,6 +61,7 @@ import {
   updateGlobalSipSettings,
   deleteGlobalSipSettings,
   fetchNetwork,
+  getHaConfig,
 } from "../../../api/apiService";
 import {
   buildLocalIpOptions,
@@ -507,9 +508,29 @@ const SipTrunkPage = () => {
       fetchGlobalSipSettings();
       const loadLocalIps = async () => {
         try {
-          const netData = await fetchNetwork();
-          const allIfaces = netData?.data?.interfaces || [];
-          setLocalIpOptions(buildLocalIpOptions(allIfaces, form.local_ip));
+          const [netData, haData] = await Promise.allSettled([
+            fetchNetwork(),
+            getHaConfig(),
+          ]);
+
+          const netVal = netData.status === "fulfilled" ? netData.value : {};
+          const haVal = haData.status === "fulfilled" ? haData.value : {};
+
+          const allIfaces = netVal?.data?.interfaces || netVal?.interfaces || [];
+          const rawVips =
+            netVal?.data?.virtualIps ||
+            netVal?.virtualIps ||
+            netVal?.data?.virtual_ips ||
+            netVal?.virtual_ips ||
+            [];
+          const haVip = haVal?.config?.vip || haVal?.vip || "";
+
+          const combinedVips = [
+            ...(Array.isArray(rawVips) ? rawVips : rawVips ? [rawVips] : []),
+            ...(haVip ? [haVip] : []),
+          ];
+
+          setLocalIpOptions(buildLocalIpOptions(allIfaces, form.local_ip, combinedVips));
         } catch (error) {
           console.warn("Failed to load network interfaces for Local IP", error);
           setLocalIpOptions(LOCAL_IP_FALLBACK_OPTIONS);

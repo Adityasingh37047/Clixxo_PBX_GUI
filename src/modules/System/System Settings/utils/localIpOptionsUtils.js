@@ -67,7 +67,7 @@ export const filterLanInterfaces = (interfaces = []) =>
     (iface) => !isVpnOrVirtualInterface(iface.interface || iface.ifname || ""),
   );
 
-export const buildLocalIpOptions = (interfaces = [], currentValue = "") => {
+export const buildLocalIpOptions = (interfaces = [], currentValue = "", virtualIps = []) => {
   const lanIfaces = filterLanInterfaces(interfaces);
   const orderedOptions = [];
 
@@ -79,6 +79,34 @@ export const buildLocalIpOptions = (interfaces = [], currentValue = "") => {
     const ipv6 = readIfaceIpv6(iface);
     if (ipv6) {
       orderedOptions.push(buildLanIpv6Option(idx, ipv6, displayName));
+    }
+  });
+
+  // Virtual IPs (HA Virtual IP, e.g. 192.168.0.100) add karein
+  const vipsList = Array.isArray(virtualIps)
+    ? virtualIps
+    : virtualIps
+      ? [virtualIps]
+      : [];
+
+  let vipCounter = 1;
+  vipsList.forEach((vip) => {
+    let ip = "";
+    if (typeof vip === "string") {
+      ip = vip.trim();
+    } else if (vip && typeof vip === "object") {
+      ip = String(
+        vip.address || vip.ip || vip.vip || vip.virtualIp || vip.virtual_ip || ""
+      ).trim();
+    }
+
+    if (ip && ip !== "0.0.0.0" && !orderedOptions.some((opt) => opt.value === ip)) {
+      orderedOptions.push({
+        value: ip,
+        label: `Virtual IP ${vipCounter} (${ip})`,
+        shortLabel: `VIP ${vipCounter} (${ip})`,
+      });
+      vipCounter++;
     }
   });
 
