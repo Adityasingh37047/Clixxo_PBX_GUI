@@ -5,9 +5,11 @@ export const HA_CONFIG_CARD_TITLE = "High Availability";
 export const HA_CONFIG_SECTION_CONFIG = "HA Config";
 
 export const HA_CONFIG_BTN_SAVE = "Save";
+export const HA_CONFIG_BTN_CANCEL = "Cancel";
 export const HA_CONFIG_BTN_RESET = "Reset";
 export const HA_CONFIG_BTN_SAVING = "Saving…";
 export const HA_CONFIG_LOADING_TEXT = "Loading HA configuration…";
+export const HA_CONFIG_MODAL_TITLE = "Configure HA";
 
 export const HA_CONFIG_LABEL_HA_ENABLED = "HA Enabled";
 export const HA_CONFIG_LABEL_VIRTUAL_IP = "Virtual IP";

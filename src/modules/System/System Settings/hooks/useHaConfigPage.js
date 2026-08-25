@@ -306,16 +306,16 @@ export function useHaConfigPage() {
       if (!isValidIPv4(form.virtualIp)) {
         setVirtualIpTouched(true);
         showMessage("error", HA_CONFIG_MESSAGES.invalidVirtualIp);
-        return;
+        return false;
       }
       if (!isValidIPv4(form.peerServerIp)) {
         setPeerIpTouched(true);
         showMessage("error", HA_CONFIG_MESSAGES.invalidPeerIp);
-        return;
+        return false;
       }
       if (!normalizeInterface(form.interface)) {
         showMessage("error", HA_CONFIG_MESSAGES.invalidInterface);
-        return;
+        return false;
       }
     }
 
@@ -350,11 +350,13 @@ export function useHaConfigPage() {
           setCurrentScreen(HA_SCREENS.CONFIGURED_UNPAIRED);
         }
       }
+      return true;
     } catch (error) {
       showMessage(
         "error",
         getHaConfigErrorMessage(error, HA_CONFIG_MESSAGES.saveFailed),
       );
+      return false;
     } finally {
       setSaving(false);
     }
