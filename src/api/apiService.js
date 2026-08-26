@@ -4151,3 +4151,47 @@ export const resetHa = async (payload = { removeTrust: true, stopReplication: tr
   const res = await axiosInstance.post("/ha/reset", payload, { timeout: 120000 });
   return res.data;
 };
+
+// ── SFTP APIs ────────────────────────────────────────────────────────────────
+
+// 1. Get SFTP Settings
+export const getSftpSettings = async () => {
+  const response = await axiosInstance.post("/sftp-settings", {
+    type: "get",
+  });
+  return response.data;
+};
+
+// 2. Update / Save SFTP Settings
+export const updateSftpSettings = async (data) => {
+  const response = await axiosInstance.post("/sftp-settings", {
+    type: "update",
+    data,
+  });
+  return response.data;
+};
+
+// 3. Test SFTP Connection
+export const testSftpSettings = async (data) => {
+  const response = await axiosInstance.post("/sftp-settings", {
+    type: "test",
+    data,
+  });
+  return response.data;
+};
+
+// 4. Run Backup Now
+export const runSftpBackupNow = async () => {
+  const response = await axiosInstance.post("/sftp-settings", {
+    type: "run_now",
+  });
+  return response.data;
+};
+
+// 5. Reset to Defaults
+export const resetSftpSettings = async () => {
+  const response = await axiosInstance.post("/sftp-settings", {
+    type: "reset_defaults",
+  });
+  return response.data;
+};

@@ -8,6 +8,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  CircularProgress,
 } from "@mui/material";
 import { TH, tdStyle } from "../../../../components/common/tableKit";
 import {
@@ -16,6 +17,9 @@ import {
   STORAGE_PAGE_TITLE,
   STORAGE_SECTION_RECORD_BACKUP,
   STORAGE_BTN_FTP_TEST,
+  STORAGE_BTN_BACKUP_NOW,
+  STORAGE_BTN_TESTING,
+  STORAGE_BTN_RUNNING_BACKUP,
   STORAGE_SECTION_HEADING_LEFT,
   STORAGE_AUTO_CLEANUP_SECTIONS,
   STORAGE_BACKUP_FIELDS,
@@ -205,6 +209,49 @@ const storageCompactSelectSx = {
   "& .MuiSelect-select": {
     ...storageSelectSx["& .MuiSelect-select"],
     padding: "4px 28px 4px 8px !important",
+  },
+};
+
+const storageTimeSelectSx = {
+  ...storageSelectSx,
+  width: 68,
+  minWidth: 68,
+  height: 34,
+  minHeight: 34,
+  "& .MuiSelect-select": {
+    ...storageSelectSx["& .MuiSelect-select"],
+    padding: "6px 24px 6px 8px !important",
+    fontSize: 13,
+    fontWeight: 600,
+    textAlign: "center",
+  },
+};
+
+const storageTimeSelectMenuProps = {
+  anchorOrigin: {
+    vertical: "top",
+    horizontal: "left",
+  },
+  transformOrigin: {
+    vertical: "bottom",
+    horizontal: "left",
+  },
+  PaperProps: {
+    sx: {
+      maxHeight: 300,
+      width: 76,
+      minWidth: 76,
+      borderRadius: "4px",
+      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.15)",
+      "& .MuiMenuItem-root": {
+        fontSize: 13,
+        minHeight: 30,
+        height: 30,
+        padding: "2px 8px",
+        justifyContent: "center",
+        textAlign: "center",
+      },
+    },
   },
 };
 
@@ -940,98 +987,161 @@ export const StorageBackupsPanel = ({
   backupsForm,
   onChange,
   backupFieldRowOptions,
-}) => (
-  <div style={storageFormOuterStyle}>
-    <div style={storageFormBodyStyle(isCompact)}>
-      <SectionHeading title={STORAGE_SECTION_RECORD_BACKUP} isFirst />
-      <div style={storageFieldGroupStyle}>
-        {STORAGE_BACKUP_FIELDS.map((field) => (
-          <React.Fragment key={field.name}>
-            <StorageFormField
-              field={field}
-              form={backupsForm}
-              onChange={onChange}
-              {...backupFieldRowOptions}
-            />
+  sftpLoading = false,
+}) => {
+  const isSftpEnabled = backupsForm.autoUploadFtp?.toLowerCase() === "yes";
 
-            {field.name === "uploadTime" &&
-              backupsForm.uploadTime === "Timing" && (
-                <StorageFieldRow
-                  label={STORAGE_LABEL_START_TIME}
-                  required
+  if (sftpLoading) {
+    return (
+      <div style={storageFormOuterStyle}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            padding: "48px 16px",
+            color: C.mutedText,
+            fontSize: 13,
+          }}
+        >
+          <CircularProgress size={22} sx={{ color: C.accent }} />
+          Loading SFTP Settings...
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={storageFormOuterStyle}>
+      <div style={storageFormBodyStyle(isCompact)}>
+        <SectionHeading title={STORAGE_SECTION_RECORD_BACKUP} isFirst />
+        <div style={storageFieldGroupStyle}>
+          {STORAGE_BACKUP_FIELDS.map((field) => {
+            // If SFTP is not enabled, hide all fields except "Enable SFTP"
+            if (!isSftpEnabled && field.name !== "autoUploadFtp") {
+              return null;
+            }
+
+            return (
+              <React.Fragment key={field.name}>
+                <StorageFormField
+                  field={field}
+                  form={backupsForm}
+                  onChange={onChange}
                   {...backupFieldRowOptions}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      width: "100%",
-                    }}
-                  >
-                    <Select
-                      size="small"
-                      value={backupsForm.startHour || "00"}
-                      onChange={(e) => onChange("startHour", e.target.value)}
-                      sx={{ ...storageCompactSelectSx, width: 56 }}
-                    >
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <MenuItem
-                          key={i}
-                          value={String(i).padStart(2, "0")}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {String(i).padStart(2, "0")}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                />
 
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color: C.labelText,
-                      }}
+                {field.name === "uploadTime" &&
+                  backupsForm.uploadTime === "Timing" && (
+                    <StorageFieldRow
+                      label={STORAGE_LABEL_START_TIME}
+                      required
+                      {...backupFieldRowOptions}
                     >
-                      :
-                    </span>
-
-                    <Select
-                      size="small"
-                      value={backupsForm.startMinute || "00"}
-                      onChange={(e) =>
-                        onChange("startMinute", e.target.value)
-                      }
-                      sx={{ ...storageCompactSelectSx, width: 56 }}
-                    >
-                      {Array.from({ length: 60 }, (_, i) => (
-                        <MenuItem
-                          key={i}
-                          value={String(i).padStart(2, "0")}
-                          sx={{ fontSize: 13 }}
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
+                      >
+                        <Select
+                          size="small"
+                          value={backupsForm.startHour || "00"}
+                          onChange={(e) => onChange("startHour", e.target.value)}
+                          sx={storageTimeSelectSx}
+                          MenuProps={storageTimeSelectMenuProps}
                         >
-                          {String(i).padStart(2, "0")}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </div>
-                </StorageFieldRow>
-              )}
-          </React.Fragment>
-        ))}
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <MenuItem
+                              key={i}
+                              value={String(i).padStart(2, "0")}
+                            >
+                              {String(i).padStart(2, "0")}
+                            </MenuItem>
+                          ))}
+                        </Select>
+
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 14,
+                            color: C.labelText,
+                            userSelect: "none",
+                          }}
+                        >
+                          :
+                        </span>
+
+                        <Select
+                          size="small"
+                          value={backupsForm.startMinute || "00"}
+                          onChange={(e) =>
+                            onChange("startMinute", e.target.value)
+                          }
+                          sx={storageTimeSelectSx}
+                          MenuProps={storageTimeSelectMenuProps}
+                        >
+                          {Array.from({ length: 60 }, (_, i) => (
+                            <MenuItem
+                              key={i}
+                              value={String(i).padStart(2, "0")}
+                            >
+                              {String(i).padStart(2, "0")}
+                            </MenuItem>
+                          ))}
+                        </Select>
+
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: C.mutedText,
+                            marginLeft: 4,
+                            userSelect: "none",
+                          }}
+                        >
+                          (HH : MM)
+                        </span>
+                      </div>
+                    </StorageFieldRow>
+                  )}
+              </React.Fragment>
+            );
+          })}
+
+          {/* Last Backup Information Line (only when SFTP is enabled) */}
+          {isSftpEnabled && backupsForm.lastRunAt && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 14px",
+                background: "#f8fafc",
+                border: `1px solid ${C.cardBorder}`,
+                borderRadius: 4,
+                fontSize: 12,
+                color: C.labelText,
+                marginTop: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: backupsForm.lastStatus === "ok" ? "#16a34a" : "#dc2626",
+                }}
+              >
+                ● Last Backup:
+              </span>
+              <span>
+                {new Date(backupsForm.lastRunAt).toLocaleString()}
+                {backupsForm.lastMessage ? ` — ${backupsForm.lastMessage}` : ""}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        width: "100%",
-        padding: "14px 0 4px",
-        boxSizing: "border-box",
-      }}
-    >
-      <Btn variant="primary" style={storageBackupActionBtnStyle}>
-        {STORAGE_BTN_FTP_TEST}
-      </Btn>
-    </div>
-  </div>
-);
+  );
+};

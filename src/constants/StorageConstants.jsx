@@ -36,7 +36,11 @@ export const STORAGE_DEVICE_LOCAL_DISK = "Local Disk";
 export const STORAGE_BTN_SAVE = "Save";
 export const STORAGE_BTN_REFRESH = "Refresh";
 export const STORAGE_BTN_RESET = "Reset";
-export const STORAGE_BTN_FTP_TEST = "FTP Test";
+export const STORAGE_BTN_FTP_TEST = "SFTP Test";
+export const STORAGE_BTN_BACKUP_NOW = "Backup Now";
+export const STORAGE_BTN_TESTING = "Testing...";
+export const STORAGE_BTN_RUNNING_BACKUP = "Backing up...";
+export const STORAGE_BTN_SAVING = "Saving...";
 
 export const STORAGE_SECTION_HEADING_LEFT = -20;
 
@@ -133,7 +137,7 @@ max: 90,
 export const STORAGE_BACKUP_FIELDS = [
   {
     name: "autoUploadFtp",
-    label: "Auto Upload FTP",
+    label: "Enable SFTP",
     tooltip: `After configuring the FTP server, the recording file will be uploaded automatically. The default value is "No".`,
     type: "select",
     options: ["Yes", "No"],
@@ -141,22 +145,22 @@ export const STORAGE_BACKUP_FIELDS = [
   },
   {
     name: "ftpAddress",
-    label: "FTP Address",
-    tooltip: `FTP server address, format is: (ftp://name:password@IP:port/) of (ftp://IP), if the port number is not filled int, it is the default port 21 and this value must be set, otherwise can not be save.`,
+    label: "SFTP Address",
+    tooltip: `SFTP server address, format is: (sftp://name:password@IP:port/) of (sftp://IP), if the port number is not filled int, it is the default port 22 and this value must be set, otherwise can not be save.`,
     type: "text",
     defaultValue: "192.168.0.57",
   },
   {
     name: "username",
     label: "Username",
-    tooltip: `User name used on the FTP server.`,
+    tooltip: `User name used on the SFTP server.`,
     type: "text",
     defaultValue: "ftp-clixxo",
   },
   {
     name: "password",
     label: "Password",
-    tooltip: `Password used on the FTP server.`,
+    tooltip: `Password used on the SFTP server.`,
     type: "password",
     defaultValue: "password",
   },
