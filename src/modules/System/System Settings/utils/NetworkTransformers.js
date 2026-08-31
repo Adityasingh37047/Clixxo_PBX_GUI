@@ -80,6 +80,10 @@ export const applyStaticDefaults = (lan) => {
 export const filterAndNormalizeLanInterfaces = (allIfaces = []) =>
   allIfaces
     .filter((iface) => {
+      const ipv4Type = String(iface.ipv4Type || "").trim().toLowerCase();
+      // Show Static/DHCP interfaces only; hide Unknown from UI
+      if (ipv4Type !== "static" && ipv4Type !== "dhcp") return false;
+
       const kn = (iface.interface || "").toLowerCase();
       // Show all NICs; hide VPN / tunnel / loopback only (tap/tun/vpn/lo)
       if (!kn || kn === "lo") return false;
